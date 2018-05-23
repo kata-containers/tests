@@ -61,3 +61,9 @@ docker_options="-D --add-runtime kata-runtime=/usr/local/bin/kata-runtime"
 
 echo "Add kata-runtime as a new/default Docker runtime."
 "${cidir}/../cmd/container-manager/manage_ctr_mgr.sh" docker configure -r kata-runtime -f
+
+if [ "$USE_VIRTIO_BLK" == true ]; then
+	echo "Set virtio-blk as the block device driver"
+	sudo sed -i 's/block_device_driver = "virtio-scsi"/block_device_driver = "virtio-blk"/' "${runtime_config_path}"
+	sudo sed -i 's/qemu-system/qemu-lite-system/' "${runtime_config_path}"
+fi

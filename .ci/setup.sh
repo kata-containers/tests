@@ -37,8 +37,15 @@ else
 	die "Unsupported architecture: $arch"
 fi
 
+
+# Use qemu-lite 2.7 for virtio-blk as there is
+# a bug using qemu>=2.9
 echo "Install Qemu"
-bash -f ${cidir}/install_qemu.sh
+if [ "$USE_VIRTIO_BLK" == true ]; then
+	bash -f ${cidir}/install_qemu_lite.sh "22280" "741f430a960b5b67745670e8270db91aeb083c5f-31" "$ID"
+else
+	bash -f ${cidir}/install_qemu.sh
+fi
 
 echo "Install shim"
 bash -f ${cidir}/install_shim.sh
