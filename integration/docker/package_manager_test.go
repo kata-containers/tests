@@ -36,6 +36,7 @@ var _ = Describe("package manager update test", func() {
 
 	Context("check apt-get update", func() {
 		It("should not fail", func() {
+			Skip("Issue: https://github.com/kata-containers/tests/issues/420")
 			args = append(args, "--rm", "--name", id, DebianImage, "apt-get", "-y", "update")
 			_, _, exitCode := dockerRun(args...)
 			Expect(exitCode).To(BeZero())
