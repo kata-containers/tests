@@ -231,3 +231,29 @@ var _ = Describe("Check read-only cgroup filesystem", func() {
 		})
 	})
 })
+
+var _ = Describe("run", func() {
+	var (
+		args     []string
+		id       string
+		stdout   string
+		exitCode int
+	)
+
+	BeforeEach(func() {
+		id = randomDockerName()
+	})
+
+	AfterEach(func() {
+		Expect(ExistDockerContainer(id)).NotTo(BeTrue())
+	})
+
+	Context("set DOCKER_RAMDISK", func() {
+		It("should support pivot flag", func() {
+			args = []string{"--rm", "-e", "DOCKER_RAMDISK=true", "--name", id, Image, "sh", "-c", "echo 'hello'"}
+			stdout, _, exitCode = dockerRun(args...)
+			Expect(exitCode).To(Equal(0))
+			Expect(stdout).To(ContainSubstring("hello"))
+		})
+	})
+})
