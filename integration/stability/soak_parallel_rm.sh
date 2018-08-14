@@ -36,7 +36,7 @@ RUNTIME="${RUNTIME:-kata-runtime}"
 RUNTIME_PATH=$(command -v $RUNTIME)
 
 # And set the names of the processes we look for
-QEMU_NAME="${QEMU_NAME:-qemu-lite-system-x86_64}"
+QEMU_NAME="${QEMU_NAME:-qemu-system-x86_64}"
 RUNTIME_NAME="${RUNTIME_NAME:-kata-runtime}"
 SHIM_NAME="${SHIM_NAME:-kata-shim}"
 PROXY_NAME="${PROXY_NAME:-kata-proxy}"
