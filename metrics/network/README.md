@@ -27,6 +27,9 @@ are used to test both servers for the maximum amount of throughput.
 - `network-metrics-memory-pss.sh` measures the Proportional Set Size (PSS) of the hypervisor footprint on the host using smem
 while running a transfer of one GB with nuttcp.
 
+- `network-metrics-memory-rss.sh` measures the Resident Set Size (RSS) of the hypervisor footprint on the host using smem
+while running a transfer of one GB with nuttcp.
+
 ## Running the tests
 
 Individual tests can be run by hand, for example:
