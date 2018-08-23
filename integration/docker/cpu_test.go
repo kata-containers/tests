@@ -239,6 +239,11 @@ var _ = Describe("Update number of CPUs", func() {
 		exitCode        int
 	)
 
+	if KataConfig.Hypervisor[DefaultHypervisor].Initrd != "" {
+		GinkgoT().Skip("Update CPU period and quota does not work on v1.1.0 using initrd")
+		return
+	}
+
 	BeforeEach(func() {
 		id = RandID(30)
 		checkCpusCmdFmt = `for c in $(seq 1 %d); do [ -d /sys/devices/system/cpu/cpu%d ] && nproc && exit 0; sleep %d; done; exit 1`
@@ -325,6 +330,11 @@ var _ = Describe("Update CPU constraints", func() {
 		exitCode   int
 		stdout     string
 	)
+
+	if KataConfig.Hypervisor[DefaultHypervisor].Initrd != "" {
+		GinkgoT().Skip("Update CPU period and quota does not work on v1.1.0 using initrd")
+		return
+	}
 
 	BeforeEach(func() {
 		id = RandID(30)
@@ -415,6 +425,11 @@ var _ = Describe("CPUs and CPU set", func() {
 		stdout        string
 		updateCheckFn func(cpus, cpusetCpus, expectedCpus string)
 	)
+
+	if KataConfig.Hypervisor[DefaultHypervisor].Initrd != "" {
+		GinkgoT().Skip("Update CPU period and quota does not work on v1.1.0 using initrd")
+		return
+	}
 
 	BeforeEach(func() {
 		id = RandID(30)
