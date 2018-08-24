@@ -52,22 +52,42 @@ mkdir -p $(dirname "${kata_repo_dir}")
 
 pushd "${kata_repo_dir}"
 
+
+# Variables needed when we test a PR.
 pr_number=
+target_branch=
+
+# Variable needed when a merge to a branch needs to be tested.
+branch=
 
 # $ghprbPullId and $ghprbTargetBranch are variables from
 # the Jenkins GithubPullRequestBuilder Plugin
-[ "${ghprbPullId}" ] && [ "${ghprbTargetBranch}" ] && pr_number="${ghprbPullId}"
+[ "${ghprbPullId}" ] && [ "${ghprbTargetBranch}" ] && export pr_number="${ghprbPullId}"
+
+
 
 if [ -n "$pr_number" ]
 then
+	export target_branch="${ghprbTargetBranch:-master}"
+	if [ "${kata_repo}" != "${tests_repo}" ]
+	then
+		# Use the correct branch for testing.
+		# 'tests' repository branch should have the same name
+		# of the kata repository branch where the change is
+		# going to be merged.
+		pushd "${test_repo_dir}"
+		git fetch origin && git checkout "${target_branch}"
+		popd
+	fi
+
 	pr_branch="PR_${pr_number}"
 
 	# Create a separate branch for the PR. This is required to allow
 	# checkcommits to be able to determine how the PR differs from
-	# "master".
+	# the target branch.
 	git fetch origin "pull/${pr_number}/head:${pr_branch}"
 	git checkout "${pr_branch}"
-	git rebase "origin/${ghprbTargetBranch}"
+	git rebase "origin/${target_branch}"
 
 	# As we currently have CC and runv runtimes as git submodules
 	# we need to update the submodules in order to get
@@ -75,8 +95,22 @@ then
 	# This condition should be removed when we have one runtime.
 	[ -f .gitmodules ] && git submodule update
 else
-	# Othewise we test the master branch
-	git fetch origin && git checkout master && git reset --hard origin/master
+	# Othewise we test an specific branch
+	# GIT_BRANCH env variable is set by the jenkins Github Plugin.
+	[ -z "${GIT_BRANCH}" ] && echo >&2 "GIT_BRANCH is empty" && exit 1
+	export branch="${GIT_BRANCH/*\//}"
+
+	if [ "${kata_repo}" != "${tests_repo}" ]
+	then
+		# Use the correct branch for testing.
+		# 'tests' repository branch should have the same name
+		# as the kata repository branch that will be tested.
+		pushd "${test_repo_dir}"
+		git fetch origin && git checkout "$branch"
+		popd
+	fi
+
+	git fetch origin && git checkout "$branch" && git reset --hard "$GIT_BRANCH"
 fi
 
 # Install go after repository is cloned and checkout to PR
@@ -108,10 +142,10 @@ fi
 
 if [ -n "$pr_number" ]
 then
-	# Now that checkcommits has run, move the PR commits into the master
-	# branch before running the tests. Having the commits in "master" is
-	# required to ensure coveralls works.
-	git checkout master
+	# Now that checkcommits has run, move the PR commits into the target
+	# branch before running the tests. Having the commits in the target branch
+	# is required to ensure coveralls works.
+	git checkout ${ghprbTargetBranch}
 	git reset --hard "$pr_branch"
 	git branch -D "$pr_branch"
 fi
