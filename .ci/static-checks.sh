@@ -18,7 +18,7 @@ source "${cidir}/lib.sh"
 script_name=${0##*/}
 
 repo=""
-master_branch="false"
+specific_branch="false"
 
 usage()
 {
@@ -31,8 +31,8 @@ Parameters:
 
   help      : Show usage.
   repo-name : GitHub URL of repo to check in form "github.com/user/repo".
-  true      : Specify as "true" if testing the 'master' branch, else assume a
-              PR branch.
+  true      : Specify as "true" if testing a specific branch (stable or master),
+              else assume a PR branch.
 
 Example:
 
@@ -78,7 +78,7 @@ get_pr_changed_file_details()
 		-r \
 		--name-status \
 		--diff-filter="${filters}" \
-		origin/master HEAD | grep -v "vendor/"
+		"origin/${target_branch}" HEAD | grep -v "vendor/"
 }
 
 check_commits()
@@ -255,8 +255,8 @@ check_versions()
 # Ensure all files (where possible) contain an SPDX license header
 check_license_headers()
 {
-	# The master branch is the baseline - ignore it.
-	[ "$master_branch" = "true" ] && return
+	# The branch is the baseline - ignore it.
+	[ "$specific_branch" = "true" ] && return
 
 	# See: https://spdx.org/licenses/Apache-2.0.html
 	local -r spdx_tag="SPDX-License-Identifier"
@@ -321,7 +321,7 @@ check_docs()
 	local new_urls
 	local url
 
-	if [ "$master_branch" = "true" ]
+	if [ "$specific_branch" = "true" ]
 	then
 		# Check all documents
 		docs=$(find . -name "*.md" | grep -v "vendor/" || true)
@@ -346,7 +346,7 @@ check_docs()
 			# document" *will* result in when the PR has landed
 			# and then check docs for that new URL and exclude
 			# them from the real URL check.
-			url="https://${repo}/blob/master/${doc}"
+			url="https://${repo}/blob/${target_branch}/${doc}"
 
 			new_urls+=" ${url}"
 		done
@@ -381,7 +381,7 @@ check_docs()
 
 	for url in $urls
 	do
-		if [ "$master_branch" != "true" ]
+		if [ "$specific_branch" != "true" ]
 		then
 			# If the URL is new on this PR, it cannot be checked.
 			echo "$new_urls" | grep -q "\<${url}\>" && \
@@ -440,7 +440,7 @@ check_files()
 
 	info "Checking files"
 
-	if [ "$master_branch" = "true" ]
+	if [ "$specific_branch" = "true" ]
 	then
 		files=$(find . -type f | egrep -v "(.git|vendor)/" || true)
 	else
@@ -517,7 +517,7 @@ main()
 		fi
 	fi
 
-	master_branch="$2"
+	specific_branch="$2"
 
 	if [ -n "$TRAVIS_BRANCH" ] && [ "$TRAVIS_BRANCH" != "master" ]
 	then
