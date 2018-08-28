@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"strings"
 
 	. "github.com/kata-containers/tests"
 	. "github.com/onsi/ginkgo"
@@ -17,6 +18,8 @@ import (
 
 // number of loop devices to hotplug
 var loopDevices = 10
+
+const devicesListPath = "/sys/fs/cgroup/devices/devices.list"
 
 func withWorkload(workload string, expectedExitCode int) TableEntry {
 	return Entry(fmt.Sprintf("with '%v' as workload", workload), workload, expectedExitCode)
@@ -91,6 +94,10 @@ var _ = Describe("run", func() {
 		loopFile   string
 		dockerArgs []string
 		id         string
+		exitCode   int
+		stdout     string
+		major      string
+		minor      string
 	)
 
 	if os.Getuid() != 0 {
@@ -110,14 +117,11 @@ var _ = Describe("run", func() {
 			dockerArgs = append(dockerArgs, "--device", loopFile)
 		}
 
-		dockerArgs = append(dockerArgs, "--rm", "--name", id, Image, "stat")
-
-		for _, lf := range loopFiles {
-			dockerArgs = append(dockerArgs, lf)
-		}
+		dockerArgs = append(dockerArgs, "-dti", "--rm", "--name", id, Image, "sh")
 	})
 
 	AfterEach(func() {
+		Expect(RemoveDockerContainer(id)).To(BeTrue())
 		Expect(ExistDockerContainer(id)).NotTo(BeTrue())
 		for _, lf := range loopFiles {
 			err = deleteLoopDevice(lf)
@@ -131,8 +135,25 @@ var _ = Describe("run", func() {
 
 	Context("hot plug block devices", func() {
 		It("should be attached", func() {
-			_, _, exitCode := dockerRun(dockerArgs...)
+			_, _, exitCode = dockerRun(dockerArgs...)
 			Expect(exitCode).To(BeZero())
+
+			// check loop devices
+			dockerArgs = []string{id, "stat"}
+			dockerArgs = append(dockerArgs, loopFiles...)
+			_, _, exitCode = dockerExec(dockerArgs...)
+
+			// check cgroup
+			stdout, _, exitCode = dockerExec(id, "cat", devicesListPath)
+			for _, lp := range loopFiles {
+				// the major for loopback devices is 7
+				// https://www.kernel.org/doc/Documentation/admin-guide/devices.txt
+				major = "7"
+				minor = strings.TrimPrefix(lp, "/dev/loop")
+				// b: block device
+				// rwm: r(read), w (write), and m (mknod)
+				Expect(stdout).To(ContainSubstring("b %s:%s rwm", major, minor))
+			}
 		})
 	})
 })
