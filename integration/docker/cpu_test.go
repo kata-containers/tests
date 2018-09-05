@@ -29,7 +29,11 @@ func withCPUPeriodAndQuota(quota, period, defaultVCPUs int, fail bool) TableEntr
 	if fail {
 		msg = "should fail"
 	} else {
-		msg = fmt.Sprintf("should have %d CPUs", ((quota+period-1)/period)+defaultVCPUs)
+		vCPUs := (quota + period - 1) / period
+		if vCPUs < defaultVCPUs {
+			vCPUs = defaultVCPUs
+		}
+		msg = fmt.Sprintf("should have %d CPUs", vCPUs)
 	}
 
 	return Entry(msg, quota, period, fail)
@@ -46,6 +50,10 @@ func withCPUConstraint(cpus float64, defaultVCPUs int, fail bool) TableEntry {
 	}
 
 	return Entry(msg, c, fail)
+}
+
+func maxCPUCount(count, defaultVCPUs int) int {
+	return int(math.Max(float64(count), float64(defaultVCPUs)))
 }
 
 var _ = Describe("Hot plug CPUs", func() {
@@ -75,7 +83,7 @@ var _ = Describe("Hot plug CPUs", func() {
 
 	DescribeTable("container with CPU period and quota",
 		func(quota, period int, fail bool) {
-			vCPUs = ((quota + period - 1) / period) + defaultVCPUs
+			vCPUs = maxCPUCount((quota+period-1)/period, defaultVCPUs)
 			args = append(args, "--cpu-quota", fmt.Sprintf("%d", quota),
 				"--cpu-period", fmt.Sprintf("%d", period), DebianImage, "bash", "-c",
 				fmt.Sprintf(checkCpusCmdFmt, maxTries, vCPUs-1, waitTime))
@@ -95,7 +103,7 @@ var _ = Describe("Hot plug CPUs", func() {
 
 	DescribeTable("container with CPU constraint",
 		func(cpus int, fail bool) {
-			vCPUs = cpus + defaultVCPUs
+			vCPUs = maxCPUCount(cpus, defaultVCPUs)
 			args = append(args, "--cpus", fmt.Sprintf("%d", cpus), DebianImage, "bash", "-c",
 				fmt.Sprintf(checkCpusCmdFmt, maxTries, vCPUs-1, waitTime))
 			stdout, _, exitCode := dockerRun(args...)
@@ -263,7 +271,7 @@ var _ = Describe("Update number of CPUs", func() {
 
 	DescribeTable("Update CPU period and quota",
 		func(quota, period int, fail bool) {
-			vCPUs = ((quota + period - 1) / period) + defaultVCPUs
+			vCPUs = maxCPUCount((quota+period-1)/period, defaultVCPUs)
 			updateArgs = append(updateArgs, "--cpu-quota", fmt.Sprintf("%d", quota),
 				"--cpu-period", fmt.Sprintf("%d", period), id)
 			stdout, _, exitCode = dockerUpdate(updateArgs...)
@@ -286,7 +294,7 @@ var _ = Describe("Update number of CPUs", func() {
 
 	DescribeTable("Update CPU constraint",
 		func(cpus int, fail bool) {
-			vCPUs = cpus + defaultVCPUs
+			vCPUs = maxCPUCount(cpus, defaultVCPUs)
 			updateArgs = append(updateArgs, "--cpus", fmt.Sprintf("%d", cpus), id)
 			stdout, _, exitCode = dockerUpdate(updateArgs...)
 			if fail {
@@ -420,7 +428,7 @@ var _ = Describe("CPUs and CPU set", func() {
 		id = RandID(30)
 		args = []string{"--rm", "-dt", "--name", id, Image, "sh"}
 		cpuTests = []cpuTest{
-			{"1", "0-1", "2"},
+			{"1", "0", "1"},
 			{"3", "1,2", "2"},
 			{"2", "1", "1"},
 		}
