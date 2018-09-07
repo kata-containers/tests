@@ -7,7 +7,7 @@
 
 set -e
 
-export KATA_RUNTIME=${KATA_RUNTIME:-cc}
+export KATA_RUNTIME=${KATA_RUNTIME:-kata-runtime}
 
 # If we fail for any reason a message will be displayed
 die(){
@@ -35,7 +35,17 @@ function clone_and_build() {
 
 	# Override branch if we are testing a PR.
 	[ -z "$pr_number" ] || branch="${target_branch}"
-	git fetch origin && git checkout "${branch}"
+	if [ "$kata_repo" != "$github_project" ]; then
+		current_branch=$(git rev-parse --abbrev-ref HEAD)
+		# check if we are on a branch created by the
+		# Depends-on feature.
+		if echo "${current_branch}" | egrep "p[0-9]+" > /dev/null; then
+			echo "already in the correct branch"
+		else
+			git fetch origin && git checkout "${branch}"
+		fi
+
+	fi
 
 	echo "Build ${github_project}"
 	if [ ! -f Makefile ]; then
@@ -122,8 +132,8 @@ function apply_depends_on() {
 	for i in $(seq 1 "${nb_lines}")
 	do
 		label_line=$(echo "${label_lines}" | sed "${i}q;d")
-		label_str=$(echo "${label_line}" | awk '{print $2}')
-		repo=$(echo "${label_str}" | cut -d'#' -f1)
+		label_str=$(echo "${label_line}" | cut -d ':' -f2)
+		repo=$(echo "${label_str}" | tr -d '[:space:]' | cut -d'#' -f1)
 		if [[ "${repos_found[@]}" =~ "${repo}" ]]; then
 			echo "Repository $repo was already defined in a 'Depends-on:' tag."
 			echo "Only one repository per tag is allowed."
@@ -139,7 +149,10 @@ function apply_depends_on() {
 
 		pushd "${GOPATH}/src/${repo}"
 		echo "Fetching pull request: ${pr_id} for repository: ${repo}"
-		git fetch origin "pull/${pr_id}/head" && git checkout FETCH_HEAD && git rebase origin/master
+		pr_branch="p${pr_id}"
+		git fetch origin "pull/${pr_id}/head:${pr_branch}" && \
+			git checkout "${pr_branch}" && \
+			git rebase "origin/${target_branch}"
 		popd
 	done
 
