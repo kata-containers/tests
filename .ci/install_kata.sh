@@ -30,3 +30,6 @@ echo "Install proxy"
 
 echo "Install runtime"
 "${cidir}/install_runtime.sh"
+
+echo "Install KSM throttler"
+"${cidir}/install_ksm_throttler.sh"
