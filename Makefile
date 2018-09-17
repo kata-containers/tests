@@ -8,7 +8,7 @@
 TIMEOUT := 60
 
 # union for 'make test'
-UNION := functional docker crio docker-compose openshift kubernetes swarm cri-containerd
+UNION := functional docker crio docker-compose openshift kubernetes swarm
 
 # skipped test suites for docker integration tests
 SKIP :=
