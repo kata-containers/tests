@@ -54,7 +54,14 @@ check_vm_template_factory() {
 	[ $res -eq 1 ] || die "template factory is not set up, missing state file"
 }
 
+cleanup_template_mountpoints() {
+	while $(mount|grep tmpfs | grep ${template_tmpfs_path}>/dev/null); do
+		sudo umount ${template_tmpfs_path}
+	done
+}
+
 setup() {
+	cleanup_template_mountpoints
 	clean_env
 	extract_kata_env
 }
@@ -93,6 +100,7 @@ test_docker_create_auto_init_vm_factory() {
 }
 
 teardown() {
+	cleanup_template_mountpoints
 	clean_env
 }
 
