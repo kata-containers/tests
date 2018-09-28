@@ -7,6 +7,9 @@
 
 set -e
 
+echo "This is a test - do not merge"
+echo "This is a change - do not merge"
+
 cidir=$(dirname "$0")
 source /etc/os-release || source /usr/lib/os-release
 source "${cidir}/lib.sh"
