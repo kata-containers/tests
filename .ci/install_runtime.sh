@@ -50,6 +50,9 @@ echo "Enabling all debug options in file ${runtime_config_path}"
 sudo sed -i -e 's/^#\(enable_debug\).*=.*$/\1 = true/g' "${runtime_config_path}"
 sudo sed -i -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug"/g' "${runtime_config_path}"
 
+echo "Use q35 machine type (instead of PC)"
+sudo sed -i -e 's/machine_type = "pc"/machine_type = "q35"/' "${runtime_config_path}"
+
 if [ x"${TEST_INITRD}" == x"yes" ]; then
 	echo "Set to test initrd image"
 	sudo sed -i -e '/^image =/d' ${runtime_config_path}
