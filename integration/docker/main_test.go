@@ -62,6 +62,20 @@ func TestIntegration(t *testing.T) {
 		}
 	}
 
+	// we need to check that processes like hypervisor, shim and proxy are not running
+	hypervisorPath := KataConfig.Hypervisor[DefaultHypervisor].Path
+	proxyPath := KataConfig.Proxy[DefaultProxy].Path
+	shimPath := KataConfig.Shim[DefaultShim].Path
+	generalProcesses := []string{hypervisorPath, proxyPath, shimPath}
+
+	for _, j := range generalProcesses {
+		cmd := NewCommand("pgrep", "-f", j)
+		_, _, exitCode := cmd.Run()
+		if exitCode == 0 {
+			t.Fatal("Process found", j)
+		}
+	}
+
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Integration Suite")
 }
