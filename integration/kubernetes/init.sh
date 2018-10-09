@@ -29,13 +29,6 @@ esac
 # Check no processes are left behind
 check_processes
 
-# The next workaround is to be able to communicate between pods
-# Issue: https://github.com/kubernetes/kubernetes/issues/40182
-# Fix is ready for K8s 1.9, but still need to investigate why it does not
-# work by default.
-# FIXME: Issue: https://github.com/clearcontainers/tests/issues/934
-sudo iptables -P FORWARD ACCEPT
-
 # Remove existing CNI configurations:
 sudo rm -rf /var/lib/cni/networks/*
 sudo rm -rf /etc/cni/net.d/*
