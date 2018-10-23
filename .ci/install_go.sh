@@ -109,3 +109,17 @@ info "Install go"
 mkdir -p "${install_dest}"
 sudo tar -C "${install_dest}" -xzf "${archive}"
 popd
+
+# Make sure we use the golang version we just installed
+goroot="${install_dest}/go"
+
+[ -d "${goroot}" ] || die "failed to find expected golang path ${goroot} (from ${archive})"
+
+export GOROOT="${goroot}"
+
+gorootbin="${GOROOT}/bin"
+[ -d "${gorootbin}" ] || die "failed to find expected golang binary path ${gorootbin} (from ${archive})"
+
+export PATH="${gorootbin}:$PATH"
+
+info "Using golang binary $(command -v go) version $(go version)"
