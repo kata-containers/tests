@@ -385,7 +385,7 @@ check_docs()
 	if [ ! "$(command -v $cmd)" ]
 	then
 		info "Installing $cmd utility"
-		go get -u "github.com/mvdan/xurls/cmd/${cmd}"
+		go get -u -v "mvdan.cc/xurls/cmd/${cmd}" 2>&1
 	fi
 
 	info "Checking documentation"
