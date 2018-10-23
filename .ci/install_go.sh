@@ -101,9 +101,11 @@ case "$(arch)" in
 		;;
 esac
 
+archive="go${go_version}.linux-${goarch}.tar.gz"
+
 info "Download go version ${go_version}"
-curl -OL "https://storage.googleapis.com/golang/go${go_version}.linux-${goarch}.tar.gz"
+curl -OL "https://storage.googleapis.com/golang/${archive}"
 info "Install go"
 mkdir -p "${install_dest}"
-sudo tar -C "${install_dest}" -xzf "go${go_version}.linux-${goarch}.tar.gz"
+sudo tar -C "${install_dest}" -xzf "${archive}"
 popd
