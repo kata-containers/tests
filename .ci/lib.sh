@@ -35,7 +35,15 @@ function build_version() {
 
 	if [ "$version" != "HEAD" ]; then
 		info "Using ${github_project} version ${version}"
-		git checkout -b "${version}" "${version}"
+		local exists=$(git branch --list "${version}" | wc -l)
+		if [ "$exists" != 0 ]; then
+			info "Deleting existing branch version ${version}"
+			# Cannot delete if we are checked out on it...
+			git reset --hard
+			git checkout master
+			git branch -D "${version}"
+		fi
+		git checkout -B "${version}" "${version}"
 	fi
 
 	info "Building ${github_project}"
@@ -47,7 +55,9 @@ function build_version() {
 	fi
 
 	if [ -f Makefile ]; then
-		make ${make_target}
+		# always make, as we don't always trust the Makefile to spot a change
+		# on checkout
+		make --always-make ${make_target}
 	else
 		# install locally (which is what "go get" does by default)
 		go install ./...
@@ -59,14 +69,15 @@ function build_version() {
 function build() {
 	github_project="$1"
 	make_target="$2"
-
 	build_version "${github_project}" "${make_target}" "HEAD"
 }
 
 function build_and_install() {
 	github_project="$1"
 	make_target="$2"
-	build "${github_project}" "${make_target}"
+	# Default to building the HEAD
+	version="${3:-HEAD}"
+	build_version "${github_project}" "${make_target}" "$version"
 	pushd "${GOPATH}/src/${github_project}"
 	info "Installing ${github_project}"
 	sudo -E PATH="$PATH" KATA_RUNTIME="${KATA_RUNTIME}" make install
