@@ -20,6 +20,7 @@ This directory contains scripts used by the [Kata Containers](https://github.com
 | `install_*` | Install various parts of the system and dependencies. |
 | `jenkins_job_build.sh` | Called by the [Jenkins CI](https://github.com/kata-containers/ci) to trigger a CI run. |
 | `kata-arch.sh` | Displays architecture name in various formats. |
+| `kata_chronic.sh` | Runs commands under `chronic`, whilst generating a heartbeat ticker. |
 | `kata-doc-to-script.sh` | Convert a [Github-Flavoured Markdown](https://github.github.com/gfm/) document to a shell script. |
 | `kata-find-stale-skips.sh` | Find skipped tests that can be unskipped. |
 | `kata-simplify-log.sh` | Simplify a logfile to make it easer to `diff(1)`. |
