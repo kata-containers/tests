@@ -8,11 +8,15 @@
 set -e
 
 cidir=$(dirname "$0")
-source "/etc/os-release"
+source "/etc/os-release" || "source /usr/lib/os-release"
 source "${cidir}/lib.sh"
 
 # Obtain CentOS version
-centos_version=$(grep VERSION_ID /etc/os-release | cut -d '"' -f2)
+if [ -f /etc/os-release ]; then
+  centos_version=$(grep VERSION_ID /etc/os-release | cut -d '"' -f2)
+else
+  centos_version=$(grep VERSION_ID /usr/lib/os-release | cut -d '"' -f2)
+fi
 
 # Check EPEL repository is enabled on CentOS
 if [ -z $(yum repolist | grep "Extra Packages") ]; then
@@ -77,3 +81,6 @@ chronic sudo -E yum install -y crudini
 
 echo "Install procenv"
 chronic sudo -E yum install -y procenv
+
+echo "Install haveged"
+chronic sudo -E yum install -y haveged

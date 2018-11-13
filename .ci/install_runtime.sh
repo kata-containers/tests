@@ -10,7 +10,7 @@ set -e
 cidir=$(dirname "$0")
 
 source "${cidir}/lib.sh"
-source /etc/os-release
+source /etc/os-release || source /usr/lib/os-release
 
 # Modify the runtimes build-time defaults
 
@@ -31,7 +31,7 @@ runtime_config_path="${SYSCONFDIR}/kata-containers/configuration.toml"
 PKGDEFAULTSDIR="${SHAREDIR}/defaults/kata-containers"
 NEW_RUNTIME_CONFIG="${PKGDEFAULTSDIR}/configuration.toml"
 # Note: This will also install the config file.
-clone_build_and_install "github.com/kata-containers/runtime"
+build_and_install "github.com/kata-containers/runtime"
 
 # Check system supports running Kata Containers
 kata-runtime kata-check

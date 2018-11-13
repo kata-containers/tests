@@ -8,7 +8,7 @@
 set -e
 
 cidir=$(dirname "$0")
-source /etc/os-release
+source /etc/os-release || source /usr/lib/os-release
 source "${cidir}/lib.sh"
 
 echo "Install chronic"
@@ -60,3 +60,6 @@ chronic sudo -E dnf -y install crudini
 
 echo "Install procenv"
 chronic sudo -E dnf -y install procenv
+
+echo "Install haveged"
+chronic sudo -E dnf -y install haveged

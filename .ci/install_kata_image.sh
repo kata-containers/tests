@@ -11,7 +11,7 @@ set -o pipefail
 
 cidir=$(dirname "$0")
 
-source /etc/os-release
+source /etc/os-release || source /usr/lib/os-release
 source "${cidir}/lib.sh"
 
 ARCH="$(${cidir}/kata-arch.sh -d)"
@@ -132,8 +132,8 @@ build_image() {
 }
 
 #Load specific configure file
-if [ -f "lib_kata_image_${ARCH}.sh" ]; then
-	source "lib_kata_image_${ARCH}.sh"
+if [ -f "${cidir}/${ARCH}/lib_kata_image_${ARCH}.sh" ]; then
+	source "${cidir}/${ARCH}/lib_kata_image_${ARCH}.sh"
 fi
 
 main() {

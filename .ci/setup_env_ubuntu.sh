@@ -8,7 +8,7 @@
 set -e
 
 cidir=$(dirname "$0")
-source "/etc/os-release"
+source "/etc/os-release" || source "/usr/lib/os-release"
 source "${cidir}/lib.sh"
 
 echo "Update apt repositories"
@@ -72,3 +72,6 @@ chronic sudo -E apt install -y crudini
 
 echo "Install procenv"
 chronic sudo -E apt install -y procenv
+
+echo "Install haveged"
+chronic sudo -E apt install -y haveged

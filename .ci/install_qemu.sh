@@ -9,7 +9,7 @@ set -e
 
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
-source /etc/os-release
+source /etc/os-release || source /usr/lib/os-release
 
 CURRENT_QEMU_COMMIT=$(get_version "assets.hypervisor.qemu-lite.commit")
 PACKAGED_QEMU="qemu-lite"
@@ -83,8 +83,8 @@ build_and_install_qemu() {
 }
 
 #Load specific configure file
-if [ -f "lib_install_qemu_${QEMU_ARCH}.sh" ]; then
-	source "lib_install_qemu_${QEMU_ARCH}.sh"
+if [ -f "${cidir}/${QEMU_ARCH}/lib_install_qemu_${QEMU_ARCH}.sh" ]; then
+	source "${cidir}/${QEMU_ARCH}/lib_install_qemu_${QEMU_ARCH}.sh"
 fi
 
 main() {
