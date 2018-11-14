@@ -54,7 +54,7 @@ echo "Install YAML validator"
 chronic sudo -E apt install -y yamllint
 
 echo "Install tools for metrics tests"
-chronic sudo -E apt install -y smem jq
+chronic sudo -E apt install -y smem jq linux-tools-common linux-tools-`uname -r`
 
 if [ "$(arch)" == "x86_64" ]; then
 	echo "Install Kata Containers OBS repository"
