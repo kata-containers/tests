@@ -84,7 +84,8 @@ update_agent() {
 	"${IMG_MOUNT_DIR}/usr/bin/kata-agent" --version
 
 	echo "Install new agent"
-	sudo -E PATH="$PATH" bash -c "make install DESTDIR=$IMG_MOUNT_DIR"
+	sudo -E PATH="$PATH" bash -c "make install INIT=yes DESTDIR=$IMG_MOUNT_DIR"
+	sudo -E PATH="$PATH" bash -c "ln -sf kata-agent $IMG_MOUNT_DIR/sbin/init"
 	installed_version=$("${IMG_MOUNT_DIR}/usr/bin/kata-agent" --version)
 	echo "New agent version: $installed_version"
 
