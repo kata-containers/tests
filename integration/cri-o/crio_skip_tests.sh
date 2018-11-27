@@ -10,4 +10,5 @@
 declare -a skipCRIOTests=(
 'test "ctr oom"'
 'test "ulimits"'
+'test "ctr list filtering"'
 );
