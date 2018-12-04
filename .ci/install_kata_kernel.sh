@@ -40,7 +40,11 @@ download_repo() {
 }
 
 get_current_kernel_version() {
-	kernel_version=$(get_version "assets.kernel.version")
+	if [ "$DEV" == false ]; then
+		kernel_version=$(get_version "assets.kernel.version")
+	else
+		kernel_version=$(get_version "assets.kernel.dev.version")
+	fi
 	echo "${kernel_version/v/}"
 }
 
@@ -67,9 +71,15 @@ get_packaged_kernel_version() {
 build_and_install_kernel() {
 	info "Install kernel from sources"
 	pushd "${tmp_dir}" >> /dev/null
-	"${kernel_repo_dir}/kernel/build-kernel.sh" "setup"
-	"${kernel_repo_dir}/kernel/build-kernel.sh" "build"
-	sudo -E PATH="$PATH" "${kernel_repo_dir}/kernel/build-kernel.sh" "install"
+	if [ "$DEV" == false ]; then
+		"${kernel_repo_dir}/kernel/build-kernel.sh" "setup"
+		"${kernel_repo_dir}/kernel/build-kernel.sh" "build"
+		sudo -E PATH="$PATH" "${kernel_repo_dir}/kernel/build-kernel.sh" "install"
+	else
+		"${kernel_repo_dir}/kernel/build-kernel.sh" -d "setup"
+		"${kernel_repo_dir}/kernel/build-kernel.sh" -d "build"
+		sudo -E PATH="$PATH" "${kernel_repo_dir}/kernel/build-kernel.sh" -d "install"
+	fi
 	popd >> /dev/null
 }
 
