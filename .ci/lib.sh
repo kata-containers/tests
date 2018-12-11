@@ -30,6 +30,57 @@ info() {
 	echo -e "INFO: $*"
 }
 
+# If CI is defined, execute the command arguments under chronic
+# with a 'ticker heartbeat echo' so the CI system does not timeout
+# due to inactivity.
+# Otherwise, run the commands directly.
+ci_chronic() {
+	CI=${CI:-false}
+	if [ "$CI" == true ]; then
+		# If we ever get the kata_chronic.sh script landed in the
+		# .ci dir, then call that here instead of open coding it.
+		local cmdLine=$@
+
+		eval chronic "${cmdLine[@]}" &
+		local cmdPid="$!"
+
+		(
+			# Catch death and exit cleanly
+			finish() {
+				exit 0
+			}
+
+			local sleepval=10
+			local echoval=60
+			local count=0
+			trap finish QUIT
+
+			while true; do
+				printf ".";sleep ${sleepval};
+				((count+=${sleepval}))
+				printf $count
+				((count%${echoval} == 0)) && printf ":\n" && count=0
+			done
+		)&
+
+		local printerPid="$!"
+
+		wait "$cmdPid"
+		local ret=$?
+		printf "\n"
+		kill -QUIT "$printerPid"
+		# Wait for it to die, which silences the 'Terminated' text
+		# we'd otherwise get printed, which messes up the logs.
+		wait "$printerPid"
+
+
+		# And return the exit code from the sub-command
+		return "$ret"
+	else
+		eval $@
+	fi
+}
+
 function build_version() {
 	github_project="$1"
 	make_target="$2"

@@ -14,19 +14,19 @@ source /etc/os-release || source /usr/lib/os-release
 source "${cidir}/lib.sh"
 
 echo "Install kata-containers image"
-"${cidir}/install_kata_image.sh"
+ci_chronic "${cidir}/install_kata_image.sh"
 
 echo "Install Kata Containers Kernel"
-"${cidir}/install_kata_kernel.sh"
+ci_chronic "${cidir}/install_kata_kernel.sh"
 
 echo "Install Qemu"
-"${cidir}/install_qemu.sh"
+ci_chronic "${cidir}/install_qemu.sh"
 
 echo "Install shim"
-"${cidir}/install_shim.sh"
+ci_chronic "${cidir}/install_shim.sh"
 
 echo "Install proxy"
-"${cidir}/install_proxy.sh"
+ci_chronic "${cidir}/install_proxy.sh"
 
 echo "Install runtime"
-"${cidir}/install_runtime.sh"
+ci_chronic "${cidir}/install_runtime.sh"
