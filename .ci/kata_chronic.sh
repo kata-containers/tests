@@ -10,6 +10,7 @@
 
 cmdLine=$@
 
+echo "TESTING [${cmdLine[@]}"
 eval chronic "${cmdLine[@]}" &
 cmdPid="$!"
 
