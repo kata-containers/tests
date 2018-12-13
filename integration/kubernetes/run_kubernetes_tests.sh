@@ -46,5 +46,6 @@ bats k8s-attach-handlers.bats
 bats k8s-qos-pods.bats
 bats k8s-pod-quota.bats
 bats k8s-volume.bats
+bats k8s-projected-volume.bats
 ./cleanup_env.sh
 popd
