@@ -138,7 +138,7 @@ function install_yq() {
 	GOPATH=${GOPATH:-${HOME}/go}
 	local yq_path="${GOPATH}/bin/yq"
 	local yq_pkg="github.com/mikefarah/yq"
-	[ -x "${GOPATH}/bin/yq" ] && return
+	[ -x "${yq_path}" ] && return
 
 	read -r -a sysInfo <<< "$(uname -sm)"
 
