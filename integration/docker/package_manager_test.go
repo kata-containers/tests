@@ -44,7 +44,6 @@ var _ = Describe("package manager update test", func() {
 
 	Context("check dnf update", func() {
 		It("should not fail", func() {
-			Skip("Issue: https://github.com/clearcontainers/runtime/issues/868")
 			args = append(args, "-td", "--name", id, FedoraImage, "sh")
 			_, _, exitCode := dockerRun(args...)
 			Expect(exitCode).To(BeZero())
