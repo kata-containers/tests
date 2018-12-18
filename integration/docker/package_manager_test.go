@@ -12,6 +12,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+const packageManagerTimeout = 600
+
 var _ = Describe("package manager update test", func() {
 	var (
 		id         string
@@ -34,11 +36,19 @@ var _ = Describe("package manager update test", func() {
 		Expect(ExistDockerContainer(id)).NotTo(BeTrue())
 	})
 
-	Context("check apt-get update", func() {
+	Context("check apt-get update and upgrade", func() {
 		It("should not fail", func() {
-			args = append(args, "--rm", "--name", id, DebianImage, "apt-get", "-y", "update")
+			args = append(args, "-td", "--name", id, DebianImage, "sh")
 			_, _, exitCode := dockerRun(args...)
 			Expect(exitCode).To(BeZero())
+
+			_, _, exitCode = runDockerCommandWithTimeout(packageManagerTimeout, "exec", id, "apt-get", "-y", "update")
+			Expect(exitCode).To(BeZero())
+
+			_, _, exitCode = runDockerCommandWithTimeout(packageManagerTimeout, "exec", id, "apt-get", "-y", "upgrade")
+			Expect(exitCode).To(BeZero())
+
+			Expect(RemoveDockerContainer(id)).To(BeTrue())
 		})
 	})
 
