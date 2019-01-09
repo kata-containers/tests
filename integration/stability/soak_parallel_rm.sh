@@ -14,6 +14,7 @@
 
 cidir=$(dirname "$0")
 source "${cidir}/../../metrics/lib/common.bash"
+source "/etc/os-release" || source "/usr/lib/os-release"
 
 # How many times will we run the test loop...
 ITERATIONS="${ITERATIONS:-5}"
@@ -37,6 +38,15 @@ VC_POD_DIR="${VC_POD_DIR:-/var/lib/vc/sbs}"
 # let's cap the test. If you want to run until you hit the memory limit
 # then just set this to a very large number
 MAX_CONTAINERS="${MAX_CONTAINERS:-110}"
+
+install_kata_ksm_throttler() {
+	if [ "$ID" == debian ]; then
+		echo "Install kata-ksm-throttler"
+		sudo -E apt install -y kata-ksm-throttler
+		echo "Start kata-ksm-throttler"
+		systemctl start kata-ksm-throttler
+	fi
+}
 
 check_vsock_active() {
 	vsock_configured=$($RUNTIME_PATH kata-env | awk '/UseVSock/ {print $3}')
@@ -198,6 +208,9 @@ check_mounts() {
 
 init() {
 	kill_all_containers
+
+	# Install kata-ksm-throttler (Debian)
+	install_kata_ksm_throttler
 
 	# Enable netmon
 	enable_netmon
