@@ -8,5 +8,6 @@
 # Currently these are the CRI-O tests that are not working
 
 declare -a skipCRIOTests=(
+'test "ctr execsync std{out,err}"'
 'test "ctr oom"'
 );
