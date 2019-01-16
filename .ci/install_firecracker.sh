@@ -20,7 +20,9 @@ if [ "$KATA_DEV_MODE" = true ]; then
 	die "KATA_DEV_MODE set so not running the test"
 fi
 
-docker_version=$(docker version --format '{{.Server.Version}}' | cut -d '.' -f1-2)
+docker_version=$(sudo -E docker version --format '{{.Server.Version}}' | cut -d '.' -f1-2)
+
+echo $docker_version
 
 if [ "$docker_version" != "18.06" ]; then
 	die "Firecracker hypervisor only works with docker 18.06"
