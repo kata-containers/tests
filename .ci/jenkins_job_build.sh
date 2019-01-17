@@ -9,6 +9,8 @@ set -e
 
 source "/etc/os-release" || source "/usr/lib/os-release"
 
+KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
+
 # Signify to all scripts that they are running in a CI environment
 [ -z "${KATA_DEV_MODE}" ] && export CI=true
 
@@ -114,11 +116,13 @@ fi
 
 # Now we have all the components installed, log that info before we
 # run the tests.
-if command -v kata-runtime; then
-	echo "Logging kata-env information:"
-	kata-runtime kata-env
-else
-	echo "WARN: Kata runtime is not installed"
+if [ "$KATA_HYPERVISOR" == "qemu" ]; then
+	if command -v kata-runtime; then
+		echo "Logging kata-env information:"
+		kata-runtime kata-env
+	else
+		echo "WARN: Kata runtime is not installed"
+	fi
 fi
 
 if [ -z "${METRICS_CI}" ]
