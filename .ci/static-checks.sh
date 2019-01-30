@@ -360,6 +360,7 @@ check_license_headers()
 		--exclude="*.png" \
 		--exclude="*.pub" \
 		--exclude="*.service" \
+		--exclude="*.service.in" \
 		--exclude="*.svg" \
 		--exclude="*.toml" \
 		--exclude="*.txt" \
