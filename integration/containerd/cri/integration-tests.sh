@@ -182,6 +182,10 @@ main() {
 
 	for t in "${passing_test[@]}"
 	do
+		if [ -f /run/containerd/containerd.sock ]; then
+			killall containerd
+			rm -rf /run/containerd/containerd.sock
+		fi
 		sudo -E PATH="${PATH}:/usr/local/bin" \
 			REPORT_DIR="${REPORT_DIR}" \
 			FOCUS="${t}" \

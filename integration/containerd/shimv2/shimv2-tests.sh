@@ -19,9 +19,9 @@ echo "========================================"
 echo "         start shimv2 testing"
 echo "========================================"
 
-if [ "$ID" != "centos" ]; then
-	${SCRIPT_PATH}/../cri/integration-tests.sh
-else
-	issue="https://github.com/kata-containers/tests/issues/1047"
-	echo "Skip shimv2 on $ID, see: $issue"
-fi
+#if [ "$ID" != "centos" ]; then
+${SCRIPT_PATH}/../cri/integration-tests.sh
+#else
+#	issue="https://github.com/kata-containers/tests/issues/1047"
+#	echo "Skip shimv2 on $ID, see: $issue"
+#fi
