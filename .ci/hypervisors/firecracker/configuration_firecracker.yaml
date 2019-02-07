@@ -17,9 +17,11 @@ docker:
     - build with docker
     - inspect
     - docker top
+    - docker kill
     - users and groups
     - terminal with docker
     - docker commit
+    - CPU constraints
     - ulimits
     - docker cp with volume attached
     - load with docker
