@@ -251,6 +251,10 @@ setup() {
 	docker run --rm --runtime=$RUNTIME -i $kibana_image kibana --version
 }
 
+@test "[display version] display information kibana container" {
+	docker run --rm --runtime=$RUNTIME -i $kibana_image kibana --version
+}
+
 @test "[display configuration] check kong configuration file is valid" {
 	image="kong"
 	docker run --rm --runtime=$RUNTIME -i $image sh -c "kong check /etc/kong/kong.conf.default | grep valid"
