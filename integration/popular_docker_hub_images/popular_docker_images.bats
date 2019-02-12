@@ -202,10 +202,6 @@ setup() {
 	docker run --rm --runtime=$RUNTIME -i kapacitor bash -c "kapacitord config > kapacitor.conf | ls -l kapacitor.conf"
 }
 
-@test "[display version] display information kibana container" {
-	docker run --rm --runtime=$RUNTIME -i $kibana_image kibana --version
-}
-
 @test "[display configuration] check kong configuration file is valid" {
 	docker run --rm --runtime=$RUNTIME -i kong sh -c "kong check /etc/kong/kong.conf.default | grep valid"
 }
