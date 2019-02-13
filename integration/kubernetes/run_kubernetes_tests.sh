@@ -40,5 +40,6 @@ bats k8s-pod-quota.bats
 bats k8s-volume.bats
 bats k8s-projected-volume.bats
 bats k8s-memory.bats
+bats k8s-liveness-http-probes.bats
 ./cleanup_env.sh
 popd
