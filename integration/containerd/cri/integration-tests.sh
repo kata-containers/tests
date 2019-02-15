@@ -4,7 +4,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -182,6 +181,14 @@ main() {
 
 	for t in "${passing_test[@]}"
 	do
+		#wait until the containerd daemon process terminated completely,
+		#otherwise, the following testcase will failed to start another
+		#containerd daemon process.
+		while [ -f  /run/containerd/containerd.sock ]; do
+			sudo pkill -x containerd 
+			sleep 1
+		done
+
 		sudo -E PATH="${PATH}:/usr/local/bin" \
 			REPORT_DIR="${REPORT_DIR}" \
 			FOCUS="${t}" \
