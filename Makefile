@@ -8,7 +8,7 @@
 TIMEOUT := 60
 
 # union for 'make test'
-UNION := functional docker crio docker-compose network netmon docker-stability oci openshift kubernetes swarm vm-factory entropy ramdisk shimv2
+UNION := oci
 
 # skipped test suites for docker integration tests
 FILTER_FILE = .ci/hypervisors/$(KATA_HYPERVISOR)/filter_docker_$(KATA_HYPERVISOR).sh

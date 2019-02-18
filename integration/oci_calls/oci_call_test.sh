@@ -76,13 +76,12 @@ function setup() {
 function run_oci_call() {
 	local -a oci_call=( "create" "start" "state" )
 
-	# This sleep is necessary to gather the correct logs
-	sleep 10
-
 	get_time
 
 	# Start a container
 	docker run -d --runtime=${RUNTIME} --name=${NAME} ${IMAGE} ${PAYLOAD}
+
+	sleep 10
 
 	get_debug_logs
 
@@ -94,13 +93,12 @@ function run_oci_call() {
 function stop_oci_call() {
 	local -a oci_call=( "kill" "delete" "state" )
 
-	# This sleep is necessary to gather the correct logs
-	sleep 10
-
 	get_time
 
 	# Stop a container
 	docker stop ${NAME}
+
+	sleep 10
 
 	get_debug_logs
 
@@ -121,13 +119,12 @@ function run_oci_call_true() {
 		local -a oci_call=( "create" "start" "kill" "delete" "state" )
 	fi
 
-	# This sleep is necessary to gather the correct logs
-	sleep 10
-
 	get_time
 
 	# Run a container with true
 	docker run --rm --runtime=${RUNTIME} ${IMAGE} true
+
+	sleep 10
 
 	get_debug_logs
 
