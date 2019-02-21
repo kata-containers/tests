@@ -29,8 +29,6 @@ IMAGE_TYPE="assets.image.meta.image-type"
 
 agent_path="${GOPATH}/src/github.com/kata-containers/agent"
 
-IMG_MOUNT_DIR=
-LOOP_DEVICE=
 
 # Build Kata agent
 bash -f "${cidir}/install_agent.sh"
@@ -39,15 +37,6 @@ agent_commit=$(git --work-tree="${agent_path}" --git-dir="${agent_path}/.git" lo
 cleanup() {
 	[ -d "${ROOTFS_DIR}" ] && [[ "${ROOTFS_DIR}" = *"rootfs"* ]] && sudo rm -rf "${ROOTFS_DIR}"
 	[ -d "${TMP_DIR}" ] && rm -rf "${TMP_DIR}"
-	if [ -n "${IMG_MOUNT_DIR}" ] && mount | grep -q "${IMG_MOUNT_DIR}"; then
-		sudo umount "${IMG_MOUNT_DIR}"
-	fi
-	if [ -d "${IMG_MOUNT_DIR}" ]; then
-		rm -rf "${IMG_MOUNT_DIR}"
-	fi
-	if [ -n "${LOOP_DEVICE}" ]; then
-		sudo losetup -d "${LOOP_DEVICE}"
-	fi
 }
 
 trap cleanup EXIT
@@ -144,26 +133,7 @@ if [ -f "${cidir}/${ARCH}/lib_kata_image_${ARCH}.sh" ]; then
 fi
 
 main() {
-	if [ x"${TEST_INITRD}" == x"yes" ]; then
-		build_image
-	else
-		# If installing packaged image from OBS fails,
-		# then build and install it from sources.
-		rc=0
-		install_packaged_image || rc=1
-		if [ "$rc" == "1" ]; then
-			build_image && exit 
-		fi
-		packaged_version=$(get_packaged_agent_version)
-		if [ -z "$packaged_version" ]; then
-			build_image
-		else
-			current_version=${agent_commit}
-			if [ "$packaged_version" != "$current_version" ]; then
-					update_agent || build_image
-			fi
-		fi
-	fi
+	build_image
 }
 
 main
