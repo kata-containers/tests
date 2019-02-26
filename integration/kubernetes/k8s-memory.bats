@@ -8,9 +8,10 @@
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 TEST_INITRD="${TEST_INITRD:-no}"
 issue="https://github.com/kata-containers/runtime/issues/1127"
+memory_issue="https://github.com/kata-containers/runtime/issues/1249"
 
 setup() {
-	[ "${TEST_INITRD}" == "yes" ] && skip "test not working see: ${issue}"
+	skip "test not working see: ${issue}, ${memory_issue}"
 
 	export KUBECONFIG=/etc/kubernetes/admin.conf
 	pod_name="memory-test"
@@ -23,7 +24,7 @@ setup() {
 }
 
 @test "Exceeding memory constraints" {
-	[ "${TEST_INITRD}" == "yes" ] && skip "test not working see: ${issue}"
+	skip "test not working see: ${issue}, ${memory_issue}"
 
 	memory_limit_size="50Mi"
 	allocated_size="250M"
@@ -41,7 +42,7 @@ setup() {
 }
 
 @test "Running within memory constraints" {
-	[ "${TEST_INITRD}" == "yes" ] && skip "test not working see: ${issue}"
+	skip "test not working see: ${issue}, ${memory_issue}"
 
 	memory_limit_size="200Mi"
 	allocated_size="100M"
