@@ -12,7 +12,6 @@ set -o pipefail
 cidir=$(dirname "$0")
 source /etc/os-release || source /usr/lib/os-release
 source "${cidir}/lib.sh"
-
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 
 echo "Install kata-containers image"
@@ -21,7 +20,7 @@ echo "Install kata-containers image"
 echo "Install Kata Containers Kernel"
 "${cidir}/install_kata_kernel.sh"
 
-if [ "$KATA_HYPERVISOR" == firecracker ]; then
+if [ "$KATA_HYPERVISOR" == "firecracker" ]; then
 	echo "Install Firecracker"
 	"${cidir}/install_firecracker.sh"
 else
