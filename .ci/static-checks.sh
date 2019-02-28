@@ -360,6 +360,7 @@ check_license_headers()
 		--exclude="*.png" \
 		--exclude="*.pub" \
 		--exclude="*.service" \
+		--exclude="*.svg" \
 		--exclude="*.toml" \
 		--exclude="*.txt" \
 		--exclude="*.yaml" \
@@ -472,7 +473,7 @@ check_docs()
 		if [ "$specific_branch" != "true" ]
 		then
 			# If the URL is new on this PR, it cannot be checked.
-			echo "$new_urls" | grep -q "\<${url}\>" && \
+			echo "$new_urls" | egrep -q "\<${url}\>" && \
 				info "ignoring new (but correct) URL: $url" && continue
 		fi
 
@@ -540,7 +541,7 @@ check_files()
 
 	info "Checking files"
 
-	if [ "$specifc_branch" = "true" ]
+	if [ "$specific_branch" = "true" ]
 	then
 		info "Checking all files in $branch branch"
 

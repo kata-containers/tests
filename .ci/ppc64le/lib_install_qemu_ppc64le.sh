@@ -1,15 +1,14 @@
 #!/bin/bash
 #
-# Copyright (c) 2018 ARM Limited
+# Copyright (c) 2019 IBM Limited
 #
 # SPDX-License-Identifier: Apache-2.0
 
 set -e
 
 CURRENT_QEMU_VERSION=$(get_version "assets.hypervisor.qemu.version")
-PACKAGED_QEMU="qemu"
-CURRENT_QEMU_PATCHES_BRANCH=$(get_version "assets.hypervisor.qemu.architecture.aarch64.branch")
-CURRENT_QEMU_COMMIT=$(get_version "assets.hypervisor.qemu.architecture.aarch64.commit")
+PACKAGED_QEMU="qemu-system-ppc"
+BUILT_QEMU="qemu-system-ppc64"
 
 get_packaged_qemu_version() {
         if [ "$ID" == "ubuntu" ]; then
@@ -22,7 +21,8 @@ get_packaged_qemu_version() {
                         | awk '/'$PACKAGED_QEMU'/ {print $2}' | cut -d':' -f2 | cut -d'-' -f1 | head -n 1)
 		qemu_version=${qemu_version%.*}
 	elif [ "$ID" == "centos" ]; then
-		qemu_version=""
+                qemu_version=$(sudo dnf --showduplicate list ${PACKAGED_QEMU}.${QEMU_ARCH} \
+                        | awk '/'$PACKAGED_QEMU'/ {print $2}' | cut -d':' -f2 | cut -d'-' -f1 | head -n 1)
         fi
 
         if [ -z "$qemu_version" ]; then
@@ -38,7 +38,7 @@ install_packaged_qemu() {
         elif [ "$ID"  == "fedora" ]; then
                 sudo dnf install -y "$PACKAGED_QEMU"
 	elif [ "$ID" == "centos" ]; then
-		info "packaged qemu unsupported on centos"
+		sudo yum install -y "$PACKAGED_QEMU"
         else
                 die "Unrecognized distro"
         fi
@@ -56,20 +56,7 @@ build_and_install_qemu() {
 
         pushd "${GOPATH}/src/${QEMU_REPO}"
         git fetch
-        # if extra patches exist
-        if [ -n "${CURRENT_QEMU_COMMIT}" ]; then
-            git checkout "$CURRENT_QEMU_PATCHES_BRANCH"
-            git checkout "$CURRENT_QEMU_COMMIT"
-            # Apply required patches
-            QEMU_PATCHES_PATH="${GOPATH}/src/${PACKAGING_REPO}/obs-packaging/qemu-aarch64/patches"
-            for patch in ${QEMU_PATCHES_PATH}/*.patch; do
-                echo "Applying patch: $patch"
-                patch -p1 <"$patch"
-            done
-        else
-            git checkout "$CURRENT_QEMU_VERSION"
-        fi
-
+        git checkout "$CURRENT_QEMU_VERSION"
         [ -d "capstone" ] || git clone https://github.com/qemu/capstone.git capstone
         [ -d "ui/keycodemapdb" ] || git clone  https://github.com/qemu/keycodemapdb.git ui/keycodemapdb
 
@@ -80,11 +67,6 @@ build_and_install_qemu() {
         echo "Install Qemu"
         sudo -E make install
 
-        local qemu_bin=$(command -v qemu-system-${QEMU_ARCH})
-        if [ $(dirname ${qemu_bin}) == "/usr/local/bin" ]; then
-            # Add link from /usr/local/bin to /usr/bin
-            sudo ln -sf $(command -v qemu-system-${QEMU_ARCH}) "/usr/bin/qemu-system-${QEMU_ARCH}"
-        fi
+        sudo ln -sf $(command -v ${BUILT_QEMU}) "/usr/bin/qemu-system-${QEMU_ARCH}"
         popd
 }
-

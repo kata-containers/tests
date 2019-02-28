@@ -8,7 +8,7 @@
 TIMEOUT := 60
 
 # union for 'make test'
-UNION := functional docker crio docker-compose network netmon docker-stability openshift kubernetes swarm vm-factory entropy ramdisk
+UNION := functional docker crio docker-compose network netmon docker-stability oci openshift kubernetes swarm vm-factory entropy ramdisk
 
 # skipped test suites for docker integration tests
 SKIP :=
@@ -63,7 +63,7 @@ docker-compose:
 docker-stability:
 	systemctl is-active --quiet docker || sudo systemctl start docker
 	cd integration/stability && \
-	export ITERATIONS=2 && export MAX_CONTAINERS=20 && chronic ./soak_parallel_rm.sh
+	export ITERATIONS=2 && export MAX_CONTAINERS=20 && ./soak_parallel_rm.sh
 
 kubernetes:
 	bash -f .ci/install_bats.sh
@@ -80,6 +80,11 @@ cri-containerd:
 
 log-parser:
 	make -C cmd/log-parser
+
+oci:
+	systemctl is-active --quiet docker || sudo systemctl start docker
+	cd integration/oci_calls && \
+	bash -f oci_call_test.sh
 
 openshift:
 	bash -f .ci/install_bats.sh
@@ -128,6 +133,7 @@ check: checkcommits log-parser
 	ginkgo \
 	kubernetes \
 	log-parser \
+	oci \
 	openshift \
 	pentest \
 	swarm \
