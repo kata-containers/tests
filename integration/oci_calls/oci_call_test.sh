@@ -12,6 +12,7 @@ set -e
 
 dir_path=$(dirname "$0")
 source "${dir_path}/../../lib/common.bash"
+source "${dir_path}/../../.ci/lib.sh"
 source /etc/os-release || source /usr/lib/os-release
 
 # Save logs
@@ -35,6 +36,14 @@ function get_time() {
 # Get log for a specific time
 function get_debug_logs() {
 	sudo journalctl -q --since "$start_time" -o cat -a -t ${RUNTIME} > ${TMP_FILE}
+}
+
+# Check container status
+function check_docker_status() {
+	wait_time=10
+	sleep_time=2
+	cmd="$1"
+	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 }
 
 # Find the arguments or oci calls for a specific command
@@ -74,15 +83,14 @@ function setup() {
 }
 
 function run_oci_call() {
-	local -a oci_call=( "create" "start" "state" )
-
-	# This sleep is necessary to gather the correct logs
-	sleep 10
-
 	get_time
+	local -a oci_call=( "create" "start" "state" )
 
 	# Start a container
 	docker run -d --runtime=${RUNTIME} --name=${NAME} ${IMAGE} ${PAYLOAD}
+
+	cmd="docker ps --filter name=${NAME} --filter status=running"
+	check_docker_status "$cmd"
 
 	get_debug_logs
 
@@ -92,15 +100,14 @@ function run_oci_call() {
 }
 
 function stop_oci_call() {
-	local -a oci_call=( "kill" "delete" "state" )
-
-	# This sleep is necessary to gather the correct logs
-	sleep 10
-
 	get_time
+	local -a oci_call=( "start" "kill" "delete" "state" )
 
 	# Stop a container
 	docker stop ${NAME}
+
+	cmd="docker ps --filter name=${NAME} --filter status=exited"
+	check_docker_status "$cmd"
 
 	get_debug_logs
 
@@ -112,6 +119,7 @@ function stop_oci_call() {
 }
 
 function run_oci_call_true() {
+	get_time
 	# Find docker version
 	version=$(docker version --format '{{.Server.Version}}' | cut -d '.' -f1-2)
 	result=$(echo "$version>=18.06" | bc)
@@ -121,13 +129,11 @@ function run_oci_call_true() {
 		local -a oci_call=( "create" "start" "kill" "delete" "state" )
 	fi
 
-	# This sleep is necessary to gather the correct logs
-	sleep 10
-
-	get_time
-
 	# Run a container with true
 	docker run --rm --runtime=${RUNTIME} ${IMAGE} true
+
+	cmd="docker ps -a --filter status=running"
+	check_docker_status "$cmd"
 
 	get_debug_logs
 
