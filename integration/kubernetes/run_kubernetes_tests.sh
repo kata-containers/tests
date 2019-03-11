@@ -10,6 +10,9 @@ set -e
 source /etc/os-release || source /usr/lib/os-release
 kubernetes_dir=$(dirname $0)
 
+# If NODES is not already defined, default it to 1.
+NODES="${NODES:-1}"
+
 # Currently, Kubernetes tests only work on Ubuntu.
 # We should delete this condition, when it works for other Distros.
 if [ "$ID" != ubuntu  ]; then
@@ -24,26 +27,8 @@ systemctl is-active --quiet docker || sudo systemctl start docker
 
 pushd "$kubernetes_dir"
 ./init.sh
-bats nginx.bats
-bats k8s-uts+ipc-ns.bats
-bats k8s-env.bats
-bats k8s-empty-dirs.bats
-bats k8s-limit-range.bats
-bats k8s-credentials-secrets.bats
-bats k8s-configmap.bats
-bats k8s-custom-dns.bats
-bats k8s-pid-ns.bats
-bats k8s-cpu-ns.bats
-bats k8s-parallel.bats
-bats k8s-security-context.bats
-bats k8s-liveness-probes.bats
-bats k8s-attach-handlers.bats
-bats k8s-qos-pods.bats
-bats k8s-pod-quota.bats
-bats k8s-sysctls.bats
-bats k8s-volume.bats
-bats k8s-projected-volume.bats
-bats k8s-memory.bats
-bats k8s-block-volume.bats
+
+bats -j "$NODES" *.bats
+
 ./cleanup_env.sh
 popd

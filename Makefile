@@ -89,7 +89,7 @@ docker-stability:
 
 kubernetes:
 	bash -f .ci/install_bats.sh
-	bash -f integration/kubernetes/run_kubernetes_tests.sh
+	NODES=${GINKGO_NODES} bash integration/kubernetes/run_kubernetes_tests.sh
 
 swarm:
 	systemctl is-active --quiet docker || sudo systemctl start docker
