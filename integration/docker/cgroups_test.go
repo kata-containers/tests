@@ -20,7 +20,7 @@ type cgroupType string
 
 const (
 	cgroupCPU    cgroupType = "cpu"
-	cgroupCpuset            = "cpuset"
+	cgroupCpuset cgroupType = "cpuset"
 )
 
 const (
