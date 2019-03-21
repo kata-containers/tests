@@ -11,9 +11,9 @@ cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 source /etc/os-release || source /usr/lib/os-release
 
-CURRENT_QEMU_BRANCH=$(get_version "assets.hypervisor.qemu-lite.branch")
-CURRENT_QEMU_COMMIT=$(get_version "assets.hypervisor.qemu-lite.commit")
-PACKAGED_QEMU="qemu-lite"
+CURRENT_QEMU_BRANCH=$(get_version "assets.hypervisor.qemu.version")
+CURRENT_QEMU_COMMIT=$(get_version "assets.hypervisor.qemu.commit")
+PACKAGED_QEMU="qemu-vanilla"
 QEMU_ARCH=$(${cidir}/kata-arch.sh -d)
 
 get_packaged_qemu_commit() {
@@ -58,7 +58,7 @@ install_packaged_qemu() {
 }
 
 build_and_install_qemu() {
-	QEMU_REPO_URL=$(get_version "assets.hypervisor.qemu-lite.url")
+	QEMU_REPO_URL=$(get_version "assets.hypervisor.qemu.url")
 	# Remove 'https://' from the repo url to be able to clone the repo using 'go get'
 	QEMU_REPO=${QEMU_REPO_URL/https:\/\//}
 	PACKAGING_REPO="github.com/kata-containers/packaging"
@@ -74,13 +74,6 @@ build_and_install_qemu() {
 	[ -n "$(ls -A capstone)" ] || git clone https://github.com/qemu/capstone.git capstone
 	[ -n "$(ls -A ui/keycodemapdb)" ] || git clone  https://github.com/qemu/keycodemapdb.git ui/keycodemapdb
 
-	# Apply required patches
-	QEMU_PATCHES_PATH="${GOPATH}/src/${PACKAGING_REPO}/obs-packaging/qemu-lite/patches"
-	for patch in ${QEMU_PATCHES_PATH}/*.patch; do
-		echo "Applying patch: $patch"
-		git apply "$patch"
-	done
-
 	echo "Build Qemu"
 	"${QEMU_CONFIG_SCRIPT}" "qemu" | xargs ./configure
 	make -j $(nproc)
@@ -88,8 +81,6 @@ build_and_install_qemu() {
 	echo "Install Qemu"
 	sudo -E make install
 
-	# Add link from /usr/local/bin to /usr/bin
-	sudo ln -sf $(command -v qemu-system-${QEMU_ARCH}) "/usr/bin/qemu-lite-system-${QEMU_ARCH}"
 	popd
 }
 

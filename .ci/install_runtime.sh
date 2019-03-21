@@ -89,10 +89,10 @@ elif [ "$KATA_HYPERVISOR" == "nemu" ]; then
 	sudo sed -i -e 's|firmware = ""|firmware = "/usr/share/nemu/firmware/OVMF.fd"|' "${runtime_config_path}"
 	case "$arch" in
 	x86_64)
-		sudo sed -i -e "s|\"/usr/bin/qemu-lite-system-${arch}\"|\"/usr/local/bin/qemu-system-${arch}_virt\"|" "${runtime_config_path}"
+		sudo sed -i -e "s|\"/usr/bin/qemu-system-${arch}\"|\"/usr/local/bin/qemu-system-${arch}_virt\"|" "${runtime_config_path}"
 		;;
 	aarch64)
-		sudo sed -i -e "s|\"/usr/bin/qemu-lite-system-${arch}\"|\"/usr/local/bin/qemu-system-${arch}\"|" "${runtime_config_path}"
+		sudo sed -i -e "s|\"/usr/bin/qemu-system-${arch}\"|\"/usr/local/bin/qemu-system-${arch}\"|" "${runtime_config_path}"
 		;;
 	*)
 		die "Unsupported architecture: $arch"
