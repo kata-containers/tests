@@ -184,6 +184,7 @@ install_docker(){
 
 # This function removes the installed docker package.
 remove_docker(){
+	[[ "$ID" =~ ^opensuse.*$ ]] && return
 	pkg_name=$(get_docker_package_name)
 	if [ -z "$pkg_name" ]; then
 		die "Docker not found in this system"
@@ -197,7 +198,7 @@ remove_docker(){
 			sudo dnf -y remove ${pkg_name}
 		elif [ "$ID" == "centos" ]; then
 			sudo yum -y remove ${pkg_name}
-		elif [[ "$ID" =~ ^opensuse.*$ ]] || [ "$ID" == "sles" ]; then
+		elif [ "$ID" == "sles" ]; then
 			sudo zypper -n remove ${pkg_name}
 		else
 			die "This script doesn't support your Linux distribution"
