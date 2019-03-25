@@ -310,6 +310,12 @@ check_license_headers()
 		--exclude="*.yaml" \
 		--exclude="*.pb.go" \
 		--exclude="*.gpl.c" \
+		--exclude="*.target" \
+		--exclude="*.service" \
+		--exclude="*.path" \
+		--exclude="*.socket" \
+		--exclude="*.mount" \
+		--exclude="*.device" \
 		-EL "\<${pattern}\>" \
 		$files || true)
 
