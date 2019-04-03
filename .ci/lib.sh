@@ -20,7 +20,12 @@ KATA_KSM_THROTTLER_JOB="kata-ksm-throttler"
 export KATA_DOCKER_TIMEOUT=30
 
 # Ensure GOPATH set
-export GOPATH=${GOPATH:-$(go env GOPATH)}
+if command -v go > /dev/null; then
+	export GOPATH=${GOPATH:-$(go env GOPATH)}
+else
+	# if go isn't installed, set default location for GOPATH
+	export GOPATH="${GOPATH:-$HOME/go}"
+fi
 
 tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 lib_script="${GOPATH}/src/${tests_repo}/lib/common.bash"
@@ -295,7 +300,7 @@ gen_clean_arch() {
 	docker_storage_driver=$(timeout ${KATA_DOCKER_TIMEOUT} docker info --format='{{.Driver}}')
 	stale_docker_mount_point_union=( "/var/lib/docker/containers" "/var/lib/docker/${docker_storage_driver}" )
 	stale_docker_dir_union=( "/var/lib/docker" )
-	stale_kata_dir_union=( "/var/lib/vc" "/run/vc" )
+	stale_kata_dir_union=( "/var/lib/vc" "/run/vc" "/usr/share/kata-containers" "/usr/share/defaults/kata-containers" )
 
 	info "kill stale process"
 	kill_stale_process
@@ -312,5 +317,14 @@ gen_clean_arch() {
 	fi
 	info "Remove Kata package repo registrations"
 	delete_kata_repo_registrations
+
+	info "Clean GOCACHE"
+	if command -v go > /dev/null; then
+		GOCACHE=${GOCACHE:-$(go env GOCACHE)}
+	else
+		# if go isn't installed, try default dir
+		GOCACHE=${GOCACHE:-$HOME/.cache/go-build}
+	fi
+	[ -d "$GOCACHE" ] && sudo rm -rf ${GOCACHE}/*
 }
 

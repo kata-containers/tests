@@ -7,7 +7,6 @@ package docker
 import (
 	"bytes"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"os"
@@ -17,7 +16,10 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/kata-containers/tests"
+	ginkgoconf "github.com/onsi/ginkgo/config"
 )
 
 const (
@@ -51,6 +53,8 @@ var cidDirectory string
 
 // AlpineImage is the alpine image
 var AlpineImage string
+
+var images []string
 
 // versionDockerImage is the definition in the yaml for the Alpine image
 type versionDockerImage struct {
@@ -96,6 +100,16 @@ func init() {
 
 	// Define Alpine image with its proper version
 	AlpineImage = "alpine:" + versions.Docker.Alpine.Version
+
+	images = []string{
+		Image,
+		AlpineImage,
+		PostgresImage,
+		DebianImage,
+		FedoraImage,
+		CentosImage,
+		StressImage,
+	}
 }
 
 func cidFilePath(containerName string) string {
@@ -352,6 +366,15 @@ func KillDockerContainer(name string) bool {
 	}
 
 	return true
+}
+
+func randomDockerName() string {
+	return tests.RandID(29) + fmt.Sprint(ginkgoconf.GinkgoConfig.ParallelNode)
+}
+
+// returns a random and valid repository name
+func randomDockerRepoName() string {
+	return strings.ToLower(tests.RandID(14)) + fmt.Sprint(ginkgoconf.GinkgoConfig.ParallelNode)
 }
 
 // dockerRm removes a container
