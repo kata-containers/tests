@@ -125,7 +125,7 @@ if [ -z "${METRICS_CI}" ]
 then
 	if [ "${kata_repo}" != "${tests_repo}" ]
 	then
-		if [ "${ID}" == "centos" ] && [ "${kata_repo}" == "${runtime_repo}" ]
+		if [ "${ID}" == "centos" ] || [ "${ID}" == "sles" ] && [ "${kata_repo}" == "${runtime_repo}" ]
 		then
 			echo "INFO: unit tests skipped for $kata_repo in $ID"
 			echo "INFO: issue https://github.com/kata-containers/runtime/issues/228"
