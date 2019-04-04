@@ -22,6 +22,8 @@ const (
 	periodSysPath     = "/sys/fs/cgroup/cpu/cpu.cfs_period_us"
 	cpusetCpusSysPath = "/sys/fs/cgroup/cpuset/cpuset.cpus"
 	cpusetMemsSysPath = "/sys/fs/cgroup/cpuset/cpuset.mems"
+
+	checkCpusCmdFmt = `for c in $(seq 1 %d); do if [ "$(nproc)" == "%d" ]; then nproc; exit 0; fi; sleep %d; done; exit 1`
 )
 
 func withCPUPeriodAndQuota(quota, period, defaultVCPUs int, fail bool) TableEntry {
@@ -51,18 +53,16 @@ func withCPUConstraint(cpus float64, defaultVCPUs int, fail bool) TableEntry {
 
 var _ = Describe("Hot plug CPUs", func() {
 	var (
-		args            []string
-		id              string
-		vCPUs           int
-		defaultVCPUs    int
-		waitTime        int
-		maxTries        int
-		checkCpusCmdFmt string
+		args         []string
+		id           string
+		vCPUs        int
+		defaultVCPUs int
+		waitTime     int
+		maxTries     int
 	)
 
 	BeforeEach(func() {
-		id = RandID(30)
-		checkCpusCmdFmt = `for c in $(seq 1 %d); do [ -d /sys/devices/system/cpu/cpu%d ] && nproc && exit 0; sleep %d; done; exit 1`
+		id = randomDockerName()
 		waitTime = 5
 		maxTries = 5
 		args = []string{"--rm", "--name", id}
@@ -79,7 +79,7 @@ var _ = Describe("Hot plug CPUs", func() {
 			vCPUs = ((quota + period - 1) / period) + defaultVCPUs
 			args = append(args, "--cpu-quota", fmt.Sprintf("%d", quota),
 				"--cpu-period", fmt.Sprintf("%d", period), DebianImage, "bash", "-c",
-				fmt.Sprintf(checkCpusCmdFmt, maxTries, vCPUs-1, waitTime))
+				fmt.Sprintf(checkCpusCmdFmt, maxTries, vCPUs, waitTime))
 			stdout, _, exitCode := dockerRun(args...)
 			if fail {
 				Expect(exitCode).ToNot(BeZero())
@@ -98,7 +98,7 @@ var _ = Describe("Hot plug CPUs", func() {
 		func(cpus int, fail bool) {
 			vCPUs = cpus + defaultVCPUs
 			args = append(args, "--cpus", fmt.Sprintf("%d", cpus), DebianImage, "bash", "-c",
-				fmt.Sprintf(checkCpusCmdFmt, maxTries, vCPUs-1, waitTime))
+				fmt.Sprintf(checkCpusCmdFmt, maxTries, vCPUs, waitTime))
 			stdout, _, exitCode := dockerRun(args...)
 			if fail {
 				Expect(exitCode).ToNot(BeZero())
@@ -120,14 +120,14 @@ var _ = Describe("CPU constraints", func() {
 		args       []string
 		id         string
 		shares     int = 300
-		quota      int = 2000
-		period     int = 1500
+		quota      int = 20000
+		period     int = 15000
 		cpusetCpus int = 0
 		cpusetMems int = 0
 	)
 
 	BeforeEach(func() {
-		id = RandID(30)
+		id = randomDockerName()
 		args = []string{"--rm", "--name", id}
 	})
 
@@ -195,7 +195,7 @@ var _ = Describe("Hot plug CPUs", func() {
 	)
 
 	BeforeEach(func() {
-		id = RandID(30)
+		id = randomDockerName()
 		args = []string{"--rm", "--name", id}
 		cpus = 2
 	})
@@ -227,22 +227,20 @@ var _ = Describe("Hot plug CPUs", func() {
 
 var _ = Describe("Update number of CPUs", func() {
 	var (
-		runArgs         []string
-		updateArgs      []string
-		execArgs        []string
-		id              string
-		vCPUs           int
-		defaultVCPUs    int
-		waitTime        int
-		maxTries        int
-		checkCpusCmdFmt string
-		stdout          string
-		exitCode        int
+		runArgs      []string
+		updateArgs   []string
+		execArgs     []string
+		id           string
+		vCPUs        int
+		defaultVCPUs int
+		waitTime     int
+		maxTries     int
+		stdout       string
+		exitCode     int
 	)
 
 	BeforeEach(func() {
-		id = RandID(30)
-		checkCpusCmdFmt = `for c in $(seq 1 %d); do [ -d /sys/devices/system/cpu/cpu%d ] && nproc && exit 0; sleep %d; done; exit 1`
+		id = randomDockerName()
 		waitTime = 5
 		maxTries = 5
 
@@ -274,7 +272,7 @@ var _ = Describe("Update number of CPUs", func() {
 			}
 			Expect(exitCode).To(BeZero())
 
-			execArgs = append(execArgs, id, "bash", "-c", fmt.Sprintf(checkCpusCmdFmt, maxTries, vCPUs-1, waitTime))
+			execArgs = append(execArgs, id, "bash", "-c", fmt.Sprintf(checkCpusCmdFmt, maxTries, vCPUs, waitTime))
 			stdout, _, exitCode = dockerExec(execArgs...)
 			Expect(exitCode).To(BeZero())
 			Expect(fmt.Sprintf("%d", vCPUs)).To(Equal(strings.Trim(stdout, "\n\t ")))
@@ -296,7 +294,7 @@ var _ = Describe("Update number of CPUs", func() {
 			}
 			Expect(exitCode).To(BeZero())
 
-			execArgs = append(execArgs, id, "bash", "-c", fmt.Sprintf(checkCpusCmdFmt, maxTries, vCPUs-1, waitTime))
+			execArgs = append(execArgs, id, "bash", "-c", fmt.Sprintf(checkCpusCmdFmt, maxTries, vCPUs, waitTime))
 			stdout, _, exitCode = dockerExec(execArgs...)
 			Expect(exitCode).To(BeZero())
 			Expect(fmt.Sprintf("%d", vCPUs)).To(Equal(strings.Trim(stdout, "\n\t ")))
@@ -334,7 +332,7 @@ var _ = Describe("Update CPU constraints", func() {
 	)
 
 	BeforeEach(func() {
-		id = RandID(30)
+		id = randomDockerName()
 
 		updateArgs = []string{}
 		execArgs = []string{}
@@ -426,7 +424,7 @@ var _ = Describe("CPUs and CPU set", func() {
 	)
 
 	BeforeEach(func() {
-		id = RandID(30)
+		id = randomDockerName()
 		args = []string{"--rm", "-dt", "--name", id, Image, "sh"}
 		cpuTests = []cpuTest{
 			{"1", "0-1", "2"},
