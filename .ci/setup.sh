@@ -37,10 +37,13 @@ setup_distro_env() {
 		bash -f "${cidir}/setup_env_opensuse.sh"
 	elif [ "$ID" == sles ]; then
 		bash -f "${cidir}/setup_env_sles.sh"
+	elif [ "$ID" == rhel ]; then
+		bash -f "${cidir}/setup_env_rhel.sh"
 	else
 		die "ERROR: Unrecognised distribution: ${ID}."
 		exit 1
 	fi
+
 	sudo systemctl start haveged
 }
 
@@ -139,5 +142,8 @@ main() {
 	sync
 	sudo -E PATH=$PATH bash -c "echo 3 > /proc/sys/vm/drop_caches"
 
+	if [ "$ID" == rhel ]; then
+		sudo -E PATH=$PATH bash -c "echo 1 > /proc/sys/fs/may_detach_mounts"
+	fi
 }
 main $*
