@@ -128,8 +128,6 @@ if [ -z "${METRICS_CI}" ]
 then
 	if [ "${kata_repo}" != "${tests_repo}" ]
 	then
-		[ "${ID}" == "rhel" ] && [ "${kata_repo}" == "${runtime_repo}" ] && skip "unit tests not working see: ${unit_issue}"
-
 		if [ "${ID}" == "centos" ] && [ "${kata_repo}" == "${runtime_repo}" ]
 		then
 			echo "INFO: unit tests skipped for $kata_repo in $ID"
