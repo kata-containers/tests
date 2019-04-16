@@ -35,10 +35,15 @@ setup_distro_env() {
 		bash -f "${cidir}/setup_env_debian.sh"
 	elif [[ "$ID" =~ ^opensuse.*$ ]]; then
 		bash -f "${cidir}/setup_env_opensuse.sh"
+	elif [ "$ID" == sles ]; then
+		bash -f "${cidir}/setup_env_sles.sh"
+	elif [ "$ID" == rhel ]; then
+		bash -f "${cidir}/setup_env_rhel.sh"
 	else
 		die "ERROR: Unrecognised distribution: ${ID}."
 		exit 1
 	fi
+
 	sudo systemctl start haveged
 }
 
@@ -52,7 +57,10 @@ install_docker() {
 	docker_version=$(get_version "externals.docker.version")
 	docker_version=${docker_version/v/}
 	docker_version=${docker_version/-*/}
-	if ! sudo docker version | grep -q "$docker_version" && [ "$CI" == true ]; then
+
+	sudo systemctl restart docker
+
+	if ( ! sudo docker version | grep -q "$docker_version" ) && [ "$CI" == true ]; then
 		"${cidir}/../cmd/container-manager/manage_ctr_mgr.sh" docker install -f
 	fi
 }
@@ -134,5 +142,8 @@ main() {
 	sync
 	sudo -E PATH=$PATH bash -c "echo 3 > /proc/sys/vm/drop_caches"
 
+	if [ "$ID" == rhel ]; then
+		sudo -E PATH=$PATH bash -c "echo 1 > /proc/sys/fs/may_detach_mounts"
+	fi
 }
 main $*
