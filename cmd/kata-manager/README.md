@@ -15,7 +15,7 @@ Containers](https://github.com/kata-containers), installing a container
 manager and configuring the runtime.
 
 Unlike normal scripts which specify the steps to run, for installation tasks
-`kata-manager` calling the [`kata-doc-to-script`](/.ci/kata-doc-to-script.sh)
+`kata-manager` calling the [`kata-doc-to-script`](../../.ci/kata-doc-to-script.sh)
 tool which parses well-formed [GitHub Flavored
 Markdown](https://github.github.com/gfm) format documents that contain `bash`
 code blocks and converts them into a script. This allows `kata-manager` for

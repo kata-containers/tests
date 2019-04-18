@@ -1,10 +1,10 @@
 # Kata Containers density metrics tests
 
 * [Kata Containers density metrics tests](#kata-containers-density-metrics-tests)
-   * [docker_memory_usage](#docker_memory_usage)
-   * [fast_footprint](#fast_footprint)
-   * [footprint_data](#footprint_data)
-   * [memory_usage_inside_container](#memory_usage_inside_container)
+   * [docker_memory_usage](#docker-memory-usage)
+   * [fast_footprint](#fast-footprint)
+   * [footprint_data](#footprint-data)
+   * [memory_usage_inside_container](#memory-usage-inside-container)
 
 This directory contains a number of tests to help measure container
 memory footprint. Some measures are based around the
