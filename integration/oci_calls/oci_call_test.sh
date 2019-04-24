@@ -20,6 +20,7 @@ TMP_FILE=$(mktemp runtimelogs.XXXXX)
 IMAGE="busybox"
 PAYLOAD="tail -f /dev/null"
 NAME="testoci"
+number_of_retries="15"
 
 function remove_tmp_file {
 	rm "$TMP_FILE"
@@ -34,15 +35,21 @@ function get_time() {
 
 # Get log for a specific time
 function get_debug_logs() {
-	sudo journalctl -q --since "$start_time" -o cat -a -t "${RUNTIME}" > "${TMP_FILE}"
+	end_time=$(date "+%F %H:%M:%S")
+	sudo journalctl -q --since "$start_time" --until "$end_time" -o cat -a -t ${RUNTIME} > ${TMP_FILE}
+}
+
+# Get arguments
+function get_arguments() {
+	get_debug_logs
+	list_arguments=$(grep -o "arguments=[^ ]*" ${TMP_FILE} --color|cut -d= -f2-|tr -d '"'|tr -d "\\\\")
+
+	[ -n "$list_arguments" ] || die "List of arguments missing"
+	number_of_arguments=$(echo "$list_arguments" | sort -u | wc -l)
 }
 
 # Find the arguments or oci calls for a specific command
 function check_arguments() {
-	list_arguments=$(grep -o "arguments=[^ ]*" "${TMP_FILE}" --color|cut -d= -f2-|tr -d '"'|tr -d "\\\\")
-
-	[ -n "$list_arguments" ] || die "List of arguments missing"
-
 	# Check arguments vs oci calls
 	for i in "${oci_call[@]}"; do
 		echo "$list_arguments" | grep -w "$i" > /dev/null
@@ -76,16 +83,20 @@ function setup() {
 
 function run_oci_call() {
 	local -a oci_call=( "create" "start" "state" )
-
-	# This sleep is necessary to gather the correct logs
-	sleep 10
+	number_of_oci_calls=$(echo "${#oci_call[@]}")
 
 	get_time
 
 	# Start a container
 	docker run -d --runtime="${RUNTIME}" --name="${NAME}" "${IMAGE}" sh -c "${PAYLOAD}"
 
-	get_debug_logs
+	for i in $(seq "$number_of_retries"); do
+		get_arguments
+		if [ "$number_of_arguments" -eq "$number_of_oci_calls" ]; then
+			break
+		fi
+		sleep 1
+	done
 
 	check_arguments
 
@@ -94,18 +105,22 @@ function run_oci_call() {
 
 function stop_oci_call() {
 	local -a oci_call=( "kill" "delete" "state" )
-
-	# This sleep is necessary to gather the correct logs
-	sleep 10
+	number_of_oci_calls=$(echo "${#oci_call[@]}")
 
 	get_time
 
 	# Stop a container
 	docker stop ${NAME}
 
-	get_debug_logs
-
 	docker rm -f ${NAME}
+
+	for i in $(seq "$number_of_retries"); do
+		get_arguments
+		if [ "$number_of_arguments" -eq "$number_of_oci_calls" ]; then
+			break
+		fi
+		sleep 1
+	done
 
 	check_arguments
 
@@ -118,19 +133,24 @@ function run_oci_call_true() {
 	result=$(echo "$version>18.06" | bc)
 	if [ "${result}" -eq 1 ]; then
 		local -a oci_call=( "create" "start" "delete" "state" )
+		number_of_oci_calls=$(echo "${#oci_call[@]}")
 	else
 		local -a oci_call=( "create" "start" "kill" "delete" "state" )
+		number_of_oci_calls=$(echo "${#oci_call[@]}")
 	fi
-
-	# This sleep is necessary to gather the correct logs
-	sleep 10
 
 	get_time
 
 	# Run a container with true
 	docker run --rm --runtime="${RUNTIME}" "${IMAGE}" true
 
-	get_debug_logs
+	for i in $(seq "$number_of_retries"); do
+		get_arguments
+		if [ "$number_of_arguments" -eq "$number_of_oci_calls" ]; then
+			break
+		fi
+		sleep 1
+	done
 
 	check_arguments
 
