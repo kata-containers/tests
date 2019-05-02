@@ -438,6 +438,12 @@ check_docs()
 		# Google APIs typically require an auth token.
 		echo "$url"|grep -q 'https://www.googleapis.com' && continue
 
+		# Git repo URL check
+		if echo "$url"|grep -q '^https.*git'
+		then
+			git ls-remote "$url" > /dev/null 2>&1 && continue
+		fi
+
 		# Check the URL, saving it if invalid
 		( curl -sLf -o /dev/null "$url" ||\
 				echo "$url" >> "$invalid_urls") &
@@ -547,11 +553,15 @@ check_files()
 	exit 1
 }
 
-# Ensure that changes to vendored code are accompanied by an update to the
-# vendor tooling config file. If not, the user simply hacked the vendor files
-# rather than following the correct process:
+# Perform vendor checks:
 #
-# - https://github.com/kata-containers/community/blob/master/VENDORING.md
+# - Ensure that changes to vendored code are accompanied by an update to the
+#   vendor tooling config file. If not, the user simply hacked the vendor files
+#   rather than following the correct process:
+#
+#   https://github.com/kata-containers/community/blob/master/VENDORING.md
+#
+# - Ensure vendor metadata is valid.
 check_vendor()
 {
 	local files
@@ -561,22 +571,34 @@ check_vendor()
 	# All vendor operations should modify this file
 	local vendor_ctl_file="Gopkg.lock"
 
+	[ -e "$vendor_ctl_file" ] || { info "No vendoring in this repository" && return; }
+
+	info "Checking vendored code is pristine"
+
 	files=$(get_pr_changed_file_details_full || true)
 
 	# Strip off status
 	files=$(echo "$files"|awk '{print $NF}')
 
-	# No files were changed
-	[ -z "$files" ] && info "No files found" && return
+	if [ -n "$files" ]
+	then
+		# PR changed files so check if it changed any vendored files
+		vendor_files=$(echo "$files" | grep "vendor/" || true)
 
-	vendor_files=$(echo "$files" | grep "vendor/" || true)
+		if [ -n "$vendor_files" ]
+		then
+			result=$(echo "$files" | egrep "\<${vendor_ctl_file}\>" || true)
+			[ -n "$result" ] || die "PR changes vendor files, but does not update ${vendor_ctl_file}"
+		fi
+	fi
 
-	# No vendor files modified
-	[ -z "$vendor_files" ] && return
+	info "Checking vendoring metadata"
 
-	result=$(echo "$files" | egrep "\<${vendor_ctl_file}\>" || true)
+	# Get the vendoring tool
+	go get github.com/golang/dep/cmd/dep
 
-	[ -n "$result" ] || die "PR changes vendor files, but does not update ${vendor_ctl_file}"
+	# Check, but don't touch!
+	dep ensure -no-vendor -dry-run
 }
 
 main()
