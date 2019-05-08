@@ -20,7 +20,11 @@ IMAGE="busybox"
 # by haveged is 1000 see https://wiki.archlinux.org/index.php/Haveged
 # Less than 1000 could potentially slow down cryptographic
 # applications see https://www.suse.com/support/kb/doc/?id=7011351
-ENTROPY_LEVEL="1000"
+entropy_level="1000"
+
+# This is needed to wait for a couple of seconds
+# until we try to reach the minimum entropy level
+retries="10"
 
 setup() {
 	clean_env
@@ -54,9 +58,19 @@ setup() {
 }
 
 @test "check entropy level" {
-	run docker run --rm --runtime=${RUNTIME} ${IMAGE} sh -c "cat /proc/sys/kernel/random/entropy_avail"
+	cmd="cat /proc/sys/kernel/random/entropy_avail"
+
+	for i in $(seq "$retries"); do
+		get_entropy=$(docker run --rm --runtime=${RUNTIME} ${IMAGE} sh -c "$cmd")
+		if [ "$get_entropy" -ge "$entropy_level" ]; then
+			break
+		fi
+			sleep 1
+	done
+
+	run docker run --rm --runtime=${RUNTIME} ${IMAGE} sh -c "$cmd"
 	echo "$output"
-	[ "$output" -ge ${ENTROPY_LEVEL} ]
+	[ "$output" -ge "$entropy_level" ]
 }
 
 teardown() {
