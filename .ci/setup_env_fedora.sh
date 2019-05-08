@@ -67,6 +67,9 @@ chronic sudo -E dnf -y install procenv
 echo "Install haveged"
 chronic sudo -E dnf -y install haveged
 
+echo "Install libsystemd"
+chronic sudo -E dnf -y install systemd-devel
+
 if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
 	echo "Install ${KATA_KSM_THROTTLER_JOB}"
 	chronic sudo -E dnf -y install ${KATA_KSM_THROTTLER_JOB}
