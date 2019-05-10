@@ -6,5 +6,5 @@ package docker
 
 const (
 	// On s390x there is not centos image, instead the clefos image could be used
-	CentosImage = "clefos"
+	CentosImageName = "clefos"
 )

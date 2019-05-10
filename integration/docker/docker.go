@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -27,16 +28,16 @@ const (
 	Docker = "docker"
 
 	// Image used to run containers
-	Image = "busybox"
+	ImageName = "busybox"
 
 	// PostgresImage is the postgres image
-	PostgresImage = "postgres"
+	PostgresImageName = "postgres"
 
 	// DebianImage is the debian image
-	DebianImage = "debian"
+	DebianImageName = "debian"
 
 	// FedoraImage is the fedora image
-	FedoraImage = "fedora"
+	FedoraImageName = "fedora"
 
 	// StressImage is the vish/stress image
 	StressImage = "vish/stress"
@@ -46,6 +47,23 @@ const (
 
 	// VersionsPath is the path for the versions.yaml
 	VersionsPath = "src/github.com/kata-containers/tests/versions.yaml"
+)
+
+var (
+	// Image used to run containers
+	Image string
+
+	// PostgresImage is the postgres image
+	PostgresImage string
+
+	// DebianImage is the debian image
+	DebianImage string
+
+	// FedoraImage is the fedora image
+	FedoraImage string
+
+	// CentosImage is the centos image
+	CentosImage string
 )
 
 // cidDirectory is the directory where container ID files are created.
@@ -80,6 +98,14 @@ func init() {
 	if err != nil {
 		log.Fatalf("Could not create cid directory: %v\n", err)
 	}
+
+	arch := runtime.GOARCH
+
+	Image = fmt.Sprintf("%s/%s", arch, ImageName)
+	PostgresImage = fmt.Sprintf("%s/%s", arch, PostgresImageName)
+	DebianImage = fmt.Sprintf("%s/%s", arch, DebianImageName)
+	FedoraImage = fmt.Sprintf("%s/%s", arch, FedoraImageName)
+	CentosImage = fmt.Sprintf("%s/%s", arch, CentosImageName)
 
 	// Check versions.yaml
 	gopath := os.Getenv("GOPATH")

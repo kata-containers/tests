@@ -8,5 +8,5 @@ package docker
 
 const (
 	// CentosImage is the centos image
-	CentosImage = "centos"
+	CentosImageName = "centos"
 )
