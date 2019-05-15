@@ -60,3 +60,6 @@ chronic sudo -E zypper -n install crudini
 
 echo "Install haveged"
 chronic sudo -E zypper -n install haveged
+
+echo "Install libsystemd"
+chronic sudo -E zypper -n install systemd-devel

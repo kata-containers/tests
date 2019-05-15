@@ -76,7 +76,7 @@ get_jaeger_status()
 
 		[ "$ret" -eq 0 ] && [ -n "$status" ] && break
 
-		attempt=$((attempt++))
+		attempt=$((attempt+1))
 		sleep 1
 	done
 
@@ -184,6 +184,7 @@ check_jaeger_status()
 		then
 			errors=$((errors+1))
 			warn "Found invalid parent span errors (attempt $attempt): $errors1"
+			attempt=$((attempt+1))
 			continue
 		else
 			errors=$((errors-1))
@@ -196,13 +197,14 @@ check_jaeger_status()
 		then
 			errors=$((errors+1))
 			warn "Found warnings (attempt $attempt): $errors2"
+			attempt=$((attempt+1))
 			continue
 		else
 			errors=$((errors-1))
 			[ "$errors" -lt 0 ] && errors=0
 		fi
 
-		attempt=$((attempt++))
+		attempt=$((attempt+1))
 
 		[ "$errors" -eq 0 ] && break
 	done

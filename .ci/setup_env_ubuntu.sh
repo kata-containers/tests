@@ -45,12 +45,12 @@ chronic sudo -E apt install -y build-essential python pkg-config zlib1g-dev
 echo -e "Install CRI-O dependencies available for Ubuntu $VERSION_ID"
 chronic sudo -E apt install -y libdevmapper-dev btrfs-tools util-linux
 
-if [ "$VERSION_ID" == "16.04" ]; then
-	echo "Install os-tree"
+if [ "$VERSION_ID" == "16.04" ] && [ "$(arch)" != "ppc64le" ]; then
 	chronic sudo -E add-apt-repository ppa:alexlarsson/flatpak -y
 	chronic sudo -E apt update
 fi
 
+echo "Install os-tree"
 chronic sudo -E apt install -y libostree-dev
 
 echo "Install YAML validator"
@@ -78,6 +78,9 @@ chronic sudo -E apt install -y procenv
 
 echo "Install haveged"
 chronic sudo -E apt install -y haveged
+
+echo "Install libsystemd"
+chronic sudo -E apt install -y libsystemd-dev
 
 if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
 	echo "Install ${KATA_KSM_THROTTLER_JOB}"
