@@ -33,8 +33,24 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" bash -c "make network"
 		;;
 	*)
+
+		set -x 
+		sudo docker run -d --runtime=kata-runtime busybox true || true
+		sleep 10s
+		sudo journalctl -t kata-runtime 
+		sudo journalctl -t kata-proxy
+		sudo docker ps -a
+
+		sudo docker rm -f $(sudo docker ps -aq)
+
+		sudo ls /var/lib/vc/sbs
+		sudo rm -rf /var/lib/vc/sbs
+
+		set +x
+
 		echo "INFO: Running checks"
 		sudo -E PATH="$PATH" bash -c "make check"
+
 
 		echo "INFO: Running functional and integration tests ($PWD)"
 		sudo -E PATH="$PATH" bash -c "make test"

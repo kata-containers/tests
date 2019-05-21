@@ -41,6 +41,9 @@ var _ = Describe("state", func() {
 
 	DescribeTable("container",
 		func(status string, waitTime int) {
+			if DistroID() == "fedora" {
+				Skip("Issue:https://github.com/kata-containers/tests/issues/1531")
+			}
 			_, stderr, exitCode := container.Run()
 			Expect(exitCode).To(Equal(0))
 			Expect(stderr).To(BeEmpty())
