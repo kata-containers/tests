@@ -33,10 +33,6 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" bash -c "make network"
 		;;
 	*)
-		echo "INFO: Running checks"
-		sudo -E PATH="$PATH" bash -c "make check"
-
-		echo "INFO: Running functional and integration tests ($PWD)"
-		sudo -E PATH="$PATH" bash -c "make test"
-		;;
+		sudo journalctl -t kata-runtime -t kata-proxy -f &
+		docker run -i --runtime=kata-runtime busybox true
 esac
