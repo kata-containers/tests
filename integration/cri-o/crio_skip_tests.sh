@@ -10,4 +10,5 @@
 declare -a skipCRIOTests=(
 'test "ctr oom"'
 'test "ctr stats output"'
+'test "additional devices permissions"'
 );
