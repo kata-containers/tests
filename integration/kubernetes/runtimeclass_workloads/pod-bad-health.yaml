@@ -1,0 +1,29 @@
+#
+# Copyright (c) 2019 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+apiVersion: v1
+kind: Pod
+metadata:
+  name: badhctest
+spec:
+  runtimeClassName: kata
+  containers:
+  - name: test
+    image: mhausenblas/simpleservice:0.5.0
+    ports:
+    - containerPort: 9876
+# Here the container in the time range 1 to
+# 4 sec does not return a healthy code
+    env:
+    - name: HEALTH_MIN
+      value: "1000"
+    - name: HEALTH_MAX
+      value: "4000"
+    livenessProbe:
+      initialDelaySeconds: 2
+      periodSeconds: 5
+      httpGet:
+        path: /health
+        port: 9876
