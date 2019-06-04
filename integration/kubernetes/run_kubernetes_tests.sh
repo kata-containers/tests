@@ -24,9 +24,11 @@ systemctl is-active --quiet docker || sudo systemctl start docker
 
 pushd "$kubernetes_dir"
 ./init.sh
+bats k8s-replication.bats
 bats nginx.bats
 bats k8s-uts+ipc-ns.bats
 bats k8s-env.bats
+bats k8s-port-forward.bats
 bats k8s-empty-dirs.bats
 bats k8s-limit-range.bats
 bats k8s-credentials-secrets.bats
