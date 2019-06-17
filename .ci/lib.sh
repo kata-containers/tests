@@ -213,6 +213,16 @@ delete_stale_kata_resource()
 	done
 }
 
+delete_stale_lock_files()
+{
+	for stale_lock_file in "${stale_lock_file_union[@]}"; do
+		local pid=$(lsof "${stale_lock_file}")
+		if [ -n "$pid" ]; then
+			sudo kill -9 ${pid} || true
+		fi
+	done
+}
+
 delete_kata_repo_registrations()
 {
 	case "$ID" in
@@ -281,6 +291,13 @@ gen_clean_arch() {
 		GOCACHE=${GOCACHE:-$HOME/.cache/go-build}
 	fi
 	[ -d "$GOCACHE" ] && sudo rm -rf ${GOCACHE}/*
+
+	info "Clean stale lock files"
+	# stale lock files are created when processes are not terminated properly
+	stale_lock_file_union=( "/var/lib/dpkg/lock" )
+	delete_stale_lock_files
+	# reconfigure the packages
+	sudo dpkg --configure -a
 }
 
 build_install_parallel() {
