@@ -15,6 +15,12 @@ ${SCRIPT_PATH}/../../../.ci/install_cni_plugins.sh
 
 export SHIMV2_TEST=true
 
+# Verify docker is running
+sudo systemctl is-active --quiet docker
+if [ $? -ne 0 ]; then
+	sudo systemctl start docker
+fi
+
 echo "========================================"
 echo "         start shimv2 testing"
 echo "========================================"

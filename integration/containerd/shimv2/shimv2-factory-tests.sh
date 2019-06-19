@@ -24,6 +24,12 @@ if [ -z $INITRD_PATH ]; then
         exit 0
 fi
 
+# Verify docker is running
+sudo systemctl is-active --quiet docker
+if [ $? -ne 0 ]; then
+	sudo systemctl start docker
+fi
+
 echo "========================================"
 echo "   start shimv2 with factory testing"
 echo "========================================"
