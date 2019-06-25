@@ -206,6 +206,17 @@ delete_stale_docker_resource()
 
 delete_stale_kata_resource()
 {
+	# umount before dir
+	for stale_kata_mount_point in "${stale_kata_mount_point_union[@]}"; do
+		local mount_point_union=$(mount | grep "${stale_kata_mount_point}" | awk '{print $3}')
+		if [ -n "${mount_point_union}" ]; then
+			while IFS='$\n' read mount_point; do
+				[ -n "$(grep "${mount_point}" "/proc/mounts")" ] && sudo umount -R "${mount_point}"
+			done <<< "${mount_point_union}"
+		fi
+	done
+
+	#delete stale dir
 	for stale_kata_dir in "${stale_kata_dir_union[@]}"; do
 		if [ -d "${stale_kata_dir}" ]; then
 			sudo rm -rf "${stale_kata_dir}"
@@ -255,7 +266,8 @@ gen_clean_arch() {
 	docker_storage_driver=$(timeout ${KATA_DOCKER_TIMEOUT} docker info --format='{{.Driver}}')
 	stale_docker_mount_point_union=( "/var/lib/docker/containers" "/var/lib/docker/${docker_storage_driver}" )
 	stale_docker_dir_union=( "/var/lib/docker" )
-	stale_kata_dir_union=( "/var/lib/vc" "/run/vc" "/usr/share/kata-containers" "/usr/share/defaults/kata-containers" )
+	stale_kata_mount_point_union=( "/run/netns" )
+	stale_kata_dir_union=( "/var/lib/vc" "/run/vc" "/usr/share/kata-containers" "/usr/share/defaults/kata-containers" "/run/netns" )
 
 	info "kill stale process"
 	kill_stale_process
