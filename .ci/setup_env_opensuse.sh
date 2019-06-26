@@ -71,6 +71,9 @@ main()
 		obs_url="${KATA_OBS_REPO_BASE}/openSUSE_Leap_${VERSION_ID}"
 		chronic sudo -E zypper addrepo --no-gpgcheck "${obs_url}/home:katacontainers:releases:$(arch):master.repo"
 	fi
+
+	echo "Start redis service"
+	sudo systemctl start redis
 }
 
 main "$@"

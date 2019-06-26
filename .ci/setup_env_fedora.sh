@@ -76,6 +76,9 @@ main()
 		echo "Install ${KATA_KSM_THROTTLER_JOB}"
 		chronic sudo -E dnf -y install ${KATA_KSM_THROTTLER_JOB}
 	fi
+
+	echo "Start redis service"
+	sudo systemctl start redis
 }
 
 main "$@"

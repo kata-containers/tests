@@ -91,6 +91,9 @@ main()
 	crudini_repo="https://download.opensuse.org/repositories/Cloud:OpenStack:Liberty/SLE_${VERSIONID}/Cloud:OpenStack:Liberty.repo"
 	chronic sudo -E zypper addrepo --no-gpgcheck ${crudini_repo}
 	chronic sudo -E zypper refresh
+
+	echo "Start redis server"
+	sudo systemctl start redis
 }
 
 main "$@"
