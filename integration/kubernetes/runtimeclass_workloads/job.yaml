@@ -8,6 +8,7 @@ kind: Job
 metadata:
   name: job-pi-test
 spec:
+  activeDeadlineSeconds: 100
   template:
     spec:
       runtimeClassName: kata
