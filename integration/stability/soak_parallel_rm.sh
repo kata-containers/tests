@@ -106,9 +106,10 @@ check_all_running() {
 		fi
 
 		# check we have the right number of qemu's
-		how_many_qemus=$(pgrep -a -f ${HYPERVISOR_PATH} | wc -l)
-		if (( ${how_many_running} != ${how_many_qemus} )); then
-			echo "Wrong number of qemus running (${how_many_running} != ${how_many_qemus}) - stopping"
+		vmm_process=$(basename ${HYPERVISOR_PATH})
+		how_many_vmms=$(pgrep -a -f ${vmm_process} | wc -l)
+		if (( ${how_many_running} != ${how_many_vmms} )); then
+			echo "Wrong number of hypervisors running (${how_many_running} != ${how_many_vmms}) - stopping"
 			((goterror++))
 		fi
 

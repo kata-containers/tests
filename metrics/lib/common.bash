@@ -197,7 +197,7 @@ show_system_state() {
 	local RPATH=$(command -v ${RUNTIME})
 	sudo ${RPATH} list
 
-	local processes="kata-proxy kata-shim kata-runtime qemu"
+	local processes="kata-proxy kata-shim kata-runtime qemu firecracker"
 
 	for p in ${processes}; do
 		echo " --pgrep ${p}--"
