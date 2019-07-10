@@ -66,11 +66,6 @@ main()
 
 	echo "Install kata containers dependencies"
 	chronic sudo -E dnf -y groupinstall "Development tools"
-
-	if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
-		echo "Install ${KATA_KSM_THROTTLER_JOB}"
-		chronic sudo -E dnf -y install ${KATA_KSM_THROTTLER_JOB}
-	fi
 }
 
 main "$@"

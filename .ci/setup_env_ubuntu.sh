@@ -74,11 +74,6 @@ main()
 
 	echo "Install os-tree"
 	chronic sudo -E apt install -y libostree-dev
-
-	if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
-		echo "Install ${KATA_KSM_THROTTLER_JOB}"
-		chronic sudo -E apt install -y ${KATA_KSM_THROTTLER_JOB}
-	fi
 }
 
 main "$@"

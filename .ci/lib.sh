@@ -7,7 +7,6 @@
 #
 
 export KATA_RUNTIME=${KATA_RUNTIME:-kata-runtime}
-export KATA_KSM_THROTTLER=${KATA_KSM_THROTTLER:-no}
 export KATA_NEMU_DESTDIR=${KATA_NEMU_DESTDIR:-"/usr"}
 export KATA_QEMU_DESTDIR=${KATA_QEMU_DESTDIR:-"/usr"}
 

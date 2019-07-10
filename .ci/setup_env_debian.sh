@@ -65,11 +65,6 @@ main()
 	chronic sudo -E apt -y install $pkgs_to_install
 
 	[ "$setup_type" = "minimal" ] && exit 0
-
-	if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
-		echo "Install ${KATA_KSM_THROTTLER_JOB}"
-		chronic sudo -E apt install -y ${KATA_KSM_THROTTLER_JOB}
-	fi
 }
 
 main "$@"

@@ -91,11 +91,6 @@ main()
 	echo "Install GNU parallel"
 	# GNU parallel not available in Centos repos, so build it instead.
 	build_install_parallel
-
-	if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
-		echo "Install ${KATA_KSM_THROTTLER_JOB}"
-		chronic sudo -E yum install ${KATA_KSM_THROTTLER_JOB}
-	fi
 }
 
 main "$@"
