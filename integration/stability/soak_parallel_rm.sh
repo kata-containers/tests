@@ -105,10 +105,10 @@ check_all_running() {
 			((goterror++))
 		fi
 
-		# check we have the right number of qemu's
-		how_many_qemus=$(pgrep -a -f ${HYPERVISOR_PATH} | wc -l)
-		if (( ${how_many_running} != ${how_many_qemus} )); then
-			echo "Wrong number of qemus running (${how_many_running} != ${how_many_qemus}) - stopping"
+		# check we have the right number of vm's
+		how_many_vms=$(pgrep -a $(basename ${HYPERVISOR_PATH} | cut -d '-' -f1) | wc -l)
+		if (( ${how_many_running} != ${how_many_vms} )); then
+			echo "Wrong number of $KATA_HYPERVISOR running (${how_many_running} != ${how_many_vms}) - stopping"
 			((goterror++))
 		fi
 
