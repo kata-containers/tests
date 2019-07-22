@@ -8,6 +8,8 @@ CentOS/B
 Debian/B
 EulerOS/B
 Fedora/B
+macOS/B
+minikube/B
 openSUSE/B
 RHEL/B
 SLES/B
