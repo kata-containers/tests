@@ -126,7 +126,7 @@ main() {
 			elif [ "$cached_qemu_version" == "$CURRENT_QEMU_VERSION" ]; then
 				# If installing cached QEMU fails,
 				# then build and install it from sources.
-				install_cached_qemu || build_and_install_static_qemu
+				build_and_install_static_qemu
 			else
 				build_and_install_static_qemu
 			fi
