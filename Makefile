@@ -16,7 +16,7 @@ endif
 
 # union for 'make test'
 UNION := functional debug-console $(DOCKER_DEPENDENCY) openshift crio docker-compose network \
-	docker-stability oci netmon kubernetes swarm vm-factory \
+	docker-stability oci netmon kubernetes swarm vm-factory vm-cache \
 	entropy ramdisk shimv2 tracing time-drift
 
 # filter scheme script for docker integration test suites
@@ -150,6 +150,8 @@ pentest:
 vm-factory:
 	bash -f integration/vm_factory/vm_templating_test.sh
 
+vm-cache:
+	bash -f integration/vm_cache/vm_cache_test.sh
 
 network:
 	systemctl is-active --quiet docker || sudo systemctl start docker
@@ -215,4 +217,5 @@ help:
 	ramdisk \
 	test \
 	tracing \
+	vm-cache \
 	vm-factory
