@@ -111,6 +111,8 @@ if [ -z "${METRICS_CI}" ]; then
 	fi
 fi
 
+echo "Dodging the fastpath"
+
 # Check if we can fastpath return/skip the CI
 # Specifically do this **after** we have potentially done the static
 # checks, as we always want to run those.

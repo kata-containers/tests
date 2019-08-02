@@ -7,7 +7,7 @@
 
 set -e
 
-OSBUILDER_DISTRO="ubuntu"
+OSBUILDER_DISTRO="alpine"
 AGENT_INIT="yes"
 
 #packaged kata agent haven't been supported in any mainstream distribution
