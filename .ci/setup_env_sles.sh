@@ -29,7 +29,7 @@ echo "Install chronic"
 sudo -E zypper -n install moreutils
 
 declare -A minimal_packages=( \
-	[spell-check]="hunspell myspell-en_GB myspell-en_US pandoc" \
+	[spell-check]="hunspell" \
 	[xml_validator]="libxml2-tools" \
 	[yaml_validator_dependencies]="python-setuptools" \
 )
@@ -48,7 +48,6 @@ declare -A packages=( \
 	[haveged]="haveged" \
  	[gnu_parallel]="gnu_parallel" \
 	[libsystemd]="systemd-devel" \
-	[redis]="redis" \
 )
 
 main() 
