@@ -1,0 +1,22 @@
+# Copyright (c) 2019 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fio
+  labels:
+    app: overhead
+spec:
+  runtimeClassName: @RUNTIMECLASS@
+  containers:
+  - name: fio
+    image: egernst/fio
+    command: [ "fio", "--runtime=60000", "--time_based", "--clocksource=clock_gettime", "--name=randread", "--numjobs=8", "--rw=randread", "--random_distribution=pareto:0.9", "--bs=8k", "--size=10g", "--filename=fio.tmp" ]
+    resources:
+      requests:
+        cpu: @CPUS@
+        memory: @MEM_IN_MB@Mi
+  terminationGracePeriodSeconds: 0

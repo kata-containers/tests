@@ -40,9 +40,11 @@ and with different container managers.
 2. Integration tests to ensure compatibility with:
    - [Docker](https://github.com/kata-containers/tests/tree/master/integration/docker)
    - [Kubernetes](https://github.com/kata-containers/tests/tree/master/integration/kubernetes)
+   - [Kubernetes](https://github.com/kata-containers/tests/tree/master/integration/kubernetes)
    - [CRI-O](https://github.com/kata-containers/tests/tree/master/integration/cri-o)
    - [Containerd](https://github.com/kata-containers/tests/tree/master/integration/containerd)
    - [OpenShift](https://github.com/kata-containers/tests/tree/master/integration/openshift)
+   - [Overhead](integration/kubernetes/overhead/README.md)
 3. [Network tests](https://github.com/kata-containers/tests/tree/master/integration/network)
 4. [Stability tests](https://github.com/kata-containers/tests/tree/master/integration/stability)
 5. [Metrics](https://github.com/kata-containers/tests/tree/master/metrics)

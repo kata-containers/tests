@@ -1,0 +1,58 @@
+# Copyright (c) 2019 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: overhead
+  labels:
+    app: overhead
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: overhead
+  template:
+    metadata:
+      labels:
+        app: overhead
+    spec:
+      runtimeClassName: @RUNTIMECLASS@
+      containers:
+      - name: overhead
+        image: nginx
+        ports:
+        - containerPort: 80
+          name: server
+        resources:
+          requests:
+            cpu: @CPUS@
+            memory: @MEM_IN_MB@Mi
+      terminationGracePeriodSeconds: 0
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: overhead
+spec:
+  selector:
+    app: overhead
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: server
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ab
+spec:
+  containers:
+  - name: ab
+    image: httpd
+    command: [ "sh", "-c", "while true; do ab -v 2 -c 100 -s 5 -n 999999999 http://overhead:80/;done" ]
+  terminationGracePeriodSeconds: 0

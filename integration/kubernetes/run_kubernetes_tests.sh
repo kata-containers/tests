@@ -10,6 +10,7 @@ set -e
 source /etc/os-release || source /usr/lib/os-release
 kubernetes_dir=$(dirname "$(readlink -f "$0")")
 cidir="${kubernetes_dir}/../../.ci/"
+readonly script_dir=$(dirname $(readlink -f "$0"))
 source "${cidir}/lib.sh"
 
 arch="$(uname -m)"
@@ -77,3 +78,6 @@ do
 	bats "${K8S_TEST_ENTRY}"
 done
 popd
+
+export CPUS=2
+"${script_dir}/overhead/run-all.sh"

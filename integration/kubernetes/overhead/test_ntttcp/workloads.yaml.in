@@ -1,0 +1,58 @@
+# Copyright (c) 2019 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: overhead
+  labels:
+    app: overhead
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: overhead
+  template:
+    metadata:
+      labels:
+        app: overhead
+    spec:
+      runtimeClassName: @RUNTIMECLASS@
+      containers:
+      - name: overhead
+        image: jcvenega/ntttcp
+        ports:
+        - containerPort: 5000
+          name: server
+        resources:
+          requests:
+            cpu: @CPUS@
+            memory: @MEM_IN_MB@Mi
+      terminationGracePeriodSeconds: 0
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: overhead
+spec:
+  selector:
+    app: overhead
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: server
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ntttcp-client
+spec:
+  containers:
+  - name: ntttcp-client
+    image: jcvenega/ntttcp
+    command: [ "sh", "-c", "while true; do /run/ntttcp -s$(dig +short overhead.default.svc.cluster.local) -t 5000 ;done" ]
+  terminationGracePeriodSeconds: 0
