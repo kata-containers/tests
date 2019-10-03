@@ -124,6 +124,8 @@ fi
 #   directly.
 # - If the repo is not "tests", call the repo-specific script (which is
 #   expected to call the script of the same name in the "tests" repo).
+
+export DEFSANDBOXCGROUPONLY=true
 case "${CI_JOB}" in
 "CRI_CONTAINERD_K8S")
 	# This job only tests containerd + k8s

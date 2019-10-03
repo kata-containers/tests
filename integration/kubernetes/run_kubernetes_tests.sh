@@ -73,11 +73,8 @@ fi
 
 pushd "$kubernetes_dir"
 ./init.sh
-for K8S_TEST_ENTRY in ${K8S_TEST_UNION[@]}
-do
-	bats "${K8S_TEST_ENTRY}"
-done
 popd
 
+#CI only has 4 cpus cpus lets just 2 for the worloads to measure
 export CPUS=2
 "${script_dir}/overhead/run-all.sh"
