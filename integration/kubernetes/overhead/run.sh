@@ -64,6 +64,7 @@ main() {
 		esac
 	done
 
+	csv_file="${PWD}/ovehead.csv"
 	cd "${test}"
 	trap finish EXIT
 	"${script_dir}/steps/setup.sh"
@@ -73,7 +74,7 @@ main() {
 		"${pre_run_check_file}"
 	fi
 
-	"${script_dir}/steps/run.sh" --samples "${samples}"
+	"${script_dir}/steps/run.sh" --samples "${samples}" --csv "${csv_file}" --info "${test}"
 }
 
 main $*
