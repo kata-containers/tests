@@ -43,7 +43,7 @@ get_overhead() {
 	echo "kubernetes container ID: ${cid}"
 	cid=$(echo "${cid}" | cut -d/ -f3)
 	echo "Container ID to get in kata: ${cid}"
-	if ! sudo "${RUNTIME}" list | grep "${cid}" > /dev/null; then
+	if ! sudo "${RUNTIME}" list | grep "${cid}" >/dev/null; then
 		sudo "${RUNTIME}" list
 		kubectl describe pod -l app="overhead"
 		kubectl logs -l app="overhead"
@@ -73,16 +73,18 @@ get_overhead() {
 		info "sample $i cpu_host: ${cpu_host_sample}"
 	done
 
+	# TODO: should we take the max ovehead value or the max cpu usage from guest sample
 	cpu_overhead=$(echo "${cpu_overhead_sum} / ${samples}" | bc)
 	memory_overhead=$(echo "${memory_overhead_sum} / ${samples}" | bc)
 	cpu_host=$(echo "${cpu_host_sum} / ${samples}" | bc)
 	cpu_guest=$(echo "${cpu_guest_sum} / ${samples}" | bc)
+	vm_cpus=$(printf "%s" "${overhead_sample}" | grep "vm_cpus=" | cut -d= -f2)
 
 	if [ -n "${csv_file}" ]; then
 		if [ ! -f "${csv_file}" ]; then
-			echo "workload,cpu_host_usage,cpu_guest_usage,cpu_overhead,memory_overhead" >"${csv_file}"
+			echo "workload,cpu_host_usage,cpu_guest_usage,cpu_overhead,memory_overhead,vm_cpus" >"${csv_file}"
 		fi
-		echo "${info_test},${cpu_host},${cpu_guest},${cpu_overhead},${memory_overhead}" >>"${csv_file}"
+		echo "${info_test},${cpu_host},${cpu_guest},${cpu_overhead},${memory_overhead},${vm_cpus}" >>"${csv_file}"
 	fi
 }
 

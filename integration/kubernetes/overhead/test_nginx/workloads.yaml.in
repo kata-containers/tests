@@ -27,7 +27,8 @@ spec:
         - containerPort: 80
           name: server
         resources:
-          requests:
+          #https://github.com/kata-containers/runtime/issues/1534 scale using limits request do to scale cpu in kata
+          limits:
             cpu: @CPUS@
             memory: @MEM_IN_MB@Mi
       terminationGracePeriodSeconds: 0

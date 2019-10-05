@@ -16,6 +16,7 @@ spec:
     image: polinux/stress-ng
     command: [ "sh", "-c","stress-ng --cpu @CPUS@ --timeout 99999999s --metrics-brief" ]
     resources:
+      #https://github.com/kata-containers/runtime/issues/1534 scale using limits request do to scale cpu in kata
       limits:
         cpu: @CPUS@
         memory: @MEM_IN_MB@Mi
