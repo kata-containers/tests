@@ -7,6 +7,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
+
 readonly script_name="$(basename "${BASH_SOURCE[0]}")"
 samples=50
 wait_time_sec=5
@@ -42,8 +43,10 @@ get_overhead() {
 	echo "kubernetes container ID: ${cid}"
 	cid=$(echo "${cid}" | cut -d/ -f3)
 	echo "Container ID to get in kata: ${cid}"
-	if ! sudo "${RUNTIME}" list | grep "${cid}"; then
+	if ! sudo "${RUNTIME}" list | grep "${cid}" > /dev/null; then
 		sudo "${RUNTIME}" list
+		kubectl describe pod -l app="overhead"
+		kubectl logs -l app="overhead"
 		exit 1
 	fi
 	cpu_overhead_sum=0

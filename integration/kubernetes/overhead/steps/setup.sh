@@ -19,7 +19,7 @@ sed -e "s,@CPUS@,${CPUS},g" \
 
 kubectl create -f workloads.yaml
 
-if ! kubectl wait pod -l app="overhead" --for=condition=Ready --timeout "200s"; then
+if ! kubectl wait pod -l app="overhead" --for=condition=Ready --timeout "300s"; then
 	echo "Timeout to get pods in ready"
 	kubectl describe pod -l app="overhead"
 	exit 1
