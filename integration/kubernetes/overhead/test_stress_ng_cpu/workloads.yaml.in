@@ -1,0 +1,22 @@
+# Copyright (c) 2019 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: stress-ng-cpu
+  labels:
+    app: overhead
+spec:
+  runtimeClassName: @RUNTIMECLASS@
+  containers:
+  - name: stress-ng-cpu
+    image: polinux/stress-ng
+    command: [ "sh", "-c","stress-ng --cpu @CPUS@ --timeout 99999999s --metrics-brief" ]
+    resources:
+      limits:
+        cpu: @CPUS@
+        memory: @MEM_IN_MB@Mi
+  terminationGracePeriodSeconds: 0
