@@ -65,7 +65,10 @@ if [ "$KATA_HYPERVISOR" = "nemu" ]; then
 fi
 
 if [ "$KATA_HYPERVISOR" = "qemu" ] && [ "$experimental_qemu" == "true" ]; then
+	runtime_repo="github.com/kata-containers/runtime"
+
 	echo "Enable qemu virtiofs configuration.toml"
+	sudo mv "$GOPATH/src/${runtime_repo}/cli/config/configuration-qemu-virtiofs.toml" "${PKGDEFAULTSDIR}"
 	sudo mv "${PKGDEFAULTSDIR}/configuration-qemu-virtiofs.toml" "${PKGDEFAULTSDIR}/configuration.toml"
 fi
 
