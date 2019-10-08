@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+echo "This is a test"
+
 set -o errexit
 set -o nounset
 set -o pipefail
