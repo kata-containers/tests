@@ -12,7 +12,7 @@ readonly script_dir=$(dirname $(readlink -f "$0"))
 readonly script_name="$(basename "${BASH_SOURCE[0]}")"
 label_to_check="overhead"
 pre_run_check_file="./check_before_get_overhead.sh"
-samples=5
+samples=${SAMPLES:-5}
 
 usage() {
 	cat <<EOT

@@ -1,0 +1,23 @@
+# Copyright (c) 2019 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: busybox-sleep
+  labels:
+    app: overhead
+spec:
+  runtimeClassName: @RUNTIMECLASS@
+  containers:
+  - name: busybox-sleep
+    image: busybox
+    command: [ "sh", "-c","sleep infinity" ]
+    resources:
+      #https://github.com/kata-containers/runtime/issues/1534 scale using limits request do to scale cpu in kata
+      limits:
+        cpu: @CPUS@
+        memory: @MEM_IN_MB@Mi
+  terminationGracePeriodSeconds: 0
