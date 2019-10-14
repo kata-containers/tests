@@ -72,6 +72,11 @@ ci_config() {
 		(
 		echo "Install cni config for cri-containerd test"
 		cd "${GOPATH}/src/${cri_containerd_repo}"
+		# Below script installing CNI config for containerd 1.3.0 installs ipv6 routes, so enable ipv6
+		sudo sysctl net.ipv6.conf.all.disable_ipv6=0
+		sudo sysctl net.ipv6.conf.default.disable_ipv6=0
+		sudo sysctl -n net.ipv6.conf.all.disable_ipv6
+		sudo sysctl -n net.ipv6.conf.default.disable_ipv6
 		./hack/install/install-cni-config.sh
 		)
 	fi
