@@ -1,0 +1,12 @@
+#
+# Copyright (c) 2019 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+spec:
+  template:
+    spec:
+      containers:
+      - name: patch-test
+        image: busybox
+        command: ["tail", "-f", "/dev/null"]
