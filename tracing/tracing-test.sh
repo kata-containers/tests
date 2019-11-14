@@ -73,7 +73,7 @@ get_jaeger_status()
 	local attempt=0
 	local status=""
 
-	while [ $attempt -lt 10 ]
+	while [ $attempt -lt 20 ]
 	do
 		status=$(curl -s "http://${jaeger_server}:${jaeger_ui_port}/api/traces?service=${service}" 2>/dev/null)
 		local ret=$?
@@ -160,7 +160,7 @@ check_jaeger_status()
 	local errors=0
 
 	local attempt=0
-	local attempts=3
+	local attempts=10
 
 	local trace_logfile=$(printf "%s/%s-traces.json" "$TRACE_LOG_DIR" "$service")
 
