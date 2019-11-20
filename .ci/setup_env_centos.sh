@@ -61,7 +61,6 @@ declare -A minimal_packages=( \
 declare -A packages=( \
 	[kata_containers_dependencies]="libtool libtool-ltdl-devel device-mapper-persistent-data lvm2 libtool-ltdl" \
 	[qemu_dependencies]="libcap-devel libcap-ng-devel libattr-devel libcap-ng-devel librbd1-devel flex libfdt-devel" \
-	[nemu_dependencies]="brlapi" \
 	[kernel_dependencies]="elfutils-libelf-devel flex pkgconfig" \
 	[crio_dependencies]="libassuan-devel libgpg-error-devel device-mapper-libs util-linux libselinux-devel" \
 	[bison_binary]="bison" \
