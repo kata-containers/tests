@@ -20,7 +20,7 @@ KATA_DEV_MODE="${KATA_DEV_MODE:-}"
 CURRENT_QEMU_TAG=$(get_version "assets.hypervisor.qemu-experimental.tag")
 QEMU_REPO_URL=$(get_version "assets.hypervisor.qemu-experimental.url")
 PACKAGING_REPO="github.com/kata-containers/packaging"
-QEMU_TAR="kata-qemu-static.tar.gz"
+QEMU_TAR="kata-static-qemu-virtiofsd.tar.gz"
 arch=$("${cidir}"/kata-arch.sh -d)
 INSTALL_LOCATION="/tmp/qemu-virtiofs-static/opt/kata/bin/"
 QEMU_PATH="/opt/kata/bin/qemu-virtiofs-system-x86_64"
@@ -30,7 +30,7 @@ qemu_experimental_latest_build_url="${jenkins_url}/job/qemu-experimental-$(uname
 uncompress_experimental_qemu() {
 	local qemu_tar_location="$1"
 	[ -n "$qemu_tar_location" ] || die "provide the location of the QEMU compressed file"
-	sudo tar -xf "${qemu_tar_location}" -C /
+	sudo tar -xvf "${qemu_tar_location}" -C /
 }
 
 install_cached_qemu_experimental() {
