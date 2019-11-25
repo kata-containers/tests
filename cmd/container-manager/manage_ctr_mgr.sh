@@ -93,6 +93,15 @@ install_docker(){
 	if [ -z "$tag" ] || [ "$tag" == "latest" ] ; then
 		# If no tag is recevied, install latest compatible version
 		docker_version=$(get_version "externals.docker.version")
+		if [ "$arch" == "ppc64le" ]; then
+			docker_version=$(get_version "externals.docker.meta.ppc64le-version")
+		fi
+
+		# For Firecracker jobs, we need to use 18.06 as it is the last docker version
+		# with devicemapper support.
+		if [ "$KATA_HYPERVISOR" == "firecracker" ]; then
+			docker_version=$(get_version "externals.docker.meta.firecracker-version")
+		fi
 		log_message "Installing docker $docker_version"
 		docker_version=${docker_version/v}
 		docker_version=${docker_version/-*}
@@ -109,17 +118,9 @@ install_docker(){
 			repo_url="https://download.docker.com/linux/fedora/docker-ce.repo"
 			sudo -E dnf -y install dnf-plugins-core
 			sudo -E dnf config-manager --add-repo "$repo_url"
-			if [ "$VERSION_ID" -ge "30" ]; then
-				warning "This step will be removed once  https://github.com/kata-containers/tests/issues/1954 is solved"
-				sudo sed -i 's/$releasever/28/' /etc/yum.repos.d/docker-ce.repo
-				sudo -E dnf config-manager --set-enabled docker-ce-stable
-				sudo -E dnf makecache
-				sudo -E dnf install -y docker-ce-18.06.3.ce-3.fc28
-			else
-				sudo -E dnf makecache
-				docker_version_full=$(dnf --showduplicate list "$pkg_name" | grep "$docker_version" | awk '{print $2}' | tail -1)
-				sudo -E dnf -y install "${pkg_name}-${docker_version_full}"
-			fi
+			sudo -E dnf makecache
+			docker_version_full=$(dnf --showduplicate list "$pkg_name" | grep "$docker_version" | awk '{print $2}' | tail -1)
+			sudo -E dnf -y install "${pkg_name}-${docker_version_full}"
 		elif [ "$ID" == "centos" ] || [ "$ID" == "rhel" ]; then
 			sudo -E yum install -y yum-utils
 			repo_url="https://download.docker.com/linux/centos/docker-ce.repo"
