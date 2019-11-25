@@ -146,6 +146,7 @@ check_daemon_setup() {
 	info "containerd(cri): Check daemon works with runc"
 	create_containerd_config "runc"
 
+	sudo systemctl is-active docker || sudo systemctl start docker
 	sudo -E PATH="${PATH}:/usr/local/bin" \
 		REPORT_DIR="${REPORT_DIR}" \
 		FOCUS="TestImageLoad" \
@@ -178,6 +179,8 @@ main() {
 	info "containerd(cri): testing using runtime: ${containerd_runtime_test}"
 
 	create_containerd_config "${containerd_runtime_test}"
+
+	sudo systemctl is-active docker || sudo systemctl start docker
 
 	info "containerd(cri): Running cri-tools"
 	sudo -E PATH="${PATH}:/usr/local/bin" \
