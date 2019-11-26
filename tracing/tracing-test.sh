@@ -11,7 +11,16 @@ set -o errtrace
 
 source /etc/os-release || source /usr/lib/os-release
 
+script_name=${0##*/}
+
+# Set to true if all tests pass
+success="false"
+
 DEBUG=${DEBUG:-}
+
+# If set to any value, do not shut down the Jaeger service.
+DEBUG_KEEP_JAEGER=${DEBUG_KEEP_JAEGER:-}
+
 [ -n "$DEBUG" ] && set -o xtrace
 
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
@@ -32,17 +41,48 @@ if [ "$ID" == rhel ]; then
 	exit
 fi
 
+logdir=""
+
 # Cleanup will remove Jaeger container and
 # disable tracing.
-cleanup(){
-	stop_jaeger 2>/dev/null || true
-	"${SCRIPT_PATH}/../.ci/configure_tracing_for_kata.sh" disable
+cleanup()
+{
+	local fp="die"
+	local result="failed"
+	local dest="$logdir"
+
+	if [ "$success" = "true" ]; then
+		local fp="info"
+		result="passed"
+
+		[ -z "$DEBUG_KEEP_JAEGER" ] && stop_jaeger 2>/dev/null || true
+
+		# The tests worked so remove the logs
+		if [ -n "$DEBUG" ]; then
+			eval "$fp" "test $result - logs left in '$dest'"
+		else
+			"${SCRIPT_PATH}/../.ci/configure_tracing_for_kata.sh" disable
+
+			[ -d "$logdir" ] && rm -rf "$logdir" || true
+		fi
+
+		return 0
+	fi
+
+	if [ -n "${CI:-}" ]; then
+		# Running under the CI, so copy the logs to allow them
+		# to be added as test artifacts.
+		sudo mkdir -p "$TRACE_LOG_DIR"
+		sudo cp -a "$logdir"/* "$TRACE_LOG_DIR"
+
+		dest="$TRACE_LOG_DIR"
+	fi
+
+	eval "$fp" "test $result - logs left in '$dest'"
 }
 
-trap cleanup EXIT
-
 # Run an operation to generate Jaeger trace spans
-create_trace()
+create_traces()
 {
 	sudo docker run -i --runtime "$RUNTIME" --net=none --rm busybox true
 }
@@ -72,88 +112,105 @@ stop_jaeger()
 	docker rm -f "${jaeger_docker_container_name}"
 }
 
+get_jaeger_traces()
+{
+	local service="$1"
+	[ -z "$service" ] && die "need jaeger service name"
+
+	local traces_url="http://${jaeger_server}:${jaeger_ui_port}/api/traces?service=${service}"
+	curl -s "${traces_url}" 2>/dev/null
+}
+
+get_trace_summary()
+{
+	local status="$1"
+	[ -z "$status" ] && die "need jaeger status JSON"
+
+	echo "${status}" | jq -S '.data[].spans[] | [.spanID, .operationName] | @sh'
+}
+
+get_span_count()
+{
+	local status="$1"
+	[ -z "$status" ] && die "need jaeger status JSON"
+
+	# This could be simplified but creating a variable holding the
+	# summary is useful in debug mode as the summary is displayed.
+	local trace_summary=$(get_trace_summary "$status" || true)
+
+	local count=0
+
+	if [ -n "trace_summary" ]; then
+		count=$(echo "${trace_summary}" | wc -l)
+	fi
+
+	echo "$count"
+}
+
 # Returns status from Jaeger web UI
 get_jaeger_status()
 {
 	local service="$1"
+	local logdir="$2"
 
 	[ -z "$service" ] && die "need jaeger service name"
+	[ -z "$logdir" ] && die "need logdir"
 
-	local attempt=0
+	local max_attempts=10
+
 	local status=""
+	local span_count=0
 
-	while [ $attempt -lt 10 ]
+	# Loop until we find some spans
+	for _ in $(seq "$max_attempts")
 	do
-		status=$(curl -s "http://${jaeger_server}:${jaeger_ui_port}/api/traces?service=${service}" 2>/dev/null)
-		local ret=$?
+		status=$(get_jaeger_traces "$service" || true)
+		if [ -n "$status" ]; then
+			echo "$status" > "$logdir/${service}-status.json"
+			span_count=$(get_span_count "$status")
+			[ "$span_count" -gt 0 ] && break
+		fi
 
-		[ "$ret" -eq 0 ] && [ -n "$status" ] && break
-
-		attempt=$((attempt+1))
 		sleep 1
 	done
 
-	echo "$status"
-}
+	[ -z "$status" ] && die "failed to query Jaeger for status"
+	[ "$span_count" -eq 0 ] && die "failed to find any trace spans"
 
-# Look for any "dangling" spans that have not been reported to the Jaeger
-# agent.
-check_missing_spans()
-{
-	local service="$1"
-	local min_spans="$2"
-
-	[ -z "$service" ] && die "need jaeger service name"
-	[ -z "$min_spans" ] && die "need minimum trace span count"
-
-	local logfile=$(mktemp)
-
-	sudo journalctl -q -o cat -a -t "$service" > "$logfile"
-	sudo chown "$USER:" "$logfile"
-
-	# This message needs to be logged by each Kata component, generally when
-	# debug is enabled.
-	local component_prefix="created span"
-
-	# Message prefix added by Jaeger when LogSpans=true
-	# (see
-	# https://godoc.org/github.com/uber/jaeger-client-go/config#ReporterConfig).
-	local jaeger_reporter_prefix="Reporting span"
-
-	local logged_spans
-	if ! logged_spans=$(grep -E -o "${component_prefix} [^ ][^ ]*" "$logfile" | awk '{print $3}')
-	then
-		info "failed to check logged spans"
-		rm -f "$logfile"
-		return
-	fi
-
-	if [ -z "$logged_spans" ]
-	then
-		info "No logged spans to check"
-		rm -f "$logfile"
-		return
-	fi
-
-	local count=0
-
-	for span in $logged_spans
+	# Now that we have a valid status, poll until it settles.
+	# Yes, it's horrid but we need to poll to give the Jaeger
+	# web service time to think it seems ;)
+	for _ in $(seq "$max_attempts")
 	do
-		count=$((count+1))
+		local new_status=$(get_jaeger_traces "$service" || true)
 
-		# Remove quotes
-		span=$(echo $span|tr -d '"')
+		# We have already queried the services status, so it should
+		# still be there!
+		[ -z "$new_status" ] && die "Jaeger trace status disappeared"
 
-		grep -E -q "${jaeger_reporter_prefix} \<$span\>" "$logfile" || \
-			die "span $count ($span) not reported"
+		local new_span_count=$(get_span_count "$new_status")
+		[ -z "$new_span_count" ] && die "no span count"
+		[ "$new_span_count" -le 0 ] && die "invalid span count"
+		[ "$new_span_count" -lt "$span_count" ] && die "span count dropped ($span_count to $new_span_count)"
+
+		# Span count didn't change, so the service
+		# has "stabilised"
+		if [ "$new_span_count" -eq "$span_count" ]; then
+			get_trace_summary "$status" \
+				> "$logdir/span-summary.txt"
+
+			echo "$status"
+			return 0
+		fi
+
+		# The span count increased, so reset
+		status="$new_status"
+		span_count="$new_span_count"
+
+		sleep 1
 	done
 
-	[ "$count" -lt "$min_spans" ] && \
-		die "expected >= $min_spans reported spans, got $count"
-
-	info "All $count spans reported"
-
-	rm -f "$logfile"
+	die "span count failed to stabilize after $max_attempts seconds"
 }
 
 # Check Jaeger spans for the specified service.
@@ -161,9 +218,11 @@ check_jaeger_status()
 {
 	local service="$1"
 	local min_spans="$2"
+	local logdir="$3"
 
 	[ -z "$service" ] && die "need jaeger service name"
 	[ -z "$min_spans" ] && die "need minimum trace span count"
+	[ -z "$logdir" ] && die "need logdir"
 
 	local status
 	local errors=0
@@ -171,13 +230,11 @@ check_jaeger_status()
 	local attempt=0
 	local attempts=3
 
-	local trace_logfile=$(printf "%s/%s-traces.json" "$TRACE_LOG_DIR" "$service")
-
-	info "Checking Jaeger status (and logging traces to ${trace_logfile})"
+	info "Checking Jaeger status"
 
 	while [ "$attempt" -lt "$attempts" ]
 	do
-		status=$(get_jaeger_status "$service")
+		status=$(get_jaeger_status "$service" "$logdir")
 
 		#------------------------------
 		# Basic sanity checks
@@ -187,7 +244,7 @@ check_jaeger_status()
 		[ -z "$span_lines" ] && die "no span status"
 
 		# Log the spans to allow for analysis in case the test fails
-		echo "$status"|jq -S .|sudo tee "$trace_logfile" >/dev/null
+		echo "$status"|jq -S . > "$logdir/${service}-traces-formatted.json"
 
 		local span_lines_count=$(echo "$span_lines"|wc -l)
 
@@ -196,8 +253,7 @@ check_jaeger_status()
 		[ -z "$spans" ] && die "no spans"
 
 		# Ensure total span count is numeric
-		echo "$spans"|grep -q "^[0-9][0-9]*$"
-		[ $? -eq 0 ] || die "invalid span count: '$spans'"
+		echo "$spans"|grep -q "^[0-9][0-9]*$" || die "invalid span count: '$spans'"
 
 		info "found $spans spans (across $span_lines_count traces)"
 
@@ -205,11 +261,11 @@ check_jaeger_status()
 		[ "$spans" -lt "$min_spans" ] && die "expected >= $min_spans spans, got $spans"
 
 		# Look for common errors in span data
-		local errors1
-		if errors=$(echo "$status"|jq -S . 2>/dev/null|grep "invalid parent span")
-		then
+		local error_msg=$(echo "$status"|jq -S . 2>/dev/null|grep "invalid parent span" || true)
+
+		if [ -n "$error_msg" ]; then
 			errors=$((errors+1))
-			warn "Found invalid parent span errors (attempt $attempt): $errors1"
+			warn "Found invalid parent span errors (attempt $attempt): $error_msg"
 			attempt=$((attempt+1))
 			continue
 		else
@@ -218,11 +274,14 @@ check_jaeger_status()
 		fi
 
 		# Crude but it works
-		local errors2
-		if errors2=$(echo "$status"|jq -S . 2>/dev/null|grep "\"warnings\""|grep -E -v "\<null\>")
-		then
+		error_or_warning_msgs=$(echo "$status" |\
+			jq -S . 2>/dev/null |\
+			grep -E "\"(warnings|errors)\"" |\
+			grep -E -v "\<null\>" || true)
+
+		if [ -n "$error_or_warning_msgs" ]; then
 			errors=$((errors+1))
-			warn "Found warnings (attempt $attempt): $errors2"
+			warn "Found errors/warnings (attempt $attempt): $error_or_warning_msgs"
 			attempt=$((attempt+1))
 			continue
 		else
@@ -238,48 +297,112 @@ check_jaeger_status()
 	[ "$errors" -eq 0 ] || die "errors still detected after $attempts attempts"
 }
 
+setup()
+{
+	start_jaeger
+
+	"${SCRIPT_PATH}/../.ci/configure_tracing_for_kata.sh" enable
+}
+
 run_test()
 {
-	local min_spans="$1"
-	local service="$2"
+	local service="$1"
+	local min_spans="$2"
+	local logdir="$3"
 
-	[ -z "$min_spans" ] && die "need minimum span count"
 	[ -z "$service" ] && die "need service name"
+	[ -z "$min_spans" ] && die "need minimum span count"
+	[ -z "$logdir" ] && die "need logdir"
 
-	create_trace
+	info "Running test for service '$service'"
 
-	check_jaeger_status "$service" "$min_spans"
+	logdir="$logdir/$service"
+	mkdir -p "$logdir"
 
-	check_missing_spans "$service" "$min_spans"
+	check_jaeger_status "$service" "$min_spans" "$logdir"
 
 	info "test passed"
 }
 
+run_tests()
+{
+	# List of services to check
+	#
+	# Format: "name:min-spans"
+	#
+	# Where:
+	#
+	# - 'name' is the Jaeger service name.
+	# - 'min-spans' is an integer representing the minimum number of
+	#   trace spans this service should generate.
+	#
+	# Notes:
+	#
+	# - Uses an array to ensure predictable ordering.
+	# - All services listed are expected to generate traces
+	#   when create_traces() is called a single time.
+	local -a services
+
+	services+=("kata-runtime:10")
+	services+=("kata-shim:4")
+
+	create_traces
+
+	logdir=$(mktemp -d)
+
+	for service in "${services[@]}"
+	do
+		local name=$(echo "${service}"|cut -d: -f1)
+		local min_spans=$(echo "${service}"|cut -d: -f2)
+
+		run_test "${name}" "${min_spans}" "${logdir}"
+	done
+
+	info "all tests passed"
+	success="true"
+}
+
+usage()
+{
+	cat <<EOT
+
+Usage: $script_name [<command>]
+
+Commands:
+
+  clean  - Perform cleanup phase only.
+  help   - Show usage.
+  run    - Only run tests (no setup or cleanup).
+  setup  - Perform setup phase only.
+
+Environment variables:
+
+  CI    - if set, save logs of all tests to ${TRACE_LOG_DIR}.
+  DEBUG - if set, enable tracing and do not cleanup after tests.
+  DEBUG_KEEP_JAEGER - if set, do not shut down the Jaeger service.
+
+Notes:
+  - Runs all test phases if no arguments are specified.
+
+EOT
+}
+
 main()
 {
-	runtime_min_spans=10
-	shim_min_spans=5
+	local cmd="${1:-}"
 
-	# Name of Jaeger "services" (aka Kata components) to check trace for.
-	runtime_service="kata-runtime"
-	shim_service="kata-shim"
+	case "$cmd" in
+		clean) success="true"; cleanup; exit 0;;
+		help|-h|-help|--help) usage; exit 0;;
+		run) run_tests; exit 0;;
+		setup) setup; exit 0;;
+	esac
 
-	start_jaeger
+	trap cleanup EXIT
 
-	"${SCRIPT_PATH}/../.ci/configure_tracing_for_kata.sh" enable
+	setup
 
-	info "Checking runtime spans"
-	run_test "$runtime_min_spans" "$runtime_service"
-
-	info "Checking shim spans"
-	run_test "$shim_min_spans" "$shim_service"
-
-	# The tests worked so remove the logs
-	if sudo [ -d "$TRACE_LOG_DIR" ] && [ "$TRACE_LOG_DIR" != "/" ]
-	then
-		info "Removing cached trace logs from $TRACE_LOG_DIR"
-		sudo rm -rf "$TRACE_LOG_DIR"
-	fi
+	run_tests
 }
 
 main "$@"
