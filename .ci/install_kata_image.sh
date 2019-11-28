@@ -51,6 +51,7 @@ agent_path="${GOPATH}/src/github.com/kata-containers/agent"
 osbuilder_repo="github.com/kata-containers/osbuilder"
 osbuilder_path="${GOPATH}/src/${osbuilder_repo}"
 latest_build_url="${jenkins_url}/job/image-nightly-$(uname -m)/${cached_artifacts_path}"
+tag="${1:-""}"
 
 install_ci_cache_image() {
 	type=${1}
@@ -143,6 +144,7 @@ get_dependencies() {
 	info "Pull and install agent on host"
 	bash -f "${cidir}/install_agent.sh"
 	go get -d "${osbuilder_repo}" || true
+	[ -z "${tag}" ] || git -C "${osbuilder_path}" checkout -b "${tag}" "${tag}"
 }
 
 main() {
