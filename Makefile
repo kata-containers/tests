@@ -161,7 +161,7 @@ pentest:
 
 vm-factory:
 	bash -f integration/vm_factory/vm_templating_test.sh
-
+	bash -f integration/vm_factory/vm_cache_test.sh
 
 network:
 	systemctl is-active --quiet docker || sudo systemctl start docker
