@@ -29,7 +29,7 @@ cache_qemu_artifacts() {
 	pushd "${tests_repo_dir}"
 	local current_qemu_version=$(get_version "assets.hypervisor.qemu.version")
 	popd
-	local qemu_tar="kata-qemu-static.tar.gz"
+	local qemu_tar="kata-static-qemu.tar.gz"
 	create_cache_asset "$qemu_tar" "${current_qemu_version}"
 }
 
@@ -38,7 +38,7 @@ cache_qemu_experimental_artifacts() {
 	pushd "${tests_repo_dir}"
 	local current_qemu_experimental_tag=$(get_version "assets.hypervisor.qemu-experimental.tag")
 	popd
-	local qemu_experimental_tar="kata-qemu-static.tar.gz"
+	local qemu_experimental_tar="kata-static-qemu-virtiofsd.tar.gz"
 	create_cache_asset "$qemu_experimental_tar" "${current_qemu_experimental_tag}"
 }
 
