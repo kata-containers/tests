@@ -54,7 +54,7 @@ uncompress_static_qemu() {
 
 build_and_install_static_qemu() {
 	build_static_qemu
-	uncompress_static_qemu "${KATA_TESTS_CACHEDIR}/${QEMU_TAR}"
+	uncompress_static_qemu "${QEMU_TAR}"
 }
 
 install_cached_qemu() {
