@@ -133,6 +133,7 @@ check_all_running() {
 		# if this is kata-runtime, check how many pods virtcontainers thinks we have
 		if [[ "$RUNTIME" == "kata-runtime" ]]; then
 			num_vc_pods=$(sudo ls -1 ${VC_POD_DIR} | wc -l)
+			ls -1 ${VC_POD_DIR} >&2
 
 			if (( ${how_many_running} != ${num_vc_pods} )); then
 				echo "Wrong number of pods in $VC_POD_DIR (${how_many_running} != ${num_vc_pods}) - stopping)"

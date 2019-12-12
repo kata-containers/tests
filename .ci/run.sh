@@ -8,6 +8,8 @@
 # This script will execute the Kata Containers Test Suite.
 
 set -e
+set -x
+export DEBUG=true
 
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
