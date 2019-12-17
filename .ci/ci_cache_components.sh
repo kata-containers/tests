@@ -121,7 +121,7 @@ create_cache_asset() {
 		echo $(basename "${path}") > "latest-${image_name}"
 		sudo cp "${path}" "${kata_dir}/osbuilder-${image_name}.yaml"  .
 	else
-		echo "${component_version}" >  "latest"
+		echo "${component_version}" | sudo tee - a "latest"
 	fi
 
 	# In the case of qemu we have the tar at a specific location
