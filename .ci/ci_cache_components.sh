@@ -22,6 +22,7 @@ WORKSPACE=${WORKSPACE:-$(pwd)}
 kata_dir="/usr/share/kata-containers"
 tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 tests_repo_dir="${GOPATH}/src/${tests_repo}"
+runtime_repo="${runtime_repo:-github.com/kata-containers/runtime}"
 
 # This builds qemu by specifying the qemu version from the
 # runtime versions file and the qemu tar file name
@@ -59,7 +60,9 @@ cache_kernel_artifacts() {
 cache_cloud_hypervisor() {
 	local cloud_hypervisor_binary="cloud-hypervisor"
 	local cloud_hypervisor_binary_path="${GOPATH}/src/github.com/cloud-hypervisor/cloud-hypervisor/cloud-hypervisor/"
+	pushd "${GOPATH}/src/${runtime_repo}"
 	local current_cloud_hypervisor_version=$(get_version "assets.hypervisor.cloud_hypervisor.version")
+	popd
 	pushd "${cloud_hypervisor_binary_path}"
 	create_cache_asset "${cloud_hypervisor_binary}" "${current_cloud_hypervisor_version}"
 	popd
