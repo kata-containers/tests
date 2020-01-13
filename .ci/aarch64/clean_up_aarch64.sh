@@ -11,3 +11,6 @@ lib_script="${GOPATH}/src/${tests_repo}/.ci/lib.sh"
 source "${lib_script}"
 
 gen_clean_arch || info "Arch cleanup scripts failed"
+
+info "clean up /tmp"
+sudo sh -c 'rm -rf /tmp/*'
