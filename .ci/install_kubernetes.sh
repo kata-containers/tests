@@ -36,6 +36,11 @@ if [ "$ID" == "fedora" ]; then
 	bash -f "${cidir}/configure_crio_for_kata.sh"
 fi
 
+# Get fedora version
+if [ "$ID" == "fedora" ]; then
+	fedora_version=$(grep VERSION_ID /etc/os-release | cut -d '=' -f2)
+fi
+
 if [ "$ID" == "ubuntu" ]; then
 	sudo bash -c "cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
 	deb http://apt.kubernetes.io/ kubernetes-xenial-unstable main
@@ -60,12 +65,19 @@ elif [ "$ID" == "centos" ] || [ "$ID" == "fedora" ]; then
 	baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
 	enabled=1
 	gpgcheck=1
-	repo_gpgcheck=1
+	repo_gpgcheck=0
 	gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 EOF"
 
 	chronic sudo -E sed -i 's/^[ \t]*//' /etc/yum.repos.d/kubernetes.repo
 	install_kubernetes_version=$(echo $kubernetes_version | cut -d'-' -f1)
+
+	if [ "$fedora_version" == "31" ]; then
+		chronic sudo -E rpm --import https://packages.cloud.google.com/yum/doc/yum-key.gpg
+		chronic sudo -E rpm --import https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+		chronic sudo -E yum -y clean all
+	fi
+
 	chronic sudo -E yum -y update
 	chronic sudo -E yum install -y kubelet-"$install_kubernetes_version" kubeadm-"$install_kubernetes_version" kubectl-"$install_kubernetes_version" --disableexcludes=kubernetes
 
