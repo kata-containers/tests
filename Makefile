@@ -161,7 +161,9 @@ pentest:
 
 vm-factory:
 	bash -f integration/vm_factory/vm_templating_test.sh
+ifneq ($(VIRTIOFS_CI),true)
 	bash -f integration/vm_factory/vm_cache_test.sh
+endif
 
 network:
 	systemctl is-active --quiet docker || sudo systemctl start docker
