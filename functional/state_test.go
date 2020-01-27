@@ -20,7 +20,7 @@ var (
 
 const (
 	stateStopped  = "stopped"
-	stateWaitTime = 5
+	stateWaitTime = 10
 )
 
 var _ = Describe("state", func() {
