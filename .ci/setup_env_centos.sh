@@ -18,6 +18,8 @@ else
   centos_version=$(grep VERSION_ID /usr/lib/os-release | cut -d '"' -f2)
 fi
 
+sudo -E yum -y clean all
+
 # Send error when a package is not available in the repositories
 echo "skip_missing_names_on_install=0" | sudo tee -a /etc/yum.conf
 
