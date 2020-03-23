@@ -196,15 +196,15 @@ main() {
 
 	info "Latest cached image: ${last_build_image_version}"
 
-	if [ "$image_output" == "$last_build_image_version" ]; then
-		info "Cached image is same to be generated"
-		if ! install_ci_cache_image "${type}"; then
-			info "failed to install cached image, trying to build from source"
-			build_image "${image_output}" "${osbuilder_distro}" "${os_version}" "${agent_commit}"
-		fi
-	else
+#	if [ "$image_output" == "$last_build_image_version" ]; then
+#		info "Cached image is same to be generated"
+#		if ! install_ci_cache_image "${type}"; then
+#			info "failed to install cached image, trying to build from source"
+#			build_image "${image_output}" "${osbuilder_distro}" "${os_version}" "${agent_commit}"
+#		fi
+#	else
 		build_image "${image_output}" "${osbuilder_distro}" "${os_version}" "${agent_commit}"
-	fi
+#	fi
 
 	if [ ! -L "${LINK_PATH}" ]; then
 		die "Link path not installed: ${LINK_PATH}"

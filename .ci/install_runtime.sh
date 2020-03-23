@@ -14,6 +14,7 @@ source /etc/os-release || source /usr/lib/os-release
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 MACHINETYPE="${MACHINETYPE:-pc}"
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
+TEST_RUST_AGENT="${TEST_RUST_AGENT:-false}"
 
 arch=$("${cidir}"/kata-arch.sh -d)
 
@@ -96,7 +97,7 @@ else
 	echo "Metrics run - do not enable all debug options in file ${runtime_config_path}"
 fi
 
-if [ "$USE_VSOCK" == "yes" ]; then
+if [ "$USE_VSOCK" == "yes" ] || [ "$TEST_RUST_AGENT" == "true" ]; then
 	echo "Configure use of VSOCK in ${runtime_config_path}"
 	sudo sed -i -e 's/^#use_vsock.*/use_vsock = true/' "${runtime_config_path}"
 

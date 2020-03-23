@@ -19,12 +19,11 @@ TEST_RUST_AGENT="${TEST_RUST_AGENT:-false}"
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
 
 if [ "${TEST_RUST_AGENT}" == true ]; then
-	echo "Install rust agent image"
-	"${cidir}/install_kata_image_rust.sh"
-else
-	echo "Install kata-containers image"
-	"${cidir}/install_kata_image.sh" "${tag}"
+	export RUST_AGENT=yes
 fi
+
+echo "Install kata-containers image"
+"${cidir}/install_kata_image.sh" "${tag}"
 
 echo "Install Kata Containers Kernel"
 "${cidir}/install_kata_kernel.sh" "${tag}"
