@@ -92,36 +92,100 @@ endif
 debug-console:
 	bash -f ./functional/debug_console/run.sh
 
+EXTRA_GINKGO_FLAGS :=
+SKIP_GINKGO =
+GINKGO_FLAGS := -failFast -v $(EXTRA_GINKGO_FLAGS)
+
+GINKGO_TEST_FLAGS := ./integration/docker/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT} -hypervisor=$(KATA_HYPERVISOR)
+
+# Append strings to skip for ginkgo using '|'
+define append_ginkgo
+$(info INFO: adding '$(2)' to '$(1)')
+$(if $($(1)),$(if $(2),$(eval $(1)= $($(1))|)))
+$(if $(2),$(eval $(1) = $($(1))$(2)))
+endef
+
+ifeq ($(KATA_HYPERVISOR),cloud-hypervisor)
+$(eval $(call append_ginkgo,SKIP_GINKGO,$(SKIP_CLH)))
+endif
+
+ifeq ($(KATA_HYPERVISOR),firecracker)
+$(eval $(call append_ginkgo,SKIP_GINKGO,$(SKIP_FIRECRACKER)))
+endif
+
+ifneq ($(SKIP),)
+$(eval $(call append_ginkgo,SKIP_GINKGO,$(SKIP)))
+endif
+
+RUN_PARALLEL ?= true
+ifeq (centos7,$(ID)$(VERSION_ID))
+RUN_PARALLEL = false
+endif
+
+ifeq ($(ARCH),$(filter $(ARCH), aarch64 s390x ppc64le))
+RUN_PARALLEL = false
+endif
+
+ifeq ($(KATA_HYPERVISOR),firecracker)
+RUN_PARALLEL = false
+endif
+
+ifeq ($(KATA_HYPERVISOR),cloud-hypervisor)
+RUN_PARALLEL = false
+endif
+
+SKIP_GINKGO_SERIAL = $(SKIP_GINKGO)
+SKIP_GINKGO_PARALLEL = $(SKIP_GINKGO)
+$(eval $(call append_ginkgo,SKIP_GINKGO_PARALLEL,\[Serial Test\]))
+
+ifneq ($(SKIP_GINKGO),)
+SKIP_GINKGO_FLAGS = -skip "$(SKIP_GINKGO)"
+endif
+
+ifneq ($(SKIP_GINKGO_PARALLEL),)
+SKIP_GINKGO_PARALLEL_FLAGS = -skip "$(SKIP_GINKGO_PARALLEL)"
+endif
+
+ifneq ($(SKIP_GINKGO_SERIAL),)
+SKIP_GINKGO_SERIAL_FLAGS = -skip "$(SKIP_GINKGO_SERIAL)"
+endif
+
+ifneq ($(FOCUS),)
+$(eval $(call append_ginkgo,FOCUS_GINKGO,$(FOCUS)))
+# User requesting specific test, make it serial to simplify view.
+RUN_PARALLEL = false
+endif
+
+FOCUS_GINKGO_SERIAL = $(FOCUS_GINKGO)
+FOCUS_GINKGO_PARALLEL = $(FOCUS_GINKGO)
+$(eval $(call append_ginkgo,FOCUS_GINKGO_SERIAL,\[Serial Test\]))
+
+ifneq ($(FOCUS_GINKGO),)
+FOCUS_GINKGO_FLAGS = -focus "$(FOCUS_GINKGO)"
+endif
+
+ifneq ($(FOCUS_GINKGO_PARALLEL),)
+FOCUS_GINKGO_PARALLEL_FLAGS = -focus "$(FOCUS_GINKGO_PARALLEL)"
+endif
+
+ifneq ($(FOCUS_GINKGO_SERIAL),)
+FOCUS_GINKGO_SERIAL_FLAGS = -focus "$(FOCUS_GINKGO_SERIAL)"
+endif
+
 docker: ginkgo
 ifeq ($(RUNTIME),)
 	$(error RUNTIME is not set)
 endif
 
-ifeq ($(KATA_HYPERVISOR),firecracker)
-	./ginkgo -failFast -v -focus "${FOCUS}" -skip "${SKIP_FIRECRACKER}" \
-		./integration/docker/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT} \
-		-hypervisor=$(KATA_HYPERVISOR)
-else ifeq ($(KATA_HYPERVISOR),cloud-hypervisor)
-	./ginkgo -failFast -v -focus "${FOCUS}" -skip "${SKIP_CLH}" \
-		./integration/docker/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT} \
-		-hypervisor=$(KATA_HYPERVISOR)
-else ifeq ($(ARCH),$(filter $(ARCH), aarch64 s390x ppc64le))
-	./ginkgo -failFast -v -focus "${FOCUS}" -skip "${SKIP}" \
-		./integration/docker/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT}
-else ifneq (${FOCUS},)
-	./ginkgo -failFast -v -focus "${FOCUS}" -skip "${SKIP}" \
-		./integration/docker/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT}
-else ifeq (centos7,$(ID)$(VERSION_ID))
-# Run tests sequentially, parallel tests fail randomly in Centos 7
-	./ginkgo -failFast -v -skip "${SKIP}" \
-		./integration/docker/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT}
+ifeq (false,$(RUN_PARALLEL))
+	@echo "Running test in serial, this will take several minutes"
+	./ginkgo  $(GINKGO_FLAGS) $(SKIP_GINKGO_FLAGS) $(FOCUS_GINKGO_FLAGS) $(GINKGO_TEST_FLAGS)
 else
-# Run tests in parallel, skip tests that need to be run serialized
-	./ginkgo -failFast -p -stream -v -skip "${SKIP}" -skip "\[Serial Test\]" \
-		./integration/docker/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT}
-# Now run serialized tests
-	./ginkgo -failFast -v -focus "\[Serial Test\]" -skip "${SKIP}" \
-		./integration/docker/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT}
+	@echo "Running tests in parallel"
+	./ginkgo -p -stream $(GINKGO_FLAGS) $(SKIP_GINKGO_PARALLEL_FLAGS) $(FOCUS_GINKGO_PARALLEL_FLAGS) $(GINKGO_TEST_FLAGS)
+	@echo "Running tests that only can run in serial"
+	./ginkgo $(GINKGO_FLAGS) $(SKIP_GINKGO_SERIAL_FLAGS) $(FOCUS_GINKGO_SERIAL_FLAGS) $(GINKGO_TEST_FLAGS)
+	@echo "Running sanity check for docker tests"
 	bash sanity/check_sanity.sh
 endif
 
