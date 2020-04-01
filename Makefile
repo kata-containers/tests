@@ -236,6 +236,9 @@ compatibility:
 vcpus:
 	bash -f integration/vcpus/default_vcpus_test.sh
 
+vfio:
+	bash -f functional/vfio/run.sh
+
 ipv6:
 	bash -f integration/ipv6/ipv6.sh
 
@@ -287,4 +290,5 @@ help:
 	test \
 	tracing \
 	vcpus \
+	vfio \
 	vm-factory
