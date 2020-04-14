@@ -12,6 +12,7 @@ set -e
 cidir=$(dirname "$0")
 
 source "${cidir}/../../metrics/lib/common.bash"
+source /etc/os-release || source /usr/lib/os-release
 
 # Environment variables
 IMAGE="${IMAGE:-busybox}"
@@ -22,6 +23,12 @@ PAYLOAD_ARGS="${PAYLOAD_ARGS:-tail -f /dev/null}"
 RUNTIME="${RUNTIME:-kata-runtime}"
 
 HYPERVISOR_NAME=$(basename ${HYPERVISOR_PATH})
+
+if [ "$ID" == sles ] || [[ "$ID" =~ ^opensuse.*$ ]]; then
+	issue="https://github.com/kata-containers/runtime/issues/2611"
+	echo "Skip hypervisor stability kill test ${issue}"
+	exit 0
+fi
 
 setup()  {
 	clean_env
