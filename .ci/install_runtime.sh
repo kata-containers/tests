@@ -28,8 +28,10 @@ export SYSTEM_BUILD_TYPE=kata
 # The runtimes config file should live here
 export SYSCONFDIR=/etc
 
+PREFIX=${PREFIX:-/usr}
+
 # Artifacts (kernel + image) live below here
-export SHAREDIR=/usr/share
+export SHAREDIR=${PREFIX}/share
 
 USE_VSOCK="${USE_VSOCK:-no}"
 
@@ -113,12 +115,15 @@ if [ "$USE_VSOCK" == "yes" ]; then
 	fi
 fi
 
-if [ "$KATA_HYPERVISOR" == "qemu"  ]; then
-       echo "Add kata-runtime as a new/default Docker runtime."
-       "${cidir}/../cmd/container-manager/manage_ctr_mgr.sh" docker configure -r kata-runtime -f
-else
-       echo "Kata runtime will not set as a default in Docker"
-fi
+case "${KATA_HYPERVISOR}" in
+	"cloud-hypervisor" | "qemu")
+		echo "Add kata-runtime as a new/default Docker runtime."
+		"${cidir}/../cmd/container-manager/manage_ctr_mgr.sh" docker configure -r kata-runtime -f
+		;;
+	*)
+		echo "Kata runtime will not set as a default in Docker"
+		;;
+esac
 
 if [ "$MACHINETYPE" == "q35" ]; then
 	echo "Use machine_type q35"

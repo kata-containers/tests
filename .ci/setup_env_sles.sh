@@ -27,12 +27,12 @@ echo "Install perl-IPC-Run"
 sudo -E zypper -n install perl-IPC-Run
 
 echo "Add repo for moreutils"
-moreutils_repo="https://download.opensuse.org/repositories/utilities/SLE_12_SP3_Backports/utilities.repo"
+moreutils_repo="https://download.opensuse.org/repositories/utilities/SLE_${VERSION//-/_}/utilities.repo"
 sudo -E zypper addrepo --no-gpgcheck ${moreutils_repo}
 sudo -E zypper refresh
 
 echo "Add repo for hunspell and pandoc packages"
-SUSEConnect -p PackageHub/${VERSION_ID}/${arch}
+sudo -E SUSEConnect -p PackageHub/${VERSION_ID}/${arch}
 
 echo "Install chronic"
 sudo -E zypper -n install moreutils
@@ -46,12 +46,12 @@ declare -A minimal_packages=( \
 declare -A packages=( \
 	[general_dependencies]="curl git patch"
 	[kata_containers_dependencies]="libtool automake autoconf bc libpixman-1-0-devel coreutils" \
-	[qemu_dependencies]="libcap-devel libattr1 libcap-ng-devel librbd-devel" \
-	[kernel_dependencies]="libelf-devel flex" \
+	[qemu_dependencies]="libcap-devel libattr1 libcap-ng-devel librbd-devel libpmem-devel" \
+	[kernel_dependencies]="patch libelf-devel flex" \
 	[crio_dependencies]="libglib-2_0-0 libseccomp-devel libapparmor-devel libgpg-error-devel glibc-devel-static libgpgme-devel libassuan-devel glib2-devel glibc-devel util-linux" \
 	[bison_binary]="bison" \
 	[libudev-dev]="libudev-devel" \
-	[build_tools]="python zlib-devel" \
+	[build_tools]="gcc python zlib-devel" \
 	[metrics_dependencies]="jq" \
 	[cri-containerd_dependencies]="libseccomp-devel libapparmor-devel make pkg-config" \
 	[haveged]="haveged" \
@@ -59,7 +59,7 @@ declare -A packages=( \
 	[libsystemd]="systemd-devel" \
 )
 
-main() 
+main()
 {
 	local setup_type="$1"
 	[ -z "$setup_type" ] && die "need setup type"
@@ -93,14 +93,12 @@ main()
 
 	[ "$setup_type" = "minimal" ] && exit 0
 
-	echo "Install Build Tools"
-	chronic sudo -E zypper -n install -t pattern "Basis-Devel"
-
 	echo "Add crudini repo"
 	VERSIONID="12_SP1"
 	crudini_repo="https://download.opensuse.org/repositories/Cloud:OpenStack:Liberty/SLE_${VERSIONID}/Cloud:OpenStack:Liberty.repo"
 	chronic sudo -E zypper addrepo --no-gpgcheck ${crudini_repo}
 	chronic sudo -E zypper refresh
+	chronic sudo -E zypper -n install crudini
 }
 
 main "$@"
