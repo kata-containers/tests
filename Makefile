@@ -28,10 +28,28 @@ ifeq (${CI}, true)
 endif
 
 # union for 'make test'
-UNION := functional debug-console $(DOCKER_DEPENDENCY) openshift crio docker-compose network \
-	docker-stability oci netmon kubernetes swarm vm-factory \
-	entropy ramdisk shimv2 tracing time-drift compatibility vcpus \
-	$(PODMAN_DEPENDENCY) pmem
+UNION := crio \
+	compatibility \
+	debug-console \
+	$(DOCKER_DEPENDENCY) \
+	docker-compose \
+	docker-stability \
+	entropy \
+	functional \
+	kubernetes \
+	netmon \
+	network \
+	oci \
+	openshift \
+	pmem\
+	$(PODMAN_DEPENDENCY) \
+	ramdisk \
+	shimv2 \
+	swarm \
+	time-drift \
+	tracing \
+	vcpus \
+	vm-factory
 
 # filter scheme script for docker integration test suites
 FILTER_FILE = .ci/filter/filter_docker_test.sh
@@ -212,6 +230,7 @@ time-drift:
 	bats integration/time_drift/time_drift.bats
 
 compatibility:
+	systemctl is-active --quiet docker || sudo systemctl start docker
 	bash -f integration/compatibility/run.sh
 
 vcpus:
