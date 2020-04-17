@@ -30,11 +30,27 @@ if [ -z $(yum repolist | grep "Extra Packages") ]; then
 	sudo -E rpm -ivh epel-release-latest-${centos_version}.noarch.rpm
 fi
 
+# Enable priority to CentOS Base repo in order to
+# avoid perl updating issues
+if [ "$centos_version" == "8" ]; then
+	sudo echo "priority=1" | sudo tee -a /etc/yum.repos.d/CentOS-Base.repo
+	sudo -E yum -y clean all
+fi
+
 echo "Update repositories"
 sudo -E yum -y update
 
+if [ "$centos_version" == "8" ]; then
+	echo "Enable PowerTools repository"
+	sudo yum-config-manager --enable PowerTools
+fi
+
 echo "Install chronic"
 sudo -E yum -y install moreutils
+
+if [ "$centos_version" == "8" ]; then
+	chronic sudo -E yum install pkgconf-pkg-config
+fi 
 
 declare -A minimal_packages=( \
 	[spell-check]="hunspell hunspell-en-GB hunspell-en-US pandoc" \
@@ -43,25 +59,22 @@ declare -A minimal_packages=( \
 )
 
 declare -A packages=( \
-	[kata_containers_dependencies]="libtool libtool-ltdl-devel device-mapper-persistent-data lvm2 device-mapper-devel libtool-ltdl" \
+	[kata_containers_dependencies]="libtool libtool-ltdl-devel device-mapper-persistent-data lvm2 libtool-ltdl" \
 	[qemu_dependencies]="libcap-devel libcap-ng-devel libattr-devel libcap-ng-devel librbd1-devel flex libfdt-devel" \
-	[nemu_dependencies]="brlapi" \
-	[kernel_dependencies]="elfutils-libelf-devel flex pkgconfig" \
-	[crio_dependencies]="glibc-static libseccomp-devel libassuan-devel libgpg-error-devel device-mapper-libs btrfs-progs-devel util-linux libselinux-devel" \
+	[kernel_dependencies]="elfutils-libelf-devel flex pkgconfig patch" \
+	[crio_dependencies]="libassuan-devel libgpg-error-devel device-mapper-libs util-linux libselinux-devel" \
 	[bison_binary]="bison" \
 	[libgudev1-dev]="libgudev1-devel" \
-	[general_dependencies]="gpgme-devel glib2-devel glibc-devel bzip2 m4 gettext-devel automake alien autoconf pixman-devel coreutils" \
-	[build_tools]="python pkgconfig zlib-devel" \
+	[general_dependencies]="gpgme-devel glib2-devel glibc-devel bzip2 m4 gettext-devel automake autoconf pixman-devel coreutils" \
+	[build_tools]="python3 pkgconfig zlib-devel" \
 	[ostree]="ostree-devel" \
-	[metrics_dependencies]="smem jq" \
-	[cri-containerd_dependencies]="libseccomp-devel btrfs-progs-devel" \
+	[metrics_dependencies]="jq" \
 	[crudini]="crudini" \
 	[procenv]="procenv" \
 	[haveged]="haveged" \
 	[gnu_parallel_dependencies]="perl bzip2 make" \
 	[libsystemd]="systemd-devel" \
 	[redis]="redis" \
-	[versionlock]="yum-versionlock" \
 )
 
 main()

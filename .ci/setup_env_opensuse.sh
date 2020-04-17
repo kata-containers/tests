@@ -11,6 +11,10 @@ cidir=$(dirname "$0")
 source "/etc/os-release" || source "/usr/lib/os-release"
 source "${cidir}/lib.sh"
 
+# This is related with https://bugzilla.suse.com/show_bug.cgi?id=1165519
+echo "Remove openSUSE cloud repo"
+sudo zypper rr openSUSE-Leap-Cloud-Tools
+
 echo "Install chronic"
 sudo -E zypper -n install moreutils
 
@@ -24,10 +28,10 @@ declare -A packages=( \
 	[general_dependencies]="curl git libcontainers-common libdevmapper1_03 util-linux" \
 	[kata_containers_dependencies]="libtool automake autoconf bc perl-Alien-SDL libpixman-1-0-devel coreutils python2-pkgconfig" \
 	[qemu_dependencies]="libcap-devel libattr1 libcap-ng-devel librbd-devel" \
-	[kernel_dependencies]="libelf-devel flex glibc-devel-static thin-provisioning-tools" \
+	[kernel_dependencies]="patch libelf-devel flex glibc-devel-static thin-provisioning-tools" \
 	[crio_dependencies]="libglib-2_0-0 libseccomp-devel libapparmor-devel libgpg-error-devel go-md2man libgpgme-devel libassuan-devel glib2-devel glibc-devel" \
 	[bison_binary]="bison" \
-	[build_tools]="patterns-devel-base-devel_basis python pkg-config zlib-devel" \
+	[build_tools]="gcc python pkg-config zlib-devel" \
 	[os_tree]="libostree-devel" \
 	[libudev-dev]="libudev-devel" \
 	[metrics_dependencies]="smemstat jq" \

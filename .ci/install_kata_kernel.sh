@@ -21,7 +21,8 @@ source "/etc/os-release" || source "/usr/lib/os-release"
 
 latest_build_url="${jenkins_url}/job/kernel-nightly-$(uname -m)/${cached_artifacts_path}"
 experimental_latest_build_url="${jenkins_url}/job/kernel-experimental-nightly-$(uname -m)/${cached_artifacts_path}"
-kernel_dir="/usr/share/kata-containers"
+PREFIX=${PREFIX:-/usr}
+kernel_dir=${PREFIX}/share/kata-containers
 
 kernel_repo_name="packaging"
 kernel_repo_owner="kata-containers"
@@ -33,6 +34,7 @@ readonly tmp_dir="$(mktemp -d -t install-kata-XXXXXXXXXXX)"
 packaged_kernel="kata-linux-container"
 #Experimental kernel support. Pull from virtio-fs GitLab instead of kernel.org
 experimental_kernel="${experimental_kernel:-false}"
+tag="${1:-""}"
 
 exit_handler() {
 	rm -rf "${tmp_dir}"
@@ -44,6 +46,7 @@ download_repo() {
 	echo "Download and update ${kernel_repo}"
 	pushd ${tmp_dir}
 	go get -d -u "${kernel_repo}" || true
+	[ -z "${tag}" ] || git -C "${kernel_repo_dir}" checkout -b "${tag}" "${tag}"
 	popd
 }
 
