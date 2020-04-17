@@ -190,7 +190,13 @@ else
 	echo "WARN: Kata runtime is not installed"
 fi
 
-if [ -z "${METRICS_CI}" ]; then
+if [ -n "${METRICS_CI}" ]; then
+	echo "Running the metrics tests:"
+	"${tests_repo_dir}/.ci/run_metrics_PR_ci.sh"
+elif [ -n "${VFIO_CI}" ]; then
+	echo "Running VFIO tests:"
+	"${ci_dir_name}/run.sh"
+else
 	if [ "${kata_repo}" != "${tests_repo}" ]; then
 		if [ "${ID}" == "rhel" ] && [ "${kata_repo}" == "${runtime_repo}" ]; then
 			echo "INFO: issue ${unit_issue}"
@@ -207,9 +213,6 @@ if [ -z "${METRICS_CI}" ]; then
 
 	# Code coverage
 	bash <(curl -s https://codecov.io/bash)
-else
-	echo "Running the metrics tests:"
-	"${tests_repo_dir}/.ci/run_metrics_PR_ci.sh"
 fi
 
 popd
