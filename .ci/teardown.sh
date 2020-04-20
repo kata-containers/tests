@@ -251,7 +251,7 @@ check_log_files()
 		file="${unit}.log"
 		args="--no-pager -q -o cat -a -u \"${unit}\""
 
-		cmd="sudo journalctl ${args} |grep ^time= > ${file}"
+		cmd="sudo journalctl ${args} | grep ^time= > ${file}"
 		eval "$cmd" || true
 	done
 
