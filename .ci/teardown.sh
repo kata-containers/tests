@@ -16,6 +16,10 @@ collect_logs()
 	local -r kata_runtime_log_path="${log_copy_dest}/${kata_runtime_log_filename}"
 	local -r kata_runtime_log_prefix="kata-runtime_"
 
+	local -r kata_shimv2_log_filename="kata-shimv2.log"
+	local -r kata_shimv2_log_path="${log_copy_dest}/${kata_shimv2_log_filename}"
+	local -r kata_shimv2_log_prefix="kata-shimv2_"
+
 	local -r proxy_log_filename="kata-proxy.log"
 	local -r proxy_log_path="${log_copy_dest}/${proxy_log_filename}"
 	local -r proxy_log_prefix="kata-proxy_"
@@ -87,6 +91,7 @@ collect_logs()
 
 		# Create the log files
 		sudo journalctl --no-pager -t kata-runtime > "${kata_runtime_log_path}"
+		sudo journalctl --no-pager -t kata > "${kata_shimv2_log_path}"
 		sudo journalctl --no-pager -t kata-proxy > "${proxy_log_path}"
 		sudo journalctl --no-pager -t kata-shim > "${shim_log_path}"
 		sudo journalctl --no-pager -u kata-ksm-throttler > "${ksm_throttler_log_path}"
@@ -112,6 +117,7 @@ collect_logs()
 
 		pushd "${log_copy_dest}"
 		split -b "${subfile_size}" -d "${kata_runtime_log_path}" "${kata_runtime_log_prefix}"
+		split -b "${subfile_size}" -d "${kata_shimv2_log_path}" "${kata_shimv2_log_prefix}"
 		split -b "${subfile_size}" -d "${proxy_log_path}" "${proxy_log_prefix}"
 		split -b "${subfile_size}" -d "${shim_log_path}" "${shim_log_prefix}"
 		split -b "${subfile_size}" -d "${ksm_throttler_log_path}" "${ksm_throttler_log_prefix}"
@@ -130,6 +136,7 @@ collect_logs()
 
 		local prefixes=""
 		prefixes+=" ${kata_runtime_log_prefix}"
+		prefixes+=" ${kata_shimv2_log_prefix}"
 		prefixes+=" ${proxy_log_prefix}"
 		prefixes+=" ${shim_log_prefix}"
 		prefixes+=" ${containerd_log_prefix}"
@@ -167,6 +174,9 @@ collect_logs()
 	else
 		echo "Kata Containers Runtime Log:"
 		sudo journalctl --no-pager -t kata-runtime
+
+		echo "Kata Shimv2 Runtime Log:"
+		sudo journalctl --no-pager -t kata
 
 		echo "Kata Containers Proxy Log:"
 		sudo journalctl --no-pager -t kata-proxy
@@ -235,6 +245,7 @@ check_log_files()
 	for component in \
 		kata-proxy \
 		kata-runtime \
+		kata \
 		kata-shim
 	do
 		file="${component}.log"
