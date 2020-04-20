@@ -69,8 +69,8 @@ Commands:
   disable-debug         : Turn off all debug options.
   enable-debug          : Turn on all debug options for all system components.
   install-docker        : Only install and configure Docker.
-  install-docker-system : Install and configure Docker (implies 'install-packages').
-  install-packages      : Install the packaged version of Kata Containers only.
+  install-docker-system : Install and configure Docker (implies 'install-packages') and optionally specify Kata release.
+  install-packages      : Install the packaged version of Kata Containers only and optionally specify release.
   remove-docker         : Uninstall Docker only.
   remove-docker-system  : Uninstall Docker and Kata packages.
   remove-packages       : Uninstall the packaged version of Kata Containers.
@@ -304,6 +304,7 @@ exec_document()
 {
 	local -r file="$1"
 	local -r msg="$2"
+	local -r release="$3"
 
 	get_git_repo "$test_repo"
 
@@ -327,8 +328,16 @@ exec_document()
 
 	info "$msg"
 
-	# run the installation
-	bash "${install_script}"
+	# Run the installation
+	# If no release is specified, the default branch for packages
+	# will be from the install script.
+	if [ -z "$release" ]; then
+		bash "${install_script}"
+	else
+		# This code relies on the installation scripts using
+		# the BRANCH variable.
+		BRANCH="$release" bash "${install_script}"
+	fi
 
 	# clean up
 	rm -f "${install_script}"
@@ -338,6 +347,8 @@ exec_document()
 # specified in the installation guide document.
 cmd_install_packages()
 {
+	local -r release="$1"
+
 	get_git_repo "$doc_repo"
 
 	local file="${distro}-installation-guide.md"
@@ -345,7 +356,7 @@ cmd_install_packages()
 	local doc="${kata_repos_base}/src/${doc_repo}/install/${file}"
 	[ ! -e "$doc" ] && die "no install document for distro $distro"
 
-	exec_document "${doc}" "install packages for distro ${distro}"
+	exec_document "${doc}" "install packages for distro ${distro}" "${release}"
 }
 
 install_container_manager()
@@ -369,7 +380,8 @@ cmd_install_docker()
 
 cmd_install_docker_system()
 {
-	cmd_install_packages
+	local -r release="$1"
+	cmd_install_packages "$release"
 	cmd_install_docker
 }
 
@@ -499,8 +511,8 @@ parse_args()
 		disable-vsock) cmd_disable_vsock;;
 		enable-vsock) cmd_enable_vsock;;
 		install-docker) cmd_install_docker ;;
-		install-docker-system) cmd_install_docker_system ;;
-		install-packages) cmd_install_packages ;;
+		install-docker-system) cmd_install_docker_system "$1";;
+		install-packages) cmd_install_packages "$1";;
 		remove-docker) cmd_remove_docker ;;
 		remove-docker-system) cmd_remove_docker_system ;;
 		remove-packages) cmd_remove_packages ;;
