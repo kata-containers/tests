@@ -235,3 +235,28 @@ get_pod_config_dir() {
 	pod_config_dir="${BATS_TEST_DIRNAME}/runtimeclass_workloads"
 	info "k8s configured to use runtimeclass"
 }
+
+# Takes two versions in the format of xx.xx.xx and compares them.
+# Versions must contain an equal number of fields.
+#
+# Returns string
+#  0 - first version is greater or versions are the same
+#  1 - second version is greater
+compare_versions() {
+	local -r version_1="$1"
+	local -r version_2="$2"
+
+	local fields_1=($(echo $version_1 | tr "." "\n"))
+	local fields_2=($(echo $version_2 | tr "." "\n"))
+
+	[ ${#fields_1[@]} -ne ${#fields_2[@]} ] && die "Cannot compare versions; number of fields differs"
+
+	for n in "${!fields_1[@]}"; do
+		if [ ${fields_1[$n]} -lt ${fields_2[$n]} ]; then
+			echo "1"; return
+		elif [ ${fields_1[$n]} -gt ${fields_2[$n]} ]; then
+			echo "0"; return
+		fi
+	done
+	echo "0"
+}
