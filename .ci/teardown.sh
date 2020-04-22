@@ -240,7 +240,15 @@ check_log_files()
 		file="${component}.log"
 		args="--no-pager -q -o cat -a -t \"${component}\""
 
-		cmd="sudo journalctl ${args} > ${file}"
+		# grab the component logs and exclude all log entries that
+		# don't appear to come from Kata.
+		#
+		# This reduces the effectiveness of the log parser checking
+		# slightly but is the only semi-reasonable way to exclude log
+		# messages from libcontainer whose API unfortunately does not
+		# accept a logger to perform logging.
+		cmd="sudo journalctl ${args} | grep -v name=kata > ${file}"
+
 		eval "$cmd" || true
 	done
 
