@@ -30,21 +30,21 @@ declare -A minimal_packages=( \
 )
 
 declare -A packages=( \
-	[general_dependencies]="curl git libcontainers-common libdevmapper1_03 util-linux" \
-	[kata_containers_dependencies]="libtool automake autoconf bc perl-Alien-SDL libpixman-1-0-devel coreutils python2-pkgconfig" \
-	[qemu_dependencies]="libcap-devel libattr1 libcap-ng-devel librbd-devel libpmem-devel" \
-	[kernel_dependencies]="patch libelf-devel flex glibc-devel-static thin-provisioning-tools" \
-	[crio_dependencies]="libglib-2_0-0 libseccomp-devel libapparmor-devel libgpg-error-devel go-md2man libgpgme-devel libassuan-devel glib2-devel glibc-devel" \
 	[bison_binary]="bison" \
-	[build_tools]="gcc python pkg-config zlib-devel" \
-	[os_tree]="libostree-devel" \
-	[libudev-dev]="libudev-devel" \
-	[metrics_dependencies]="smemstat jq" \
-	[cri-containerd_dependencies]="libseccomp-devel libapparmor-devel make pkg-config libbtrfs-devel patterns-base-apparmor" \
+	[build_tools]="gcc pkg-config python zlib-devel" \
+	[cri-containerd_dependencies]="libapparmor-devel libbtrfs-devel libseccomp-devel make patterns-base-apparmor pkg-config" \
+	[crio_dependencies]="glibc-devel glib2-devel go-md2man libassuan-devel libapparmor-devel libgpg-error-devel libglib-2_0-0 libgpgme-devel libseccomp-devel" \
 	[crudini]="crudini" \
-	[haveged]="haveged" \
+	[general_dependencies]="curl git libcontainers-common libdevmapper1_03 util-linux" \
 	[gnu_parallel]="gnu_parallel" \
+	[haveged]="haveged" \
+	[kata_containers_dependencies]="autoconf automake bc coreutils libpixman-1-0-devel libtool perl-Alien-SDL python2-pkgconfig" \
+	[kernel_dependencies]="flex glibc-devel-static libelf-devel patch thin-provisioning-tools" \
 	[libsystemd]="systemd-devel" \
+	[libudev-dev]="libudev-devel" \
+	[metrics_dependencies]="jq smemstat" \
+	[os_tree]="libostree-devel" \
+	[qemu_dependencies]="libattr1 libcap-devel libcap-ng-devel libpmem-devel librbd-devel" \
 	[redis]="redis" \
 )
 

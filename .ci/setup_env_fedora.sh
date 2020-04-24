@@ -28,20 +28,20 @@ declare -A minimal_packages=( \
 )
 
 declare -A packages=( \
-	[general_dependencies]="xfsprogs dnf-plugins-core python pkgconfig util-linux libgpg-error-devel" \
-	[kata_containers_dependencies]="libtool automake autoconf bc pixman numactl-libs" \
-	[qemu_dependencies]="libcap-devel libattr-devel libcap-ng-devel zlib-devel pixman-devel librbd-devel libpmem-devel" \
-	[kernel_dependencies]="elfutils-libelf-devel flex" \
-	[crio_dependencies]="btrfs-progs-devel device-mapper-devel glib2-devel glibc-devel glibc-static gpgme-devel libassuan-devel libseccomp-devel libselinux-devel" \
 	[bison_binary]="bison" \
-	[os_tree]="ostree-devel" \
-	[metrics_dependencies]="jq" \
-	[cri-containerd_dependencies]="libseccomp-devel btrfs-progs-devel libseccomp-static" \
+	[cri-containerd_dependencies]="btrfs-progs-devel libseccomp-devel libseccomp-static" \
+	[crio_dependencies]="btrfs-progs-devel device-mapper-devel glibc-devel glibc-static glib2-devel gpgme-devel libassuan-devel libseccomp-devel libselinux-devel" \
 	[crudini]="crudini" \
-	[procenv]="procenv" \
-	[haveged]="haveged" \
+	[general_dependencies]="dnf-plugins-core libgpg-error-devel pkgconfig python util-linux xfsprogs" \
 	[gnu_parallel]="parallel" \
+	[haveged]="haveged" \
+	[kata_containers_dependencies]="autoconf automake bc libtool numactl-libs pixman" \
+	[kernel_dependencies]="elfutils-libelf-devel flex" \
 	[libsystemd]="systemd-devel" \
+	[metrics_dependencies]="jq" \
+	[os_tree]="ostree-devel" \
+	[procenv]="procenv" \
+	[qemu_dependencies]="libattr-devel libcap-devel libcap-ng-devel librbd-devel libpmem-devel pixman-devel zlib-devel" \
 	[redis]="redis" \
 	[versionlock]="python3-dnf-plugin-versionlock" \
 )
