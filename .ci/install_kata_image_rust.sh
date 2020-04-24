@@ -34,6 +34,7 @@ build_rust_image() {
 	go get -d "${osbuilder_repo}" || true
 	pushd "${GOPATH}/src/${osbuilder_repo}/rootfs-builder"
 	export ROOTFS_DIR="${GOPATH}/src/${osbuilder_repo}/rootfs-builder/rootfs"
+	sudo rm -rf "${ROOTFS_DIR}"
 	distro="ubuntu"
 	sudo -E GOPATH="${GOPATH}" USE_DOCKER=true SECCOMP=no ./rootfs.sh "${distro}"
 	sudo install -o root -g root -m 0550 -t "${ROOTFS_DIR}"/bin "${GOPATH}/src/${rust_agent_repo}/src/agent/target/${arch}-unknown-linux-musl/debug/kata-agent"
