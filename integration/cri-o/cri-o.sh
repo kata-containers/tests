@@ -129,6 +129,10 @@ if systemctl is-active --quiet docker; then
 fi
 
 echo "Running cri-o tests with runtime: $CONTAINER_RUNTIME"
+installed_bats_version=$(bats --version | cut -d ' ' -f2 | cut -d '.' -f1-2)
+if [[ "${installed_bats_version}" < "1.2" ]]; then
+	sudo sed -i 's/--jobs "$JOBS"//g' test_runner.sh
+fi
 ./test_runner.sh ctr.bats
 
 popd
