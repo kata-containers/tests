@@ -11,15 +11,10 @@ cidir=$(dirname "$0")
 source /etc/os-release || source /usr/lib/os-release
 source "${cidir}/lib.sh"
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
+arch=$("${cidir}"/kata-arch.sh -d)
 
 echo "Install chronic"
 sudo -E dnf -y install moreutils
-
-if [ "${TEST_CGROUPSV2}" == "true" ]; then
-	echo "Install podman"
-	version=$(get_test_version "externals.podman.version")
-	sudo -E dnf -y install podman-"${version}"
-fi
 
 declare -A minimal_packages=( \
 	[spell-check]="hunspell hunspell-en-GB hunspell-en-US pandoc" \
@@ -76,6 +71,21 @@ main()
 	if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
 		echo "Install ${KATA_KSM_THROTTLER_JOB}"
 		chronic sudo -E dnf -y install ${KATA_KSM_THROTTLER_JOB}
+	fi
+
+	if [ "${TEST_CGROUPSV2}" == "true" ]; then
+		echo "Install podman dependencies"
+		sudo dnf -y builddep podman
+		dnf deplist podman --archlist "${arch}",noarch | awk '/provider:/ {print $2}' | sort -u | xargs sudo -E dnf -y install
+        	echo "Install podman"
+        	version=$(get_test_version "externals.podman.version")
+		podman_repo="github.com/containers/libpod"
+		go get -d "${podman_repo}" || true
+		pushd "${GOPATH}/src/${podman_repo}"
+		git checkout v"${version}"
+		make BUILDTAGS="selinux seccomp"
+		sudo -E PATH=$PATH make install
+		popd
 	fi
 }
 

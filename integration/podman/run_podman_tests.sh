@@ -24,18 +24,6 @@ test_repository="github.com/kata-containers/tests"
 test_repository_path="${GOPATH}/src/${test_repository}"
 version=$(get_test_version "externals.podman.version")
 
-function setup() {
-	# Clone podman repository if it is not already present.
-	if [ ! -d "${podman_repository_path}" ]; then
-		go get -d "${podman_repository}" || true
-	fi
-
-	pushd "${podman_repository_path}"
-	git checkout v"${version}"
-	make
-	popd
-}
-
 function setup_ginkgo() {
 	pushd "${test_repository_path}"
 	ln -sf . vendor/src
@@ -61,8 +49,6 @@ function run_tests() {
 	popd
 }
 
-echo "Setup environment for podman tests"
-setup
 echo "Use kata-runtime for podman e2e tests"
 modify_runtime
 echo "Running podman e2e tests"
