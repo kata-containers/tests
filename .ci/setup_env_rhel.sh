@@ -31,21 +31,21 @@ declare -A minimal_packages=( \
 )
 
 declare -A packages=(
-	[kata_containers_dependencies]="libtool libtool-ltdl-devel device-mapper-persistent-data lvm2 device-mapper-devel libtool-ltdl bzip2 m4 patch gettext-devel automake autoconf bc pixman-devel coreutils" \
-	[qemu_dependencies]="libcap-devel libcap-ng-devel libattr-devel libcap-ng-devel librbd1-devel flex libfdt-devel libpmem-devel" \
-	[kernel_dependencies]="elfutils-libelf-devel flex" \
-	[crio_dependencies]="glibc-static libseccomp-devel libassuan-devel libgpg-error-devel device-mapper-libs btrfs-progs-devel util-linux gpgme-devel glib2-devel glibc-devel libselinux-devel pkgconfig" \
 	[bison_binary]="bison" \
-	[build_tools]="python pkgconfig zlib-devel" \
-	[os_tree]="ostree-devel" \
+	[build_tools]="pkgconfig python zlib-devel" \
+	[cri-containerd_dependencies]="btrfs-progs-devel libseccomp-devel" \
+	[crio_dependencies]="btrfs-progs-devel device-mapper-libs glibc-devel glibc-static glib2-devel gpgme-devel libassuan-devel libgpg-error-devel libseccomp-devel libselinux-devel pkgconfig util-linux" \
+	[crudini]="crudini" \
+	[gnu_parallel_dependencies]="bzip2 make perl" \
+	[haveged]="haveged" \
+	[kata_containers_dependencies]="autconf automake bc bzip2 coreutils device-mapper-devel device-mapper-persistent-data gettext-devel libtool libtool-ltdl-devel lvm2 m4 patch pixman-devel" \
+	[kernel_dependencies]="elfutils-libelf-devel flex" \
+	[libsystemd]="systemd-devel" \
 	[libudev-dev]="libgudev1-devel" \
 	[metrics_dependencies]="jq" \
-	[cri-containerd_dependencies]="libseccomp-devel btrfs-progs-devel" \
-	[crudini]="crudini" \
+	[os_tree]="ostree-devel" \
 	[procenv]="procenv" \
-	[haveged]="haveged" \
-	[gnu_parallel_dependencies]="perl bzip2 make" \
-        [libsystemd]="systemd-devel" \
+	[qemu_dependencies]="flex libattr-devel libcap-devel libcap-ng-devel libfdt-devel librbd1-devel libpmem-devel" \
 	[redis]="redis" \
 )
 
