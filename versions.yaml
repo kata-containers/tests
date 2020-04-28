@@ -38,6 +38,10 @@ docker_images:
 externals:
   description: "Third-party projects used specifically for testing"
 
+  bats:
+    description: "Bats is a TAP-compliant testing framework for Bash"
+    version: "v1.1.0"
+
   flannel:
     url: "https://github.com/coreos/flannel"
     version: "862c448ef28fd890e2ac4e5fddc49e7fe9693b31"
