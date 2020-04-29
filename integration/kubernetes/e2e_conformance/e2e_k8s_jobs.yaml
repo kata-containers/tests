@@ -1,0 +1,15 @@
+#
+# Copyright (c) 2020 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+
+jobs:
+  CLOUD-HYPERVISOR-K8S-E2E-CRIO-MINIMAL:
+    passed: 14
+  CLOUD-HYPERVISOR-K8S-E2E-CONTAINERD-MINIMAL:
+    passed: 14
+  CLOUD-HYPERVISOR-K8S-E2E-CRIO-FULL:
+    passed: 223
+  CLOUD-HYPERVISOR-K8S-E2E-CONTAINERD-FULL:
+    passed: 222

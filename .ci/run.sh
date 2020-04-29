@@ -66,6 +66,18 @@ case "${CI_JOB}" in
 		echo "INFO: Running docker integration tests"
 		sudo -E PATH="$PATH" bash -c "make docker"
 		;;
+	"CLOUD-HYPERVISOR-K8S-E2E-CRIO-MINIMAL")
+		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
+		;;
+	"CLOUD-HYPERVISOR-K8S-E2E-CONTAINERD-MINIMAL")
+		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
+		;;
+	"CLOUD-HYPERVISOR-K8S-E2E-CRIO-FULL")
+		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
+		;;
+	"CLOUD-HYPERVISOR-K8S-E2E-CONTAINERD-FULL")
+		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
+		;;
 	"PODMAN")
 		export TRUSTED_GROUP="kvm"
 		newgrp "${TRUSTED_GROUP}" << END

@@ -7,6 +7,37 @@
 
 set -e
 
+# List of all setup flags used by scripts
+init_ci_flags() {
+	# Install crio
+	export CRIO="no"
+	# Install cri-containerd
+	export CRI_CONTAINERD="no"
+	# Default cri runtime - used to setup k8s
+	export CRI_RUNTIME=""
+	# Ask runtime to only use cgroup at pod level
+	# Useful for pod overhead
+	export DEFSANDBOXCGROUPONLY="false"
+	# Hypervisor to use
+	export KATA_HYPERVISOR=""
+	# Install k8s
+	export KUBERNETES="no"
+	# Run a subset of k8s e2e test
+	# Will run quick to ensure e2e setup is OK
+	# - Use false for PRs
+	# - Use true for nightly testing
+	export MINIMAL_K8S_E2E="false"
+	# Test cgroup v2
+	export TEST_CGROUPSV2="no"
+	# Run crio functional test
+	export TEST_CRIO="false"
+	# Run docker functional test
+	export TEST_DOCKER="no"
+	# Use experimental kernel
+	# Values: true|false
+	export experimental_kernel="false"
+}
+
 source "/etc/os-release" || source "/usr/lib/os-release"
 
 # Run noninteractive on debian and ubuntu
@@ -176,6 +207,42 @@ case "${CI_JOB}" in
 	export OPENSHIFT="no"
 	export TEST_CRIO="false"
 	export TEST_DOCKER="true"
+	export experimental_kernel="true"
+	;;
+"CLOUD-HYPERVISOR-K8S-E2E-CRIO-MINIMAL")
+	init_ci_flags
+	export CRIO="yes"
+	export CRI_RUNTIME="crio"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	export KUBERNETES="yes"
+	export MINIMAL_K8S_E2E="true"
+	export experimental_kernel="true"
+	;;
+"CLOUD-HYPERVISOR-K8S-E2E-CONTAINERD-MINIMAL")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	export KUBERNETES="yes"
+	export MINIMAL_K8S_E2E="true"
+	export experimental_kernel="true"
+	;;
+"CLOUD-HYPERVISOR-K8S-E2E-CRIO-FULL")
+	init_ci_flags
+	export CRIO="yes"
+	export CRI_RUNTIME="crio"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	export KUBERNETES="yes"
+	export MINIMAL_K8S_E2E="false"
+	export experimental_kernel="true"
+	;;
+"CLOUD-HYPERVISOR-K8S-E2E-CONTAINERD-FULL")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	export KUBERNETES="yes"
+	export MINIMAL_K8S_E2E="false"
 	export experimental_kernel="true"
 	;;
 esac
