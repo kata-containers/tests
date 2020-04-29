@@ -38,6 +38,10 @@ docker_images:
 externals:
   description: "Third-party projects used specifically for testing"
 
+  bats:
+    description: "Bats is a TAP-compliant testing framework for Bash"
+    version: "v1.1.0"
+
   flannel:
     url: "https://github.com/coreos/flannel"
     version: "862c448ef28fd890e2ac4e5fddc49e7fe9693b31"
@@ -65,7 +69,7 @@ externals:
 
   podman:
     description: "An open-source Linux tool for working with containers"
-    version: "1.8.2"
+    version: "1.9.0"
 
   sonobuoy:
     description: "Tool to run kubernetes e2e conformance tests"
