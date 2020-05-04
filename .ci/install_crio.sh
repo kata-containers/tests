@@ -143,7 +143,7 @@ popd
 echo "Set manage_ns_lifecycle to true"
 network_ns_flag="manage_ns_lifecycle"
 # Set ns_network_flag for CRI-O versions less than 1.17
-crio_version_current=$(crio --version | head -1 | cut -d ' ' -f3)
+crio_version_current=$(crio --version | egrep -o "[0-9]+\.[0-9]+\.[0-9]+" | head -1)
 if [ "$(compare_versions "$crio_version_current" "1.17.0")" -eq "1" ]; then
 	network_ns_flag="manage_network_ns_lifecycle"
 fi
