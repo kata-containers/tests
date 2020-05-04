@@ -42,7 +42,7 @@ declare -A packages=( \
 	[redis]="redis-server" \
 )
 
-if [ "$(uname -m)" == "x86_64" ] && [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 18.04" | bc -q)" == "1" ]; then
+if [ "$(uname -m)" == "x86_64" ] && [ "$(echo "${VERSION_ID} >= 18.04" | bc -q)" == "1" ]; then
 	packages[qemu_dependencies]+=" libpmem-dev"
 fi
 
