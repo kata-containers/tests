@@ -21,7 +21,7 @@ crio_config_file="/etc/crio/crio.conf"
 runc_flag="\/usr\/local\/bin\/crio-runc"
 kata_flag="\/usr\/local\/bin\/kata-runtime"
 
-minor_crio_version=$(crio --version | head -1 | cut -d '.' -f2)
+minor_crio_version=$(crio --version | egrep -o "[0-9]+\.[0-9]+\.[0-9]+" | head -1 | cut -d '.' -f2)
 
 if [ "$minor_crio_version" -ge "12" ]; then
 	echo "Configure runtimes map for RuntimeClass feature"
