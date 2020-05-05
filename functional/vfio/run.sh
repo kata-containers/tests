@@ -16,7 +16,7 @@ source "${script_path}/../../lib/common.bash"
 
 declare -r container_id="vfiotest"
 
-tmp_data_dir="$(mktemp -d -p ${HOME})"
+tmp_data_dir="$(mktemp -d)"
 trap cleanup EXIT
 
 cleanup() {
