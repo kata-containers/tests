@@ -131,7 +131,7 @@ install_docker(){
 			repo_url="https://download.docker.com/linux/centos/docker-ce.repo"
 			sudo yum-config-manager --add-repo "$repo_url"
 			sudo yum makecache
-			docker_version_full=$(yum --showduplicate list "$pkg_name" | \
+			docker_version_full=$(sudo yum --showduplicate list "$pkg_name" | \
 				grep "$docker_version" | awk '{print $2}' | tail -1 | cut -d':' -f2)
 			sudo -E yum -y install "${pkg_name}-${docker_version_full}"
 		elif [ "$ID" == "debian" ]; then
