@@ -11,11 +11,15 @@ cidir=$(dirname "$0")
 source "/etc/os-release" || "source /usr/lib/os-release"
 source "${cidir}/lib.sh"
 
-echo "Get repo for perl-IPC-Run"
-sudo -E yum-config-manager --enable rhui-rhel-7-server-rhui-optional-rpms
+major_version=$(echo $VERSION_ID | cut -d '.' -f1)
+
+if [ "${major_version}" == "7" ]; then
+	echo "Get repo for perl-IPC-Run"
+	sudo -E yum-config-manager --enable rhui-rhel-7-server-rhui-optional-rpms
+fi
 
 echo "Add epel repository"
-epel_url="https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
+epel_url="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${major_version}.noarch.rpm"
 sudo -E yum install -y "$epel_url"
 
 echo "Update repositories"
@@ -32,13 +36,13 @@ declare -A minimal_packages=( \
 
 declare -A packages=(
 	[bison_binary]="bison" \
-	[build_tools]="pkgconfig python zlib-devel" \
+	[build_tools]="pkgconfig python3 zlib-devel" \
 	[cri-containerd_dependencies]="libseccomp-devel" \
 	[crio_dependencies]="device-mapper-libs glibc-devel glibc-static glib2-devel gpgme-devel libassuan-devel libgpg-error-devel libseccomp-devel libselinux-devel pkgconfig util-linux" \
 	[crudini]="crudini" \
 	[gnu_parallel_dependencies]="bzip2 make perl" \
 	[haveged]="haveged" \
-	[kata_containers_dependencies]="autconf automake bc bzip2 coreutils device-mapper-devel device-mapper-persistent-data gettext-devel libtool libtool-ltdl-devel lvm2 m4 patch pixman-devel" \
+	[kata_containers_dependencies]="automake bc bzip2 coreutils device-mapper-devel device-mapper-persistent-data gettext-devel libtool libtool-ltdl-devel lvm2 m4 patch pixman-devel" \
 	[kernel_dependencies]="elfutils-libelf-devel flex" \
 	[libsystemd]="systemd-devel" \
 	[libudev-dev]="libgudev1-devel" \
@@ -48,6 +52,10 @@ declare -A packages=(
 	[qemu_dependencies]="flex libattr-devel libcap-devel libcap-ng-devel libfdt-devel librbd1-devel libpmem-devel" \
 	[redis]="redis" \
 )
+
+if [ "${major_version}" == "7" ]; then
+	packages[kata_containers_dependencies]+=" autoconf"
+fi
 
 main()
 {
