@@ -37,8 +37,8 @@ build_static_qemu() {
 	[ "$ARCH" != "x86_64" ] && return 1
 
 	go get -d "${packaging_repo}" || true
-	prefix="${KATA_QEMU_DESTDIR}" "${GOPATH}/src/${packaging_repo}/static-build/qemu/build-static-qemu.sh"
 
+	prefix="${PREFIX}" "${GOPATH}/src/${packaging_repo}/static-build/qemu/build-static-qemu.sh"
 	# We need to move the tar file to a specific location so we
 	# can know where it is and then we can perform the build cache
 	# operations
@@ -49,7 +49,7 @@ build_static_qemu() {
 uncompress_static_qemu() {
 	local qemu_tar_location="$1"
 	[ -n "$qemu_tar_location" ] || die "provide the location of the QEMU compressed file"
-	sudo tar -xf "${qemu_tar_location}" -C /
+	sudo tar -xf "${qemu_tar_location}" -C ${DESTDIR:-/}
 }
 
 build_and_install_static_qemu() {

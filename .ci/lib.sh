@@ -20,7 +20,6 @@ export rust_agent_repo="${rust_agent_repo:-github.com/kata-containers/kata-conta
 export KATA_RUNTIME=${KATA_RUNTIME:-kata-runtime}
 export KATA_KSM_THROTTLER=${KATA_KSM_THROTTLER:-no}
 export KATA_NEMU_DESTDIR=${KATA_NEMU_DESTDIR:-"/usr"}
-export KATA_QEMU_DESTDIR=${KATA_QEMU_DESTDIR:-"/usr"}
 export KATA_ETC_CONFIG_PATH="/etc/kata-containers/configuration.toml"
 
 # Name of systemd service for the throttler
