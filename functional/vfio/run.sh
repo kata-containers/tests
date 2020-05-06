@@ -16,13 +16,15 @@ source "${script_path}/../../lib/common.bash"
 
 declare -r container_id="vfiotest"
 
-tmp_data_dir="$(mktemp -d -p ${HOME})"
+tmp_data_dir="$(mktemp -d)"
 trap cleanup EXIT
 
-cleanup() {
-	sudo kata-runtime kill "${container_id}"
-	sudo kata-runtime delete -f "${container_id}"
+CONFIG_FILE="${tmp_data_dir}/configuration.toml"
+SANDBOX_CGROUP_ONLY=""
 
+cleanup() {
+	sudo kata-runtime --kata-config "${CONFIG_FILE}" kill "${container_id}" || true
+	sudo kata-runtime --kata-config "${CONFIG_FILE}" delete -f "${container_id}" || true
 	sudo rm -rf "${tmp_data_dir}"
 }
 
@@ -76,15 +78,62 @@ create_bundle() {
 run_container() {
 	bundle_dir="$1"
 
-	sudo kata-runtime run --detach -b "${bundle_dir}" --pid-file="${tmp_data_dir}/pid" "${container_id}"
+	sudo kata-runtime --kata-config "${CONFIG_FILE}" run --detach \
+		 -b "${bundle_dir}" --pid-file="${tmp_data_dir}/pid" "${container_id}"
 }
 
 check_eth_dev() {
 	# container MUST have a eth net interface
-	sudo kata-runtime exec "${container_id}" ip a | grep "eth"
+	sudo kata-runtime --kata-config "${CONFIG_FILE}" exec "${container_id}" ip a | grep "eth"
+}
+
+# Show help about this script
+help(){
+cat << EOF
+Usage: $0 [-h] [options]
+    Description:
+        This script runs a kata container and passthrough a vfio device
+    Options:
+        -h,         Help
+        -s <value>, Set sandbox_cgroup_only in the configuration file
+EOF
+}
+
+setup_configuration_file() {
+	for file in $(kata-runtime --kata-show-default-config-paths); do
+		if [ -f "${file}" ]; then
+			cp -a "${file}" "${CONFIG_FILE}"
+			break
+		fi
+	done
+
+	if [ -n "${SANDBOX_CGROUP_ONLY}" ]; then
+	   sed -i 's|^sandbox_cgroup_only.*|sandbox_cgroup_only='${SANDBOX_CGROUP_ONLY}'|g' "${CONFIG_FILE}"
+	fi
 }
 
 main() {
+	local OPTIND
+	while getopts "hs:" opt;do
+		case ${opt} in
+		h)
+		    help
+		    exit 0;
+		    ;;
+		s)
+		    SANDBOX_CGROUP_ONLY="${OPTARG}"
+		    ;;
+		?)
+		    # parse failure
+		    help
+		    die "Failed to parse arguments"
+		    ;;
+		esac
+	done
+	shift $((OPTIND-1))
+
+	setup_configuration_file
+
 	sudo modprobe vfio
 	sudo modprobe vfio-pci
 
