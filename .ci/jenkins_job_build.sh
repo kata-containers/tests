@@ -183,9 +183,10 @@ esac
 
 # Now we have all the components installed, log that info before we
 # run the tests.
+set -x
 if command -v kata-runtime; then
 	echo "Logging kata-env information:"
-	kata-runtime kata-env
+	strace kata-runtime kata-env
 else
 	echo "WARN: Kata runtime is not installed"
 fi
