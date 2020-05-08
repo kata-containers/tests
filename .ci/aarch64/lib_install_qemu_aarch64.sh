@@ -66,6 +66,16 @@ build_and_install_qemu() {
                 patch -p1 <"$patch"
         done
 
+	# Replace the default-configs/*-softmmu.mak with the tuned ones
+        echo "Overwriting default qemu kconfigs"
+        if [ -e ${GOPATH}/src/${PACKAGING_REPO}/qemu/default-configs/arm-softmmu.mak ]; then
+            cp -af ${GOPATH}/src/${PACKAGING_REPO}/qemu/default-configs/arm-softmmu.mak ${GOPATH}/src/${QEMU_REPO}/default-configs/
+        fi
+
+        if [ -e ${GOPATH}/src/${PACKAGING_REPO}/qemu/default-configs/aarch64-softmmu.mak ]; then
+            cp -af ${GOPATH}/src/${PACKAGING_REPO}/qemu/default-configs/aarch64-softmmu.mak ${GOPATH}/src/${QEMU_REPO}/default-configs/
+        fi
+
         echo "Build Qemu"
         "${QEMU_CONFIG_SCRIPT}" "qemu" | xargs ./configure
         make -j $(nproc)
