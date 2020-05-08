@@ -114,16 +114,21 @@ function build_and_install() {
 	make_target="$2"
 	test_not_gopath_set="$3"
 	tag="$4"
+	make_vars=""
+	[ -n "$DESTDIR" ] && make_vars+=" DESTDIR=$DESTDIR"
+	[ -n "$PREFIX" ] && make_vars+=" PREFIX=$PREFIX"
 
 	build "${github_project}" "${make_target}" "${tag}"
 	pushd "${GOPATH}/src/${github_project}"
 	if [ "$test_not_gopath_set" = "true" ]; then
 		info "Installing ${github_project} in No GO command or GOPATH not set mode"
-		sudo -E PATH="$PATH" KATA_RUNTIME="${KATA_RUNTIME}" make install
+		sudo -E PATH="$PATH" KATA_RUNTIME="${KATA_RUNTIME}" \
+			make ${make_vars} install
 		[ $? -ne 0 ] && die "Fail to install ${github_project} in No GO command or GOPATH not set mode"
 	fi
 	info "Installing ${github_project}"
-	sudo -E PATH="$PATH" KATA_RUNTIME="${KATA_RUNTIME}" make install
+	sudo -E PATH="$PATH" KATA_RUNTIME="${KATA_RUNTIME}" \
+		make ${make_vars} install
 	popd
 }
 
