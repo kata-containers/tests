@@ -179,7 +179,7 @@ function grab_vm_uss() {
 			"qemu": "$qemu",
 			"virtiofsd": "$virtiofsd",
 			"total": $total,
-			"Units": "KB"
+			"Units": "B"
 		}
 EOF
 )"
@@ -203,7 +203,7 @@ function grab_vm_pss() {
 			"qemu": "$qemu",
 			"virtiofsd": "$virtiofsd",
 			"total": $total,
-			"Units": "KB"
+			"Units": "B"
 		}
 EOF
 )"
@@ -220,7 +220,7 @@ function grab_dockerd_pss() {
 	local json="$(cat << EOF
 		"dockerd": {
 			"pss": $item,
-			"Units": "KB"
+			"Units": "B"
 		}
 EOF
 )"
@@ -239,7 +239,7 @@ function grab_all_pss() {
 	local json="$(cat << EOF
 		"all_pss": {
 			"pss": $item,
-			"Units": "KB"
+			"Units": "B"
 		}
 EOF
 )"
@@ -255,7 +255,7 @@ function grab_user_smem() {
 	local json="$(cat << EOF
 		"user_smem": {
 			"userspace": $item,
-			"Units": "KB"
+			"Units": "B"
 		}
 EOF
 )"
@@ -267,12 +267,11 @@ function grab_slab() {
 	# Grabbing slab total from meminfo is easier than doing the math
 	# on slabinfo
 	item=$(fgrep "Slab:" /proc/meminfo | awk '{print $2}')
-	((item*=1024))
 
 	local json="$(cat << EOF
 		"slab": {
 			"slab": $item,
-			"Units": "KB"
+			"Units": "B"
 		}
 EOF
 )"
@@ -290,10 +289,12 @@ function grab_system() {
 
 	# avail memory, from 'free'
 	local avail=$(free -b | head -2 | tail -1 | awk '{print $7}')
+	((avail/=1024))
 	local avail_decr=$((base_mem_avail-avail))
 
 	# cached memory, from 'free'
 	local cached=$(free -b | head -2 | tail -1 | awk '{print $6}')
+	((cached/=1024))
 
 	# free memory from smem
 	local smem_free=$(get_memfree)
@@ -301,15 +302,12 @@ function grab_system() {
 
 	# Anon pages
 	local anon=$(fgrep "AnonPages:" /proc/meminfo | awk '{print $2}')
-	((anon*=1024))
 
 	# Mapped pages
 	local mapped=$(egrep "^Mapped:" /proc/meminfo | awk '{print $2}')
-	((mapped*=1024))
 
 	# Cached
 	local meminfo_cached=$(grep "^Cached:" /proc/meminfo | awk '{print $2}')
-	((meminfo_cached*=1024))
 
 	local json="$(cat << EOF
 		"system": {
