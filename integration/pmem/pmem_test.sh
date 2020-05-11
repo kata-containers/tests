@@ -43,7 +43,11 @@ function test_pmem {
 	# Create xfs
 	sudo dd if=/dev/zero of=xfs.img bs=1M count=128
 	device_name=$(sudo losetup --offset 2M --show -Pf xfs.img)
-	sudo mkfs.xfs "${device_name}"
+
+	# DAX and reflink cannot be used together!
+	# Explicitly disable reflink, if it fails then reflink
+	# is not supported and '-m reflink=0' is not needed.
+	sudo mkfs.xfs -m reflink=0 "${device_name}" || sudo mkfs.xfs "${device_name}"
 
 	size="2097152"
 	gcc "${osbuilder_repository_path}/image-builder/nsdax.gpl.c" -o nsdax
