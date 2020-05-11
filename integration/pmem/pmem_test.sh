@@ -25,9 +25,13 @@ device_name=""
 TEST_INITRD="${TEST_INITRD:-no}"
 experimental_qemu="${experimental_qemu:-false}"
 
-if [ "$ID" == "fedora" ] || [ "$TEST_INITRD" == "yes" ] || [ "$experimental_qemu" == "true" ]; then
-	issue="https://github.com/kata-containers/tests/issues/2437"
-	echo "Skip pmem test ${issue}"
+if [ "$TEST_INITRD" == "yes" ]; then
+	echo "Skip pmem test: nvdimm is disabled when initrd is used as rootfs"
+	exit 0
+fi
+
+if [ "$experimental_qemu" == "true" ]; then
+	echo "Skip pmem test: experimental qemu doesn't have libpmem support"
 	exit 0
 fi
 
