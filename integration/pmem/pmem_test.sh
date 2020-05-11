@@ -25,7 +25,7 @@ device_name=""
 TEST_INITRD="${TEST_INITRD:-no}"
 experimental_qemu="${experimental_qemu:-false}"
 
-if [ "$ID" == "fedora" ] || [ "$TEST_INITRD" == "yes" ] || [ "$experimental_qemu" == "true" ]; then
+if [ "$ID" == "fedora" ] || [ "$ID" == "centos" ] || [ "$TEST_INITRD" == "yes" ] || [ "$experimental_qemu" == "true" ]; then
 	issue="https://github.com/kata-containers/tests/issues/2437"
 	echo "Skip pmem test ${issue}"
 	exit 0
