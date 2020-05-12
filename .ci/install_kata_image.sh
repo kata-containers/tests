@@ -48,8 +48,7 @@ fi
 IMAGE_OS_KEY="assets.${IMG_TYPE}.architecture.$(uname -m).name"
 IMAGE_OS_VERSION_KEY="assets.${IMG_TYPE}.architecture.$(uname -m).version"
 
-agent_path="${GOPATH}/src/github.com/kata-containers/agent"
-osbuilder_repo="github.com/kata-containers/osbuilder"
+agent_path="${GOPATH}/src/${agent_repo}"
 osbuilder_path="${GOPATH}/src/${osbuilder_repo}"
 latest_build_url="${jenkins_url}/job/image-nightly-$(uname -m)/${cached_artifacts_path}"
 tag="${1:-""}"

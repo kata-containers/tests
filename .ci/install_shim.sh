@@ -12,4 +12,4 @@ tag="$1"
 
 source "${cidir}/lib.sh"
 
-build_and_install "github.com/kata-containers/shim" "" "" "${tag}"
+build_and_install "${shim_repo}" "" "" "${tag}"

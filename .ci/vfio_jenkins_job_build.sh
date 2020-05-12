@@ -73,8 +73,7 @@ create_user_data() {
 		fi
 	fi
 
-	test_repo="github.com/kata-containers/tests"
-	tests_go_path="/home/${USER}/go/src/${test_repo}"
+	tests_go_path="/home/${USER}/go/src/${tests_repo}"
 
 	cat <<EOF > "${file}"
 #cloud-config

@@ -11,8 +11,7 @@ set -o pipefail
 set -o errtrace
 
 cidir=$(dirname "$0")
-rust_agent_repo="github.com/kata-containers/kata-containers"
-osbuilder_repo="github.com/kata-containers/osbuilder"
+source "${cidir}/lib.sh"
 arch=$("${cidir}"/kata-arch.sh -d)
 
 install_rust() {
