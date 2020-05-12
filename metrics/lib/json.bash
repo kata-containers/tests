@@ -93,7 +93,8 @@ EOF
 		metrics_json_add_fragment "$json"
 	else
 		if [ "$RUNTIME" == "runc" ]; then
-			local output=$(docker-runc -v)
+			local get_binary=$(sudo docker info --format "{{.Runtimes.runc.Path}}")
+			local output=$("${get_binary}" -v)
 			local runcversion=$(grep version <<< "$output" | sed 's/runc version //')
 			local runccommit=$(grep commit <<< "$output" | sed 's/commit: //')
 			local json="$(cat << EOF
