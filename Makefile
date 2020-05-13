@@ -301,8 +301,10 @@ vcpus:
 	bash -f integration/vcpus/default_vcpus_test.sh
 
 vfio:
-	bash -f functional/vfio/run.sh -s false
-	bash -f functional/vfio/run.sh -s true
+	bash -f functional/vfio/run.sh -s false -p qemu -m pc
+	bash -f functional/vfio/run.sh -s true -p qemu -m pc
+	bash -f functional/vfio/run.sh -s false -p qemu -m q35
+	bash -f functional/vfio/run.sh -s true -p qemu -m q35
 
 ipv6:
 	bash -f integration/ipv6/ipv6.sh

@@ -20,7 +20,11 @@ tmp_data_dir="$(mktemp -d)"
 trap cleanup EXIT
 
 CONFIG_FILE="${tmp_data_dir}/configuration.toml"
+
+# kata-runtime options
 SANDBOX_CGROUP_ONLY=""
+HYPERVISOR=
+MACHINE_TYPE=
 
 cleanup() {
 	sudo kata-runtime --kata-config "${CONFIG_FILE}" kill "${container_id}" || true
@@ -94,18 +98,43 @@ Usage: $0 [-h] [options]
     Description:
         This script runs a kata container and passthrough a vfio device
     Options:
-        -h,         Help
-        -s <value>, Set sandbox_cgroup_only in the configuration file
+        -h,          Help
+        -m <string>, Specify kata-runtime machine type for qemu hypervisor
+        -p <string>, Specify kata-runtime hypervisor
+        -s <value>,  Set sandbox_cgroup_only in the configuration file
 EOF
 }
 
 setup_configuration_file() {
+	local qemu_config_file="configuration-qemu.toml"
+
 	for file in $(kata-runtime --kata-show-default-config-paths); do
-		if [ -f "${file}" ]; then
-			cp -a "${file}" "${CONFIG_FILE}"
+		config_dir=$(dirname ${file})
+		config_filename=$(basename ${file})
+
+		if [ "$HYPERVISOR" = "qemu" ]; then
+			config_filename="${qemu_config_file}"
+		fi
+
+		config_file="${config_dir}/${config_filename}"
+
+		if [ -f "${config_file}" ]; then
+			cp -a "${config_file}" "${CONFIG_FILE}"
+			break
+		elif [ -f ${file} ]; then
+			cp -a ${file} "${CONFIG_FILE}"
 			break
 		fi
 	done
+
+	# machine type applies to configuration.toml and configuration-qemu.toml
+	if [ -n "$MACHINE_TYPE" ]; then
+		if [ "$HYPERVISOR" = "qemu" ]; then
+			sed -i 's|^machine_type.*|machine_type = "'${MACHINE_TYPE}'"|g' "${CONFIG_FILE}"
+		else
+			warn "Variable machine_type only applies to qemu. It will be ignored"
+		fi
+	fi
 
 	if [ -n "${SANDBOX_CGROUP_ONLY}" ]; then
 	   sed -i 's|^sandbox_cgroup_only.*|sandbox_cgroup_only='${SANDBOX_CGROUP_ONLY}'|g' "${CONFIG_FILE}"
@@ -114,11 +143,17 @@ setup_configuration_file() {
 
 main() {
 	local OPTIND
-	while getopts "hs:" opt;do
+	while getopts "hm:p:s:" opt;do
 		case ${opt} in
 		h)
 		    help
 		    exit 0;
+		    ;;
+		m)
+		    MACHINE_TYPE="${OPTARG}"
+		    ;;
+		p)
+		    HYPERVISOR="${OPTARG}"
 		    ;;
 		s)
 		    SANDBOX_CGROUP_ONLY="${OPTARG}"
