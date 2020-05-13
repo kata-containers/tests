@@ -28,6 +28,7 @@ trap '${kubernetes_dir}/cleanup_env.sh' EXIT
 systemctl is-active --quiet docker || sudo systemctl start docker
 
 K8S_TEST_UNION=("k8s-attach-handlers.bats" \
+	"k8s-block-volume.bats" \
 	"k8s-configmap.bats" \
 	"k8s-copy-file.bats" \
 	"k8s-cpu-ns.bats" \
@@ -57,13 +58,10 @@ K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-hugepages.bats")
 
 if [ "${KATA_HYPERVISOR:-}" == "cloud-hypervisor" ]; then
-	blk_issue="https://github.com/kata-containers/tests/issues/2318"
 	sysctl_issue="https://github.com/kata-containers/tests/issues/2324"
-	info "blk ${blk_issue}"
 	info "$KATA_HYPERVISOR sysctl is failing:"
 	info "sysctls: ${sysctl_issue}"
 else
-	K8S_TEST_UNION+=("k8s-block-volume.bats")
 	K8S_TEST_UNION+=("k8s-sysctls.bats")
 fi
 # we may need to skip a few test cases when running on non-x86_64 arch
