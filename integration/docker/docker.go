@@ -39,6 +39,9 @@ const (
 	// This Fedora version is used mainly because of https://github.com/kata-containers/tests/issues/2358
 	Fedora30Image = "fedora:30"
 
+	// Fedora32Image is the fedora 32 image
+	Fedora32Image = "fedora:32"
+
 	// StressImage is the vish/stress image
 	StressImage = "vish/stress"
 
