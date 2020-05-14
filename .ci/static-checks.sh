@@ -441,6 +441,7 @@ static_check_license_headers()
 		--exclude="LICENSE" \
 		--exclude="*.md" \
 		--exclude="*.pb.go" \
+		--exclude="*pb_test.go" \
 		--exclude="*.png" \
 		--exclude="*.pub" \
 		--exclude="*.service" \
