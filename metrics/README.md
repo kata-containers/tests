@@ -14,6 +14,7 @@
         * [Density](#density)
         * [Networking](#networking)
         * [Storage](#storage)
+    * [Configuring `RUNTIME`](#configuring-runtime)
     * [Saving Results](#saving-results)
         * [JSON API](#json-api)
             * [`metrics_json_init()`](#metrics_json_init)
@@ -154,8 +155,18 @@ Tests relating to the storage (graph, volume) drivers. Measures may include:
 
 For further details see the [storage tests documentation](storage).
 
-## Saving Results
+## Configuring `RUNTIME`
 
+All metrics tests support setting the container runtime to test against by setting the
+`RUNTIME` environment variable. If unset, the default runtime used is `kata-runtime`.
+For example, to test launch times against the `kata-clh` runtime, you would:
+
+```bash
+export RUNTIME=kata-clh
+./time/launch_times.sh -i ubuntu -n 20
+```
+
+## Saving Results
 
 In order to ensure continuity, and thus testing and historical tracking of results,
 we provide a bash API to aid storing results in a uniform manner.
