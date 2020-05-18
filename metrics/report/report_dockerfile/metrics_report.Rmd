@@ -19,7 +19,7 @@ measures the PSS footprint of all the container runtime components whilst runnin
 of parallel containers. The results are the mean footprint proportion for a single
 container.
 
-```{r memory-footprint, echo=FALSE, fig.cap="Memory PSS footprint"}
+```{r memory-footprint, echo=FALSE, fig.cap="Memory PSS footprint", results='asis'}
 source('memory-footprint.R')
 ```
 \pagebreak
@@ -32,7 +32,7 @@ of containers. For this test, [KSM](https://en.wikipedia.org/wiki/Kernel_same-pa
 containers, and their average system memory footprint cost and density (how many
 containers you can fit per Gb) is calculated.
 
-```{r footprint-density, echo=FALSE, fig.cap="System Memory density"}
+```{r footprint-density, echo=FALSE, fig.cap="System Memory density", results='asis'}
 test_name_extra="-ksm"
 source('footprint-density.R')
 rm(test_name_extra)
@@ -46,7 +46,7 @@ measures the memory inside a container taken by the container runtime. It shows 
 The *% Consumed* is the key row in the table, which compares the *Requested* against *Total* values.
 
 
-```{r mem-in-cont, echo=FALSE, fig.cap="System Memory density"}
+```{r mem-in-cont, echo=FALSE, fig.cap="System Memory density", results='asis'}
 source('mem-in-cont.R')
 ```
 \pagebreak
@@ -60,7 +60,7 @@ Docker container lifecycle take for the first launched container.
 
 To decode the stats table, the prefixes are 'to(`2`)' and '`i`n'. The suffixes are '`k`ernel', '`w`orkload' and '`q`uit'. 'tot' is the total time for a complete container start-to-finished cycle.
 
-```{r lifecycle-time, echo=FALSE, fig.cap="Execution lifecycle times"}
+```{r lifecycle-time, echo=FALSE, fig.cap="Execution lifecycle times", results='asis'}
 source('lifecycle-time.R')
 ```
 \pagebreak
@@ -106,6 +106,6 @@ This table describes the test system details, as derived from the information co
 in the test results files.
 
 
-```{r dut, echo=FALSE, fig.cap="System configuration details"}
+```{r dut, echo=FALSE, fig.cap="System configuration details", results='asis'}
 source('dut-details.R')
 ```
