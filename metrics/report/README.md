@@ -28,6 +28,9 @@ Repeat this process if you want to compare multiple sets of results. Note, the
 report generation scripts process all subdirectories of `tests/metrics/results` when
 generating the report.
 
+The container runtime used for the testing can be set via the `RUNTIME` environment
+variable. The default runtime used for the tests is `kata-runtime`.
+
 > **Note:** By default, the `grabdata.sh` script tries to launch some moderately
 > large containers (i.e. 8Gbyte RAM) and may fail to produce some results on a memory
 > constrained system.
