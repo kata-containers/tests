@@ -37,6 +37,7 @@ render_dut_details <- function() {
 	data=c()
 	stats=c()
 	stats_names=c()
+	datasetname=c()
 
 	# For each set of results
 	for (currentdir in resultdirs) {
@@ -56,17 +57,17 @@ render_dut_details <- function() {
 
 			if (length(fdata$'kata-env') != 0 ) {
 				# We have kata-runtime data
-				dirstats=tibble("Run Ver"=as.character(fdata$'kata-env'$Runtime$Version$Semver))
-				dirstats=cbind(dirstats, "Run SHA"=as.character(fdata$'kata-env'$Runtime$Version$Commit))
+				dirstats=tibble("Run Ver"=as.character(fdata$'kata-env'$Runtime$Version$Version$Semver))
+				dirstats=cbind(dirstats, "Run SHA"=as.character(fdata$'kata-env'$Runtime$Version$Version$Commit))
 
-				pver=as.character(fdata$'kata-env'$Proxy$Version)
+				pver=as.character(fdata$'kata-env'$Proxy$Version$Semver)
 				pver=sub("^[[:alpha:][:blank:]-]*", "", pver)
 				# uncomment if you want to drop the commit sha as well
 				#pver=sub("([[:digit:].]*).*", "\\1", pver)
 				dirstats=cbind(dirstats, "Proxy Ver"=pver)
 
 				# Trim the shim string
-				sver=as.character(fdata$'kata-env'$Shim$Version)
+				sver=as.character(fdata$'kata-env'$Shim$Version$Semver)
 				sver=sub("^[[:alpha:][:blank:]-]*", "", sver)
 				# uncomment if you want to drop the commit sha as well
 				#sver=sub("([[:digit:].]*).*", "\\1", sver)
