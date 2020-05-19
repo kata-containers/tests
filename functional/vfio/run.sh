@@ -25,6 +25,7 @@ CONFIG_FILE="${tmp_data_dir}/configuration.toml"
 SANDBOX_CGROUP_ONLY=""
 HYPERVISOR=
 MACHINE_TYPE=
+IMAGE_TYPE=
 
 cleanup() {
 	sudo kata-runtime --kata-config "${CONFIG_FILE}" kill "${container_id}" || true
@@ -99,6 +100,7 @@ Usage: $0 [-h] [options]
         This script runs a kata container and passthrough a vfio device
     Options:
         -h,          Help
+        -i <string>, Specify initrd or image
         -m <string>, Specify kata-runtime machine type for qemu hypervisor
         -p <string>, Specify kata-runtime hypervisor
         -s <value>,  Set sandbox_cgroup_only in the configuration file
@@ -107,6 +109,8 @@ EOF
 
 setup_configuration_file() {
 	local qemu_config_file="configuration-qemu.toml"
+	local image_file="/usr/share/kata-containers/kata-containers.img"
+	local initrd_file="/usr/share/kata-containers/kata-containers-initrd.img"
 
 	for file in $(kata-runtime --kata-show-default-config-paths); do
 		config_dir=$(dirname ${file})
@@ -139,15 +143,38 @@ setup_configuration_file() {
 	if [ -n "${SANDBOX_CGROUP_ONLY}" ]; then
 	   sed -i 's|^sandbox_cgroup_only.*|sandbox_cgroup_only='${SANDBOX_CGROUP_ONLY}'|g' "${CONFIG_FILE}"
 	fi
+
+	# Change to initrd or image depending on user input.
+	# Non-default configs must be changed to specify either initrd or image, image is default.
+	if [ "$IMAGE_TYPE" = "initrd" ]; then
+		if $(grep -q "^image.*" $CONFIG_FILE); then
+			if $(grep -q "^initrd.*" $CONFIG_FILE); then
+				sed -i '/^image.*/d' "${CONFIG_FILE}"
+			else
+				sed -i 's|^image.*|initrd = "'${initrd_file}'"|g' "${CONFIG_FILE}"
+			fi
+		fi
+	else
+		if $(grep -q "^initrd.*" $CONFIG_FILE); then
+			if $(grep -q "^image.*" $CONFIG_FILE); then
+				sed -i '/^initrd.*/d' "${CONFIG_FILE}"
+			else
+				sed -i 's|^initrd.*|image = "'${image_file}'"|g' "${CONFIG_FILE}"
+			fi
+		fi
+	fi
 }
 
 main() {
 	local OPTIND
-	while getopts "hm:p:s:" opt;do
+	while getopts "hi:m:p:s:" opt;do
 		case ${opt} in
 		h)
 		    help
 		    exit 0;
+		    ;;
+		i)
+		    IMAGE_TYPE="${OPTARG}"
 		    ;;
 		m)
 		    MACHINE_TYPE="${OPTARG}"
