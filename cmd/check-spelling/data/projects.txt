@@ -29,6 +29,7 @@ Huawei/B
 iPerf/B
 IPerf/B
 Istio/B
+Jaeger/B
 Jenkins/B
 journald/B
 Kata/B
@@ -47,10 +48,12 @@ Minikube/B
 MITRE/B
 Netlify/B
 Nginx/B
+OpenCensus/B
 OpenPGP/B
 OpenShift/B
 OpenSSL/B
 OpenStack/B
+OpenTelemetry/B
 OpenTracing/B
 osbuilder/B
 packagecloud/B
