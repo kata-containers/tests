@@ -58,9 +58,7 @@ trap 'handle_error $LINENO' ERR
 # and recommended Kata docker runtime install names.
 is_a_kata_runtime(){
 	case "$1" in
-	"kata-runtime") ;&	# fallthrough
-	"kata-qemu") ;&		# fallthrough
-	"kata-fc")
+	"kata"*)
 		echo "1"
 		return
 		;;
