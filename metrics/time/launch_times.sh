@@ -60,8 +60,12 @@ check_entropy_level() {
 # convert a 'seconds:nanoseconds' string into nanoseconds
 sn_to_ns() {
 	# use shell magic to strip out the 's' and 'ns' fields and print
-	# them as a 0-padded ns string...
-	printf "%d%09d" ${1%:*} ${1##*:}
+	# them as a 0-padded ns string... Note, from `date` version 8.32 onwards,
+	# even with the '-N' we still get lhs 0 padding of the ns field, so always
+	# explicitly strip them off.
+	ns=${1##*:}
+	ns=$( echo ${ns} | sed 's/^0*//' )
+	printf "%d%09d" ${1%:*} ${ns}
 }
 
 # convert 'nanoseconds' (since epoch) into a 'float' seconds
