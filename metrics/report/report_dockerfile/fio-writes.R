@@ -224,7 +224,12 @@ render_fio_writes <- function() {
 			legend.title=element_text(size=5),
 			legend.text=element_text(size=5),
 			legend.background = element_rect(fill=alpha('blue', 0.2))
-		)
+		) +
+		# We know this is a 0-100% x-axis, so make nice divisions, as the interesting results
+		# tend to be scrunched up at the 95+% end, and it's just easier to eyball them than with
+		# the default. Hard wire to 10 divisions (instead of the default of 8).
+		scale_x_continuous(breaks=seq(0, 100, by=10))
+
 
 	master_plot = grid.arrange(
 		write_bw_line_plot,
