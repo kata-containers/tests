@@ -21,8 +21,6 @@ RESULTS_DIR=${SCRIPT_DIR}/../results
 
 # Get working elasticsearch version
 VERSIONS_FILE="${SCRIPT_DIR}/../../versions.yaml"
-ELASTICSEARCH_VERSION=$("${GOPATH}/bin/yq" read "$VERSIONS_FILE" "docker_images.elasticsearch.version")
-ELASTICSEARCH_IMAGE="elasticsearch:$ELASTICSEARCH_VERSION"
 
 # By default we run all the tests
 RUN_ALL=1
@@ -90,6 +88,11 @@ init() {
 
 run_density_ksm() {
 	echo "Running KSM density tests"
+
+	# Extract these early, so we fail early - otherwise it could be quite annoying if we spent minutes
+	# to get half way through the tests only to fail for some missing binary or file...
+	ELASTICSEARCH_VERSION=$("${GOPATH}/bin/yq" read "$VERSIONS_FILE" "docker_images.elasticsearch.version")
+	ELASTICSEARCH_IMAGE="elasticsearch:$ELASTICSEARCH_VERSION"
 
 	# Run the memory footprint test - the main test that
 	# KSM affects. Run for a sufficient number of containers
