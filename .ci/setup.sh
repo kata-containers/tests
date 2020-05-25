@@ -168,7 +168,10 @@ main() {
 	sudo -E PATH=$PATH bash -c "echo 3 > /proc/sys/vm/drop_caches"
 
 	if [ "$ID" == rhel ]; then
-		sudo -E PATH=$PATH bash -c "echo 1 > /proc/sys/fs/may_detach_mounts"
+		major_version=$(echo $VERSION_ID | cut -d '.' -f1)
+		if [ "${major_version}" == "7" ]; then
+			sudo -E PATH=$PATH bash -c "echo 1 > /proc/sys/fs/may_detach_mounts"
+		fi
 	fi
 }
 
