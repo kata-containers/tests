@@ -57,7 +57,7 @@ var _ = Describe("state", func() {
 
 	DescribeTable("container",
 		func(status string, waitTime int) {
-			if distroID() == "centos" {
+			if distroID() == "centos" || distroID() == "rhel" {
 				Skip("Issue:https://github.com/kata-containers/tests/issues/2264")
 			}
 

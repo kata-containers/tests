@@ -7,6 +7,7 @@ package docker
 import (
 	"fmt"
 	"os"
+	"os/exec"
 
 	. "github.com/kata-containers/tests"
 	. "github.com/onsi/ginkgo"
@@ -17,6 +18,20 @@ const (
 	packageManagerTimeout  = 900
 	packageManagerMaxTries = 5
 )
+
+func versionID() string {
+	pathFile := "/etc/os-release"
+	if _, err := os.Stat(pathFile); os.IsNotExist(err) {
+		pathFile = "/usr/lib/os-release"
+	}
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("source %s; echo -n $VERSION_ID", pathFile))
+	id, err := cmd.CombinedOutput()
+	if err != nil {
+		LogIfFail("couldn't find version ID %s\n", err)
+		return ""
+	}
+	return string(id)
+}
 
 func tryPackageManagerCommand(container string, command []string, expectedExitCode int) int {
 	cmd := []string{container}
@@ -74,6 +89,10 @@ var _ = Describe("[Serial Test] package manager update test", func() {
 				Skip("Skip issue: https://github.com/kata-containers/tests/issues/2008")
 			}
 
+			if distroID() == "rhel" && versionID() >= "8" {
+				Skip("Issue:https://github.com/kata-containers/runtime/issues/2580")
+			}
+
 			// This Fedora version is used mainly because of https://github.com/kata-containers/tests/issues/2358
 			args = append(args, "-td", "--name", id, Fedora30Image, "sh")
 			_, _, exitCode := dockerRun(args...)
@@ -96,6 +115,11 @@ var _ = Describe("[Serial Test] package manager update test", func() {
 			if KataConfig.Hypervisor[KataHypervisor].SharedFS == "virtio-fs" {
 				Skip("Skip issue: https://github.com/kata-containers/tests/issues/2008")
 			}
+
+			if distroID() == "rhel" && versionID() >= "8" {
+				Skip("Issue:https://github.com/kata-containers/runtime/issues/2580")
+			}
+
 			args = append(args, "--rm", "-td", "--name", id, CentosImage, "sh")
 			_, _, exitCode := dockerRun(args...)
 			Expect(exitCode).To(BeZero())
