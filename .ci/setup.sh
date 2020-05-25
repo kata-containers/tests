@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2017-2019 Intel Corporation
+# Copyright (c) 2017-2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -106,15 +106,6 @@ install_extra_tools() {
 	# load arch-specific lib file
 	if [ -f "${cidir}/${arch}/lib_setup_${arch}.sh" ]; then
 		source "${cidir}/${arch}/lib_setup_${arch}.sh"
-	fi
-
-	# Do not install immediately kubernetes on Fedora as
-	# first we will run Openshift with its correspondent CRI-O
-	# version and then we will install kubernetes with its
-	# correspondent CRI-O version in order to not break the
-	# compatibility matrix
-	if [ "$ID" == "fedora" ]; then
-		export KUBERNETES="no"
 	fi
 
 	[ "${CRIO}" = "yes" ] &&

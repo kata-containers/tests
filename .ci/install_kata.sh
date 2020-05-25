@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2017-2018 Intel Corporation
+# Copyright (c) 2017-2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -15,16 +15,11 @@ source /etc/os-release || source /usr/lib/os-release
 source "${cidir}/lib.sh"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 experimental_qemu="${experimental_qemu:-false}"
-TEST_RUST_AGENT="${TEST_RUST_AGENT:-false}"
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
 
-if [ "${TEST_RUST_AGENT}" == true ]; then
-	echo "Install rust agent image"
-	"${cidir}/install_kata_image_rust.sh"
-else
-	echo "Install kata-containers image"
-	"${cidir}/install_kata_image.sh" "${tag}"
-fi
+echo "Install Kata Containers Image"
+echo "rust image is default for Kata 2.0"
+"${cidir}/install_kata_image.sh" "${tag}"
 
 echo "Install Kata Containers Kernel"
 "${cidir}/install_kata_kernel.sh" "${tag}"
@@ -38,12 +33,6 @@ install_qemu(){
 		"${cidir}/install_qemu.sh"
 	fi
 }
-
-echo "Install shim"
-"${cidir}/install_shim.sh" "${tag}"
-
-echo "Install proxy"
-"${cidir}/install_proxy.sh" "${tag}"
 
 echo "Install runtime"
 "${cidir}/install_runtime.sh" "${tag}"
@@ -70,7 +59,3 @@ if [ "${TEST_CGROUPSV2}" == "true" ]; then
 	echo "Configure podman with kata"
 	"${cidir}/configure_podman_for_kata.sh"
 fi
-
-# Check system supports running Kata Containers
-kata_runtime_path=$(command -v kata-runtime)
-sudo -E PATH=$PATH "$kata_runtime_path" kata-check

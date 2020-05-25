@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright (c) 2017-2018 Intel Corporation
+# Copyright (c) 2017-2020 Intel Corporation
 # Copyright (c) 2018 ARM Limited
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -11,6 +11,9 @@ export KATA_KSM_THROTTLER=${KATA_KSM_THROTTLER:-no}
 export KATA_NEMU_DESTDIR=${KATA_NEMU_DESTDIR:-"/usr"}
 export KATA_QEMU_DESTDIR=${KATA_QEMU_DESTDIR:-"/usr"}
 export KATA_ETC_CONFIG_PATH="/etc/kata-containers/configuration.toml"
+
+export kata_repo="github.com/kata-containers/kata-containers"
+export kata_default_branch="2.0-dev"
 
 # Name of systemd service for the throttler
 KATA_KSM_THROTTLER_JOB="kata-ksm-throttler"
@@ -132,12 +135,13 @@ function get_dep_from_yaml_db(){
 
 function get_version(){
 	dependency="$1"
-	runtime_repo="github.com/kata-containers/runtime"
-	runtime_repo_dir="$GOPATH/src/${runtime_repo}"
-	versions_file="${runtime_repo_dir}/versions.yaml"
-	mkdir -p "$(dirname ${runtime_repo_dir})"
-	[ -d "${runtime_repo_dir}" ] ||  git clone --quiet https://${runtime_repo}.git "${runtime_repo_dir}"
-
+	kata_repo_dir="$GOPATH/src/${kata_repo}"
+	versions_file="${kata_repo_dir}/versions.yaml"
+	if [ ! -d "${kata_repo_dir}" ]; then
+		mkdir -p "$(dirname ${kata_repo_dir})"
+		git clone --quiet https://${kata_repo}.git "${kata_repo_dir}"
+		( cd "${kata_repo_dir}" && git checkout "$kata_default_branch" >&2 )
+	fi
 	get_dep_from_yaml_db "${versions_file}" "${dependency}"
 }
 

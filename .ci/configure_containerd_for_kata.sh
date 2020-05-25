@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2018 Intel Corporation
+# Copyright (c) 2018-2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -25,9 +25,5 @@ cat << EOT | sudo tee /etc/containerd/config.toml
              BinaryName = "${runc_path}"
              Root = ""
         [plugins.cri.containerd.runtimes.kata]
-           runtime_type = "io.containerd.runc.v1"
-           pod_annotations = ["io.kata-containers.*"]
-           [plugins.cri.containerd.runtimes.kata.options]
-             BinaryName = "${kata_runtime_path}"
-             Root = ""
+           runtime_type = "io.containerd.kata.v2"
 EOT

@@ -1,19 +1,28 @@
 #!/bin/bash
 #
-# Copyright (c) 2017-2018 Intel Corporation
+# Copyright (c) 2017-2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
 
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
 
 cidir=$(dirname "$0")
 
 source "${cidir}/lib.sh"
 source /etc/os-release || source /usr/lib/os-release
+KATA_REPO="github.com/kata-containers/kata-containers"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
+KATA_EXPERIMENTAL_FEATURES="${KATA_EXPERIMENTAL_FEATURES:-}"
 MACHINETYPE="${MACHINETYPE:-pc}"
+METRICS_CI="${METRICS_CI:-}"
+PREFIX=${PREFIX:-/usr}
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
+TEST_INITRD="${TEST_INITRD:-}"
+USE_VSOCK="${USE_VSOCK:-yes}"
 
 arch=$("${cidir}"/kata-arch.sh -d)
 
@@ -21,7 +30,6 @@ arch=$("${cidir}"/kata-arch.sh -d)
 
 # enable verbose build
 export V=1
-tag="$1"
 
 # tell the runtime build to use sane defaults
 export SYSTEM_BUILD_TYPE=kata
@@ -29,19 +37,28 @@ export SYSTEM_BUILD_TYPE=kata
 # The runtimes config file should live here
 export SYSCONFDIR=/etc
 
-PREFIX=${PREFIX:-/usr}
-
 # Artifacts (kernel + image) live below here
 export SHAREDIR=${PREFIX}/share
 
-USE_VSOCK="${USE_VSOCK:-no}"
-
 runtime_config_path="${SYSCONFDIR}/kata-containers/configuration.toml"
+runtime_src_path="${GOPATH}/src/${KATA_REPO}/src/runtime"
 
 PKGDEFAULTSDIR="${SHAREDIR}/defaults/kata-containers"
 NEW_RUNTIME_CONFIG="${PKGDEFAULTSDIR}/configuration.toml"
 # Note: This will also install the config file.
-build_and_install "github.com/kata-containers/runtime" "" "true" "${tag}"
+
+build_install_shim_v2(){
+	if [ ! -d "$runtime_src_path" ]; then
+		go get "$KATA_REPO"
+	fi
+	pushd "$runtime_src_path"
+	make
+	sudo make install
+	popd
+}
+
+build_install_shim_v2
+
 experimental_qemu="${experimental_qemu:-false}"
 
 if [ -e "${NEW_RUNTIME_CONFIG}" ]; then
@@ -82,10 +99,10 @@ esac
 
 if [ x"${TEST_INITRD}" == x"yes" ]; then
 	echo "Set to test initrd image"
-	sudo sed -i -e '/^image =/d' ${runtime_config_path}
+	sudo sed -i -e '/^image =/d' "${runtime_config_path}"
 else
 	echo "Set to test rootfs image"
-	sudo sed -i -e '/^initrd =/d' ${runtime_config_path}
+	sudo sed -i -e '/^initrd =/d' "${runtime_config_path}"
 fi
 
 if [ -z "${METRICS_CI}" ]; then
@@ -108,18 +125,6 @@ if [ "$USE_VSOCK" == "yes" ]; then
 		echo "Load ${vsock_module} module"
 		sudo modprobe "${vsock_module}"
 	fi
-fi
-
-if [ "${TEST_CGROUPSV2}" == "false" ]; then
-	case "${KATA_HYPERVISOR}" in
-		"cloud-hypervisor" | "qemu" | "firecracker")
-			echo "Add kata-runtime as a new Docker runtime."
-			"${cidir}/../cmd/container-manager/manage_ctr_mgr.sh" docker configure -r kata-runtime -f
-			;;
-		*)
-			echo "Kata runtime will not be set in Docker"
-			;;
-	esac
 fi
 
 if [ "$MACHINETYPE" == "q35" ]; then

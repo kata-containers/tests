@@ -1,21 +1,24 @@
 #!/bin/bash
 #
-# Copyright (c) 2018 Intel Corporation
+# Copyright (c) 2018-2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
 
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
 
 # Repositories needed for building the kata containers project.
-agent_repo="${agent_repo:-github.com/kata-containers/agent}"
-proxy_repo="${proxy_repo:-github.com/kata-containers/proxy}"
-runtime_repo="${runtime_repo:-github.com/kata-containers/runtime}"
-shim_repo="${shim_repo:-github.com/kata-containers/shim}"
-tests_repo="${tests_repo:-github.com/kata-containers/tests}"
-packaging_repo="${packaging_repo:-github.com/kata-containers/packaging}"
-osbuilder_repo="${osbuilder_repo:-github.com/kata-containers/osbuilder}"
 katacontainers_repo="${katacontainers_repo:-github.com/kata-containers/kata-containers}"
+packaging_repo="${packaging_repo:-github.com/kata-containers/packaging}"
+tests_repo="${tests_repo:-github.com/kata-containers/tests}"
+
+branch=${branch:-}
+pr_branch=${pr_branch:-}
+pr_number=${pr_number:-}
+kata_repo=${kata_repo:-}
 
 apply_depends_on() {
 	# kata_repo variable is set by the jenkins_job_build.sh
@@ -64,13 +67,8 @@ apply_depends_on() {
 
 clone_repos() {
 	local kata_repos=(
-	"${agent_repo}"
 	"${katacontainers_repo}"
-	"${osbuilder_repo}"
 	"${packaging_repo}"
-	"${proxy_repo}"
-	"${runtime_repo}"
-	"${shim_repo}"
 	"${tests_repo}")
 	for repo in "${kata_repos[@]}"
 	do
@@ -84,7 +82,7 @@ clone_repos() {
 		# config file or zuul config), because we want to have latest changes
 		# of this repository since the job starts. So we need to verify if we
 		# are already in the PR branch, before trying to fetch the same branch.
-		if [ ${repo} == ${tests_repo} ] && [ "${repo}" == "${kata_repo}" ]
+		if [ "${repo}" == "${tests_repo}" ] && [ "${repo}" == "${kata_repo}" ]
 		then
 			current_branch=$(git rev-parse --abbrev-ref HEAD)
 			if [ "${current_branch}" == "${pr_branch}" ]
@@ -105,7 +103,8 @@ clone_repos() {
 			git log --oneline "origin/${branch}~1..HEAD"
 		else
 			echo "Checking out to ${branch}"
-			git fetch origin && git checkout "$branch"
+			#TODO: remove next commented lines
+			#git fetch origin && git checkout "$branch"
 		fi
 		popd
 	done
