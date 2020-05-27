@@ -66,6 +66,14 @@ case "${CI_JOB}" in
 		echo "INFO: Running docker integration tests"
 		sudo -E PATH="$PATH" bash -c "make docker"
 		;;
+	"CLOUD-HYPERVISOR-PODMAN")
+		export TRUSTED_GROUP="kvm"
+		newgrp "${TRUSTED_GROUP}" << END
+		echo "This is running as group $(id -gn)"
+END
+		echo "INFO: Running podman integration tests"
+		bash -c "make podman"
+		;;
 	"CLOUD-HYPERVISOR-K8S-E2E-CRIO-MINIMAL")
 		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
 		;;

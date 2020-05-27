@@ -174,6 +174,11 @@ fi
 # - If the repo is not "tests", call the repo-specific script (which is
 #   expected to call the script of the same name in the "tests" repo).
 case "${CI_JOB}" in
+"CLOUD-HYPERVISOR-PODMAN")
+        export KATA_HYPERVISOR="cloud-hypervisor"
+        export TEST_CGROUPSV2="true"
+        export experimental_kernel="true"
+        ;;
 "CRI_CONTAINERD_K8S")
 	# This job only tests containerd + k8s
 	export CRI_CONTAINERD="yes"
