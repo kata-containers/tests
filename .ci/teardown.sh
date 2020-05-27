@@ -170,6 +170,11 @@ collect_logs()
 		# Remove *.log files, which contain the uncompressed data.
 		rm -f *".log"
 
+		# Copy results from K8s end-to-end testing
+		result_dir=$(find "/tmp" -name 'kata_e2e_results*')
+		e2e_result_tar=$(sudo find "${result_dir}" -name '*.tar.gz')
+		sudo cp "${e2e_result_tar}" .
+
 		popd
 	else
 		echo "Kata Containers Runtime Log:"

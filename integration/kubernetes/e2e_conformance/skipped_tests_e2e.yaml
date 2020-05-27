@@ -12,3 +12,18 @@ containerd:
 
 crio:
   - Daemon set \[Serial\] should rollback without unnecessary restarts
+
+hypervisor:
+  cloud-hypervisor:
+    - Daemon set \[Serial\] should rollback without unnecessary restarts
+    - \[sig-storage\] Secrets optional updates should be reflected in volume \[NodeConformance\] \[Conformance\]
+    - \[sig-storage\] Projected secret optional updates should be reflected in volume \[NodeConformance\] \[Conformance\]
+    - \[sig-storage\] Projected downwardAPI should update labels on modification \[NodeConformance\] \[Conformance\]
+    - \[sig-storage\] Downward API volume should update annotations on modification \[NodeConformance\] \[Conformance\]
+    - \[sig-scheduling\] SchedulerPredicates \[Serial\] validates that there exists conflict between pods with same hostPort and protocol but one using 0.0.0.0 hostIP \[Conformance\]
+    - \[sig-storage\] Projected downwardAPI should update annotations on modification \[NodeConformance\] \[Conformance\]
+    - \[sig-storage\] Projected configMap updates should be reflected in volume \[NodeConformance\] \[Conformance\]
+    - \[sig-storage\] Downward API volume should update labels on modification \[NodeConformance\] \[Conformance\]
+    - \[sig-storage\] Projected configMap optional updates should be reflected in volume \[NodeConformance\] \[Conformance\]
+    - \[sig-storage\] ConfigMap optional updates should be reflected in volume \[NodeConformance\] \[Conformance\]
+    - \[sig-storage\] ConfigMap updates should be reflected in volume \[NodeConformance\] \[Conformance\]
