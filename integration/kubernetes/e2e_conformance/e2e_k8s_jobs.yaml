@@ -6,9 +6,9 @@
 
 jobs:
   CLOUD-HYPERVISOR-K8S-E2E-CRIO-MINIMAL:
-    passed: 14
+    passed: 15
   CLOUD-HYPERVISOR-K8S-E2E-CONTAINERD-MINIMAL:
-    passed: 14
+    passed: 15
   CLOUD-HYPERVISOR-K8S-E2E-CRIO-FULL:
     passed: 223
   CLOUD-HYPERVISOR-K8S-E2E-CONTAINERD-FULL:
@@ -20,3 +20,4 @@ jobs:
       - Kubelet when scheduling a busybox command in a pod should printk
       - Projected secret should be consumable in multiple volumes
       - Secrets should be consumable via the environment
+      - \[sig-storage\] Downward API volume should update annotations on modification \[NodeConformance\] \[Conformance\]
