@@ -12,6 +12,8 @@ CURRENT_QEMU_TAG=$(get_version "assets.hypervisor.qemu.architecture.aarch64.tag"
 QEMU_REPO_URL=$(get_version "assets.hypervisor.qemu.url")
 # Remove 'https://' from the repo url to be able to git clone the repo
 QEMU_REPO=${QEMU_REPO_URL/https:\/\//}
+# set VIRT to "yes" will compile qemu optimized for virt machine
+VIRT=${VIRT:-no}
 
 get_packaged_qemu_version() {
         if [ "$ID" == "ubuntu" ]; then
@@ -68,7 +70,9 @@ build_and_install_qemu() {
 
 	# Replace the default-configs/*-softmmu.mak with the tuned ones
         echo "Overwriting default qemu kconfigs"
-        if [ -e ${GOPATH}/src/${PACKAGING_REPO}/qemu/default-configs/arm-softmmu.mak ]; then
+	if [[ ${VIRT} == "yes" ]] && [[ -e ${GOPATH}/src/${PACKAGING_REPO}/qemu/default-configs/arm-softmmu.mak.virt ]];then
+		cp -af ${GOPATH}/src/${PACKAGING_REPO}/qemu/default-configs/arm-softmmu.mak.virt ${GOPATH}/src/${QEMU_REPO}/default-configs/arm-softmmu.mak
+        elif [ -e ${GOPATH}/src/${PACKAGING_REPO}/qemu/default-configs/arm-softmmu.mak ]; then
             cp -af ${GOPATH}/src/${PACKAGING_REPO}/qemu/default-configs/arm-softmmu.mak ${GOPATH}/src/${QEMU_REPO}/default-configs/
         fi
 
