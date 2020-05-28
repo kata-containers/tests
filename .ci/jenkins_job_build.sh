@@ -1,21 +1,31 @@
 #!/bin/bash
 #
-# Copyright (c) 2018 Intel Corporation
+# Copyright (c) 2018-2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
 
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
 
 source "/etc/os-release" || source "/usr/lib/os-release"
+
+CI_JOB=${CI_JOB:-}
+ghprbPullId=${ghprbPullId:-}
+ghprbTargetBranch=${ghprbTargetBranch:-}
+GIT_BRANCH=${GIT_BRANCH:-}
+KATA_DEV_MODE=${KATA_DEV_MODE:-}
+METRICS_CI=${METRICS_CI:-false}
+WORKSPACE=${WORKSPACE:-}
+BAREMETAL=${BAREMETAL:-false}
+TMPDIR=${TMPDIR:-}
 
 # Run noninteractive on debian and ubuntu
 if [ "$ID" == "debian" ] || [ "$ID" == "ubuntu" ]; then
 	export DEBIAN_FRONTEND=noninteractive
 fi
-
-# Unit test issue for RHEL
-unit_issue="https://github.com/kata-containers/runtime/issues/1517"
 
 # Signify to all scripts that they are running in a CI environment
 [ -z "${KATA_DEV_MODE}" ] && export CI=true
@@ -28,7 +38,6 @@ echo "Setup env for kata repository: $kata_repo"
 [ -z "$kata_repo" ] && echo >&2 "kata repo no provided" && exit 1
 
 tests_repo="${tests_repo:-github.com/kata-containers/tests}"
-runtime_repo="${runtime_repo:-github.com/kata-containers/runtime}"
 katacontainers_repo="${katacontainers_repo:-github.com/kata-containers/kata-containers}"
 
 if [ "${kata_repo}" == "${katacontainers_repo}" ]; then
@@ -91,13 +100,13 @@ branch=
 
 # $ghprbPullId and $ghprbTargetBranch are variables from
 # the Jenkins GithubPullRequestBuilder Plugin
-[ "${ghprbPullId}" ] && [ "${ghprbTargetBranch}" ] && export pr_number="${ghprbPullId}"
+[ -n "${ghprbPullId}" ] && [ -n "${ghprbTargetBranch}" ] && export pr_number="${ghprbPullId}"
 
 # Install go after repository is cloned and checkout to PR
 # This ensures:
 # - We have latest changes in install_go.sh
 # - We got get changes if versions.yaml changed.
-${GOPATH}/src/${tests_repo}/.ci/install_go.sh -p -f
+"${GOPATH}/src/${tests_repo}/.ci/install_go.sh" -p -f
 
 if [ -n "$pr_number" ]; then
 	export branch="${ghprbTargetBranch}"
@@ -128,12 +137,13 @@ fi
 # Work around the 'set -e' dying if the check fails by using a bash
 # '{ group command }' to encapsulate.
 {
-	${tests_repo_dir}/.ci/ci-fast-return.sh
+	"${tests_repo_dir}/.ci/ci-fast-return.sh"
 	ret=$?
 } || true
 if [ "$ret" -eq 0 ]; then
 	echo "Short circuit fast path skipping the rest of the CI."
-	exit 0
+	#TODO: testing - remove next comment
+	#exit 0
 fi
 
 # Setup Kata Containers Environment
@@ -171,32 +181,11 @@ case "${CI_JOB}" in
 esac
 "${ci_dir_name}/setup.sh"
 
-# Now we have all the components installed, log that info before we
-# run the tests.
-if command -v kata-runtime; then
-	echo "Logging kata-env information:"
-	kata-runtime kata-env
-else
-	echo "WARN: Kata runtime is not installed"
-fi
-
-if [ -z "${METRICS_CI}" ]; then
-	if [ "${kata_repo}" != "${tests_repo}" ]; then
-		if [ "${ID}" == "rhel" ] && [ "${kata_repo}" == "${runtime_repo}" ]; then
-			echo "INFO: issue ${unit_issue}"
-		else
-			echo "INFO: Running unit tests for repo $kata_repo"
-			make test
-		fi
-	fi
-
+if [ "${METRICS_CI}" == "false" ]; then
 	# Run integration tests
 	#
 	# Note: this will run all classes of tests for ${tests_repo}.
 	"${ci_dir_name}/run.sh"
-
-	# Code coverage
-	bash <(curl -s https://codecov.io/bash)
 else
 	echo "Running the metrics tests:"
 	"${tests_repo_dir}/.ci/run_metrics_PR_ci.sh"
