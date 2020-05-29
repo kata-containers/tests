@@ -41,7 +41,7 @@ runtime_config_path="${SYSCONFDIR}/kata-containers/configuration.toml"
 PKGDEFAULTSDIR="${SHAREDIR}/defaults/kata-containers"
 NEW_RUNTIME_CONFIG="${PKGDEFAULTSDIR}/configuration.toml"
 # Note: This will also install the config file.
-build_and_install "github.com/kata-containers/runtime" "" "true" "${tag}"
+build_and_install "${runtime_repo}" "" "true" "${tag}"
 experimental_qemu="${experimental_qemu:-false}"
 
 if [ -e "${NEW_RUNTIME_CONFIG}" ]; then

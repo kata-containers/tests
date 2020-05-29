@@ -18,7 +18,6 @@ source /etc/os-release || source /usr/lib/os-release
 KATA_DEV_MODE="${KATA_DEV_MODE:-}"
 
 CURRENT_QEMU_TAG=$(get_version "assets.hypervisor.qemu-experimental.tag")
-PACKAGING_REPO="github.com/kata-containers/packaging"
 QEMU_TAR="kata-static-qemu-virtiofsd.tar.gz"
 arch=$("${cidir}"/kata-arch.sh -d)
 QEMU_PATH="/opt/kata/bin/qemu-virtiofs-system-x86_64"
@@ -52,8 +51,8 @@ build_and_install_static_experimental_qemu() {
 
 build_experimental_qemu() {
 	mkdir -p "${GOPATH}/src"
-	go get -d "$PACKAGING_REPO" || true
-	"${GOPATH}/src/${PACKAGING_REPO}/static-build/qemu-virtiofs/build-static-qemu-virtiofs.sh"
+	go get -d "$packaging_repo" || true
+	"${GOPATH}/src/${packaging_repo}/static-build/qemu-virtiofs/build-static-qemu-virtiofs.sh"
 	sudo mkdir -p "${KATA_TESTS_CACHEDIR}"
 	sudo mv "${QEMU_TAR}" "${KATA_TESTS_CACHEDIR}"
 }

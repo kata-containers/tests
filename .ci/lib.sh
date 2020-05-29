@@ -6,6 +6,17 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# Repositories needed for building the kata containers project.
+export agent_repo="${agent_repo:-github.com/kata-containers/agent}"
+export proxy_repo="${proxy_repo:-github.com/kata-containers/proxy}"
+export runtime_repo="${runtime_repo:-github.com/kata-containers/runtime}"
+export shim_repo="${shim_repo:-github.com/kata-containers/shim}"
+export tests_repo="${tests_repo:-github.com/kata-containers/tests}"
+export packaging_repo="${packaging_repo:-github.com/kata-containers/packaging}"
+export osbuilder_repo="${osbuilder_repo:-github.com/kata-containers/osbuilder}"
+export katacontainers_repo="${katacontainers_repo:-github.com/kata-containers/kata-containers}"
+export rust_agent_repo="${rust_agent_repo:-github.com/kata-containers/kata-containers}"
+
 export KATA_RUNTIME=${KATA_RUNTIME:-kata-runtime}
 export KATA_KSM_THROTTLER=${KATA_KSM_THROTTLER:-no}
 export KATA_NEMU_DESTDIR=${KATA_NEMU_DESTDIR:-"/usr"}
@@ -33,7 +44,6 @@ else
 	export GOPATH="${GOPATH:-$HOME/go}"
 fi
 
-tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 lib_script="${GOPATH}/src/${tests_repo}/lib/common.bash"
 source "${lib_script}"
 
@@ -132,7 +142,6 @@ function get_dep_from_yaml_db(){
 
 function get_version(){
 	dependency="$1"
-	runtime_repo="github.com/kata-containers/runtime"
 	runtime_repo_dir="$GOPATH/src/${runtime_repo}"
 	versions_file="${runtime_repo_dir}/versions.yaml"
 	mkdir -p "$(dirname ${runtime_repo_dir})"

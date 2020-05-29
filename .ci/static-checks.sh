@@ -15,7 +15,6 @@ set -e
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 
-export tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 export tests_repo_dir="${GOPATH}/src/${tests_repo}"
 
 # List of files to delete on exit

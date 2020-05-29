@@ -7,15 +7,9 @@
 
 set -e
 
-# Repositories needed for building the kata containers project.
-agent_repo="${agent_repo:-github.com/kata-containers/agent}"
-proxy_repo="${proxy_repo:-github.com/kata-containers/proxy}"
-runtime_repo="${runtime_repo:-github.com/kata-containers/runtime}"
-shim_repo="${shim_repo:-github.com/kata-containers/shim}"
-tests_repo="${tests_repo:-github.com/kata-containers/tests}"
-packaging_repo="${packaging_repo:-github.com/kata-containers/packaging}"
-osbuilder_repo="${osbuilder_repo:-github.com/kata-containers/osbuilder}"
-katacontainers_repo="${katacontainers_repo:-github.com/kata-containers/kata-containers}"
+cidir=$(dirname "$0")
+source /etc/os-release || source /usr/lib/os-release
+source "${cidir}/lib.sh"
 
 apply_depends_on() {
 	# kata_repo variable is set by the jenkins_job_build.sh
