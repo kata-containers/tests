@@ -171,7 +171,7 @@ collect_logs()
 		rm -f *".log"
 
 		# Copy results from K8s end-to-end testing
-		result_dir=$(find "/tmp" -name 'kata_e2e_results*')
+		result_dir=$(sudo find "/tmp" -name 'kata_e2e_results*')
 		e2e_result_tar=$(sudo find "${result_dir}" -name '*.tar.gz')
 		sudo cp "${e2e_result_tar}" .
 
