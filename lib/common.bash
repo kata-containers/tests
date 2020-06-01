@@ -144,6 +144,8 @@ extract_kata_env(){
 	PROXY_VERSION="0.0.0"
 	if [ "$KATA_HYPERVISOR" == firecracker ]; then
 		HYPERVISOR_PATH="/usr/bin/firecracker"
+	elif [ "$KATA_HYPERVISOR" == "cloud-hypervisor" ]; then
+		HYPERVISOR_PATH="/usr/bin/cloud-hypervisor"
 	elif [ "$experimental_qemu" == "true" ]; then
 		HYPERVISOR_PATH="/usr/bin/qemu-virtiofs-system-$(uname -m)"
 	else
