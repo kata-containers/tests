@@ -24,25 +24,25 @@ declare -A minimal_packages=( \
 )
 
 declare -A packages=( \
-	[kata_containers_dependencies]="libtool automake autotools-dev autoconf bc libpixman-1-dev coreutils" \
-	[qemu_dependencies]="libcap-dev libattr1-dev libcap-ng-dev librbd-dev" \
-	[kernel_dependencies]="libelf-dev flex" \
-	[crio_dependencies]="libglib2.0-dev libseccomp-dev libapparmor-dev libgpgme11-dev thin-provisioning-tools" \
 	[bison_binary]="bison" \
-	[libudev-dev]="libudev-dev" \
-	[build_tools]="build-essential python pkg-config zlib1g-dev" \
-	[crio_dependencies_for_ubuntu]="libdevmapper-dev btrfs-tools util-linux" \
-	[metrics_dependencies]="smem jq" \
-	[cri-containerd_dependencies]="libseccomp-dev libapparmor-dev btrfs-tools  make gcc pkg-config" \
+	[build_tools]="build-essential pkg-config python zlib1g-dev" \
+	[cri-containerd_dependencies]="gcc libapparmor-dev libseccomp-dev make pkg-config" \
+	[crio_dependencies]="libapparmor-dev libglib2.0-dev libseccomp-dev libgpgme11-dev thin-provisioning-tools" \
+	[crio_dependencies_for_ubuntu]="libdevmapper-dev util-linux" \
 	[crudini]="crudini" \
-	[procenv]="procenv" \
-	[haveged]="haveged" \
 	[gnu_parallel]="parallel" \
+	[haveged]="haveged" \
+	[kata_containers_dependencies]="autoconf automake autotools-dev bc coreutils libtool libpixman-1-dev xfsprogs" \
+	[kernel_dependencies]="flex libelf-dev" \
 	[libsystemd]="libsystemd-dev" \
+	[libudev-dev]="libudev-dev" \
+	[metrics_dependencies]="jq smem" \
+	[procenv]="procenv" \
+	[qemu_dependencies]="libattr1-dev libcap-dev libcap-ng-dev librbd-dev" \
 	[redis]="redis-server" \
 )
 
-if [ "$(uname -m)" == "x86_64" ] && [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 18.04" | bc -q)" == "1" ]; then
+if [ "$(uname -m)" == "x86_64" ] && [ "$(echo "${VERSION_ID} >= 18.04" | bc -q)" == "1" ]; then
 	packages[qemu_dependencies]+=" libpmem-dev"
 fi
 

@@ -22,7 +22,7 @@ fi
 echo "skip_missing_names_on_install=0" | sudo tee -a /etc/yum.conf
 
 # Check EPEL repository is enabled on CentOS
-if [ -z $(yum repolist | grep "Extra Packages") ]; then
+if [ -z "$(yum repolist | grep "Extra Packages")" ]; then
 	echo >&2 "ERROR: EPEL repository is not enabled on CentOS."
 	# Enable EPEL repository on CentOS
 	sudo -E yum install -y wget rpm
@@ -49,8 +49,8 @@ echo "Install chronic"
 sudo -E yum -y install moreutils
 
 if [ "$centos_version" == "8" ]; then
-	chronic sudo -E yum install pkgconf-pkg-config
-fi 
+	chronic sudo -E yum -y install pkgconf-pkg-config
+fi
 
 declare -A minimal_packages=( \
 	[spell-check]="hunspell hunspell-en-GB hunspell-en-US pandoc" \
@@ -59,21 +59,21 @@ declare -A minimal_packages=( \
 )
 
 declare -A packages=( \
-	[kata_containers_dependencies]="libtool libtool-ltdl-devel device-mapper-persistent-data lvm2 libtool-ltdl" \
-	[qemu_dependencies]="libcap-devel libcap-ng-devel libattr-devel libcap-ng-devel librbd1-devel flex libfdt-devel libpmem-devel" \
-	[kernel_dependencies]="elfutils-libelf-devel flex pkgconfig patch" \
-	[crio_dependencies]="libassuan-devel libgpg-error-devel device-mapper-libs util-linux libselinux-devel" \
 	[bison_binary]="bison" \
-	[libgudev1-dev]="libgudev1-devel" \
-	[general_dependencies]="gpgme-devel glib2-devel glibc-devel bzip2 m4 gettext-devel automake autoconf pixman-devel coreutils" \
-	[build_tools]="python3 pkgconfig zlib-devel" \
-	[ostree]="ostree-devel" \
-	[metrics_dependencies]="jq" \
+	[build_tools]="pkgconfig python3 zlib-devel" \
+	[crio_dependencies]="device-mapper-libs libassuan-devel libgpg-error-devel libselinux-devel util-linux" \
 	[crudini]="crudini" \
-	[procenv]="procenv" \
+	[general_dependencies]="autoconf automake bzip2 coreutils gettext-devel glibc-devel glib2-devel gpgme-devel m4 pixman-devel xfsprogs" \
+	[gnu_parallel_dependencies]="bzip2 make perl" \
 	[haveged]="haveged" \
-	[gnu_parallel_dependencies]="perl bzip2 make" \
+	[kata_containers_dependencies]="device-mapper-persistent-data libtool libtool-ltdl libtool-ltdl-devel lvm2" \
+	[kernel_dependencies]="elfutils-libelf-devel flex patch pkgconfig" \
+	[libgudev1-dev]="libgudev1-devel" \
 	[libsystemd]="systemd-devel" \
+	[metrics_dependencies]="jq" \
+	[ostree]="ostree-devel" \
+	[procenv]="procenv" \
+	[qemu_dependencies]="flex libcap-devel libcap-ng-devel libattr-devel librbd1-devel libfdt-devel libpmem-devel" \
 	[redis]="redis" \
 )
 
