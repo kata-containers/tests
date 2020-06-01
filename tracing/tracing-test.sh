@@ -9,6 +9,8 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 
+source /etc/os-release || source /usr/lib/os-release
+
 DEBUG=${DEBUG:-}
 [ -n "$DEBUG" ] && set -o xtrace
 
@@ -22,6 +24,13 @@ TRACE_LOG_DIR=${TRACE_LOG_DIR:-${KATA_TESTS_LOGDIR}/traces}
 jaeger_server=${jaeger_server:-localhost}
 jaeger_ui_port=${jaeger_ui_port:-16686}
 jaeger_docker_container_name="jaeger"
+
+issue="https://github.com/kata-containers/tests/issues/2566"
+
+if [ "$ID" == rhel ]; then
+	echo "Skip tracing test on $ID, see: $issue"
+	exit
+fi
 
 # Cleanup will remove Jaeger container and
 # disable tracing.

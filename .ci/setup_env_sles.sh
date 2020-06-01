@@ -49,19 +49,19 @@ declare -A minimal_packages=( \
 )
 
 declare -A packages=( \
-	[general_dependencies]="curl git patch"
-	[kata_containers_dependencies]="libtool automake autoconf bc libpixman-1-0-devel coreutils" \
-	[qemu_dependencies]="libcap-devel libattr1 libcap-ng-devel librbd-devel libpmem-devel" \
-	[kernel_dependencies]="patch libelf-devel flex" \
-	[crio_dependencies]="libglib-2_0-0 libseccomp-devel libapparmor-devel libgpg-error-devel glibc-devel-static libgpgme-devel libassuan-devel glib2-devel glibc-devel util-linux" \
 	[bison_binary]="bison" \
-	[libudev-dev]="libudev-devel" \
 	[build_tools]="gcc python zlib-devel" \
-	[metrics_dependencies]="jq" \
-	[cri-containerd_dependencies]="libseccomp-devel libapparmor-devel make pkg-config" \
+	[cri-containerd_dependencies]="libapparmor-devel libseccomp-devel make pkg-config" \
+	[crio_dependencies]="glibc-devel glibc-devel-static glib2-devel libapparmor-devel libgpg-error-devel libglib-2_0-0 libgpgme-devel libseccomp-devel libassuan-devel util-linux" \
+	[general_dependencies]="curl git patch" \
+	[gnu_parallel]="gnu_parallel" \
 	[haveged]="haveged" \
- 	[gnu_parallel]="gnu_parallel" \
+	[kata_containers_dependencies]="autoconf automake bc coreutils libpixman-1-0-devel libtool" \
+	[kernel_dependencies]="flex libelf-devel patch" \
 	[libsystemd]="systemd-devel" \
+	[libudev-dev]="libudev-devel" \
+	[metrics_dependencies]="jq" \
+	[qemu_dependencies]="libattr1 libcap-devel libcap-ng-devel libpmem-devel librbd-devel" \
 )
 
 main()

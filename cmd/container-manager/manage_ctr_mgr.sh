@@ -105,7 +105,13 @@ install_docker(){
 			sudo -E apt-get -y install apt-transport-https ca-certificates software-properties-common
 			repo_url="https://download.docker.com/linux/ubuntu"
 			curl -fsSL "${repo_url}/gpg" | sudo apt-key add -
-			sudo -E add-apt-repository "deb [arch=${arch}] ${repo_url} $(lsb_release -cs) stable"
+			# There is not a docker repository for Ubuntu 20.04, that is the main reason why
+			# we are using bionic (18.04 LTS) repository
+			if [ "$(echo "${VERSION_ID} >= 20.04" | bc -q)" == "1" ]; then
+				sudo -E add-apt-repository "deb [arch=${arch}] ${repo_url} bionic stable"
+			else
+				sudo -E add-apt-repository "deb [arch=${arch}] ${repo_url} $(lsb_release -cs) stable"
+			fi
 			sudo -E apt-get update
 			docker_version_full=$(apt-cache madison $pkg_name | grep "$docker_version" | awk '{print $3}' | head -1)
 			sudo -E apt-get -y install "${pkg_name}=${docker_version_full}"
@@ -129,7 +135,7 @@ install_docker(){
 			repo_url="https://download.docker.com/linux/centos/docker-ce.repo"
 			sudo yum-config-manager --add-repo "$repo_url"
 			sudo yum makecache
-			docker_version_full=$(yum --showduplicate list "$pkg_name" | \
+			docker_version_full=$(sudo yum --showduplicate list "$pkg_name" | \
 				grep "$docker_version" | awk '{print $2}' | tail -1 | cut -d':' -f2)
 			sudo -E yum -y install "${pkg_name}-${docker_version_full}"
 		elif [ "$ID" == "debian" ]; then
