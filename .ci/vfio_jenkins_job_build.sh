@@ -56,21 +56,16 @@ create_user_data() {
 
 	ssh_pub_key="$(cat "${ssh_pub_key_file}")"
 	dnf_proxy=""
-	environment="$(env | egrep "ghprb|WORK|KATA|GIT|JENKINS" | sed -e 's|=|="|g' -e 's|$|"|g' -e 's|^|    export |g')"
+	environment=$(env | egrep "ghprb|WORK|KATA|GIT|JENKINS|_PROXY|_proxy" | \
+	                    sed -e "s/'/'\"'\"'/g" \
+	                        -e "s/\(^.*\)=/\1='/" \
+	                        -e "s/$/'/" \
+	                        -e 's/^/    export /')
 
 	if [ -n "${http_proxy}" ] && [ -n "${https_proxy}" ]; then
 		dnf_proxy="dnf:
   https_proxy: ${https_proxy}
   proxy: ${http_proxy}"
-		if [ -n "${no_proxy}" ]; then
-			environment+="
-    export no_proxy=\"${no_proxy}\"
-    export NO_PROXY=\"${no_proxy}\"
-    export http_proxy=\"${http_proxy}\"
-    export HTTP_PROXY=\"${http_proxy}\"
-    export https_proxy=\"${https_proxy}\"
-    export HTTPS_PROXY=\"${https_proxy}\""
-		fi
 	fi
 
 	tests_go_path="/home/${USER}/go/src/${tests_repo}"
