@@ -11,7 +11,7 @@
 # - when do we terminate the test (cutoff points)
 #
 # There are a number of things we may wish to add to this script later:
-# - sanity check that the correct number of runtime components (qemu, shim etc.)
+# - sanity check that the correct number of runtime components (hypervisor, shim etc.)
 #  are running at all times
 # - some post-processing scripts to generate stats and graphs
 #
@@ -167,16 +167,16 @@ function get_proc_pss() {
 function grab_vm_uss() {
 	proxy=$(get_proc_uss $PROXY_PATH)
 	shim=$(get_proc_uss $SHIM_PATH)
-	qemu=$(get_proc_uss $HYPERVISOR_PATH)
+	hypervisor=$(get_proc_uss $HYPERVISOR_PATH)
 	virtiofsd=$(get_proc_uss $VIRTIOFSD_PATH)
 
-	total=$((proxy + shim + qemu + virtiofsd))
+	total=$((proxy + shim + hypervisor + virtiofsd))
 
 	local json="$(cat << EOF
 		"uss": {
 			"proxy": $proxy,
 			"shim": $shim,
-			"qemu": "$qemu",
+			"$KATA_HYPERVISOR": "$hypervisor",
 			"virtiofsd": "$virtiofsd",
 			"total": $total,
 			"Units": "B"
@@ -191,16 +191,16 @@ EOF
 function grab_vm_pss() {
 	proxy=$(get_proc_pss $PROXY_PATH)
 	shim=$(get_proc_pss $SHIM_PATH)
-	qemu=$(get_proc_pss $HYPERVISOR_PATH)
+	hypervisor=$(get_proc_pss $HYPERVISOR_PATH)
 	virtiofsd=$(get_proc_pss $VIRTIOFSD_PATH)
 
-	total=$((proxy + shim + qemu + virtiofsd))
+	total=$((proxy + shim + hypervisor + virtiofsd))
 
 	local json="$(cat << EOF
 		"pss": {
 			"proxy": $proxy,
 			"shim": $shim,
-			"qemu": "$qemu",
+			"$KATA_HYPERVISOR": "$hypervisor",
 			"virtiofsd": "$virtiofsd",
 			"total": $total,
 			"Units": "B"
