@@ -28,7 +28,7 @@ init_ci_flags() {
 	# - Use true for nightly testing
 	export MINIMAL_K8S_E2E="false"
 	# Test cgroup v2
-	export TEST_CGROUPSV2="no"
+	export TEST_CGROUPSV2="false"
 	# Run crio functional test
 	export TEST_CRIO="false"
 	# Run docker functional test
