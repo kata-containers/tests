@@ -7,8 +7,10 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+issue="https://github.com/kata-containers/tests/issues/2574"
 
 setup() {
+	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	export KUBECONFIG="$HOME/.kube/config"
 	sleep_liveness=20
 
@@ -16,6 +18,7 @@ setup() {
 }
 
 @test "Liveness probe" {
+	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	pod_name="liveness-exec"
 
 	# Create pod
@@ -33,6 +36,7 @@ setup() {
 }
 
 @test "Liveness http probe" {
+	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	pod_name="liveness-http"
 
 	# Create pod
@@ -51,6 +55,7 @@ setup() {
 
 
 @test "Liveness tcp probe" {
+	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	pod_name="tcptest"
 
 	# Create pod
@@ -68,5 +73,6 @@ setup() {
 }
 
 teardown() {
+	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	kubectl delete pod "$pod_name"
 }

@@ -13,6 +13,7 @@ source "${SCRIPT_PATH}/crio_skip_tests.sh"
 source "${SCRIPT_PATH}/../../metrics/lib/common.bash"
 source /etc/os-release || source /usr/lib/os-release
 
+crio_config_file="/etc/crio/crio.conf"
 export JOBS="${JOBS:-$(nproc)}"
 export CONTAINER_RUNTIME="${CONTAINER_RUNTIME:-$RUNTIME}"
 
@@ -127,6 +128,8 @@ echo "Ensure docker service is stopped before running the tests"
 if systemctl is-active --quiet docker; then
 	sudo systemctl stop docker
 fi
+
+sudo sed -i '/--selinux=false"/a export OVERRIDE_OPTIONS="-d ${crio_config_file}"' test_runner.sh
 
 echo "Running cri-o tests with runtime: $CONTAINER_RUNTIME"
 ./test_runner.sh ctr.bats
