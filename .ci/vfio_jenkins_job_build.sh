@@ -58,7 +58,7 @@ create_user_data() {
 	dnf_proxy=""
 	environment=$(env | egrep "ghprb|WORK|KATA|GIT|JENKINS|_PROXY|_proxy" | \
 	                    sed -e "s/'/'\"'\"'/g" \
-	                        -e "s/\(^.*\)=/\1='/" \
+	                        -e "s/\(^[[:alnum:]_]\+\)=/\1='/" \
 	                        -e "s/$/'/" \
 	                        -e 's/^/    export /')
 
