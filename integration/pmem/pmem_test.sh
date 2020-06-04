@@ -21,7 +21,6 @@ osbuilder_repository="github.com/kata-containers/osbuilder"
 osbuilder_repository_path="${GOPATH}/src/${osbuilder_repository}"
 test_directory_name="test_pmem1"
 test_directory=$(mktemp -d --suffix="${test_directory_name}")
-device_name=""
 TEST_INITRD="${TEST_INITRD:-no}"
 experimental_qemu="${experimental_qemu:-false}"
 
@@ -44,20 +43,7 @@ function setup() {
 }
 
 function test_pmem {
-	# Create xfs
-	sudo dd if=/dev/zero of=xfs.img bs=1M count=128
-	device_name=$(sudo losetup --offset 2M --show -Pf xfs.img)
-
-	# DAX and reflink cannot be used together!
-	# Explicitly disable reflink, if it fails then reflink
-	# is not supported and '-m reflink=0' is not needed.
-	sudo mkfs.xfs -m reflink=0 "${device_name}" || sudo mkfs.xfs "${device_name}"
-
-	size="2097152"
-	gcc "${osbuilder_repository_path}/image-builder/nsdax.gpl.c" -o nsdax
-	sudo ./nsdax "xfs.img" "${size}" "${size}"
-
-	sudo mount "${device_name}" "${test_directory}"
+	"${dir_path}/../../cmd/pmemctl/pmemctl.sh" -s 128M -f xfs -m "${test_directory}" xfs.img
 
 	# Running container
 	docker run -d --name "${container_name}" --runtime kata-runtime -v "${test_directory}:/${test_directory_name}" "${image}" sh -c "${payload}"
@@ -70,7 +56,7 @@ function teardown() {
 	clean_env
 	check_processes
 	sudo umount "${test_directory}"
-	sudo losetup -d "${device_name}"
+	sudo losetup -D
 	sudo rm -rf "${test_directory}"
 }
 
