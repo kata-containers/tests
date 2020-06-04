@@ -13,3 +13,10 @@ jobs:
     passed: 223
   CLOUD-HYPERVISOR-K8S-E2E-CONTAINERD-FULL:
     passed: 222
+  minimal:
+    focus:
+      - ConfigMap should be consumable from pods in volume
+      - InitContainer \[NodeConformance\] should invoke init containers
+      - Kubelet when scheduling a busybox command in a pod should printk
+      - Projected secret should be consumable in multiple volumes
+      - Secrets should be consumable via the environment
