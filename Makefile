@@ -59,9 +59,12 @@ FILTER_FILE = .ci/filter/filter_docker_test.sh
 FIRECRACKER_CONFIG = .ci/hypervisors/firecracker/configuration_firecracker.yaml
 # Cloud hypervisor configuration file
 CLH_CONFIG = .ci/hypervisors/clh/configuration_clh.yaml
+# Rust agent configuration file
+RUST_CONFIG = .ci/rust/configuration_rust.yaml
 ifneq ($(wildcard $(FILTER_FILE)),)
 SKIP_FIRECRACKER := $(shell bash -c '$(FILTER_FILE) $(FIRECRACKER_CONFIG)')
 SKIP_CLH := $(shell bash -c '$(FILTER_FILE) $(CLH_CONFIG)')
+SKIP_RUST := $(shell bash -c '$(FILTER_FILE) $(RUST_CONFIG)')
 endif
 
 # get arch
@@ -129,6 +132,10 @@ endif
 
 ifeq ($(KATA_HYPERVISOR),firecracker)
 $(eval $(call append_ginkgo,SKIP_GINKGO,$(SKIP_FIRECRACKER)))
+endif
+
+ifeq ($(TEST_RUST_AGENT),true)
+$(eval $(call append_ginkgo,SKIP_GINKGO,$(SKIP_RUST)))
 endif
 
 ifneq ($(SKIP),)
