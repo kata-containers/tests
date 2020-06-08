@@ -42,14 +42,18 @@ function setup() {
 	fi
 }
 
-function test_pmem {
+function test_pmem_mount {
 	"${dir_path}/../../cmd/pmemctl/pmemctl.sh" -s 128M -f xfs -m "${test_directory}" xfs.img
 
 	# Running container
-	docker run -d --name "${container_name}" --runtime kata-runtime -v "${test_directory}:/${test_directory_name}" "${image}" sh -c "${payload}"
+	docker run -d --name "${container_name}" --runtime ${RUNTIME} -v "${test_directory}:/${test_directory_name}" "${image}" sh -c "${payload}"
 
 	# Check container
 	docker exec "${container_name}" sh -exc "mount | grep ${test_directory_name} | grep '/dev/pmem' | grep 'dax'"
+
+	sudo umount "${test_directory}"
+	sudo losetup -D
+	rm -f xfs.img
 }
 
 function teardown() {
@@ -65,5 +69,5 @@ trap teardown EXIT
 echo "Running setup"
 setup
 
-echo "Running pmem test"
-test_pmem
+echo "Running pmem mount test"
+test_pmem_mount
