@@ -47,12 +47,6 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" bash -c "make crio"
 		;;
 	"CLOUD-HYPERVISOR")
-		echo "INFO: Containerd checks"
-		sudo -E PATH="$PATH" bash -c "make cri-containerd"
-
-		echo "INFO: Running kubernetes tests"
-		sudo -E PATH="$PATH" bash -c "make kubernetes"
-
 		echo "INFO: Running soak test"
 		sudo -E PATH="$PATH" bash -c "make docker-stability"
 
@@ -73,6 +67,13 @@ case "${CI_JOB}" in
 END
 		echo "INFO: Running podman integration tests"
 		bash -c "make podman"
+		;;
+	"CLOUD-HYPERVISOR-K8S-CONTAINERD")
+		echo "INFO: Containerd checks"
+		sudo -E PATH="$PATH" bash -c "make cri-containerd"
+
+		echo "INFO: Running kubernetes tests with containerd"
+		sudo -E PATH="$PATH" bash -c "make kubernetes"
 		;;
 	"CLOUD-HYPERVISOR-K8S-E2E-CRIO-MINIMAL")
 		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
