@@ -75,6 +75,13 @@ END
 		echo "INFO: Running kubernetes tests with containerd"
 		sudo -E PATH="$PATH" bash -c "make kubernetes"
 		;;
+	"CLOUD-HYPERVISOR-K8S-CRIO")
+		echo "INFO: Running crio tests"
+		sudo -E PATH="$PATH" bash -c "make crio"
+
+		echo "INFO: Running kubernetes tests with cri-o"
+		sudo -E PATH="$PATH" bash -c "make kubernetes"
+		;;
 	"CLOUD-HYPERVISOR-K8S-E2E-CRIO-MINIMAL")
 		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
 		;;
