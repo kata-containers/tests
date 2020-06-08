@@ -262,7 +262,7 @@ else
 	echo "WARN: Kata runtime is not installed"
 fi
 
-if [ -n "${METRICS_CI}" ]; then
+if [ -n "${METRICS_CI}" ] || [ -n "${METRICS_CI_CLH}" ]; then
 	echo "Running the metrics tests:"
 	"${tests_repo_dir}/.ci/run_metrics_PR_ci.sh"
 elif [ -n "${VFIO_CI}" ]; then

@@ -64,6 +64,15 @@ run() {
 		bash network/cpu_statistics_iperf.sh
 	fi
 
+	# Metrics that run for CLH
+	if [ -n "${METRICS_CI_CLH}" ]; then
+		bash density/docker_memory_usage.sh 20 5
+
+		bash time/launch_times.sh -i ubuntu -n 20
+
+		bash density/memory_usage_inside_container.sh
+	fi
+
 	popd
 }
 
