@@ -14,6 +14,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+DEBUG=${DEBUG:-}
+[ -n "$DEBUG" ] && set -o xtrace
+
 export KUBECONFIG=$HOME/.kube/config
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 source "${SCRIPT_PATH}/../../../lib/common.bash"
@@ -88,17 +91,26 @@ run_sonobuoy() {
 		skip_options+="|${skip_list}"
 	fi
 
+	local cmd="sonobuoy"
+	cmd+=" run"
+	cmd+=" --wait=${WAIT_TIME}"
 
 	if [ "${MINIMAL_K8S_E2E}" == "true" ]; then
 		minimal_focus=$(yaml_list_to_str_regex "jobs.minimal.focus" "${JOBS_FILE}")
-		set -x
-		sonobuoy run --e2e-focus="${minimal_focus}" --wait="$WAIT_TIME"
-		set +x
+		# Not required to skip as only what is defined in toml should be executed.
+		if [ "${minimal_focus}" != "" ]; then
+			cmd+=" --e2e-focus=\"${minimal_focus}\""
+		else
+			# For MINIMAL_K8S_E2E focus list should not be empty
+			die "minimal focus query returned empty list"
+		fi
 	else
-		set -x
-		sonobuoy run --e2e-skip="$skip_options" --wait="$WAIT_TIME"
-		set +x
+		if [ "${skip_options}" != "" ]; then
+			cmd+=" --e2e-skip=\"${skip_options}\""
+		fi
 	fi
+	echo "running: ${cmd}"
+	eval "${cmd}"
 
 	e2e_result_dir="$(mktemp -d /tmp/kata_e2e_results.XXXXX)"
 	{
