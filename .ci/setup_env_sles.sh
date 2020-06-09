@@ -61,7 +61,7 @@ declare -A packages=( \
 	[libsystemd]="systemd-devel" \
 	[libudev-dev]="libudev-devel" \
 	[metrics_dependencies]="jq" \
-	[qemu_dependencies]="libattr1 libcap-devel libcap-ng-devel libpmem-devel librbd-devel" \
+	[qemu_dependencies]="libattr1 libcap-devel libcap-ng-devel libpmem-devel librbd-devel libselinux-devel libffi-devel libmount-devel libblkid-devel" \
 )
 
 main()

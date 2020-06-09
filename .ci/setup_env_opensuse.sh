@@ -44,7 +44,7 @@ declare -A packages=( \
 	[libudev-dev]="libudev-devel" \
 	[metrics_dependencies]="jq smemstat" \
 	[os_tree]="libostree-devel" \
-	[qemu_dependencies]="libattr1 libcap-devel libcap-ng-devel libpmem-devel librbd-devel" \
+	[qemu_dependencies]="libattr1 libcap-devel libcap-ng-devel libpmem-devel librbd-devel libselinux-devel libffi-devel libmount-devel libblkid-devel" \
 	[redis]="redis" \
 )
 
