@@ -313,6 +313,16 @@ elif [ -n "${VFIO_CI}" ]; then
 	export AGENT_INIT=yes TEST_INITRD=yes OSBUILDER_DISTRO=alpine
 	sudo -E PATH=$PATH "${ci_dir_name}/install_kata_image.sh"
 
+	echo "Installing QEMU experimental to get virtiofsd"
+	sudo -E PATH=$PATH "${ci_dir_name}/install_qemu_experimental.sh"
+
+	echo "Installing experimental kernel"
+	export experimental_kernel=true
+	sudo -E PATH=$PATH "${ci_dir_name}/install_kata_kernel.sh"
+
+	echo "Installing Cloud Hypervisor"
+	sudo -E PATH=$PATH "${ci_dir_name}/install_cloud_hypervisor.sh"
+
 	echo "Running VFIO tests:"
 	"${ci_dir_name}/run.sh"
 

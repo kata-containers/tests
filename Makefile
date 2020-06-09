@@ -314,6 +314,10 @@ vcpus:
 	bash -f integration/vcpus/default_vcpus_test.sh
 
 vfio:
+	bash -f functional/vfio/run.sh -s false -p clh -i image
+	bash -f functional/vfio/run.sh -s true -p clh -i image
+#   bash -f functional/vfio/run.sh -s false -p clh -i initrd
+#   bash -f functional/vfio/run.sh -s true -p clh -i initrd
 	bash -f functional/vfio/run.sh -s false -p qemu -m pc -i image
 	bash -f functional/vfio/run.sh -s true -p qemu -m pc -i image
 	bash -f functional/vfio/run.sh -s false -p qemu -m q35 -i image

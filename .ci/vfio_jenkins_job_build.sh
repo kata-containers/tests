@@ -226,7 +226,7 @@ run_vm() {
 	config_iso="$2"
 	disable_modern="off"
 	hostname="$(hostname)"
-	memory="4096M"
+	memory="16384M"
 	cpus=4
 
 	/usr/bin/qemu-system-${arch} -m "${memory}" -smp cpus="${cpus}" -cpu host -machine q35,accel=kvm,kernel_irqchip=split \
