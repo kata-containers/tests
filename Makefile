@@ -307,10 +307,14 @@ vcpus:
 	bash -f integration/vcpus/default_vcpus_test.sh
 
 vfio:
-	bash -f functional/vfio/run.sh -s false -p qemu -m pc
-	bash -f functional/vfio/run.sh -s true -p qemu -m pc
-	bash -f functional/vfio/run.sh -s false -p qemu -m q35
-	bash -f functional/vfio/run.sh -s true -p qemu -m q35
+	bash -f functional/vfio/run.sh -s false -p qemu -m pc -i image
+	bash -f functional/vfio/run.sh -s true -p qemu -m pc -i image
+	bash -f functional/vfio/run.sh -s false -p qemu -m q35 -i image
+	bash -f functional/vfio/run.sh -s true -p qemu -m q35 -i image
+	bash -f functional/vfio/run.sh -s false -p qemu -m pc -i initrd
+	bash -f functional/vfio/run.sh -s true -p qemu -m pc -i initrd
+	bash -f functional/vfio/run.sh -s false -p qemu -m q35 -i initrd
+	bash -f functional/vfio/run.sh -s true -p qemu -m q35 -i initrd
 
 ipv6:
 	bash -f integration/ipv6/ipv6.sh

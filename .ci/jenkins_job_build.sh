@@ -266,6 +266,9 @@ if [ -n "${METRICS_CI}" ] || [ -n "${METRICS_CI_CLH}" ]; then
 	echo "Running the metrics tests:"
 	"${tests_repo_dir}/.ci/run_metrics_PR_ci.sh"
 elif [ -n "${VFIO_CI}" ]; then
+	echo "Installing initrd image:"
+	TEST_INITRD=yes "${ci_dir_name}/install_kata_image.sh"
+
 	echo "Running VFIO tests:"
 	"${ci_dir_name}/run.sh"
 else

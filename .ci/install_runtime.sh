@@ -54,7 +54,7 @@ fi
 
 enable_hypervisor_config(){
 	local path=$1
-	sudo mv "$path" "${PKGDEFAULTSDIR}/configuration.toml"
+	sudo ln -f "$path" "${PKGDEFAULTSDIR}/configuration.toml"
 
 }
 
