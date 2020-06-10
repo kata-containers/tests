@@ -36,7 +36,7 @@ declare -A packages=( \
 	[metrics_dependencies]="jq" \
 	[os_tree]="ostree-devel" \
 	[procenv]="procenv" \
-	[qemu_dependencies]="libattr-devel libcap-devel libcap-ng-devel librbd-devel libpmem-devel pixman-devel zlib-devel" \
+	[qemu_dependencies]="libattr-devel libcap-devel libcap-ng-devel librbd-devel libpmem-devel pixman-devel zlib-devel libselinux-devel libffi-devel libmount-devel libblkid-devel" \
 	[redis]="redis" \
 	[versionlock]="python3-dnf-plugin-versionlock" \
 )

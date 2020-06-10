@@ -49,7 +49,7 @@ declare -A packages=(
 	[metrics_dependencies]="jq" \
 	[os_tree]="ostree-devel" \
 	[procenv]="procenv" \
-	[qemu_dependencies]="flex libattr-devel libcap-devel libcap-ng-devel libfdt-devel librbd1-devel libpmem-devel" \
+	[qemu_dependencies]="flex libattr-devel libcap-devel libcap-ng-devel libfdt-devel librbd1-devel libpmem-devel libselinux-devel libffi-devel libmount-devel libblkid-devel" \
 	[redis]="redis" \
 )
 

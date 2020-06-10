@@ -38,7 +38,7 @@ declare -A packages=( \
 	[libudev-dev]="libudev-dev" \
 	[metrics_dependencies]="jq smem" \
 	[procenv]="procenv" \
-	[qemu_dependencies]="libattr1-dev libcap-dev libcap-ng-dev librbd-dev" \
+	[qemu_dependencies]="libattr1-dev libcap-dev libcap-ng-dev librbd-dev libselinux1-dev libffi-dev libmount-dev libblkid-dev" \
 	[redis]="redis-server" \
 )
 
