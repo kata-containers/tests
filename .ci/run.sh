@@ -94,6 +94,14 @@ END
 		echo "INFO: Running podman integration tests"
 		bash -c "make podman"
 		;;
+	"RUST_AGENT")
+		echo "INFO: Running docker integration tests"
+		sudo -E PATH="$PATH" bash -c "make docker"
+		echo "INFO: Running soak test"
+		sudo -E PATH="$PATH" bash -c "make docker-stability"
+		echo "INFO: Running kubernetes tests"
+		sudo -E PATH="$PATH" bash -c "make kubernetes"
+		;;
 	"VFIO")
 		echo "INFO: Running VFIO functional tests"
 		bash -c "make vfio"

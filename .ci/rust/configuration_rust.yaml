@@ -1,0 +1,37 @@
+#
+# Copyright (c) 2020 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# We need to skip some docker integration tests as they are not
+# running correctly using rust agent. We will skip them using
+# the ginkgo flag 'skip=REGEXP'.
+test:
+  - docker
+docker:
+  Describe:
+    - docker kill
+    - check yamux IO timeout
+    - capabilities
+    - terminal
+    - docker privileges
+    - docker top
+    - pause
+    - Hotplug memory
+    - users and groups
+    - CPUs and CPU set
+    - Check cgroup paths
+    - memory constraints
+    - remove paused container
+    - sysctls
+    - Check read-only cgroup filesystem
+    - docker env
+    - Update number of CPUs
+    - Update CPU constraints
+    - Hot plug CPUs
+    - docker cp with volume attached
+    - docker volume
+    - docker cp with volume
+  Context:
+    - killing container
+  It:
