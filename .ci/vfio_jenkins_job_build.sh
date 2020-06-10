@@ -31,8 +31,12 @@ mkdir -p "${data_dir}"
 
 trap cleanup EXIT
 
-cleanup() {
+kill_vms() {
 	sudo killall -9 qemu-system-${arch}
+}
+
+cleanup() {
+	kill_vms
 }
 
 create_ssh_key() {
@@ -102,7 +106,7 @@ ${environment}
     set -o pipefail
     set -o errtrace
     . /etc/environment
-    for i in \$(seq 1 10); do
+    for i in \$(seq 1 20); do
         [ -f /.done ] && break
         echo "waiting for cloud-init to finish"
         sleep 10;
@@ -260,6 +264,17 @@ ssh_vm() {
 	ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i "${ssh_key_file}" -p "${vm_port}" "${USER}@${vm_ip}" "${cmd}"
 }
 
+wait_for_vm() {
+	for i in $(seq 1 30); do
+		if ssh_vm true; then
+			return 0
+		fi
+		info "waiting for VM to start"
+		sleep 5
+	done
+	return 1
+}
+
 main() {
 	config_iso_file="${data_dir}/config.iso"
 	fedora_img="${data_dir}/image.img"
@@ -272,14 +287,13 @@ main() {
 
 	pull_fedora_cloud_image "${fedora_img}"
 
-	run_vm "${fedora_img}" "${config_iso_file}"
-
-	for i in $(seq 1 20); do
-		if ssh_vm true; then
+	for i in $(seq 1 5); do
+		run_vm "${fedora_img}" "${config_iso_file}"
+		if wait_for_vm; then
 			break
 		fi
-		info "waiting for VM to start"
-		sleep 5
+		info "Couldn't connect to the VM. Stopping VM and starting a new one."
+		kill_vms
 	done
 
 	ssh_vm "sudo /home/${USER}/run.sh"
