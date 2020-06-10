@@ -20,7 +20,6 @@ source "${cidir}/lib.sh"
 script_name=${0##*/}
 WORKSPACE=${WORKSPACE:-$(pwd)}
 kata_dir="/usr/share/kata-containers"
-tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 tests_repo_dir="${GOPATH}/src/${tests_repo}"
 
 # This builds qemu by specifying the qemu version from the
