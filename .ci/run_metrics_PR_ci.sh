@@ -63,22 +63,12 @@ run() {
 		# Run the cpu statistics test
 		bash network/cpu_statistics_iperf.sh
 	fi
-
-	# Metrics that run for CLH
-	if [ -n "${METRICS_CI_CLH}" ]; then
-		bash density/docker_memory_usage.sh 20 5
-
-		bash time/launch_times.sh -i ubuntu -n 20
-
-		bash density/memory_usage_inside_container.sh
-	fi
-
 	popd
 }
 
 # Check the results
 check() {
-	if [ -n "${METRICS_CI}" ]; then
+	if [ -n "${METRICS_CI}" ] || [ -n "${METRICS_CI_CLH_BAREMETAL}" ]; then
 		# Ensure we have the latest checkemtrics
 		pushd "$CHECKMETRICS_DIR"
 		make
@@ -102,6 +92,8 @@ check() {
 				sudo mkdir -p ${CHECKMETRICS_CONFIG_DEFDIR}
 				sudo cp ${CM_DEFAULT_DENSITY_CONFIG} ${CM_BASE_FILE}
 			fi
+		elif [ -n "${METRICS_CI_CLH_BAREMETAL}" ]; then
+			local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DIR}/checkmetrics-json-clh-baremetal.toml"
 		else
 			# For bare metal repeatable machines, the config file name is tied
 			# to the uname of the machine.
