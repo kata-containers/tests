@@ -10,8 +10,6 @@ test:
   - docker
 docker:
   Describe:
-    - docker volume
-    - run hot plug block devices
   Context:
     - check yum update
     - check dnf update
