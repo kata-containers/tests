@@ -60,6 +60,8 @@ create_user_data() {
 
 	ssh_pub_key="$(cat "${ssh_pub_key_file}")"
 	dnf_proxy=""
+	docker_proxy=""
+	docker_user_proxy=""
 	environment=$(env | egrep "ghprb|WORK|KATA|GIT|JENKINS|_PROXY|_proxy" | \
 	                    sed -e "s/'/'\"'\"'/g" \
 	                        -e "s/\(^[[:alnum:]_]\+\)=/\1='/" \
@@ -70,6 +72,13 @@ create_user_data() {
 		dnf_proxy="dnf:
   https_proxy: ${https_proxy}
   proxy: ${http_proxy}"
+		docker_proxy='[Service]
+    Environment="HTTP_PROXY='${http_proxy}'" "HTTPS_PROXY='${https_proxy}'" "NO_PROXY='${no_proxy}'"'
+		docker_user_proxy='{"proxies": { "default": {
+    "httpProxy": "'${http_proxy}'",
+    "httpsProxy": "'${https_proxy}'",
+    "noProxy": "'${no_proxy}'"
+    } } }'
 	fi
 
 	tests_go_path="/home/${USER}/go/src/${tests_repo}"
@@ -99,6 +108,12 @@ write_files:
 - content: |
 ${environment}
   path: /etc/environment
+- content: |
+    ${docker_proxy}
+  path: /etc/systemd/system/docker.service.d/http-proxy.conf
+- content: |
+    ${docker_user_proxy}
+  path: ${HOME}/.docker/config.json
 - content: |
     set -x
     set -o errexit
