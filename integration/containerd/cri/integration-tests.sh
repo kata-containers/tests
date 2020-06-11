@@ -14,7 +14,7 @@ set -o errtrace
 export PATH="$PATH:/usr/local/sbin"
 
 # Runtime to be used for testing
-RUNTIME=${RUNTIME:-kata-runtime}
+RUNTIME=${RUNTIME:-containerd-shim-kata-v2}
 SHIMV2_TEST=${SHIMV2_TEST:-""}
 FACTORY_TEST=${FACTORY_TEST:-""}
 KILL_VMM_TEST=${KILL_VMM_TEST:-""}
