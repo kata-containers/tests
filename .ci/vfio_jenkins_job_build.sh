@@ -23,7 +23,7 @@ http_proxy=${https_proxy:-}
 https_proxy=${https_proxy:-}
 vm_ip="127.0.15.1"
 vm_port="10022"
-data_dir="/tmp/kata-containers/vfio-test"
+data_dir="${HOME}/vfio-test"
 ssh_key_file="${data_dir}/key"
 arch=$(uname -i)
 
