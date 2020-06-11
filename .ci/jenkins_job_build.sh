@@ -269,7 +269,8 @@ elif [ -n "${VFIO_CI}" ]; then
 	pushd "${GOPATH}/src/${tests_repo}"
 
 	echo "Installing initrd image:"
-	TEST_INITRD=yes "${ci_dir_name}/install_kata_image.sh"
+	export AGENT_INIT=yes TEST_INITRD=yes OSBUILDER_DISTRO=alpine
+	"${ci_dir_name}/install_kata_image.sh"
 
 	echo "Running VFIO tests:"
 	"${ci_dir_name}/run.sh"
