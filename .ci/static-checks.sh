@@ -445,6 +445,7 @@ static_check_license_headers()
 		--exclude="*.pub" \
 		--exclude="*.service" \
 		--exclude="*.svg" \
+		--exclude="*.drawio" \
 		--exclude="*.toml" \
 		--exclude="*.txt" \
 		--exclude="vendor/*" \
