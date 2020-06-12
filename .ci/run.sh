@@ -12,7 +12,7 @@ set -e
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 
-export RUNTIME="kata-runtime"
+export RUNTIME="containerd-shim-kata-v2"
 
 export CI_JOB="${CI_JOB:-default}"
 
