@@ -7,13 +7,16 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+issue="https://github.com/kata-containers/tests/issues/2574"
 
 setup() {
+	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	export KUBECONFIG="$HOME/.kube/config"
 	get_pod_config_dir
 }
 
 @test "Containers with shared volume" {
+	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	pod_name="test-shared-volume"
 	first_container_name="busybox-first-container"
 	second_container_name="busybox-second-container"
@@ -31,6 +34,7 @@ setup() {
 }
 
 @test "initContainer with shared volume" {
+	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	pod_name="initcontainer-shared-volume"
 	last_container="last"
 
@@ -45,5 +49,6 @@ setup() {
 }
 
 teardown() {
+	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	kubectl delete pod "$pod_name"
 }

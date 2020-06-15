@@ -7,8 +7,10 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+issue="https://github.com/kata-containers/tests/issues/2574"
 
 setup() {
+	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	versions_file="${BATS_TEST_DIRNAME}/../../versions.yaml"
 	nginx_version=$("${GOPATH}/bin/yq" read "$versions_file" "docker_images.nginx.version")
 	nginx_image="nginx:$nginx_version"
@@ -23,6 +25,7 @@ setup() {
 }
 
 @test "Verify nginx connectivity between pods" {
+	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	wait_time=30
 	sleep_time=3
 
@@ -44,6 +47,7 @@ setup() {
 }
 
 teardown() {
+	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	rm -f "${pod_config_dir}/test-${deployment}.yaml"
 	kubectl delete deployment "$deployment"
 	kubectl delete service "$deployment"
