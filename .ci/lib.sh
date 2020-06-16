@@ -80,7 +80,7 @@ function build_version() {
 
 	if [ "$version" != "HEAD" ]; then
 		info "Using ${github_project} version ${version}"
-		git checkout -b "${version}" "${version}"
+		git checkout "${version}"
 	fi
 
 	info "Building ${github_project}"
