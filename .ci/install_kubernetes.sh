@@ -33,10 +33,6 @@ EOF"
 	chronic sudo -E apt update
 	chronic sudo -E apt install --allow-downgrades -y kubelet="$kubernetes_version" kubeadm="$kubernetes_version" kubectl="$kubernetes_version"
 elif [ "$ID" == "centos" ] || [ "$ID" == "fedora" ]; then
-	if [ "$ID" == "centos" ]; then
-		sudo yum versionlock docker-ce
-	fi
-
 	sudo bash -c "cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 	[kubernetes]
 	name=Kubernetes

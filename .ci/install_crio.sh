@@ -12,12 +12,6 @@ set -o pipefail
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 source /etc/os-release || source /usr/lib/os-release
-issue="https://github.com/cri-o/cri-o/issues/3130"
-
-if [ "$ID" == "centos" ]; then
-	echo "Skip CRI-O installation on $ID, see: $issue"
-	exit
-fi
 
 echo "Install go-md2man"
 go_md2man_url=$(get_test_version "externals.go-md2man.url")
@@ -93,7 +87,7 @@ if [ "$ID" == "centos" ] || [ "$ID" == "fedora" ]; then
 	# This is necessary to avoid crashing `make` with `No package devmapper found`
 	# by disabling the devmapper driver when the library it requires is not installed
 	sed -i 's|$(shell hack/selinux_tag.sh)||' Makefile
-	make BUILDTAGS='exclude_graphdriver_devicemapper libdm_no_deferred_remove'
+	make BUILDTAGS='exclude_graphdriver_devicemapper exclude_graphdriver_btrfs libdm_no_deferred_remove'
 else
 	make
 fi
