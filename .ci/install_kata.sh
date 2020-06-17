@@ -17,6 +17,7 @@ KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 experimental_qemu="${experimental_qemu:-false}"
 TEST_RUST_AGENT="${TEST_RUST_AGENT:-false}"
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
+RUN_KATA_CHECK="${RUN_KATA_CHECK:-true}"
 
 if [ "${TEST_RUST_AGENT}" == true ]; then
 	echo "Install rust agent image"
@@ -72,5 +73,7 @@ if [ "${TEST_CGROUPSV2}" == "true" ]; then
 fi
 
 # Check system supports running Kata Containers
-kata_runtime_path=$(command -v kata-runtime)
-sudo -E PATH=$PATH "$kata_runtime_path" kata-check
+if [ "${RUN_KATA_CHECK}" == "true" ]; then
+	kata_runtime_path=$(command -v kata-runtime)
+	sudo -E PATH=$PATH "$kata_runtime_path" kata-check
+fi
