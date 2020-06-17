@@ -68,7 +68,7 @@ run() {
 
 # Check the results
 check() {
-	if [ -n "${METRICS_CI}" ] || [ -n "${METRICS_CI_CLH_BAREMETAL}" ]; then
+	if [ -n "${METRICS_CI}" ]; then
 		# Ensure we have the latest checkemtrics
 		pushd "$CHECKMETRICS_DIR"
 		make
@@ -92,14 +92,24 @@ check() {
 				sudo mkdir -p ${CHECKMETRICS_CONFIG_DEFDIR}
 				sudo cp ${CM_DEFAULT_DENSITY_CONFIG} ${CM_BASE_FILE}
 			fi
-		elif [ -n "${METRICS_CI_CLH_BAREMETAL}" ]; then
-			local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DIR}/checkmetrics-json-clh-baremetal.toml"
+		elif [ -n "${METRICS_CI_PROFILE}" ]; then
+			case "${METRICS_CI_PROFILE}" in
+				"clh-baremetal")
+					local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DIR}/checkmetrics-json-clh-baremetal-$(uname -n).toml"
+					;;
+				"qemu-cloud")
+					local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DEFDIR}/checkmetrics-json.toml"
+					;;
+				*)
+					die "unknown METRICS_CI_PROFILE=${METRICS_CI_PROFILE}"
+			esac
+
 		else
 			# For bare metal repeatable machines, the config file name is tied
 			# to the uname of the machine.
 			local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DIR}/checkmetrics-json-$(uname -n).toml"
 		fi
-
+		info "CM_BASE_FILE=${CM_BASE_FILE}"
 		checkmetrics --percentage --basefile ${CM_BASE_FILE} --metricsdir ${RESULTS_DIR}
 		cm_result=$?
 		if [ ${cm_result} != 0 ]; then
