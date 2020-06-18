@@ -1,6 +1,6 @@
 #!/bin/bash
 # Copyright (c) 2017-2018 Intel Corporation
-# 
+#
 # SPDX-License-Identifier: Apache-2.0
 
 # Note - no 'set -e' in this file - if one of the metrics tests fails
@@ -110,7 +110,7 @@ check() {
 			local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DIR}/checkmetrics-json-$(uname -n).toml"
 		fi
 		info "CM_BASE_FILE=${CM_BASE_FILE}"
-		checkmetrics --percentage --basefile ${CM_BASE_FILE} --metricsdir ${RESULTS_DIR}
+		checkmetrics --percentage --debug --basefile ${CM_BASE_FILE} --metricsdir ${RESULTS_DIR}
 		cm_result=$?
 		if [ ${cm_result} != 0 ]; then
 			echo "checkmetrics FAILED (${cm_result})"
