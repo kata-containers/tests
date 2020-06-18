@@ -183,8 +183,14 @@ fi
 # Work around the 'set -e' dying if the check fails by using a bash
 # '{ group command }' to encapsulate.
 {
-	${tests_repo_dir}/.ci/ci-fast-return.sh
-	ret=$?
+	if [ "${pr_number:-}"  != "" ]; then
+		echo "Testing a PR check if can fastpath return/skip"
+		${tests_repo_dir}/.ci/ci-fast-return.sh
+		ret=$?
+	else
+		echo "not a PR will run all the CI"
+		ret=1
+	fi
 } || true
 if [ "$ret" -eq 0 ]; then
 	echo "Short circuit fast path skipping the rest of the CI."
