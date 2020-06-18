@@ -26,6 +26,7 @@ vm_port="10022"
 data_dir="${HOME}/vfio-test"
 ssh_key_file="${data_dir}/key"
 arch=$(uname -i)
+artifacts_dir="${WORKSPACE}/artifacts"
 
 mkdir -p "${data_dir}"
 
@@ -36,6 +37,9 @@ kill_vms() {
 }
 
 cleanup() {
+	mkdir -p ${artifacts_dir}
+	sudo chown -R ${USER} ${artifacts_dir}
+	scp_vm ${artifacts_dir}/* ${artifacts_dir} || true
 	kill_vms
 }
 
@@ -144,6 +148,8 @@ ${environment}
     mkdir -p "\${tests_repo_dir}"
     git clone https://github.com/kata-containers/tests.git "\${tests_repo_dir}"
     cd "\${tests_repo_dir}"
+
+    trap "cd \${tests_repo_dir}; sudo -E PATH=\$PATH .ci/teardown.sh ${artifacts_dir}; sudo chown -R \${USER} ${artifacts_dir}" EXIT
 
     if echo \${GIT_URL} | grep -q tests; then
         pr_number="\${ghprbPullId}"
@@ -277,6 +283,12 @@ install_dependencies() {
 ssh_vm() {
 	cmd=$@
 	ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i "${ssh_key_file}" -p "${vm_port}" "${USER}@${vm_ip}" "${cmd}"
+}
+
+scp_vm() {
+	guest_src=$1
+	host_dest=$2
+	scp -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i "${ssh_key_file}" -P "${vm_port}" ${USER}@${vm_ip}:${guest_src} ${host_dest}
 }
 
 wait_for_vm() {
