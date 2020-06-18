@@ -19,16 +19,11 @@ cidir=$(dirname "$0")
 source /etc/os-release || source /usr/lib/os-release
 kubernetes_version=$(get_version "externals.kubernetes.version")
 
-if [ "$ID" != "ubuntu" ] && [ "$ID" != "centos" ]; then
-        echo "Currently this script does not work on $ID. Skipped Kubernetes Setup"
-        exit 0
-fi
-
 if [ "$KATA_HYPERVISOR" == "firecracker" ]; then
 	die "Kubernetes will not work with $KATA_HYPERVISOR"
 fi
 
-if [ "$ID" == "ubuntu" ]; then
+if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
 	sudo bash -c "cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
 	deb http://apt.kubernetes.io/ kubernetes-xenial-unstable main
 EOF"

@@ -15,7 +15,7 @@ source "${SCRIPT_PATH}/../../.ci/lib.sh"
 source "${SCRIPT_PATH}/../../lib/common.bash"
 source "/etc/os-release" || source "/usr/lib/os-release"
 
-RUNTIME=${RUNTIME:-kata-runtime}
+RUNTIME=${RUNTIME:-containerd-shim-kata-v2}
 RUNTIME_PATH=${RUNTIME_PATH:-$(command -v $RUNTIME)}
 
 system_pod_wait_time=120
