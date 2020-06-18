@@ -164,7 +164,7 @@ ${environment}
         git rebase "origin/\${ghprbTargetBranch}"
     fi
 
-    .ci/jenkins_job_build.sh "\$(echo \${GIT_URL} | sed -e 's|https://||' -e 's|.git||')"
+    sudo -E PATH=\$PATH .ci/jenkins_job_build.sh "\$(echo \${GIT_URL} | sed -e 's|https://||' -e 's|.git||')"
 
   path: /home/${USER}/run.sh
   permissions: '0755'
@@ -328,7 +328,7 @@ main() {
 		kill_vms
 	done
 
-	ssh_vm "sudo /home/${USER}/run.sh"
+	ssh_vm "/home/${USER}/run.sh"
 }
 
 main $@

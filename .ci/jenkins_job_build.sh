@@ -272,7 +272,7 @@ elif [ -n "${VFIO_CI}" ]; then
 
 	echo "Installing initrd image:"
 	export AGENT_INIT=yes TEST_INITRD=yes OSBUILDER_DISTRO=alpine
-	"${ci_dir_name}/install_kata_image.sh"
+	sudo -E PATH=$PATH "${ci_dir_name}/install_kata_image.sh"
 
 	echo "Running VFIO tests:"
 	"${ci_dir_name}/run.sh"
