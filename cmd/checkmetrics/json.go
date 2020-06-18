@@ -35,7 +35,7 @@ func (c *jsonRecord) load(filepath string, metric *metrics) error {
 		return err
 	}
 
-	log.Debugf(" Got result [%v]", out)
+	log.Debugf(" Got result [%s]", string(out))
 
 	// Try to parse the results as floats first...
 	floats, err := readFloats(bytes.NewReader(out))
