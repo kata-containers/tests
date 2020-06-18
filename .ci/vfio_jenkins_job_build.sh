@@ -144,6 +144,11 @@ ${environment}
     export ghprbPullId
     export ghprbTargetBranch
 
+    # Make sure the packages were installed
+    # Sometimes cloud-init is unable to install them
+    sudo dnf makecache
+    sudo dnf install -y git make pciutils
+
     tests_repo_dir="\${GOPATH}/src/github.com/kata-containers/tests"
     mkdir -p "\${tests_repo_dir}"
     git clone https://github.com/kata-containers/tests.git "\${tests_repo_dir}"
