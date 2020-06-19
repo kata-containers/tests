@@ -281,7 +281,7 @@ EOF
 			"Result": $mem_usage,
 			"Units" : "KB"
 		},
-		"qemus": {
+		"hypervisors": {
 			"Result": $hypervisor_mem,
 			"Units" : "KB"
 		},
