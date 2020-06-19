@@ -163,6 +163,11 @@ setup_configuration_file() {
 			fi
 		fi
 	fi
+
+	# enable debug
+	sed -i -e 's/^#\(enable_debug\).*=.*$/\1 = true/g' \
+	       -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug"/g' \
+	       "${CONFIG_FILE}"
 }
 
 main() {

@@ -104,7 +104,7 @@ END
 		;;
 	"VFIO")
 		echo "INFO: Running VFIO functional tests"
-		bash -c "make vfio"
+		sudo -E PATH="$PATH" bash -c "make vfio"
 		;;
 	*)
 		echo "INFO: Running checks"
