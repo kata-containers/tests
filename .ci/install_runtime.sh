@@ -29,10 +29,14 @@ export SYSTEM_BUILD_TYPE=kata
 # The runtimes config file should live here
 export SYSCONFDIR=/etc
 
-PREFIX=${PREFIX:-/usr}
+if [ -n "${PREFIX}" ]; then
+	SHAREDIR=${DESTDIR:-}${PREFIX}/share
+else
+	SHAREDIR=${DESTDIR:-}/usr/share
+fi
 
 # Artifacts (kernel + image) live below here
-export SHAREDIR=${PREFIX}/share
+export SHAREDIR
 
 USE_VSOCK="${USE_VSOCK:-no}"
 

@@ -20,7 +20,6 @@ export rust_agent_repo="${rust_agent_repo:-github.com/kata-containers/kata-conta
 export KATA_RUNTIME=${KATA_RUNTIME:-kata-runtime}
 export KATA_KSM_THROTTLER=${KATA_KSM_THROTTLER:-no}
 export KATA_NEMU_DESTDIR=${KATA_NEMU_DESTDIR:-"/usr"}
-export KATA_QEMU_DESTDIR=${KATA_QEMU_DESTDIR:-"/usr"}
 export KATA_ETC_CONFIG_PATH="/etc/kata-containers/configuration.toml"
 
 # Name of systemd service for the throttler
@@ -114,16 +113,21 @@ function build_and_install() {
 	make_target="$2"
 	test_not_gopath_set="$3"
 	tag="$4"
+	make_vars=""
+	[ -n "$DESTDIR" ] && make_vars+=" DESTDIR=$DESTDIR"
+	[ -n "$PREFIX" ] && make_vars+=" PREFIX=$PREFIX"
 
 	build "${github_project}" "${make_target}" "${tag}"
 	pushd "${GOPATH}/src/${github_project}"
 	if [ "$test_not_gopath_set" = "true" ]; then
 		info "Installing ${github_project} in No GO command or GOPATH not set mode"
-		sudo -E PATH="$PATH" KATA_RUNTIME="${KATA_RUNTIME}" make install
+		sudo -E PATH="$PATH" KATA_RUNTIME="${KATA_RUNTIME}" \
+			make ${make_vars} install
 		[ $? -ne 0 ] && die "Fail to install ${github_project} in No GO command or GOPATH not set mode"
 	fi
 	info "Installing ${github_project}"
-	sudo -E PATH="$PATH" KATA_RUNTIME="${KATA_RUNTIME}" make install
+	sudo -E PATH="$PATH" KATA_RUNTIME="${KATA_RUNTIME}" \
+		make ${make_vars} install
 	popd
 }
 

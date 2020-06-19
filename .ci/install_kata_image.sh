@@ -31,7 +31,7 @@ TEST_INITRD=${TEST_INITRD:-no}
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
 
 PREFIX=${PREFIX:-/usr}
-IMAGE_DIR=${PREFIX}/share/kata-containers
+IMAGE_DIR=${DESTDIR:-}${PREFIX}/share/kata-containers
 IMG_LINK_NAME="kata-containers.img"
 INITRD_LINK_NAME="kata-containers-initrd.img"
 
