@@ -1,0 +1,17 @@
+#
+# Copyright (c) 2020 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+
+jobs:
+  CRI_CONTAINERD_K8S_MINIMAL:
+    passed: 12
+  CRI_CONTAINERD_K8S_COMPLETE:
+    passed: 273
+  minimal:
+    focus:
+      - ConfigMap should be consumable from pods in volume
+      - ConfigMap should be consumable from pods in volume as non-root
+      - Kubelet when scheduling a busybox command that always fails in a pod should be possible to delete
+      - Kubectl client Kubectl apply should reuse port when apply to an existing SVC

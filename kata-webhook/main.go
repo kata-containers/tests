@@ -49,6 +49,10 @@ func annotatePodMutator(ctx context.Context, obj metav1.Object) (bool, error) {
 		return false, nil
 	}
 
+	if pod.GetNamespace() == "sonobuoy" {
+		fmt.Println("sonobuoy pods will not be changed to kata", pod.GetNamespace(), pod.GetName())
+	}
+
 	for i := range pod.Spec.Containers {
 		if pod.Spec.Containers[i].SecurityContext != nil {
 			if *pod.Spec.Containers[i].SecurityContext.Privileged {

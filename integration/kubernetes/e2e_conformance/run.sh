@@ -6,7 +6,7 @@
 #
 # This script runs the Sonobuoy e2e Conformance tests.
 # Run this script once your K8s cluster is running.
-# WARNING: it is prefered to use containerd as the 
+# WARNING: it is prefered to use containerd as the
 # runtime interface instead of cri-o as we have seen
 # errors with cri-o that still need to be debugged.
 
@@ -14,17 +14,24 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+DEBUG=${DEBUG:-}
+[ -n "$DEBUG" ] && set -o xtrace
+
 export KUBECONFIG=$HOME/.kube/config
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 source "${SCRIPT_PATH}/../../../lib/common.bash"
 source "${SCRIPT_PATH}/../../../.ci/lib.sh"
 
 CI=${CI:-false}
-RUNTIME="${RUNTIME:-kata-runtime}"
-CRI_RUNTIME="${CRI_RUNTIME:-crio}"
+RUNTIME="${RUNTIME:-containerd-shim-kata-v2}"
+CRI_RUNTIME="${CRI_RUNTIME:-containerd}"
+MINIMAL_CONTAINERD_K8S_E2E="${MINIMAL_CONTAINERD_K8S_E2E:-false}"
+KATA_HYPERVISOR="${KATA_HYPERVISOR:-}"
 
 # Overall Sonobuoy timeout in minutes.
 WAIT_TIME=${WAIT_TIME:-180}
+
+JOBS_FILE="${SCRIPT_PATH}/e2e_k8s_jobs.yaml"
 
 create_kata_webhook() {
 	pushd "${SCRIPT_PATH}/../../../kata-webhook" >> /dev/null
@@ -47,7 +54,19 @@ get_sonobuoy() {
 	sudo tar -xzf "${sonobuoy_tar}" -C "$install_path"
 	sudo chmod +x "${install_path}/sonobuoy"
 	rm -f "${sonobuoy_tar}"
+}
 
+# Input:
+# - yaml list key
+# - yaml file
+# Output
+# - string: | separated values of the list
+yaml_list_to_str_regex() {
+	local list="${1}"
+	local yaml_file=${2:-"|"}
+	local query=".${list}"
+	query+=' | join("|")?'
+	"${GOPATH}/bin/yq" -j read "${yaml_file}" | jq -r "${query}"
 }
 
 run_sonobuoy() {
@@ -59,55 +78,98 @@ run_sonobuoy() {
 	local skipped_tests=$("${GOPATH}/bin/yq" read "${skipped_tests_file}" "${CRI_RUNTIME}")
 
 	# Default skipped tests for Conformance testing:
-	_skip_options=("Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]|")
-	mapfile -t _skipped_tests <<< "${skipped_tests}"
-	for entry in "${_skipped_tests[@]}"
-	do
-		_skip_options+=("${entry#- }|")
-	done
+	skip_options="Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]"
+	local skip_list
+	skip_list=$(yaml_list_to_str_regex "\"${CRI_RUNTIME}\"" "${skipped_tests_file}")
+	if [ "${skip_list}" != "" ];then
+		skip_options+="|${skip_list}"
+	fi
 
-	skip_options=$(IFS= ; echo "${_skip_options[*]}")
-	skip_options="${skip_options%|}"
+	skip_list=$(yaml_list_to_str_regex "hypervisor.\"${KATA_HYPERVISOR}\"" "${skipped_tests_file}")
+	if [ "${skip_list}" != "" ];then
+		skip_options+="|${skip_list}"
+	fi
 
-	sonobuoy run --e2e-skip="$skip_options" --wait="$WAIT_TIME"
+	local cmd="sonobuoy"
+	cmd+=" run"
+	cmd+=" --wait=${WAIT_TIME}"
 
-	# Retrieve results
+	if [ "${MINIMAL_CONTAINERD_K8S_E2E}" == "true" ]; then
+		minimal_focus=$(yaml_list_to_str_regex "jobs.minimal.focus" "${JOBS_FILE}")
+		# Not required to skip as only what is defined in toml should be executed.
+		if [ "${minimal_focus}" != "" ]; then
+			cmd+=" --e2e-focus=\"${minimal_focus}\""
+		else
+			# For MINIMAL_K8S_E2E focus list should not be empty
+			die "minimal focus query returned empty list"
+		fi
+	else
+		if [ "${skip_options}" != "" ]; then
+			cmd+=" --e2e-skip=\"${skip_options}\""
+		fi
+	fi
+	echo "running: ${cmd}"
+	eval "${cmd}"
+
 	e2e_result_dir="$(mktemp -d /tmp/kata_e2e_results.XXXXX)"
-	sonobuoy retrieve "$e2e_result_dir" || \
-		die "Couldn't retrieve sonobuoy results, please check status using: sonobuoy status"
-	pushd "$e2e_result_dir" >> /dev/null
+	{
+		sonobuoy status --json
+		if ! results=$(sonobuoy retrieve "${e2e_result_dir}"); then
+			die "failed to retrieve results"
+		fi
 
-	# Uncompress results
-	ls | grep tar.gz | xargs tar -xvf
+		sonobuoy results "${results}" --mode=dump
 
-	# e2e results log will be on "plugins/e2e" directory
-	e2e_result_log=$(find ./plugins/e2e -name "e2e.log")
-	info "Results of the e2e tests can be found on: $e2e_result_log"
+		pushd "${e2e_result_dir}"
+		tar -xvf "${results}"
+		e2e_result_log=$(find "${e2e_result_dir}/plugins/e2e" -name "e2e.log")
+		info "Results of the e2e tests can be found on: $e2e_result_log"
+		popd
 
-	# If on CI, display the e2e log on the console.
-	[ "$CI" == true ] && cat "$e2e_result_log"
-
-	# Check for Success message on the logs.
-	grep -aq " 0 Failed" "$e2e_result_log" || die "A failure has been found"
-	grep -aq "SUCCESS" "$e2e_result_log" && \
-		info " k8s e2e conformance using Kata runtime finished successfully"
-	popd
+		failed_query='.plugins | .[] | select( ."result-status" | contains("failed"))'
+		failed=$(sonobuoy status --json | jq "${failed_query}")
+		if [ "${failed}" != "" ]; then
+			if [ "$CI" == true ]; then
+				cat "$e2e_result_log"
+			fi
+			sonobuoy status --json | jq "${failed_query}"
+			die "Found failed tests in end-to-end k8s test"
+		fi
+		local expected_passed_query="jobs.${CI_JOB:-}.passed"
+		local expected_passed=$("${GOPATH}/bin/yq" read "${JOBS_FILE}" "${expected_passed_query}")
+		if [ "${expected_passed}" != "" ];then
+			passed_query='.plugins | [ .[]."result-counts".passed] | add'
+			passed=$(sonobuoy status --json | jq "${passed_query}")
+			if [ "${expected_passed}" != "${passed}" ];then
+				die "expected ${expected_passed} tests to pass, but ${passed} passed"
+			else
+				info "All ${passed} tests passed as expected"
+			fi
+		else
+			info "Not found ${expected_passed_query} for job ${CI_JOB:-} in ${JOBS_FILE}"
+		fi
+	} |  tee "${e2e_result_dir}/summary"
 }
 
 cleanup() {
+	info "Results directory "${e2e_result_dir}" will not be deleted"
+	info "View results"
+	cat ${e2e_result_dir}/plugins/e2e/results/global/e2e.log
+	info "View sonobuoy status"
+	sonobuoy status
 	# Remove sonobuoy execution pods
 	sonobuoy delete
-	info "Results directory $e2e_result_dir will not be deleted"
 }
 
+trap "{ cleanup; }" EXIT
+
 main() {
-	if [ "$RUNTIME" == "kata-runtime" ]; then
+	if [ "$RUNTIME" == "containerd-shim-kata-v2" ]; then
 		create_kata_webhook
 	fi
 
 	get_sonobuoy
 	run_sonobuoy
-	cleanup
 }
 
 main
