@@ -116,6 +116,10 @@ check() {
 			echo "checkmetrics FAILED (${cm_result})"
 			exit ${cm_result}
 		fi
+
+		if [  "${METRICS_JOB_BASELINE:-}" != "" ];then
+			"${SCRIPT_DIR}/../cmd/checkmetrics/history/generate_report_from_job.sh" "${METRICS_JOB_BASELINE}" || true
+		fi
 	fi
 }
 
