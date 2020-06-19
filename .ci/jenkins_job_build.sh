@@ -7,8 +7,18 @@
 
 set -e
 
+export GOPATH=${WORKSPACE}/go
+# For all our jobs, golang will be installed using static binaries
+export PATH=${GOPATH}/bin:/usr/local/go/bin:/usr/sbin:${PATH}
+export GOROOT="/usr/local/go"
+
+
 # List of all setup flags used by scripts
 init_ci_flags() {
+	# Make jobs work like in CI
+	# CI disables non-working tests
+	export CI="true"
+	export KATA_DEV_MODE="false"
 	# Install crio
 	export CRIO="no"
 	# Install cri-containerd
@@ -38,6 +48,18 @@ init_ci_flags() {
 	export experimental_kernel="false"
 	# Run the kata-check checks
 	export RUN_KATA_CHECK="true"
+
+	# METRICS_CI flags
+	# Request to run METRICS_CI
+	# Values: ""|some value : If empty metrics CI is not enabled
+	export METRICS_CI=""
+	# Metrics check values depend in the env it run
+	# Define a profile to check on PRs
+	# Values: empty|string : String will be used to find a profile with defined values to check
+	export METRICS_CI_PROFILE=""
+	# Check values for a profile defined as CLOUD
+	# Deprecated use METRICS_CI_PROFILE will be replaced by METRICS_CI_PROFILE=cloud-metrics
+	export METRICS_CI_CLOUD=""
 }
 
 source "/etc/os-release" || source "/usr/lib/os-release"
@@ -161,8 +183,14 @@ fi
 # Work around the 'set -e' dying if the check fails by using a bash
 # '{ group command }' to encapsulate.
 {
-	${tests_repo_dir}/.ci/ci-fast-return.sh
-	ret=$?
+	if [ "${pr_number:-}"  != "" ]; then
+		echo "Testing a PR check if can fastpath return/skip"
+		${tests_repo_dir}/.ci/ci-fast-return.sh
+		ret=$?
+	else
+		echo "not a PR will run all the CI"
+		ret=1
+	fi
 } || true
 if [ "$ret" -eq 0 ]; then
 	echo "Short circuit fast path skipping the rest of the CI."
@@ -252,6 +280,13 @@ case "${CI_JOB}" in
 	export MINIMAL_K8S_E2E="false"
 	export experimental_kernel="true"
 	;;
+"CLOUD-HYPERVISOR-METRICS-BAREMETAL")
+	init_ci_flags
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	export METRICS_CI="true"
+	export experimental_kernel="true"
+	export METRICS_CI_PROFILE="clh-baremetal"
+	;;
 esac
 "${ci_dir_name}/setup.sh"
 
@@ -264,7 +299,7 @@ else
 	echo "WARN: Kata runtime is not installed"
 fi
 
-if [ -n "${METRICS_CI}" ] || [ -n "${METRICS_CI_CLH_BAREMETAL}" ]; then
+if [ -n "${METRICS_CI}" ]; then
 	echo "Running the metrics tests:"
 	"${tests_repo_dir}/.ci/run_metrics_PR_ci.sh"
 elif [ -n "${VFIO_CI}" ]; then
