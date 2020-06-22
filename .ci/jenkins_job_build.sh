@@ -48,6 +48,8 @@ init_ci_flags() {
 	export experimental_kernel="false"
 	# Run the kata-check checks
 	export RUN_KATA_CHECK="true"
+	# Enable vsock
+	export USE_VSOCK="${USE_VSOCK:-no}"
 
 	# METRICS_CI flags
 	# Request to run METRICS_CI
@@ -297,6 +299,17 @@ case "${CI_JOB}" in
 	export experimental_kernel="true"
 	export METRICS_CI_PROFILE="clh-baremetal"
 	export METRICS_JOB_BASELINE="metrics/job/clh-master"
+	;;
+"QEMU-VIRTIOFS-METRICS-BAREMETAL")
+	init_ci_flags
+	export experimental_kernel="true"
+	export experimental_qemu="true"
+	export KATA_HYPERVISOR="qemu"
+	export METRICS_CI="true"
+	export METRICS_CI_PROFILE="none"
+	# Not working with qemu+virtiofs
+	export METRICS_CI_STORAGE_BLOGBENCH="false"
+	export USE_VSOCK="yes"
 	;;
 esac
 "${ci_dir_name}/setup.sh"
