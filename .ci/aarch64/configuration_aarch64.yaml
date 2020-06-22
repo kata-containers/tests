@@ -10,6 +10,7 @@ test:
   - functional
   - docker
   - kubernetes
+  - cri-containerd
 
 # for now, not all test suites under docker integration are fully passed in aarch64.
 # some need to be tested, and some need to be refined.

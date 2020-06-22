@@ -165,7 +165,10 @@ case "${CI_JOB}" in
 	export CRIO="yes"
 	export OPENSHIFT="no"
 	export CRI_CONTAINERD="no"
-	export TEST_CRIO="true"
+	# test images in cri-o repo are mostly x86_64 specific, so ignore cri-o intergration tests on aarch64, etc.
+	if [ "$arch" == "x86_64" ]; then
+		export TEST_CRIO="true"
+	fi
 	;;
 esac
 "${ci_dir_name}/setup.sh"
