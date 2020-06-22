@@ -53,12 +53,19 @@ init_ci_flags() {
 	# Request to run METRICS_CI
 	# Values: ""|some value : If empty metrics CI is not enabled
 	export METRICS_CI=""
+	# Run tests for times: (boot, kernel, workload, etc)
+	export METRICS_CI_TIMES="${METRICS_CI_TIMES:-true}"
+	# Run tests for storage: blogbench
+	export METRICS_CI_STORAGE_BLOGBENCH="${METRICS_CI_STORAGE_BLOGBENCH:-true}"
+	# Run tests for cpu statistics: iperf
+	export METRICS_CI_CPU_IPERF="${METRICS_CI_CPU_IPERF:-true}"
 	# Metrics check values depend in the env it run
 	# Define a profile to check on PRs
 	# Values: empty|string : String will be used to find a profile with defined values to check
 	export METRICS_CI_PROFILE=""
 	# Check values for a profile defined as CLOUD
 	# Deprecated use METRICS_CI_PROFILE will be replaced by METRICS_CI_PROFILE=cloud-metrics
+	# Values: Has a any value to enable it.
 	export METRICS_CI_CLOUD=""
 	# Generate a report using a jenkins job data
 	# Name of the job to get data from

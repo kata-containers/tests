@@ -53,13 +53,23 @@ run() {
 
 	# We only run these tests if we are not on a transient cloud machine. We
 	# need a repeatable non-noisy environment for these tests to be useful.
-	if [ -z "${METRICS_CI_CLOUD}" ]; then
+	if [ "${METRICS_CI_CLOUD}" != "" ]; then
+		METRICS_CI_TIMES="false"
+		METRICS_CI_STORAGE_BLOGBENCH="false"
+		METRICS_CI_CPU_IPERF="false"
+	fi
+
+	if [ "${METRICS_CI_TIMES}" == "true" ]; then
 		# Run the time tests
 		bash time/launch_times.sh -i ubuntu -n 20
+	fi
 
+	if [ "${METRICS_CI_STORAGE_BLOGBENCH}" == "true" ]; then
 		# Run storage tests
 		bash storage/blogbench.sh
+	fi
 
+	if [ "${METRICS_CI_CPU_IPERF}" == "true" ]; then
 		# Run the cpu statistics test
 		bash network/cpu_statistics_iperf.sh
 	fi
