@@ -110,6 +110,9 @@ check() {
 				"qemu-cloud")
 					local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DEFDIR}/checkmetrics-json.toml"
 					;;
+				"none")
+					local CM_BASE_FILE=""
+					;;
 				*)
 					die "unknown METRICS_CI_PROFILE=${METRICS_CI_PROFILE}"
 			esac
@@ -119,12 +122,16 @@ check() {
 			# to the uname of the machine.
 			local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DIR}/checkmetrics-json-$(uname -n).toml"
 		fi
-		info "CM_BASE_FILE=${CM_BASE_FILE}"
-		checkmetrics --percentage --debug --basefile ${CM_BASE_FILE} --metricsdir ${RESULTS_DIR}
-		cm_result=$?
-		if [ ${cm_result} != 0 ]; then
-			echo "checkmetrics FAILED (${cm_result})"
-			exit ${cm_result}
+		if [ "${CM_BASE_FILE}" != "" ];then
+			info "CM_BASE_FILE=${CM_BASE_FILE}"
+			checkmetrics --percentage --debug --basefile ${CM_BASE_FILE} --metricsdir ${RESULTS_DIR}
+			cm_result=$?
+			if [ ${cm_result} != 0 ]; then
+				echo "checkmetrics FAILED (${cm_result})"
+				exit ${cm_result}
+			fi
+		else
+			info "CM_BASE_FILE is empty, skipping checkmetrics"
 		fi
 
 		if [  "${METRICS_JOB_BASELINE:-}" != "" ];then
