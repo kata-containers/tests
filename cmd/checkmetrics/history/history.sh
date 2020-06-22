@@ -33,6 +33,10 @@ test_queries+=(".\"memory-footprint\".Results | .[] | .average.Result")
 tests+=("memory-footprint-ksm")
 test_queries+=(".\"memory-footprint-ksm\".Results | .[] | .average.Result")
 
+# Extra data: data that is not used to generate baseline but useful to create a report
+# No test query is required, only wanted for reports
+tests+=("memory-footprint-inside-container")
+
 # What is the base URL of the Jenkins server
 url_base="http://jenkins.katacontainers.io/job"
 

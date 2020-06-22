@@ -60,6 +60,9 @@ init_ci_flags() {
 	# Check values for a profile defined as CLOUD
 	# Deprecated use METRICS_CI_PROFILE will be replaced by METRICS_CI_PROFILE=cloud-metrics
 	export METRICS_CI_CLOUD=""
+	# Generate a report using a jenkins job data
+	# Name of the job to get data from
+	export METRICS_JOB_BASELINE=""
 }
 
 source "/etc/os-release" || source "/usr/lib/os-release"
@@ -286,6 +289,7 @@ case "${CI_JOB}" in
 	export METRICS_CI="true"
 	export experimental_kernel="true"
 	export METRICS_CI_PROFILE="clh-baremetal"
+	export METRICS_JOB_BASELINE="metrics/job/clh-master"
 	;;
 esac
 "${ci_dir_name}/setup.sh"

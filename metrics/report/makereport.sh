@@ -52,7 +52,7 @@ setup() {
 }
 
 run() {
-	docker run -ti --rm -v ${HOST_INPUT_DIR}:${GUEST_INPUT_DIR} -v ${HOST_OUTPUT_DIR}:${GUEST_OUTPUT_DIR} ${extra_volumes} ${IMAGE} ${extra_command}
+	docker run --rm -v ${HOST_INPUT_DIR}:${GUEST_INPUT_DIR} -v ${HOST_OUTPUT_DIR}:${GUEST_OUTPUT_DIR} ${extra_volumes} ${IMAGE} ${extra_command}
 	ls -la ${HOST_OUTPUT_DIR}/*
 }
 
