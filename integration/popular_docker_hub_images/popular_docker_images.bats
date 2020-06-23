@@ -13,6 +13,9 @@ versions_file="${BATS_TEST_DIRNAME}/../../versions.yaml"
 kibana_version=$("${GOPATH}/bin/yq" read "$versions_file" "docker_images.kibana.version")
 kibana_image="kibana:$kibana_version"
 
+oraclelinux_version=$("${GOPATH}/bin/yq" read "$versions_file" "docker_images.oraclelinux.version")
+oraclelinux_image="oraclelinux:$oraclelinux_version"
+
 setup() {
 	# Check that processes are not running
 	run check_processes
@@ -348,7 +351,7 @@ setup() {
 }
 
 @test "[create files] create files in an oraclelinux container" {
-	image="oraclelinux"
+	image=$oraclelinux_image
 	docker run --rm --runtime=$RUNTIME -i $image bash -c 'for NUM in `seq 1 1 10`; do touch $NUM-file.txt && ls -l /$NUM-file.txt; done'
 }
 
