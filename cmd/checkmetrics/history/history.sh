@@ -44,7 +44,10 @@ url_base="http://jenkins.katacontainers.io/job"
 url_index="api/json"
 
 # Where do we get the actual build results from
-url_artifacts="artifact/go/src/github.com/kata-containers/tests/metrics/results"
+url_artifacts=(
+	"artifact/artifacts"
+	"artifact/go/src/github.com/kata-containers/tests/metrics/results"
+)
 
 # Gather up the results (json) files from all the defined repos for the range
 # of dates?
@@ -69,14 +72,20 @@ gather_data() {
 			echo "Get results for build $build"
 			local builddir="${resultsdir}/${repo}/${build}"
 			mkdir -p ${builddir}
-			local build_url="${url_base}/${repo}/${build}/${url_artifacts}/${testfilename}"
 			echo "Pulling result from $build_url"
 			for test in "${tests[@]}"; do
-				local testfile=${builddir}/${test}.json
-				local test_url="${build_url}/${test}.json"
-				echo "    $test_url"
-				# Can fail if the build failed to generate any results
-				curl -L -o ${testfile} $test_url || true
+				for artifacts_path in "${url_artifacts[@]}"; do
+					local build_url="${url_base}/${repo}/${build}/${artifacts_path}/${testfilename}"
+					local testfile=${builddir}/${test}.json
+					local result_url="${build_url}/${test}.json"
+					echo "    $result_url"
+					# Can fail if the build failed to generate any results
+					if ! curl -L --output /dev/null --silent --head --fail "$result_url"; then
+						echo "warn: Failed to get results from ${result_url}"
+						continue
+					fi
+					curl -L -o ${testfile} "${result_url}";
+				done
 			done
 		done
 	done
