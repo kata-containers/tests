@@ -285,11 +285,10 @@ case "${CI_JOB}" in
 	;;
 "CLOUD-HYPERVISOR-METRICS-BAREMETAL")
 	init_ci_flags
-	export KATA_HYPERVISOR="cloud-hypervisor"
+	export KATA_HYPERVISOR="qemu"
 	export METRICS_CI="true"
-	export experimental_kernel="true"
-	export METRICS_CI_PROFILE="clh-baremetal"
-	export METRICS_JOB_BASELINE="metrics/job/clh-master"
+	export METRICS_CI_PROFILE=""
+	export METRICS_JOB_BASELINE=""
 	;;
 esac
 "${ci_dir_name}/setup.sh"
