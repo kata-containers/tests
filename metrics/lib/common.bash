@@ -298,6 +298,8 @@ wait_ksm_settle(){
 
 		newscan=$(cat /sys/kernel/mm/ksm/full_scans)
 		newpages=$(cat "${KSM_PAGES_SHARED}")
+		echo "newpages=${newpages}"
+		echo "newscan=${newscan}"
 		[[ "$newpages" -eq 0 ]] && echo "No need to wait for KSM to settle newpages=${newpages}" && return
 
 		if (( newscan != oldscan )); then

@@ -202,6 +202,7 @@ get_docker_memory_usage(){
 		${DOCKER_EXE} run --runtime "$RUNTIME" --name ${containers[-1]} -tid $IMAGE $CMD
 	done
 
+	set -x
 	if [ "$AUTO_MODE" == "auto" ]; then
 		if (( ksm_on != 1 )); then
 			die "KSM not enabled, cannot use auto mode"
@@ -215,6 +216,7 @@ get_docker_memory_usage(){
 		echo "napping $WAIT_TIME s"
 		sleep "$WAIT_TIME"
 	fi
+	set +x
 
 	metrics_json_start_array
 	# Check the runtime in order in order to determine which process will

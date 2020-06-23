@@ -8,6 +8,8 @@
 # Finally at the end, in some situations, we explicitly exit with a
 # failure code if necessary.
 
+set -x
+
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 source "${SCRIPT_DIR}/../metrics/lib/common.bash"
 RESULTS_DIR=${SCRIPT_DIR}/../metrics/results
