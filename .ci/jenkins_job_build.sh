@@ -285,7 +285,8 @@ case "${CI_JOB}" in
 	;;
 "CLOUD-HYPERVISOR-METRICS-BAREMETAL")
 	init_ci_flags
-	export KATA_HYPERVISOR="qemu"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	export experimental_kernel="true"
 	export METRICS_CI="true"
 	export METRICS_CI_PROFILE=""
 	export METRICS_JOB_BASELINE=""
