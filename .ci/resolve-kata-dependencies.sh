@@ -56,8 +56,8 @@ apply_depends_on() {
 		dependency_branch="p${pr_id}"
 		git fetch origin "pull/${pr_id}/head:${dependency_branch}" && \
 			git checkout "${dependency_branch}" && \
-			git rebase "origin/${branch}"
-			# And show what we rebased on top of to aid debugging
+			git merge "origin/${branch}"
+			# And show what we merged on top of to aid debugging
 			git log --oneline "origin/${branch}~1..HEAD"
 		popd
 	done
@@ -98,8 +98,8 @@ clone_repos() {
 			echo "Checking out to ${pr_branch} branch"
 			git checkout "${pr_branch}"
 			echo "... and rebasing with origin/${branch}"
-			git rebase "origin/${branch}"
-			# And show what we rebased on top of to aid debugging
+			git merge "origin/${branch}"
+			# And show what we merged on top of to aid debugging
 			git log --oneline "origin/${branch}~1..HEAD"
 		else
 			echo "Checking out to ${branch}"
