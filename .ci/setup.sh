@@ -103,11 +103,6 @@ install_extra_tools() {
 	echo "Install CNI plugins"
 	bash -f "${cidir}/install_cni_plugins.sh"
 
-	# load arch-specific lib file
-	if [ -f "${cidir}/${arch}/lib_setup_${arch}.sh" ]; then
-		source "${cidir}/${arch}/lib_setup_${arch}.sh"
-	fi
-
 	[ "${CRIO}" = "yes" ] &&
 		echo "Install CRI-O" &&
 		bash -f "${cidir}/install_crio.sh" &&

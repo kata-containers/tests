@@ -271,6 +271,27 @@ delete_crio_stale_resource() {
 	sudo rm -rf /etc/systemd/system/crio.service
 }
 
+delete_containerd_cri_stale_resource() {
+	# stop containerd service
+	sudo systemctl stop containerd
+	# remove stale binaries
+	containerd_cri_dir="github.com/containerd/cri"
+	release_dir="${GOPATH}/src/${containerd_cri_dir}/_output/release-stage"
+	binary_dir_union=( "/usr/local/bin" "/usr/local/sbin" )
+	for binary_dir in ${binary_dir_union[@]}
+	do
+		for stale_binary in ${release_dir}/${binary_dir}/*
+		do
+			sudo rm -rf ${binary_dir}/$(basename ${stale_binary})
+		done
+	done
+	# remove cluster directory
+	sudo rm -rf /opt/containerd/
+	# remove configuration files
+	sudo rm -f /etc/containerd/config.toml
+	sudo rm -f /etc/crictl.yaml
+}
+
 gen_clean_arch() {
 	# Set up some vars
 	stale_process_union=( "docker-containerd-shim" )
@@ -290,6 +311,8 @@ gen_clean_arch() {
 	${GOPATH}/src/${tests_repo}/cmd/kata-manager/kata-manager.sh remove-packages
 	info "Remove installed cri-o related binaries and configuration"
 	delete_crio_stale_resource
+	info "Remove installed containerd-cri related binaries and configuration"
+	delete_containerd_cri_stale_resource
 	info "Remove installed kubernetes packages and configuration"
 	if [ "$ID" == ubuntu ]; then
 		sudo rm -rf /etc/systemd/system/kubelet.service.d
