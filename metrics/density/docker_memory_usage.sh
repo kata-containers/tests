@@ -203,6 +203,9 @@ get_docker_memory_usage(){
 	done
 
 	set -x
+	${DOCKER_EXE} ps -qa
+	ps aux | grep kata
+
 	if [ "$AUTO_MODE" == "auto" ]; then
 		if (( ksm_on != 1 )); then
 			die "KSM not enabled, cannot use auto mode"
