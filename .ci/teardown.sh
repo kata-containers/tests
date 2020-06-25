@@ -16,6 +16,10 @@ collect_logs()
 	local -r kata_runtime_log_path="${log_copy_dest}/${kata_runtime_log_filename}"
 	local -r kata_runtime_log_prefix="kata-runtime_"
 
+	local -r kata_hypervisor_log_filename="kata-hypervisor.log"
+	local -r kata_hypervisor_log_path="${log_copy_dest}/${kata_hypervisor_log_filename}"
+	local -r kata_hypervisor_log_prefix="kata-hypervisor_"
+
 	local -r kata_shimv2_log_filename="kata-shimv2.log"
 	local -r kata_shimv2_log_path="${log_copy_dest}/${kata_shimv2_log_filename}"
 	local -r kata_shimv2_log_prefix="kata-shimv2_"
@@ -95,6 +99,7 @@ collect_logs()
 
 		# Create the log files
 		sudo journalctl --no-pager -t kata-runtime > "${kata_runtime_log_path}"
+		sudo journalctl --no-pager -t kata-hypervisor > "${kata_hypervisor_log_path}"
 		sudo journalctl --no-pager -t kata > "${kata_shimv2_log_path}"
 		sudo journalctl --no-pager -t kata-proxy > "${proxy_log_path}"
 		sudo journalctl --no-pager -t kata-shim > "${shim_log_path}"
@@ -121,6 +126,7 @@ collect_logs()
 
 		pushd "${log_copy_dest}"
 		split -b "${subfile_size}" -d "${kata_runtime_log_path}" "${kata_runtime_log_prefix}"
+		split -b "${subfile_size}" -d "${kata_hypervisor_log_path}" "${kata_hypervisor_log_prefix}"
 		split -b "${subfile_size}" -d "${kata_shimv2_log_path}" "${kata_shimv2_log_prefix}"
 		split -b "${subfile_size}" -d "${proxy_log_path}" "${proxy_log_prefix}"
 		split -b "${subfile_size}" -d "${shim_log_path}" "${shim_log_prefix}"
