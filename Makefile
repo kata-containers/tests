@@ -30,6 +30,7 @@ endif
 # union for 'make test'
 UNION := crio \
 	compatibility \
+	configuration \
 	debug-console \
 	$(DOCKER_DEPENDENCY) \
 	docker-compose \
@@ -217,6 +218,11 @@ endif
 crio:
 	bash .ci/install_bats.sh
 	RUNTIME=${RUNTIME} ./integration/cri-o/cri-o.sh
+
+configuration:
+	bash .ci/install_bats.sh
+	cd integration/change_configuration_toml && \
+	bats change_configuration_toml.bats
 
 docker-compose:
 	bash .ci/install_bats.sh
