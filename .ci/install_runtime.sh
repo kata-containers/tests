@@ -77,15 +77,15 @@ case "${KATA_HYPERVISOR}" in
 			enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-qemu-virtiofs.toml"
 		else
 			enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-qemu.toml"
-		fi
-		if [ "$CI" == true ] && [ "$(uname -m)" == "x86_64" ]; then
-			qemu_version="$(get_version "assets.hypervisor.qemu.version")"
-			qemu_major="$(echo ${qemu_version} | cut -d. -f1)"
-			qemu_minor="$(echo ${qemu_version} | cut -d. -f2)"
-			if [[ ${qemu_major} -ge 5 || ( ${qemu_major} -eq 4 && ${qemu_minor} -ge 2 ) ]]; then
-				# Due to a KVM bug, vmx-rdseed-exit must be disabled in QEMU >= 4.2
-				# see https://github.com/kata-containers/runtime/pull/2355#issuecomment-625469252
-				sudo sed -i 's|^cpu_features="|cpu_features="-vmx-rdseed-exit,|g' "${runtime_config_path}"
+			if [ "$CI" == true ] && [ "$(uname -m)" == "x86_64" ]; then
+				qemu_version="$(get_version "assets.hypervisor.qemu.version")"
+				qemu_major="$(echo ${qemu_version} | cut -d. -f1)"
+				qemu_minor="$(echo ${qemu_version} | cut -d. -f2)"
+				if [[ ${qemu_major} -ge 5 || ( ${qemu_major} -eq 4 && ${qemu_minor} -ge 2 ) ]]; then
+					# Due to a KVM bug, vmx-rdseed-exit must be disabled in QEMU >= 4.2
+					# see https://github.com/kata-containers/runtime/pull/2355#issuecomment-625469252
+					sudo sed -i 's|^cpu_features="|cpu_features="-vmx-rdseed-exit,|g' "${runtime_config_path}"
+				fi
 			fi
 		fi
 		;;
