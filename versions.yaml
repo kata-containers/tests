@@ -35,6 +35,11 @@ docker_images:
     url: "https://hub.docker.com/_/nginx/"
     version: "1.17.0-alpine"
 
+  oraclelinux:
+    description: "Official Docker builds of Oracle Linux"
+    url: "https://hub.docker.com/_/oraclelinux/"
+    version: "8.1"
+
 externals:
   description: "Third-party projects used specifically for testing"
 
