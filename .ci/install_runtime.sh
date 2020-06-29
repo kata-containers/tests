@@ -78,7 +78,7 @@ case "${KATA_HYPERVISOR}" in
 		else
 			enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-qemu.toml"
 		fi
-		if [ "$CI" == true ]; then
+		if [ "$CI" == true ] && [ "$(uname -m)" == "x86_64" ]; then
 			qemu_version="$(get_version "assets.hypervisor.qemu.version")"
 			qemu_major="$(echo ${qemu_version} | cut -d. -f1)"
 			qemu_minor="$(echo ${qemu_version} | cut -d. -f2)"
