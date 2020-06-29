@@ -45,7 +45,6 @@ UNION := crio \
 	$(PODMAN_DEPENDENCY) \
 	ramdisk \
 	shimv2 \
-	swarm \
 	time-drift \
 	tracing \
 	vcpus \

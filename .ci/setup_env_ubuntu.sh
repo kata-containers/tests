@@ -17,6 +17,9 @@ sudo -E apt update
 echo "Install chronic"
 sudo -E apt install -y moreutils
 
+echo "Clean environment"
+sudo -E apt-get clean && sudo -E apt-get autoremove
+
 declare -A minimal_packages=( \
 	[spell-check]="hunspell hunspell-en-gb hunspell-en-us pandoc" \
 	[xml_validator]="libxml2-utils" \
@@ -27,7 +30,7 @@ declare -A packages=( \
 	[bison_binary]="bison" \
 	[build_tools]="build-essential pkg-config python zlib1g-dev" \
 	[cri-containerd_dependencies]="gcc libapparmor-dev libseccomp-dev make pkg-config" \
-	[crio_dependencies]="libapparmor-dev libglib2.0-dev libseccomp-dev libgpgme11-dev thin-provisioning-tools" \
+	[crio_dependencies]="libapparmor-dev libseccomp-dev libgpgme11-dev thin-provisioning-tools" \
 	[crio_dependencies_for_ubuntu]="libdevmapper-dev util-linux" \
 	[crudini]="crudini" \
 	[gnu_parallel]="parallel" \
