@@ -16,6 +16,9 @@ kibana_image="kibana:$kibana_version"
 oraclelinux_version=$("${GOPATH}/bin/yq" read "$versions_file" "docker_images.oraclelinux.version")
 oraclelinux_image="oraclelinux:$oraclelinux_version"
 
+mariadb_version=$("${GOPATH}/bin/yq" read "$versions_file" "docker_images.mariadb.version")
+mariadb_image="mariadb:$mariadb_version"
+
 setup() {
 	# Check that processes are not running
 	run check_processes
@@ -286,7 +289,7 @@ setup() {
 }
 
 @test "[display configuration] start an instance of a mariadb container" {
-	image="mariadb"
+	image=$mariadb_image
 	docker run --rm --runtime=$RUNTIME -i -e MYSQL_ROOT_PASSWORD=secretword  $image bash -c "cat /etc/mysql/mariadb.cnf | grep character"
 }
 
