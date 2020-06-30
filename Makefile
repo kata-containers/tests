@@ -254,6 +254,7 @@ ksm:
 
 sandbox-cgroup:
 	bash -f integration/sandbox_cgroup/sandbox_cgroup_test.sh
+	bash -f integration/sandbox_cgroup/check_cgroups_sandbox.sh
 
 swarm:
 	systemctl is-active --quiet docker || sudo systemctl start docker
