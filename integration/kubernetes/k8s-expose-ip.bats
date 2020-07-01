@@ -48,7 +48,9 @@ setup() {
 	svcport=$(kubectl get service ${service} -o=json | jq '.spec.ports[].port')
 	# And check we can curl the expected response from that IP address
 	echo_msg="hello,world"
-	curl http://$svcip:$svcport/echo?msg=${echo_msg} | grep "$echo_msg"
+	cmd="curl http://$svcip:$svcport/echo?msg=${echo_msg} | grep \"$echo_msg\""
+
+	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 
 	# NOTE - we do not test the 'public IP' address of the node balancer here as
 	# that may not be set up, as it may require an IP/DNS allocation and local
