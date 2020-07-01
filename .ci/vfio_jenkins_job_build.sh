@@ -229,7 +229,7 @@ run_vm() {
 	memory="16384M"
 	cpus=4
 
-	/usr/bin/qemu-system-${arch} -m "${memory}" -smp cpus="${cpus}" -cpu host -machine q35,accel=kvm,kernel_irqchip=split \
+	/usr/bin/qemu-system-${arch} -m "${memory}" -smp cpus="${cpus}" -cpu host,host-phys-bits -machine q35,accel=kvm,kernel_irqchip=split \
 	   -device intel-iommu,intremap=on,caching-mode=on,device-iotlb=on \
 	   -drive file=${image},if=virtio,aio=threads,format=raw \
 	   -drive file=${config_iso_file},if=virtio,media=cdrom \
