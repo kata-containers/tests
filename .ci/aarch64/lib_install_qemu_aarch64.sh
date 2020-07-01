@@ -6,6 +6,8 @@
 
 set -e
 
+source "${cidir}/lib.sh"
+
 CURRENT_QEMU_VERSION=$(get_version "assets.hypervisor.qemu.architecture.aarch64.version")
 PACKAGED_QEMU="qemu"
 CURRENT_QEMU_TAG=$(get_version "assets.hypervisor.qemu.architecture.aarch64.tag")
@@ -47,12 +49,11 @@ install_packaged_qemu() {
 }
 
 build_and_install_qemu() {
-        PACKAGING_REPO="github.com/kata-containers/packaging"
-        QEMU_CONFIG_SCRIPT="${GOPATH}/src/${PACKAGING_REPO}/scripts/configure-hypervisor.sh"
+        PACKAGING_DIR="${kata_repo_dir}/tools/packaging"
+        QEMU_CONFIG_SCRIPT="${PACKAGING_DIR}/scripts/configure-hypervisor.sh"
 
 	clone_qemu_repo
-
-	go get -d "$PACKAGING_REPO" || true
+	clone_kata_repo
 
         pushd "${GOPATH}/src/${QEMU_REPO}"
         git fetch
@@ -60,7 +61,7 @@ build_and_install_qemu() {
         [ -d "ui/keycodemapdb" ] || git clone  https://github.com/qemu/keycodemapdb.git --depth 1 ui/keycodemapdb
 
         # Apply required patches
-        QEMU_PATCHES_PATH="${GOPATH}/src/${PACKAGING_REPO}/obs-packaging/qemu-aarch64/patches"
+        QEMU_PATCHES_PATH="${PACKAGING_DIR}/obs-packaging/qemu-aarch64/patches"
         for patch in ${QEMU_PATCHES_PATH}/*.patch; do
                 echo "Applying patch: $patch"
                 patch -p1 <"$patch"

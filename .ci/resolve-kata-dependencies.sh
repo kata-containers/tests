@@ -12,7 +12,6 @@ set -o errtrace
 
 # Repositories needed for building the kata containers project.
 katacontainers_repo="${katacontainers_repo:-github.com/kata-containers/kata-containers}"
-packaging_repo="${packaging_repo:-github.com/kata-containers/packaging}"
 tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 
 branch=${branch:-}
@@ -68,7 +67,6 @@ apply_depends_on() {
 clone_repos() {
 	local kata_repos=(
 	"${katacontainers_repo}"
-	"${packaging_repo}"
 	"${tests_repo}")
 	for repo in "${kata_repos[@]}"
 	do

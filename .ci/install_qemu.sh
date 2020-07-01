@@ -24,7 +24,7 @@ QEMU_REPO_URL=$(get_version "assets.hypervisor.qemu.url")
 # Remove 'https://' from the repo url to be able to git clone the repo
 QEMU_REPO=${QEMU_REPO_URL/https:\/\//}
 QEMU_ARCH=$(${cidir}/kata-arch.sh -d)
-PACKAGING_REPO="github.com/kata-containers/packaging"
+PACKAGING_DIR="${kata_repo_dir}/tools/packaging"
 ARCH=$("${cidir}"/kata-arch.sh -d)
 QEMU_TAR="kata-static-qemu.tar.gz"
 qemu_latest_build_url="${jenkins_url}/job/qemu-nightly-$(uname -m)/${cached_artifacts_path}"
@@ -37,8 +37,7 @@ build_static_qemu() {
 	# only x86_64 is supported for building static QEMU
 	[ "$ARCH" != "x86_64" ] && return 1
 
-	go get -d "${PACKAGING_REPO}" || true
-	prefix="${KATA_QEMU_DESTDIR}" "${GOPATH}/src/${PACKAGING_REPO}/static-build/qemu/build-static-qemu.sh"
+	prefix="${KATA_QEMU_DESTDIR}" "${PACKAGING_DIR}/static-build/qemu/build-static-qemu.sh"
 
 	# We need to move the tar file to a specific location so we
 	# can know where it is and then we can perform the build cache
@@ -83,11 +82,11 @@ build_and_install_qemu() {
 		die "QEMU will not be installed"
 	fi
 
-	QEMU_CONFIG_SCRIPT="${GOPATH}/src/${PACKAGING_REPO}/scripts/configure-hypervisor.sh"
+	QEMU_CONFIG_SCRIPT="${PACKAGING_DIR}/scripts/configure-hypervisor.sh"
 
 	mkdir -p "${GOPATH}/src"
-	go get -d "$PACKAGING_REPO" || true
 
+	clone_kata_repo
 	clone_qemu_repo
 
 	pushd "${GOPATH}/src/${QEMU_REPO}"

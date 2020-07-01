@@ -13,7 +13,8 @@ export KATA_QEMU_DESTDIR=${KATA_QEMU_DESTDIR:-"/usr"}
 export KATA_ETC_CONFIG_PATH="/etc/kata-containers/configuration.toml"
 
 export kata_repo="github.com/kata-containers/kata-containers"
-export kata_default_branch="2.0-dev"
+export kata_repo_dir="${GOPATH}/src/${kata_repo}"
+export kata_default_branch="${kata_default_branch:-2.0-dev}"
 
 # Name of systemd service for the throttler
 KATA_KSM_THROTTLER_JOB="kata-ksm-throttler"
@@ -56,6 +57,18 @@ die() {
 
 info() {
 	echo -e "INFO: $*"
+}
+
+# Clone repo only if $kata_repo_dir is empty
+# Otherwise, we assume $kata_repo is cloned and in correct branch, e.g. a PR or local change
+clone_kata_repo() {
+	if [ ! -d "${kata_repo_dir}" ]; then
+		go get -d "${kata_repo}" || true
+		pushd "${kata_repo_dir}"
+		# Checkout to default branch
+		git checkout "${kata_default_branch}"
+		popd
+	fi
 }
 
 function build_version() {
@@ -135,7 +148,6 @@ function get_dep_from_yaml_db(){
 
 function get_version(){
 	dependency="$1"
-	kata_repo_dir="$GOPATH/src/${kata_repo}"
 	versions_file="${kata_repo_dir}/versions.yaml"
 	if [ ! -d "${kata_repo_dir}" ]; then
 		mkdir -p "$(dirname ${kata_repo_dir})"

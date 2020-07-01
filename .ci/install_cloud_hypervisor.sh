@@ -16,7 +16,6 @@ cidir=$(dirname "$0")
 arch=$("${cidir}"/kata-arch.sh -d)
 source "${cidir}/lib.sh"
 # Where real kata build script exist, via docker build to avoid install all deps
-packaging_repo="github.com/kata-containers/packaging"
 latest_build_url="${jenkins_url}/job/cloud-hypervisor-nightly-$(uname -m)/${cached_artifacts_path}"
 clh_bin_name="cloud-hypervisor"
 clh_install_path="/usr/bin/${clh_bin_name}"
@@ -35,11 +34,11 @@ install_clh() {
 	# Get cloud_hypervisor repo
 	go get -d "${go_cloud_hypervisor_repo}" || true
 	# This may be downloaded before if there was a depends-on in PR, but 'go get' wont make any problem here
-	go get -d "${packaging_repo}" || true
+	clone_kata_repo
 	pushd  $(dirname "${GOPATH}/src/${go_cloud_hypervisor_repo}")
 	# packaging build script expects run in the hypervisor repo parent directory
 	# It will find the hypervisor repo and checkout to the version exported above
-	"${GOPATH}/src/${packaging_repo}/static-build/cloud-hypervisor/build-static-clh.sh"
+	"${kata_repo_dir}/static-build/cloud-hypervisor/build-static-clh.sh"
 	sudo install -D "cloud-hypervisor/${clh_bin_name}"  "${clh_install_path}"
 	popd
 }
