@@ -20,6 +20,9 @@ setup() {
 }
 
 @test "Running with postStart and preStop handlers" {
+	wait_time=20
+	sleep_time=2
+
 	# Create yaml
 	sed -e "s/\${nginx_version}/${nginx_image}/" \
 		"${pod_config_dir}/lifecycle-events.yaml" > "${pod_config_dir}/test-lifecycle-events.yaml"
@@ -28,7 +31,8 @@ setup() {
 	kubectl create -f "${pod_config_dir}/test-lifecycle-events.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	cmd="kubectl wait --for=condition=Ready pod $pod_name"
+	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 
 	# Check postStart message
 	display_message="cat /usr/share/message"
@@ -38,4 +42,7 @@ setup() {
 teardown(){
 	rm -f "${pod_config_dir}/test-lifecycle-events.yaml"
 	kubectl delete pod "$pod_name"
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

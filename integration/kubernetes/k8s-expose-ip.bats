@@ -16,7 +16,7 @@ load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
 issue="https://github.com/kata-containers/tests/issues/2574"
 
 setup() {
-	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
+	skip "test not working - see: ${issue}"
 	export KUBECONFIG="$HOME/.kube/config"
 	deployment="hello-world"
 	service="my-service"
@@ -24,7 +24,7 @@ setup() {
 }
 
 @test "Expose IP Address" {
-	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
+	skip "test not working - see: ${issue}"
 	wait_time=20
 	sleep_time=2
 
@@ -61,7 +61,10 @@ setup() {
 }
 
 teardown() {
-	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
+	skip "test not working - see: ${issue}"
 	kubectl delete services ${service}
 	kubectl delete deployment ${deployment}
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

@@ -63,4 +63,7 @@ teardown() {
 	kubectl delete pv "$volume_name"
 	rm -f "$pod_yaml"
 	rm -rf "$tmp_file"
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

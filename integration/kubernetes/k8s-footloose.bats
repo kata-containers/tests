@@ -64,4 +64,7 @@ teardown() {
 	sudo rm -rf "$public_key_path"
 	sudo rm -rf "$key_path"
 	sudo rm -rf "$configmap_yaml"
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

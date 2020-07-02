@@ -59,4 +59,8 @@ teardown() {
 
 	# Disable hugepages
 	sudo sed -i 's/enable_hugepages = true/#enable_hugepages = true/g' ${RUNTIME_CONFIG_PATH}
+
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

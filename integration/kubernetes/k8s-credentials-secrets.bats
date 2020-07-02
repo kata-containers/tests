@@ -17,6 +17,8 @@ setup() {
 	secret_name="test-secret"
 	pod_name="secret-test-pod"
 	second_pod_name="secret-envars-test-pod"
+	wait_time=20
+	sleep_time=2
 
 	# Create the secret
 	kubectl create -f "${pod_config_dir}/inject_secret.yaml"
@@ -28,7 +30,8 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-secret.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	cmd="kubectl wait --for=condition=Ready pod $pod_name"
+	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 
 	# List the files
 	cmd="ls /tmp/secret-volume"
@@ -50,4 +53,7 @@ setup() {
 teardown() {
 	kubectl delete pod "$pod_name" "$second_pod_name"
 	kubectl delete secret "$secret_name"
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

@@ -32,4 +32,7 @@ setup() {
 teardown() {
 	skip "test not working - see: ${issue}"
 	kubectl delete pod "$pod_name"
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

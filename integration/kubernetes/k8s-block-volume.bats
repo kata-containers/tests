@@ -79,4 +79,8 @@ teardown() {
 	# Remove image and loop device
 	sudo losetup -d "$loop_dev"
 	rm -f "$tmp_disk_image"
+
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

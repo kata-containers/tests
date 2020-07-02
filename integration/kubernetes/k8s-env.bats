@@ -15,11 +15,15 @@ setup() {
 }
 
 @test "Environment variables" {
+	wait_time=20
+	sleep_time=2
+
 	# Create pod
 	kubectl create -f "${pod_config_dir}/pod-env.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	cmd="kubectl wait --for=condition=Ready pod $pod_name"
+	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 
 	# Print environment variables
 	cmd="printenv"
@@ -28,4 +32,7 @@ setup() {
 
 teardown() {
 	kubectl delete pod "$pod_name"
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

@@ -51,4 +51,7 @@ setup() {
 teardown() {
 	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	kubectl delete pod "$pod_name"
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

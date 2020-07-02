@@ -53,4 +53,8 @@ teardown() {
 	run kubectl get jobs
 	echo "$output"
 	[[ "$output" =~ "No resources found" ]]
+
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

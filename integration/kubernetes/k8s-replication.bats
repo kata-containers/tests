@@ -54,4 +54,7 @@ teardown() {
 	rm -f "${pod_config_dir}/test-replication-controller.yaml"
 	kubectl delete pod "$pod_name"
 	kubectl delete rc "$replication_name"
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

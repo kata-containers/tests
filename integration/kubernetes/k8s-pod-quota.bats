@@ -36,4 +36,7 @@ teardown() {
 	skip "test not working - see: ${issue}"
 	kubectl delete resourcequota "$resource_name"
 	kubectl delete deployment "$deployment_name"
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

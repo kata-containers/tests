@@ -69,4 +69,7 @@ teardown() {
 	skip "test not working see: ${issue}"
 	kubectl delete -f "${pod_config_dir}/redis-master-deployment.yaml"
 	kubectl delete -f "${pod_config_dir}/redis-master-service.yaml"
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

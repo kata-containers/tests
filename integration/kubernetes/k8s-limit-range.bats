@@ -16,6 +16,9 @@ setup() {
 }
 
 @test "Limit range for storage" {
+	wait_time=20
+	sleep_time=2
+
 	# Create namespace
 	kubectl create namespace "$namespace_name"
 
@@ -26,7 +29,8 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-cpu-defaults.yaml" --namespace=${namespace_name}
 
 	# Get pod specification
-	kubectl wait --for=condition=Ready pod "$pod_name" --namespace="$namespace_name"
+	cmd="kubectl wait --for=condition=Ready pod $pod_name --namespace=$namespace_name"
+	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 
 	# Check limits
 	# Find the 500 millicpus specified at the yaml
@@ -36,4 +40,7 @@ setup() {
 teardown() {
 	kubectl delete pod "$pod_name"
 	kubectl delete namespaces "$namespace_name"
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

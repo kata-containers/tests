@@ -7,8 +7,10 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+issue="https://github.com/kata-containers/tests/issues/2705"
 
 setup() {
+	skip "test not working - see: ${issue}"
 	busybox_image="busybox"
 	export KUBECONFIG="$HOME/.kube/config"
 	first_pod_name="first-test"
@@ -29,6 +31,7 @@ setup() {
 }
 
 @test "Check UTS and IPC namespaces" {
+	skip "test not working - see: ${issue}"
 	# Run the first pod
 	kubectl create -f "$first_pod_config"
 	kubectl wait --for=condition=Ready pod "$first_pod_name"
@@ -47,8 +50,12 @@ setup() {
 }
 
 teardown() {
+	skip "test not working - see: ${issue}"
 	kubectl delete pod "$first_pod_name"
 	kubectl delete pod "$second_pod_name"
 	rm -rf "$first_pod_config"
 	rm -rf "$second_pod_config"
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

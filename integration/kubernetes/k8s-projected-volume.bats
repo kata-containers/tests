@@ -7,13 +7,16 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+issue="https://github.com/kata-containers/tests/issues/2705"
 
 setup() {
+	skip "test not working - see: ${issue}"
 	export KUBECONFIG="$HOME/.kube/config"
 	get_pod_config_dir
 }
 
 @test "Projected volume" {
+	skip "test not working - see: ${issue}"
 	password="1f2d1e2e67df"
 	username="admin"
 	pod_name="test-projected-volume"
@@ -49,7 +52,11 @@ setup() {
 }
 
 teardown() {
+	skip "test not working - see: ${issue}"
 	rm -f $TMP_FILE $SECOND_TMP_FILE
 	kubectl delete pod "$pod_name"
 	kubectl delete secret pass user
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

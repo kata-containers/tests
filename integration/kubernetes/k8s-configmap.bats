@@ -16,6 +16,8 @@ setup() {
 @test "ConfigMap for a pod" {
 	config_name="test-configmap"
 	pod_name="config-env-test-pod"
+	wait_time=20
+	sleep_time=2
 
 	# Create ConfigMap
 	kubectl create -f "${pod_config_dir}/configmap.yaml"
@@ -27,7 +29,8 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-configmap.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	cmd="kubectl wait --for=condition=Ready pod $pod_name"
+	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 
 	# Check env
 	cmd="env"
@@ -38,4 +41,7 @@ setup() {
 teardown() {
 	kubectl delete pod "$pod_name"
 	kubectl delete configmap "$config_name"
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }

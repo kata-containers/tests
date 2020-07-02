@@ -7,8 +7,10 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+issue="https://github.com/kata-containers/tests/issues/2705"
 
 setup() {
+	skip "test not working - see: ${issue}"
 	export KUBECONFIG="$HOME/.kube/config"
 	get_pod_config_dir
 	job_name="jobtest"
@@ -16,6 +18,7 @@ setup() {
 }
 
 @test "Parallel jobs" {
+	skip "test not working - see: ${issue}"
 	# Create yaml files
 	for i in "${names[@]}"; do
 		sed "s/\$ITEM/$i/" ${pod_config_dir}/job-template.yaml > ${pod_config_dir}/job-$i.yaml
@@ -39,6 +42,7 @@ setup() {
 }
 
 teardown() {
+	skip "test not working - see: ${issue}"
 	# Delete jobs
 	kubectl delete jobs -l jobgroup=${job_name}
 
@@ -46,4 +50,8 @@ teardown() {
 	for i in "${names[@]}"; do
 		rm -f ${pod_config_dir}/job-$i.yaml
 	done
+
+	run check_pods
+	echo "$output"
+	[ "$status" -eq 0 ]
 }
