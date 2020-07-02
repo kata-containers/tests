@@ -34,8 +34,8 @@ readonly runc_runtime_bin=$(command -v "runc")
 readonly CRITEST=${GOPATH}/bin/critest
 
 # Flag to do tasks for CI
-SNAP_CI=${SNAP_CI:-""}
 CI=${CI:-""}
+CI_JOB=${CI_JOB:-""}
 
 containerd_shim_path="$(command -v containerd-shim)"
 readonly cri_containerd_repo="github.com/containerd/cri"
@@ -97,7 +97,7 @@ ci_cleanup() {
 
 	ID=${ID:-""}
 	if [ "$ID" == ubuntu ]; then
-		if [ -n "${SNAP_CI}" ]; then
+		if [ "${CI_JOB}" == "SNAP" ]; then
 			# restore default configuration
 			sudo cp "${default_kata_config}" "${kata_config}"
 		elif [ -n "${CI}" ] ;then
