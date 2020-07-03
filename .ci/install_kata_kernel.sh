@@ -5,9 +5,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# Currently we will use this repository until this issue is solved
-# See https://github.com/kata-containers/packaging/issues/1
-
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -24,31 +21,20 @@ experimental_latest_build_url="${jenkins_url}/job/kernel-experimental-nightly-$(
 PREFIX=${PREFIX:-/usr}
 kernel_dir=${PREFIX}/share/kata-containers
 
-kernel_repo_name="packaging"
-kernel_repo_owner="kata-containers"
-kernel_repo="github.com/${kernel_repo_owner}/${kernel_repo_name}"
+kata_repo="github.com/kata-containers/kata-containers"
 export GOPATH=${GOPATH:-${HOME}/go}
-kernel_repo_dir="${GOPATH}/src/${kernel_repo}"
+kernel_repo_dir="${GOPATH}/src/${kata_repo}/tools/packaging"
 kernel_arch="$(arch)"
 readonly tmp_dir="$(mktemp -d -t install-kata-XXXXXXXXXXX)"
 packaged_kernel="kata-linux-container"
 #Experimental kernel support. Pull from virtio-fs GitLab instead of kernel.org
 experimental_kernel="${experimental_kernel:-false}"
-tag="${1:-""}"
 
 exit_handler() {
 	rm -rf "${tmp_dir}"
 }
 
 trap exit_handler EXIT
-
-download_repo() {
-	echo "Download and update ${kernel_repo}"
-	pushd ${tmp_dir}
-	go get -d -u "${kernel_repo}" || true
-	[ -z "${tag}" ] || git -C "${kernel_repo_dir}" checkout -b "${tag}" "${tag}"
-	popd
-}
 
 get_current_kernel_version() {
 	if [ "$experimental_kernel" == "true" ]; then
@@ -66,7 +52,7 @@ get_kata_config_version() {
 }
 
 build_and_install_kernel() {
-	if [ ${experimental_kernel} == "true" ]; then
+	if [ "${experimental_kernel}" == "true" ]; then
 		info "Install experimental kernel"
 		pushd "${tmp_dir}" >> /dev/null
 		"${kernel_repo_dir}/kernel/build-kernel.sh" -e setup
@@ -92,12 +78,12 @@ install_cached_kernel(){
 	sudo mkdir -p "${kernel_dir}"
 	local kernel_binary_name="${kernel_binary}-${cached_kernel_version}"
 	local kernel_binary_path="${kernel_dir}/${kernel_binary_name}"
-	if [ ${experimental_kernel} == "true" ]; then
+	if [ "${experimental_kernel}" == "true" ]; then
 		sudo -E curl -fL --progress-bar "${experimental_latest_build_url}/${kernel_binary_name}" -o "${kernel_binary_path}" || return 1
 	else
 		sudo -E curl -fL --progress-bar "${latest_build_url}/${kernel_binary_name}" -o "${kernel_binary_path}" || return 1
 	fi
-	if [ ${experimental_kernel} == "true" ]; then
+	if [ "${experimental_kernel}" == "true" ]; then
 		kernel_symlink="${kernel_dir}/${kernel_binary}-virtiofs.container"
 	else
 		kernel_symlink="${kernel_dir}/${kernel_binary}.container"
@@ -115,7 +101,7 @@ install_prebuilt_kernel() {
 
 	pushd "${kernel_dir}" >/dev/null
 	info "Verify download checksum"
-	if [ ${experimental_kernel} == "true" ]; then
+	if [ "${experimental_kernel}" == "true" ]; then
 		sudo -E curl -fsOL "${experimental_latest_build_url}/sha256sum-kernel" || return 1
 	else
 		sudo -E curl -fsOL "${latest_build_url}/sha256sum-kernel" || return 1
@@ -129,7 +115,7 @@ cleanup() {
 }
 
 main() {
-	download_repo
+	clone_kata_repo
 	kernel_version="$(get_current_kernel_version)"
 	kata_config_version="$(get_kata_config_version)"
 	current_kernel_version="${kernel_version}-${kata_config_version}"
