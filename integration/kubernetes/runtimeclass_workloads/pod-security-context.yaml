@@ -8,6 +8,7 @@ kind: Pod
 metadata:
   name: security-context-test
 spec:
+  terminationGracePeriodSeconds: 0
   runtimeClassName: kata
   securityContext:
     runAsUser: 1000

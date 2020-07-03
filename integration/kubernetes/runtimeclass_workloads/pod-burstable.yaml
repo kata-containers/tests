@@ -8,6 +8,7 @@ kind: Pod
 metadata:
   name: burstable-test
 spec:
+  terminationGracePeriodSeconds: 0
   runtimeClassName: kata
   containers:
   - name: qos-burstable

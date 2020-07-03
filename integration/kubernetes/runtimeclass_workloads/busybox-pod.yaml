@@ -8,6 +8,7 @@ kind: Pod
 metadata:
   name: busybox
 spec:
+  terminationGracePeriodSeconds: 0
   shareProcessNamespace: true
   runtimeClassName: kata
   containers:

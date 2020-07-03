@@ -18,6 +18,7 @@ spec:
         app: hello-world
         run: load-balancer-example
     spec:
+      terminationGracePeriodSeconds: 0
       runtimeClassName: kata
       containers:
       - name: hello-world
