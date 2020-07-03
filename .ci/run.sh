@@ -106,6 +106,19 @@ END
 		echo "INFO: Running VFIO functional tests"
 		sudo -E PATH="$PATH" bash -c "make vfio"
 		;;
+	"SNAP")
+		echo "INFO: Running docker tests ($PWD)"
+		sudo -E PATH="$PATH" bash -c "make docker"
+
+		echo "INFO: Running crio tests ($PWD)"
+		sudo -E PATH="$PATH" bash -c "make crio"
+
+		echo "INFO: Running kubernetes tests ($PWD)"
+		sudo -E PATH="$PATH" bash -c "make kubernetes"
+
+		echo "INFO: Running shimv2 tests ($PWD)"
+		sudo -E PATH="$PATH" bash -c "make shimv2"
+		;;
 	*)
 		echo "INFO: Running checks"
 		sudo -E PATH="$PATH" bash -c "make check"
