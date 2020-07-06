@@ -26,8 +26,8 @@ ITERATIONS="${ITERATIONS:-30}"
 
 # Directory to run the test on
 # This is run inside of the container
-TESTDIR="${TESTDIR:-/tmp}"
-CMD="blogbench -i ${ITERATIONS} -d ${TESTDIR}"
+TESTDIR="${TESTDIR:-/testdir}"
+CMD="mkdir -p ${TESTDIR}; blogbench -i ${ITERATIONS} -d ${TESTDIR}"
 
 function main() {
 	# Check tools/commands dependencies
@@ -39,7 +39,9 @@ function main() {
 
 	metrics_json_init
 
-	local output=$(docker run --rm --runtime=$RUNTIME $IMAGE $CMD)
+	# Run with 4 vcpus, issue:
+	# https://github.com/kata-containers/tests/issues/2717
+	local output=$(docker run --cpus 4 --rm --runtime=$RUNTIME $IMAGE bash -c ''"$CMD"'')
 
 	# Save configuration
 	metrics_json_start_array
