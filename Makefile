@@ -27,10 +27,19 @@ ifeq (${CI}, true)
         endif
 endif
 
+CONFORMANCE_DEPENDENCY = conformance
+ifeq (${CI}, true)
+	ifneq (${TEST_CONFORMANCE}, true)
+		CONFORMANCE_DEPENDENCY =
+	endif
+endif
+
+
 # union for 'make test'
 UNION := crio \
 	compatibility \
 	configuration \
+	$(CONFORMANCE_DEPENDENCY) \
 	debug-console \
 	$(DOCKER_DEPENDENCY) \
 	docker-compose \
@@ -224,6 +233,9 @@ configuration:
 	cd integration/change_configuration_toml && \
 	bats change_configuration_toml.bats
 
+conformance:
+	bash -f conformance/posixfs/fstests.sh
+
 docker-compose:
 	bash .ci/install_bats.sh
 	cd integration/docker-compose && \
@@ -359,6 +371,7 @@ help:
 	check \
 	checkcommits \
 	crio \
+	conformance \
 	debug-console \
 	docker \
 	docker-compose \
