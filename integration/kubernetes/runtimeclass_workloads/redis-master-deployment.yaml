@@ -23,6 +23,7 @@ spec:
         role: master
         tier: backend
     spec:
+      terminationGracePeriodSeconds: 0
       runtimeClassName: kata
       containers:
       - name: master

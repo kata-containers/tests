@@ -3,6 +3,7 @@ kind: Pod
 metadata:
   name: pod-block-pv
 spec:
+  terminationGracePeriodSeconds: 0
   runtimeClassName: kata
   containers:
     - name: my-container
