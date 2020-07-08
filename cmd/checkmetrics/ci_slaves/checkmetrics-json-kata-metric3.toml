@@ -45,3 +45,29 @@ checktype = "mean"
 midval = 66170.0
 minpercent = 5.0
 maxpercent = 5.0
+
+[[metric]]
+name = "blogbench"
+type = "json"
+description = "measure container average of blogbench write"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"blogbench\".Results | .[] | .write.Result"
+checktype = "mean"
+midval = 321.0
+minpercent = 10.0
+maxpercent = 10.0
+
+[[metric]]
+name = "blogbench"
+type = "json"
+description = "measure container average of blogbench read"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"blogbench\".Results | .[] | .read.Result"
+checktype = "mean"
+midval = 16894.0
+minpercent = 10.0
+maxpercent = 10.0
