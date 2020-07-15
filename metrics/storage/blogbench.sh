@@ -29,6 +29,14 @@ ITERATIONS="${ITERATIONS:-30}"
 TESTDIR="${TESTDIR:-/testdir}"
 CMD="mkdir -p ${TESTDIR}; blogbench -i ${ITERATIONS} -d ${TESTDIR}"
 
+issue="https://github.com/kata-containers/tests/issues/2717"
+CI_JOB=${CI_JOB:-""}
+
+if [ "${CI_JOB}" == "VIRTIOFS-METRICS-BAREMETAL" ]; then
+	echo "test not working see: ${issue}"
+	exit 0
+fi
+
 function main() {
 	# Check tools/commands dependencies
 	cmds=("awk" "docker")

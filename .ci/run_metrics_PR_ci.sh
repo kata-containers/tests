@@ -100,6 +100,9 @@ check() {
 				"qemu-cloud")
 					local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DEFDIR}/checkmetrics-json.toml"
 					;;
+				"virtiofs-baremetal")
+					local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DIR}/checkmetrics-json-virtiofs-baremetal-$(uname -n).toml"
+					;;
 				*)
 					die "unknown METRICS_CI_PROFILE=${METRICS_CI_PROFILE}"
 			esac

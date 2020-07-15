@@ -222,6 +222,12 @@ case "${CI_JOB}" in
 "PODMAN")
 	export TEST_CGROUPSV2="true"
 	;;
+"VIRTIOFS-METRICS-BAREMETAL")
+	export experimental_qemu="true"
+	export experimental_kernel="true"
+	export METRICS_CI="true"
+	export METRICS_CI_PROFILE="virtiofs-baremetal"
+	;;
 "SANDBOX_CGROUP_ONLY")
 	# Used by runtime makefile to enable option on intall
 	export DEFSANDBOXCGROUPONLY=true
