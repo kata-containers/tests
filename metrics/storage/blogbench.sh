@@ -29,12 +29,12 @@ ITERATIONS="${ITERATIONS:-30}"
 TESTDIR="${TESTDIR:-/testdir}"
 CMD="mkdir -p ${TESTDIR}; blogbench -i ${ITERATIONS} -d ${TESTDIR}"
 
-issue="https://github.com/kata-containers/tests/issues/2717"
 CI_JOB=${CI_JOB:-""}
+configuration_file="/usr/share/defaults/kata-containers/configuration.toml"
 
 if [ "${CI_JOB}" == "VIRTIOFS-METRICS-BAREMETAL" ]; then
-	echo "test not working see: ${issue}"
-	exit 0
+	echo "Disable dax for virtiofs"
+	sudo sed -i 's/virtio_fs_cache_size.*/virtio_fs_cache_size = 0/g' "${configuration_file}"
 fi
 
 function main() {
@@ -130,6 +130,10 @@ EOF
 	metrics_json_end_array "Results"
 	metrics_json_save
 	clean_env
+
+	if [ "${CI_JOB}" == "VIRTIOFS-METRICS-BAREMETAL" ]; then
+        	sudo sed -i 's/virtio_fs_cache_size.*/virtio_fs_cache_size = 1024/g' "${configuration_file}"
+	fi
 }
 
 main "$@"
