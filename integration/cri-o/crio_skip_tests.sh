@@ -22,4 +22,8 @@ if [ "${KATA_HYPERVISOR}" == "firecracker" ]; then
 	skipCRIOTests+=(
 		'test "privileged ctr device add"'
 	)
+elif [ "${KATA_HYPERVISOR}" == "cloud-hypervisor" ]; then
+	skipCRIOTests+=(
+		'test "privileged ctr device add"'
+	)
 fi
