@@ -582,7 +582,7 @@ func NewCommitConfig(needFixes, needSignOffs bool, fixesPrefix, signoffPrefix, i
 	}
 
 	if config.NeedFixes {
-		config.FixesPattern = regexp.MustCompile(fmt.Sprintf(`(?i:%s\s*:?\s*#\d+)`, config.FixesString))
+		config.FixesPattern = regexp.MustCompile(fmt.Sprintf(`(?i:%s\s*:?\s*(#\d+|github\.com/kata-containers/[a-z-.]*#\d+))`, config.FixesString))
 	}
 
 	if config.NeedSOBS {
