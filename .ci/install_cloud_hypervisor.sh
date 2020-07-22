@@ -66,14 +66,8 @@ main() {
 	cached_cloud_hypervisor_version=$(curl -sfL "${latest_build_url}/latest") || cached_cloud_hypervisor_version="none"
 	info "current cloud hypervisor : ${current_cloud_hypervisor_version}"
 	info "cached cloud hypervisor  : ${cached_cloud_hypervisor_version}"
-	if [ "$cached_cloud_hypervisor_version" == "$current_cloud_hypervisor_version" ] && [ "$arch" == "x86_64" ]; then
-		if ! install_prebuilt_clh; then
-			info "failed to install cached cloud hypervisor, trying to build from source"
-			install_clh
-		fi
-	else
-		install_clh
-	fi
+        # enforce to install clh from source to validate whether clh is built statically
+	install_clh
 }
 
 main "$@"

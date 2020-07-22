@@ -52,6 +52,14 @@ echo "Install runtime"
 case "${KATA_HYPERVISOR}" in
 	"cloud-hypervisor")
 		"${cidir}/install_cloud_hypervisor.sh"
+
+		printf "ldd $(which cloud-hypervisor)\n"
+                if ldd $(which cloud-hypervisor); then
+                    echo "cloud-hypervisor is not static"
+                else
+                    echo "cloud-hypervisor is static"
+                fi
+
 		echo "Installing experimental_qemu to install virtiofsd"
 		export experimental_qemu=true
 		install_qemu
