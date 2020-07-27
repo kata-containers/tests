@@ -28,6 +28,9 @@ KSM_PAGES_SHARED="${KSM_BASE}/pages_shared"
 KSM_AGGRESIVE_PAGES=1000
 KSM_AGGRESIVE_SLEEP=50
 
+http_proxy="${http_proxy:-}"
+https_proxy="${https_proxy:-}"
+
 # If we fail for any reason, exit through here and we should log that to the correct
 # place and return the correct code to halt the run
 die(){
@@ -92,7 +95,7 @@ build_dockerfile_image()
 	local dockerfile_dir=${2%/*}
 
 	echo "docker building $image"
-	if ! docker build --label "$image" --tag "${image}" -f "$dockerfile_path" "$dockerfile_dir"; then
+	if ! docker build --build-arg http_proxy="${http_proxy}" --build-arg https_proxy="${https_proxy}" --label "$image" --tag "${image}" -f "$dockerfile_path" "$dockerfile_dir"; then
 		die "Failed to docker build image $image"
 	fi
 }
