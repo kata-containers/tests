@@ -80,6 +80,7 @@ pushd "$kubernetes_dir"
 ./init.sh
 for K8S_TEST_ENTRY in ${K8S_TEST_UNION[@]}
 do
+	echo "=== run test $K8S_TEST_ENTRY ==="
 	bats "${K8S_TEST_ENTRY}"
 done
 popd
