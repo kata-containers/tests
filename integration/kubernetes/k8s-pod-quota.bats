@@ -6,16 +6,13 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
-issue="https://github.com/kata-containers/tests/issues/2574"
 
 setup() {
-	skip "test not working - see: ${issue}"
 	export KUBECONFIG="$HOME/.kube/config"
 	get_pod_config_dir
 }
 
 @test "Pod quota" {
-	skip "test not working - see: ${issue}"
 	resource_name="pod-quota"
 	deployment_name="deploymenttest"
 
@@ -33,7 +30,6 @@ setup() {
 }
 
 teardown() {
-	skip "test not working - see: ${issue}"
 	kubectl delete resourcequota "$resource_name"
 	kubectl delete deployment "$deployment_name"
 }
