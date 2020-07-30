@@ -119,13 +119,13 @@ For example:
 
 	Fixes: #nnn
 
-	Depends-on:github.com/kata-containers/runtime#999
+	Depends-on:github.com/kata-containers/kata-containers#999
 
 	Signed-off-by: <contributor@foo.com>
 
 ```
 
-In this example, we tell the CI to fetch the pull request 999 from the `runtime`
+In this example, we tell the CI to fetch the pull request 999 from the `kata-containers`
 repository and use that rather than the `master` branch when testing the changes
 contained in this pull request.
 
