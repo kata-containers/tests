@@ -12,6 +12,10 @@ collect_logs()
 {
 	local -r log_copy_dest="$1"
 
+	local -r containerd_shim_kata_v2_log_filename="containerd-shim-kata-v2.log"
+	local -r containerd_shim_kata_v2_log_path="${log_copy_dest}/${containerd_shim_kata_v2_log_filename}"
+	local -r containerd_shim_kata_v2_log_prefix="containerd-shim-kata-v2_"
+
 	local -r kata_runtime_log_filename="kata-runtime.log"
 	local -r kata_runtime_log_path="${log_copy_dest}/${kata_runtime_log_filename}"
 	local -r kata_runtime_log_prefix="kata-runtime_"
@@ -86,6 +90,7 @@ collect_logs()
 		[ -d "${log_copy_dest}" ] || mkdir -p "${log_copy_dest}"
 
 		# Create the log files
+		sudo journalctl --no-pager -t kata > "${containerd_shim_kata_v2_log_path}"
 		sudo journalctl --no-pager -t kata-runtime > "${kata_runtime_log_path}"
 		sudo journalctl --no-pager -t kata-proxy > "${proxy_log_path}"
 		sudo journalctl --no-pager -t kata-shim > "${shim_log_path}"
@@ -111,6 +116,7 @@ collect_logs()
 		local -r subfile_size=5242880
 
 		pushd "${log_copy_dest}"
+		split -b "${subfile_size}" -d "${containerd_shim_kata_v2_log_path}" "${containerd_shim_kata_v2_log_prefix}"
 		split -b "${subfile_size}" -d "${kata_runtime_log_path}" "${kata_runtime_log_prefix}"
 		split -b "${subfile_size}" -d "${proxy_log_path}" "${proxy_log_prefix}"
 		split -b "${subfile_size}" -d "${shim_log_path}" "${shim_log_prefix}"
@@ -129,6 +135,7 @@ collect_logs()
 		[ "${have_collect_script}" = "yes" ] &&  split -b "${subfile_size}" -d "${collect_data_log_path}" "${collect_data_log_prefix}"
 
 		local prefixes=""
+		prefixes+=" ${containerd_shim_kata_v2_log_prefix}"
 		prefixes+=" ${kata_runtime_log_prefix}"
 		prefixes+=" ${proxy_log_prefix}"
 		prefixes+=" ${shim_log_prefix}"
@@ -165,6 +172,9 @@ collect_logs()
 
 		popd
 	else
+		echo "containerd-shim-kata-v2 Log:"
+		sudo journalctl --no-pager -t kata
+
 		echo "Kata Containers Runtime Log:"
 		sudo journalctl --no-pager -t kata-runtime
 
@@ -235,6 +245,7 @@ check_log_files()
 	for component in \
 		kata-proxy \
 		kata-runtime \
+		kata \
 		kata-shim
 	do
 		file="${component}.log"
