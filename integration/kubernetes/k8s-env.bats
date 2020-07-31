@@ -15,6 +15,8 @@ setup() {
 }
 
 @test "Environment variables" {
+    BASH_XTRACEFD=3
+    set -x
 	# Create pod
 	kubectl create -f "${pod_config_dir}/pod-env.yaml"
 

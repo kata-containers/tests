@@ -25,6 +25,8 @@ setup() {
 }
 
 @test "Check CPU constraints" {
+    BASH_XTRACEFD=3
+    set -x
 	skip "test not working - see: ${issue}"
 	# Create the pod
 	kubectl create -f "${pod_config_dir}/pod-cpu.yaml"

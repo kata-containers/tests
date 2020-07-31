@@ -20,6 +20,8 @@ setup() {
 }
 
 @test "Running with postStart and preStop handlers" {
+    BASH_XTRACEFD=3
+    set -x
 	# Create yaml
 	sed -e "s/\${nginx_version}/${nginx_image}/" \
 		"${pod_config_dir}/lifecycle-events.yaml" > "${pod_config_dir}/test-lifecycle-events.yaml"

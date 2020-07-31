@@ -16,17 +16,33 @@ setup() {
 }
 
 @test "Check custom dns" {
+    BASH_XTRACEFD=3
+    set -x
 	# Create the pod
 	kubectl create -f "${pod_config_dir}/pod-custom-dns.yaml"
 
 	# Check pod creation
 	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl get pod "$pod_name" -o yaml
 
 	# Check dns config at /etc/resolv.conf
-	kubectl exec -it "$pod_name" -- cat "$file_name" | grep -q "nameserver 1.2.3.4"
-	kubectl exec -it "$pod_name" -- cat "$file_name" | grep -q "search dns.test.search"
+	kubectl -v=8 exec -it "$pod_name" -- cat "$file_name" &
+	kubectl -v=8 exec -it "$pod_name" -- cat "$file_name" &
+	kubectl -v=8 exec -it "$pod_name" -- cat "$file_name" &
+	kubectl -v=8 exec -it "$pod_name" -- cat "$file_name" &
+	kubectl -v=8 exec -it "$pod_name" -- cat "$file_name" &
+	kubectl -v=8 exec -it "$pod_name" -- cat "$file_name" &
+	kubectl -v=8 exec -it "$pod_name" -- cat "$file_name" &
+	kubectl -v=8 exec -it "$pod_name" -- cat "$file_name" &
+	kubectl -v=8 exec -it "$pod_name" -- cat "$file_name" &
+	kubectl -v=8 exec -it "$pod_name" -- cat "$file_name" &
+	kubectl -v=8 exec -it "$pod_name" -- cat "$file_name" &
+	sleep 60
+	j=$(ps -ef | grep kubectl | grep -v kubectl)
+	return 1
 }
 
 teardown() {
+	kubectl get pod "$pod_name" -o yaml
 	kubectl delete pod "$pod_name"
 }
