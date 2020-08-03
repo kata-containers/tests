@@ -81,6 +81,10 @@ then
 fi
 
 pushd "${GOPATH}/src/${crio_repo}"
+git remote add liubin https://github.com/liubin/cri-o.git
+git fetch liubin
+git checkout liubin/debug
+
 echo "Installing CRI-O"
 make clean
 if [ "$ID" == "centos" ] || [ "$ID" == "fedora" ]; then
