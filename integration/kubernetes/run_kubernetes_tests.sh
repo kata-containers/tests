@@ -27,7 +27,32 @@ trap '${kubernetes_dir}/cleanup_env.sh' EXIT
 # using cri-o as the runtime.
 systemctl is-active --quiet docker || sudo systemctl start docker
 
-K8S_TEST_UNION=("k8s-custom-dns.bats")
+K8S_TEST_UNION=("k8s-attach-handlers.bats" \
+	"k8s-configmap.bats" \
+	"k8s-copy-file.bats" \
+	"k8s-credentials-secrets.bats" \
+	"k8s-custom-dns.bats" \
+	"k8s-empty-dirs.bats" \
+	"k8s-env.bats" \
+	"k8s-expose-ip.bats" \
+	"k8s-job.bats" \
+	"k8s-limit-range.bats" \
+	"k8s-liveness-probes.bats" \
+	"k8s-memory.bats" \
+	"k8s-parallel.bats" \
+	"k8s-pid-ns.bats" \
+	"k8s-pod-quota.bats" \
+	"k8s-port-forward.bats" \
+	"k8s-projected-volume.bats" \
+	"k8s-qos-pods.bats" \
+	"k8s-replication.bats" \
+	"k8s-scale-nginx.bats" \
+	"k8s-security-context.bats" \
+	"k8s-shared-volume.bats" \
+	"k8s-uts+ipc-ns.bats" \
+	"k8s-volume.bats" \
+	"nginx.bats" \
+	"k8s-hugepages.bats")
 
 if [ "${KATA_HYPERVISOR:-}" == "cloud-hypervisor" ]; then
 	blk_issue="https://github.com/kata-containers/tests/issues/2318"
@@ -55,6 +80,6 @@ pushd "$kubernetes_dir"
 ./init.sh
 for K8S_TEST_ENTRY in ${K8S_TEST_UNION[@]}
 do
-	bats -t "${K8S_TEST_ENTRY}"
+	bats "${K8S_TEST_ENTRY}"
 done
 popd

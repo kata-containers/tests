@@ -14,8 +14,6 @@ setup() {
 }
 
 @test "Credentials using secrets" {
-    BASH_XTRACEFD=3
-    set -x
 	secret_name="test-secret"
 	pod_name="secret-test-pod"
 	second_pod_name="secret-envars-test-pod"

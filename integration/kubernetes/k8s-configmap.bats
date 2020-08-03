@@ -14,8 +14,6 @@ setup() {
 }
 
 @test "ConfigMap for a pod" {
-    BASH_XTRACEFD=3
-    set -x
 	config_name="test-configmap"
 	pod_name="config-env-test-pod"
 

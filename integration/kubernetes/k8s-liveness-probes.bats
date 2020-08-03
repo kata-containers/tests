@@ -18,8 +18,6 @@ setup() {
 }
 
 @test "Liveness probe" {
-    BASH_XTRACEFD=3
-    set -x
 	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	pod_name="liveness-exec"
 

@@ -16,8 +16,6 @@ setup() {
 }
 
 @test "Limit range for storage" {
-    BASH_XTRACEFD=3
-    set -x
 	# Create namespace
 	kubectl create namespace "$namespace_name"
 
