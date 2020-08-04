@@ -7,7 +7,7 @@
 
 set -e
 
-CURRENT_QEMU_VERSION=$(get_version "assets.hypervisor.qemu.version")
+CURRENT_QEMU_TAG=$(get_version "assets.hypervisor.qemu.tag")
 PACKAGED_QEMU="qemu"
 
 [ "$ID" == "ubuntu" ] || die "Unsupported distro: $ID"
@@ -49,7 +49,7 @@ build_and_install_qemu() {
 
 	pushd "${GOPATH}/src/${QEMU_REPO_PATH}"
 	git fetch
-	git checkout "$CURRENT_QEMU_VERSION"
+	git checkout "$CURRENT_QEMU_TAG"
 	[ -d "capstone" ] || git clone https://github.com/qemu/capstone.git capstone
 	[ -d "ui/keycodemapdb" ] || git clone  https://github.com/qemu/keycodemapdb.git ui/keycodemapdb
 
