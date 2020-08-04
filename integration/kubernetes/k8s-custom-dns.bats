@@ -22,23 +22,6 @@ setup() {
 	# Check pod creation
 	kubectl wait --for=condition=Ready pod "$pod_name"
 
-	# Check dns config at /etc/resolv.conf
-	echo "111111111111111" 1>&2
-	kubectl -v=8 exec -t "$pod_name" -- cat "$file_name" | grep -q "nameserver 1.2.3.4"
-
-	echo "22222222222222" 1>&2
-	kubectl  -v=8 exec -i "$pod_name" -- sh <<EOC
-cat ${file_name} | grep -q "search dns.test.search"
-EOC
-
-	echo "3333333333333" 1>&2
-	echo $? 1>&2
-
-	kubectl -v=8 exec -t "$pod_name" -- cat "$file_name" | grep -q "nameserver 1.2.3.4"
-	kubectl -v=8 exec -t "$pod_name" -- cat "$file_name" | grep -q "nameserver 1.2.3.4"
-	kubectl -v=8 exec -t "$pod_name" -- cat "$file_name" | grep -q "nameserver 1.2.3.4"
-	kubectl -v=8 exec -t "$pod_name" -- cat "$file_name" | grep -q "nameserver 1.2.3.4"
-	kubectl -v=8 exec -t "$pod_name" -- cat "$file_name" | grep -q "nameserver 1.2.3.4"
 	kubectl -v=8 exec -t "$pod_name" -- cat "$file_name" | grep -q "nameserver 1.2.3.4"
 	kubectl -v=8 exec -i "$pod_name" -- cat "$file_name" | grep -q "nameserver 1.2.3.4"
 	kubectl -v=8 exec -i "$pod_name" -- cat "$file_name" | grep -q "nameserver 1.2.3.4"
