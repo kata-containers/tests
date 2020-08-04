@@ -136,8 +136,11 @@ function get_version(){
 	runtime_repo_dir="$GOPATH/src/${runtime_repo}"
 	versions_file="${runtime_repo_dir}/versions.yaml"
 	mkdir -p "$(dirname ${runtime_repo_dir})"
-	[ -d "${runtime_repo_dir}" ] ||  git clone --quiet https://${runtime_repo}.git "${runtime_repo_dir}"
-
+	if [ -z "${ghprbTargetBranch}" ]; then
+		[ -d "${runtime_repo_dir}" ] ||  git clone --quiet https://${runtime_repo}.git "${runtime_repo_dir}"
+	else
+		[ -d "${runtime_repo_dir}" ] ||  git clone --quiet https://${runtime_repo}.git "${runtime_repo_dir}" && git checkout "${ghprbTargetBranch}"
+	fi
 	get_dep_from_yaml_db "${versions_file}" "${dependency}"
 }
 
