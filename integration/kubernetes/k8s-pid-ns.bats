@@ -7,10 +7,8 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
-issue="https://github.com/kata-containers/tests/issues/2574"
 
 setup() {
-	skip "test not working - see: ${issue}"
 	export KUBECONFIG="$HOME/.kube/config"
 	pod_name="busybox"
 	first_container_name="first-test-container"
@@ -20,7 +18,6 @@ setup() {
 }
 
 @test "Check PID namespaces" {
-	skip "test not working - see: ${issue}"
 	# Create the pod
 	kubectl create -f "${pod_config_dir}/busybox-pod.yaml"
 
@@ -43,6 +40,5 @@ setup() {
 }
 
 teardown() {
-	skip "test not working - see: ${issue}"
 	kubectl delete pod "$pod_name"
 }
