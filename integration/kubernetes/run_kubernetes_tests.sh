@@ -34,6 +34,7 @@ K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-custom-dns.bats" \
 	"k8s-empty-dirs.bats" \
 	"k8s-env.bats" \
+	"k8s-exec.bats" \
 	"k8s-expose-ip.bats" \
 	"k8s-job.bats" \
 	"k8s-limit-range.bats" \
