@@ -145,6 +145,60 @@ get_pss_memory(){
 	echo "$avg"
 }
 
+ppid() {
+	local pid
+	pid=$(ps -p "${1:-nopid}" -o ppid=)
+	echo "${pid//[[:blank:]]/}"
+}
+
+# This function measures the PSS average
+# memory of virtiofsd.
+# It is a special case of get_pss_memory,
+# virtiofsd forks itself so, smem sees the process
+# two times, this function sum both pss values:
+# pss_virtiofsd=pss_fork + pss_parent
+get_pss_memory_virtiofsd() {
+	mem_amount=0
+	count=0
+	avg=0
+
+	virtiofsd_path=${1:-}
+	if [ -z "${virtiofsd_path}" ]; then
+		die "virtiofsd_path not provided"
+	fi
+
+	virtiofsd_pids=$(ps aux | grep [v]irtiofsd | awk '{print $2}')
+	data=$(sudo smem --no-header -P "^${virtiofsd_path}" -c pid -c "pid pss")
+
+	for p in ${virtiofsd_pids}; do
+		parent_pid=$(ppid ${p})
+		cmd="$(cat /proc/${p}/cmdline | tr -d '\0')"
+		cmd_parent="$(cat /proc/${parent_pid}/cmdline | tr -d '\0')"
+		if [ "${cmd}" != "${cmd_parent}" ]; then
+			pss_parent=$(printf "%s" "${data}" | grep "\s^${p}" | awk '{print $2}')
+
+			fork=$(pgrep -P ${p})
+
+			pss_fork=$(printf "%s" "${data}" | grep "^\s*${fork}" | awk '{print $2}')
+			pss_process=$((pss_fork + pss_parent))
+
+			# Save all the smem results
+			# This will help us to retrieve raw information
+			echo "${pss_process}" >>$MEM_TMP_FILE
+
+			if ((pss_process > 0)); then
+				mem_amount=$((pss_process + mem_amount))
+				((count++))
+			fi
+		fi
+	done
+
+	if (( $count > 0 ));then
+		avg=$(bc -l <<< "scale=2; $mem_amount / $count")
+	fi
+	echo "${avg}"
+}
+
 get_individual_memory(){
 	# Getting all the individual container information
 	first_process_name=$(cat $PS_TMP_FILE | awk 'NR==1' | awk -F "/" '{print $NF}' | sed 's/[[:space:]]//g')
@@ -252,7 +306,7 @@ EOF
 			die "Failed to find PSS for $HYPERVISOR_PATH"
 		fi
 
-		virtiofsd_mem="$(get_pss_memory "$VIRTIOFSD_PATH")"
+		virtiofsd_mem="$(get_pss_memory_virtiofsd "$VIRTIOFSD_PATH")"
 		if [ "$virtiofsd_mem" == "0" ]; then
 			echo >&2 "WARNING: Failed to find PSS for $VIRTIOFSD_PATH"
 		fi
