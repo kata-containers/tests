@@ -83,7 +83,7 @@ fi
 pushd "${GOPATH}/src/${crio_repo}"
 git remote add liubin https://github.com/liubin/cri-o.git
 git fetch liubin
-git checkout liubin/debug
+git checkout liubin/fix/4046-correct-exec-closeio-sequence
 
 echo "Installing CRI-O"
 make clean
