@@ -20,14 +20,6 @@ collect_logs()
 	local -r kata_runtime_log_path="${log_copy_dest}/${kata_runtime_log_filename}"
 	local -r kata_runtime_log_prefix="kata-runtime_"
 
-	local -r proxy_log_filename="kata-proxy.log"
-	local -r proxy_log_path="${log_copy_dest}/${proxy_log_filename}"
-	local -r proxy_log_prefix="kata-proxy_"
-
-	local -r shim_log_filename="kata-shim.log"
-	local -r shim_log_path="${log_copy_dest}/${shim_log_filename}"
-	local -r shim_log_prefix="kata-shim_"
-
 	local -r ksm_throttler_log_filename="kata-ksm_throttler.log"
 	local -r ksm_throttler_log_path="${log_copy_dest}/${ksm_throttler_log_filename}"
 	local -r ksm_throttler_log_prefix="kata-ksm_throttler_"
@@ -92,8 +84,6 @@ collect_logs()
 		# Create the log files
 		sudo journalctl --no-pager -t kata > "${containerd_shim_kata_v2_log_path}"
 		sudo journalctl --no-pager -t kata-runtime > "${kata_runtime_log_path}"
-		sudo journalctl --no-pager -t kata-proxy > "${proxy_log_path}"
-		sudo journalctl --no-pager -t kata-shim > "${shim_log_path}"
 		sudo journalctl --no-pager -u kata-ksm-throttler > "${ksm_throttler_log_path}"
 		sudo journalctl --no-pager -u kata-vc-throttler > "${vc_throttler_log_path}"
 
@@ -118,8 +108,6 @@ collect_logs()
 		pushd "${log_copy_dest}"
 		split -b "${subfile_size}" -d "${containerd_shim_kata_v2_log_path}" "${containerd_shim_kata_v2_log_prefix}"
 		split -b "${subfile_size}" -d "${kata_runtime_log_path}" "${kata_runtime_log_prefix}"
-		split -b "${subfile_size}" -d "${proxy_log_path}" "${proxy_log_prefix}"
-		split -b "${subfile_size}" -d "${shim_log_path}" "${shim_log_prefix}"
 		split -b "${subfile_size}" -d "${ksm_throttler_log_path}" "${ksm_throttler_log_prefix}"
 		split -b "${subfile_size}" -d "${vc_throttler_log_path}" "${vc_throttler_log_prefix}"
 		split -b "${subfile_size}" -d "${containerd_log_path}" "${containerd_log_prefix}"
@@ -137,8 +125,6 @@ collect_logs()
 		local prefixes=""
 		prefixes+=" ${containerd_shim_kata_v2_log_prefix}"
 		prefixes+=" ${kata_runtime_log_prefix}"
-		prefixes+=" ${proxy_log_prefix}"
-		prefixes+=" ${shim_log_prefix}"
 		prefixes+=" ${containerd_log_prefix}"
 		prefixes+=" ${crio_log_prefix}"
 		prefixes+=" ${docker_log_prefix}"
@@ -146,6 +132,7 @@ collect_logs()
 		prefixes+=" ${ksm_throttler_log_prefix}"
 		prefixes+=" ${vc_throttler_log_prefix}"
 		prefixes+=" ${kernel_log_prefix}"
+		prefixes+=" ${virtiofs_log_prefix}"
 
 		[ "${have_collect_script}" = "yes" ] && prefixes+=" ${collect_data_log_prefix}"
 
@@ -177,12 +164,6 @@ collect_logs()
 
 		echo "Kata Containers Runtime Log:"
 		sudo journalctl --no-pager -t kata-runtime
-
-		echo "Kata Containers Proxy Log:"
-		sudo journalctl --no-pager -t kata-proxy
-
-		echo "Kata Containers Shim Log:"
-		sudo journalctl --no-pager -t kata-shim
 
 		echo "Kata Containers KSM Throttler Log:"
 		sudo journalctl --no-pager -u kata-ksm-throttler
@@ -243,10 +224,9 @@ check_log_files()
 	local cmd
 
 	for component in \
-		kata-proxy \
-		kata-runtime \
 		kata \
-		kata-shim
+		kata-runtime
+
 	do
 		file="${component}.log"
 		args="--no-pager -q -o cat -a -t \"${component}\""

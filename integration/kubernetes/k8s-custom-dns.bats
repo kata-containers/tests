@@ -26,6 +26,8 @@ setup() {
 	kubectl -v=8 exec -i "$pod_name" -- cat "$file_name" | grep -q "nameserver 1.2.3.4"
 	kubectl -v=8 exec -i "$pod_name" -- cat "$file_name" | grep -q "nameserver 1.2.3.4"
 	kubectl -v=8 exec -i "$pod_name" -- cat "$file_name" | grep -q "nameserver 1.2.3.4"
+	kubectl -v=8 exec -i "$pod_name" -- cat "$file_name" | grep -q "nameserver 1.2.3.4"
+	kubectl -v=8 exec -i "$pod_name" -- cat "$file_name" | grep -q "nameserver 1.2.3.4"
 }
 
 teardown() {
