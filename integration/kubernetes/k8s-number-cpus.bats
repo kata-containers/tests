@@ -28,7 +28,7 @@ setup() {
 
 	for _ in $(seq 1 "$retries"); do
 		# Get number of cpus
-		number_cpus=$(kubectl exec -ti pod/"$pod_name" -c "$container_name" nproc | sed 's/[[:space:]]//g')
+		number_cpus=$(kubectl exec pod/"$pod_name" -c "$container_name" nproc | sed 's/[[:space:]]//g')
 		# Verify number of cpus
 		[ "$number_cpus" -le "$max_number_cpus" ]
 		sleep 1
