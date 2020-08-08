@@ -81,6 +81,14 @@ then
 fi
 
 pushd "${GOPATH}/src/${crio_repo}"
+
+
+## use new crio
+git remote add liubin https://github.com/liubin/cri-o.git
+git fetch liubin
+git checkout liubin/fix/4046-correct-exec-closeio-sequence
+
+
 echo "Installing CRI-O"
 make clean
 if [ "$ID" == "centos" ] || [ "$ID" == "fedora" ]; then
@@ -118,6 +126,11 @@ fi
 
 # Change socket format and pause image used for infra containers
 # Needed for cri-o 1.10
+a=$(crio --version)
+## 1.19-dev
+echo "crio version $a"
+echo "crio crio_config_file $crio_config_file"
+
 if crio --version | grep '1.10'; then
 	sudo sed -i 's|/var|unix:///var|' /etc/crictl.yaml
 	sudo sed -i 's|kubernetes/pause|k8s.gcr.io/pause|' "$crio_config_file"
@@ -151,8 +164,11 @@ sudo sed -i 's/^registries = \[/registries = \[ "docker.io"/' "$crio_config_file
 # Matches cri-o 1.12 file format
 sudo sed -i 's/^#registries = \[/registries = \[ "docker.io" \] /' "$crio_config_file"
 
-echo "Set cgroup manager to cgroupfs"
+#echo "Set cgroup manager to cgroupfs"
 sudo sed -i 's/\(^cgroup_manager =\) \"systemd\"/\1 \"cgroupfs\"/' "$crio_config_file"
+sudo sed -i 's/\(^conmon_cgroup =\) \"system.slice\"/\1 \"pod\"/' "$crio_config_file"
+
+sudo sed -i 's/\(^log_level =\) \"info\"/\1 \"debug\"/' "$crio_config_file"
 
 service_path="/etc/systemd/system"
 crio_service_file="${cidir}/data/crio.service"
@@ -171,3 +187,8 @@ EOF
 
 echo "Reload systemd services"
 sudo systemctl daemon-reload
+
+
+
+a=$(cat $crio_config_file)
+echo "crio crio_config_file $a"

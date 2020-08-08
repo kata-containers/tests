@@ -79,7 +79,7 @@ fi
 
 echo "Start ${cri_runtime} service"
 sudo systemctl start ${cri_runtime}
-max_cri_socket_check=5
+max_cri_socket_check=2
 wait_time_cri_socket_check=5
 
 for i in $(seq ${max_cri_socket_check}); do
@@ -91,6 +91,8 @@ for i in $(seq ${max_cri_socket_check}); do
 
 	echo "Waiting for cri socket ${cri_runtime_socket} (try ${i})"
 done
+
+sudo journalctl --no-pager -u "${cri_runtime}"
 
 sudo systemctl status "${cri_runtime}" --no-pager
 
@@ -106,6 +108,16 @@ trap 'sudo -E sh -c "rm -r "${kubeadm_config_file}""' EXIT
 if [ "${BAREMETAL}" == true ] && [[ $(wc -l /proc/swaps | awk '{print $1}') -gt 1 ]]; then
 	sudo swapoff -a || true
 fi
+
+a=$(cat $kubeadm_config_file)
+
+echo "kubeadm_config_file: $a"
+
+echo "--------------"
+a=$(sudo curl -v --unix-socket /var/run/crio/crio.sock http://localhost/info)
+echo "$a"
+echo "--------------"
+
 sudo -E kubeadm init --config "${kubeadm_config_file}"
 
 mkdir -p "$HOME/.kube"
