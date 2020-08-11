@@ -178,6 +178,9 @@ if [ "${METRICS_CI}" == "false" ]; then
 	#
 	# Note: this will run all classes of tests for ${tests_repo}.
 	"${ci_dir_name}/run.sh"
+
+	# Code coverage
+	bash <(curl -s https://codecov.io/bash)
 else
 	echo "Running the metrics tests:"
 	"${tests_repo_dir}/.ci/run_metrics_PR_ci.sh"
