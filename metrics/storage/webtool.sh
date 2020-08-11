@@ -86,7 +86,8 @@ function main() {
 
 	for ((i=1; i<= "$NUM_CONTAINERS"; i++)); do
 	containers+=($(random_name))
-		docker run --env http_proxy="$http_proxy" --env https_proxy="$https_proxy" --name "${containers[-1]}" -tid --runtime="$RUNTIME" "$IMAGE" bash -c ''"$CMD"''
+		# Web tool benchmark needs 2 cpus to run completely in its cpu utilization
+		docker run --cpus=2 --env http_proxy="$http_proxy" --env https_proxy="$https_proxy" --name "${containers[-1]}" -tid --runtime="$RUNTIME" "$IMAGE" bash -c ''"$CMD"''
 	done
 
 	# We verify that number of containers that we selected
@@ -147,6 +148,8 @@ function main() {
 	local typescript=$(echo "$output" | grep -w "typescript" | eval "${cut_results}")
 	local uglify_js=$(echo "$output" | grep -w "uglify-js" | eval "${cut_results}")
 	local geometric_mean=$(echo "$output" | grep -w "Geometric" | eval "${cut_results}")
+	local tps=$(echo "$geometric_mean" | sed "s/,/+/g;s/.*/(&)\/$NUM_CONTAINERS/g" | bc -l)
+	local total_tps=$(echo "$average_tps*$NUM_CONTAINERS" | bc -l)
 
 	local json="$(cat << EOF
 	{
@@ -168,7 +171,9 @@ function main() {
 		"Terser" : "$terser",
 		"Typescript" : "$typescript",
 		"Uglify js" : "$uglify_js",
-		"Geometric mean" : "$geometric_mean"
+		"Geometric mean" : "$geometric_mean",
+		"TPS" : "$tps",
+		"Total TPS" : "$total_tps"
 	}
 EOF
 )"
