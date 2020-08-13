@@ -13,14 +13,14 @@ spec:
   initContainers:
   - name: first
     image: busybox
-    command: [ "sh", "-c", "date +%s > /volume/initContainer" ]
+    command: [ "sh", "-c", "echo ${EPOCHREALTIME//.} > /volume/initContainer" ]
     volumeMounts:
       - mountPath: /volume
         name: volume
   containers:
   - name: last
     image: busybox
-    command: [ "sh", "-c", "date +%s > /volume/container; tail -f /dev/null" ]
+    command: [ "sh", "-c", "echo ${EPOCHREALTIME//.} > /volume/container; tail -f /dev/null" ]
     volumeMounts:
     - mountPath: /volume
       name: volume
