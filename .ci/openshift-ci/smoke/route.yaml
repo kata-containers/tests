@@ -1,0 +1,15 @@
+# Copyright (c) 2020 Red Hat, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Create the route to the app's service '/'.
+---
+apiVersion: v1
+kind: Route
+metadata:
+  name: http-server-route
+spec:
+  path: "/" 
+  to:
+    kind: Service
+    name: http-server-service
