@@ -22,6 +22,58 @@ WORKSPACE=${WORKSPACE:-}
 BAREMETAL=${BAREMETAL:-false}
 TMPDIR=${TMPDIR:-}
 
+# List of all setup flags used by scripts
+init_ci_flags() {
+	# Make jobs work like in CI
+	# CI disables non-working tests
+	export CI="true"
+	export KATA_DEV_MODE="false"
+	# Install crio
+	export CRIO="no"
+	# Install cri-containerd
+	export CRI_CONTAINERD="no"
+	# Default cri runtime - used to setup k8s
+	export CRI_RUNTIME=""
+	# Ask runtime to only use cgroup at pod level
+	# Useful for pod overhead
+	export DEFSANDBOXCGROUPONLY="false"
+	# Hypervisor to use
+	export KATA_HYPERVISOR=""
+	# Install k8s
+	export KUBERNETES="no"
+	# Run a subset of k8s e2e test
+	# Will run quick to ensure e2e setup is OK
+	# - Use false for PRs
+	# - Use true for nightly testing
+	export MINIMAL_K8S_E2E="false"
+	# Test cgroup v2
+	export TEST_CGROUPSV2="false"
+	# Run crio functional test
+	export TEST_CRIO="false"
+	# Run docker functional test
+	export TEST_DOCKER="no"
+	# Use experimental kernel
+	# Values: true|false
+	export experimental_kernel="false"
+	# Run the kata-check checks
+	export RUN_KATA_CHECK="true"
+
+	# METRICS_CI flags
+	# Request to run METRICS_CI
+	# Values: ""|some value : If empty metrics CI is not enabled
+	export METRICS_CI=""
+	# Metrics check values depend in the env it run
+	# Define a profile to check on PRs
+	# Values: empty|string : String will be used to find a profile with defined values to check
+	export METRICS_CI_PROFILE=""
+	# Check values for a profile defined as CLOUD
+	# Deprecated use METRICS_CI_PROFILE will be replaced by METRICS_CI_PROFILE=cloud-metrics
+	export METRICS_CI_CLOUD=""
+	# Generate a report using a jenkins job data
+	# Name of the job to get data from
+	export METRICS_JOB_BASELINE=""
+}
+
 # Run noninteractive on debian and ubuntu
 if [ "$ID" == "debian" ] || [ "$ID" == "ubuntu" ]; then
 	export DEBIAN_FRONTEND=noninteractive
@@ -169,6 +221,17 @@ case "${CI_JOB}" in
 	if [ "$arch" == "x86_64" ]; then
 		export TEST_CRIO="true"
 	fi
+	;;
+"CLOUD-HYPERVISOR-K8S-CONTAINERD")
+	export CRIO="no"
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	export KUBERNETES="yes"
+	export OPENSHIFT="no"
+	export TEST_CRIO="false"
+	export TEST_DOCKER="true"
+	export experimental_kernel="true"
 	;;
 esac
 "${ci_dir_name}/setup.sh"
