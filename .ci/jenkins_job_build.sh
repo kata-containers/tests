@@ -174,10 +174,6 @@ esac
 "${ci_dir_name}/setup.sh"
 
 if [ "${METRICS_CI}" == "false" ]; then
-	if [ "${kata_repo}" != "${tests_repo}" ]; then
-		make test
-	fi
-
 	# Run integration tests
 	#
 	# Note: this will run all classes of tests for ${tests_repo}.
