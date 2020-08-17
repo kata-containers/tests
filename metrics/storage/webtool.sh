@@ -28,7 +28,12 @@ CMD="mkdir -p ${TESTDIR}; cd $file_path && node dist/cli.js > $file_name"
 http_proxy="${http_proxy:-}"
 https_proxy="${https_proxy:-}"
 NUM_CONTAINERS="$1"
+# This timeout is related with the amount of time that
+# webtool benchmark needs to run inside the container
 timeout=$((180 * "$NUM_CONTAINERS"))
+# This timeout is related with the amount of time that
+# is needed to launch a container - Up status
+timeout_running=$((2 * "$NUM_CONTAINERS"))
 declare -a CONTAINERS_ID
 
 TMP_DIR=$(mktemp --tmpdir -d webtool.XXXXXXXXXX)
@@ -92,7 +97,7 @@ function main() {
 
 	# We verify that number of containers that we selected
 	# are running
-	for i in $(seq "$timeout") ; do
+	for i in $(seq "$timeout_running") ; do
 		echo "Verify that the containers are running"
 		containers_launched=$(docker ps -a | grep "$IMAGE" | grep "Up" | wc -l)
 		if [ "$containers_launched" -eq "$NUM_CONTAINERS" ]; then
