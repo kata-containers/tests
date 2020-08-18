@@ -299,8 +299,11 @@ delete_containerd_cri_stale_resource() {
 	done
 	# remove cluster directory
 	sudo rm -rf /opt/containerd/
-	# remove containerd home directory
+	# remove containerd home/run directory
 	sudo rm -r /var/lib/containerd
+	sudo rm -r /var/lib/containerd-test
+	sudo rm -r /run/containerd
+	sudo rm -r /run/containerd-test
 	# remove configuration files
 	sudo rm -f /etc/containerd/config.toml
 	sudo rm -f /etc/crictl.yaml
@@ -333,9 +336,9 @@ gen_clean_arch() {
 		sudo apt-get purge kubeadm kubelet kubectl -y
 	fi
 	# Remove existing CNI configurations and binaries.
-	sudo sh -c 'rm -rf /var/lib/cni/networks/*'
 	sudo sh -c 'rm -rf /opt/cni/bin/*'
-	sudo sh -c 'rm /etc/cni/net.d/*'
+	sudo sh -c 'rm -rf /etc/cni'
+	sudo sh -c 'rm -rf /var/lib/cni'
 
 	info "Remove Kata package repo registrations"
 	delete_kata_repo_registrations
