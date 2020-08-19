@@ -41,6 +41,8 @@ init_ci_flags() {
 	export KATA_HYPERVISOR=""
 	# Install k8s
 	export KUBERNETES="no"
+        # install openshift
+	export OPENSHIFT="no"
 	# Run a subset of k8s e2e test
 	# Will run quick to ensure e2e setup is OK
 	# - Use false for PRs
@@ -60,8 +62,8 @@ init_ci_flags() {
 
 	# METRICS_CI flags
 	# Request to run METRICS_CI
-	# Values: ""|some value : If empty metrics CI is not enabled
-	export METRICS_CI=""
+	# Values: "true|false"
+	export METRICS_CI="false"
 	# Metrics check values depend in the env it run
 	# Define a profile to check on PRs
 	# Values: empty|string : String will be used to find a profile with defined values to check
@@ -223,14 +225,11 @@ case "${CI_JOB}" in
 	fi
 	;;
 "CLOUD-HYPERVISOR-K8S-CONTAINERD")
-	export CRIO="no"
+	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
-	export OPENSHIFT="no"
-	export TEST_CRIO="false"
-	export TEST_DOCKER="true"
 	export experimental_kernel="true"
 	;;
 esac
