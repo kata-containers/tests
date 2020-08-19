@@ -55,6 +55,9 @@ case "${CI_JOB}" in
 
 		echo "INFO: Running networking tests"
 		sudo -E PATH="$PATH" bash -c "make network"
+
+		echo "INFO: Running filesystem tests"
+		sudo -E PATH="$PATH" bash -c "make conformance"
 		;;
 	"CLOUD-HYPERVISOR-DOCKER")
 		echo "INFO: Running docker integration tests"
