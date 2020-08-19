@@ -119,7 +119,7 @@ setup() {
 
 @test "[run agent] run a consul container" {
 	image="consul"
-	docker run --rm --runtime=$RUNTIME -i $image sh -c "timeout -t 10 consul agent -dev -client 0.0.0.0 | grep 0.0.0.0"
+	docker run --rm --runtime=$RUNTIME -i $image sh -c "timeout 10 consul agent -dev -client 0.0.0.0 | grep 0.0.0.0"
 }
 
 @test "[display version] run a crate container" {
