@@ -23,8 +23,17 @@ sudo iptables-restore < "$iptables_cache"
 sudo -E rm -rf "$HOME/.kube"
 
 # Remove existing CNI configurations and binaries.
-sudo sh -c 'rm -rf /var/lib/cni/networks/*'
+sudo sh -c 'rm -rf /var/lib/cni'
 sudo sh -c 'rm -rf /opt/cni/bin/*'
+sudo sh -c 'rm -rf /etc/cni'
+
+#cleanup stale files in line with k8s
+sudo sh -c 'rm -rf /var/lib/kubelet'
+sudo sh -c 'rm -rf /etc/kubernetes'
+sudo sh -c 'rm -rf /var/lib/etcd'
+
+#cleanup stale files under /run
+sudo sh -c 'rm -rf /run/flannel'
 
 # delete containers resource created by runc
 cri_runtime="${CRI_RUNTIME:-crio}"
