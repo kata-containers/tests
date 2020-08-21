@@ -10,7 +10,6 @@ load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
 issue="https://github.com/kata-containers/tests/issues/2574"
 
 setup() {
-	skip "test not working - see: ${issue}"
 	export KUBECONFIG="$HOME/.kube/config"
 	pod_name="test-env"
 	get_pod_config_dir
@@ -19,7 +18,6 @@ setup() {
 }
 
 @test "Copy file in a pod" {
-	skip "test not working - see: ${issue}"
 	# Create pod
 	kubectl create -f "${pod_config_dir}/pod-env.yaml"
 
@@ -37,7 +35,6 @@ setup() {
 }
 
 @test "Copy from pod to host" {
-	skip "test not working - see: ${issue}"
 	# Create pod
 	kubectl create -f "${pod_config_dir}/pod-env.yaml"
 
@@ -55,7 +52,6 @@ setup() {
 }
 
 teardown() {
-	skip "test not working - see: ${issue}"
 	rm -f "$file_name"
 	kubectl delete pod "$pod_name"
 }
