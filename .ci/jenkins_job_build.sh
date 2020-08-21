@@ -253,6 +253,14 @@ case "${CI_JOB}" in
 	export TEST_DOCKER="true"
 	export experimental_kernel="true"
 	;;
+"CLOUD-HYPERVISOR-K8S-CONTAINERD")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	export KUBERNETES="yes"
+	export experimental_kernel="true"
+	;;
 "CLOUD-HYPERVISOR-K8S-E2E-CRIO-MINIMAL")
 	init_ci_flags
 	export CRIO="yes"
