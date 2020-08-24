@@ -47,6 +47,8 @@ BAREMETAL="${BAREMETAL:-false}"
 iptables_cache="${KATA_TESTS_DATADIR}/iptables_cache"
 if [ "${BAREMETAL}" == true ]; then
 	[ -d "${KATA_TESTS_DATADIR}" ] || sudo mkdir -p "${KATA_TESTS_DATADIR}"
+	# cleanup iptables before save
+	iptables -F && iptables -t nat -F && iptables -t mangle -F && iptables -X
 	iptables-save > "$iptables_cache"
 fi
 
