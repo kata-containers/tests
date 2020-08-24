@@ -14,11 +14,17 @@ spec:
   containers:
   - name: first-test-container
     image: busybox
+    env:
+    - name: CONTAINER_NAME
+      value: "first-test-container"
     command:
         - sleep
         - "30"
   - name: second-test-container
     image: busybox
+    env:
+    - name: CONTAINER_NAME
+      value: "second-test-container"
     command:
         - sleep
         - "30"
