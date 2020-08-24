@@ -22,6 +22,14 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" bash -c "make cri-containerd"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
 		;;
+	"CRI_CONTAINERD_K8S_COMPLETE")
+		echo "INFO: Running e2e kubernetes tests"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes-e2e"
+		;;
+	"CRI_CONTAINERD_K8S_MINIMAL")
+		echo "INFO: Running e2e kubernetes tests"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes-e2e"
+		;;
 	"CRIO_K8S")
 		echo "INFO: Running kubernetes tests"
 		sudo -E PATH="$PATH" bash -c "make kubernetes"

@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: pod-annotate-webhook
-          image: katadocker/kata-webhook-example:latest
+          image: fuentess/kata-webhook:20200707
           imagePullPolicy: Always
           args:
             - -tls-cert-file=/etc/webhook/certs/cert.pem

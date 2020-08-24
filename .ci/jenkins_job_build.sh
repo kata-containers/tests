@@ -214,6 +214,19 @@ case "${CI_JOB}" in
 	export CRIO="no"
 	export OPENSHIFT="no"
 	;;
+"CRI_CONTAINERD_K8S_COMPLETE")
+	export CRI_CONTAINERD="yes"
+	export KUBERNETES="yes"
+	export CRIO="no"
+	export OPENSHIFT="no"
+	;;
+"CRI_CONTAINERD_K8S_MINIMAL")
+	export MINIMAL_CONTAINERD_K8S_E2E="true"
+	export CRI_CONTAINERD="yes"
+	export KUBERNETES="yes"
+	export CRIO="no"
+	export OPENSHIFT="no"
+	;;
 "CRIO_K8S")
 	export KUBERNETES="yes"
 	export CRIO="yes"

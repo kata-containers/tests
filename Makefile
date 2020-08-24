@@ -147,6 +147,12 @@ kubernetes:
 	bash -f .ci/install_bats.sh
 	bash -f integration/kubernetes/run_kubernetes_tests.sh
 
+kubernetes-e2e:
+	cd "integration/kubernetes/e2e_conformance" &&\
+	cat skipped_tests_e2e.yaml &&\
+	bash ./setup.sh &&\
+	bash ./run.sh
+
 ksm:
 	bash -f integration/ksm/ksm_test.sh
 
