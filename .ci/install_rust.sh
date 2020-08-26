@@ -26,8 +26,8 @@ fi
 export PATH="${PATH}:${HOME}/.cargo/bin"
 
 echo "Install rust"
+rustup toolchain install ${version}
 rustup default ${version}
-rustup toolchain install ${version}-musl
 rustup target add ${rustarch}-unknown-linux-musl
 rustup component add rustfmt
 sudo ln -sf /usr/bin/g++ /bin/musl-g++
