@@ -42,6 +42,7 @@ sudo -E yum -y update
 
 if [ "$centos_version" == "8" ]; then
 	echo "Enable PowerTools repository"
+	sudo -E yum install -y yum-utils
 	sudo yum-config-manager --enable PowerTools
 fi
 
@@ -66,7 +67,7 @@ declare -A packages=( \
 	[general_dependencies]="autoconf automake bzip2 coreutils gettext-devel glibc-devel glib2-devel gpgme-devel m4 pixman-devel xfsprogs" \
 	[gnu_parallel_dependencies]="bzip2 make perl" \
 	[haveged]="haveged" \
-	[kata_containers_dependencies]="device-mapper-persistent-data libtool libtool-ltdl libtool-ltdl-devel lvm2" \
+	[kata_containers_dependencies]="bc device-mapper-persistent-data libtool libtool-ltdl libtool-ltdl-devel lvm2" \
 	[kernel_dependencies]="elfutils-libelf-devel flex patch pkgconfig" \
 	[libgudev1-dev]="libgudev1-devel" \
 	[libsystemd]="systemd-devel" \
@@ -101,9 +102,14 @@ main()
 
 	[ "$setup_type" = "minimal" ] && exit 0
 
-	echo "Install GNU parallel"
-	# GNU parallel not available in Centos repos, so build it instead.
-	build_install_parallel
+	if [ "$centos_version" == 7 ]; then
+		info "Build and install GNU parallel"
+		# GNU parallel not available in Centos repos, so build it instead.
+		build_install_parallel
+	else
+		info "The following package will be installed: parallel"
+		chronic sudo -E yum -y install parallel
+	fi
 
 	if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
 		echo "Install ${KATA_KSM_THROTTLER_JOB}"
