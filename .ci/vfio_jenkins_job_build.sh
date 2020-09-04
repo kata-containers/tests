@@ -154,7 +154,7 @@ ${environment}
     git clone https://github.com/kata-containers/tests.git "\${tests_repo_dir}"
     cd "\${tests_repo_dir}"
 
-    trap "cd \${tests_repo_dir}; sudo -E PATH=\$PATH .ci/teardown.sh ${artifacts_dir}; sudo chown -R \${USER} ${artifacts_dir}" EXIT
+    trap "cd \${tests_repo_dir}; sudo -E PATH=\$PATH .ci/teardown.sh ${artifacts_dir} || true; sudo chown -R \${USER} ${artifacts_dir}" EXIT
 
     if echo \${GIT_URL} | grep -q tests; then
         pr_number="\${ghprbPullId}"
