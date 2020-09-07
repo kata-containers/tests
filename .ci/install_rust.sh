@@ -28,6 +28,10 @@ export PATH="${PATH}:${HOME}/.cargo/bin"
 echo "Install rust"
 rustup toolchain install ${version}
 rustup default ${version}
-rustup target add ${rustarch}-unknown-linux-musl
+if [ "${rustarch}" == "powerpc64le" ]; then
+	rustup target add ${rustarch}-unknown-linux-gnu
+else
+	rustup target add ${rustarch}-unknown-linux-musl
+	sudo ln -sf /usr/bin/g++ /bin/musl-g++
+fi
 rustup component add rustfmt
-sudo ln -sf /usr/bin/g++ /bin/musl-g++
