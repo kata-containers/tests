@@ -6,7 +6,9 @@ package docker
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -445,7 +447,7 @@ var _ = Describe("Update CPU constraints", func() {
 			// Use the actual number of CPUs
 			runArgs = []string{"--rm", fmt.Sprintf("--cpus=%d", runtime.NumCPU()),
 				"--name", id, "-dt", DebianImage, "bash"}
-			_, _, exitCode = dockerRun(runArgs...)
+			cid, _, exitCode := dockerRun(runArgs...)
 			Expect(exitCode).To(BeZero())
 
 			updateArgs = append(updateArgs, "--cpuset-cpus", cpuset, id)
@@ -456,10 +458,9 @@ var _ = Describe("Update CPU constraints", func() {
 			}
 			Expect(exitCode).To(BeZero())
 
-			execArgs = append(execArgs, id, "cat", cpusetCpusSysPath)
-			stdout, _, exitCode = dockerExec(execArgs...)
-			Expect(exitCode).To(BeZero())
-			Expect(cpuset).To(Equal(strings.Trim(stdout, "\n\t ")))
+			set, err := ioutil.ReadFile(filepath.Join("/sys/fs/cgroup/cpuset/docker/", fmt.Sprintf("kata_%s", strings.TrimSpace(cid)), "cpuset.cpus"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(cpuset).To(Equal(strings.TrimSpace(string(set))))
 		},
 		withCPUSetConstraint("0", 1, shouldNotFail),
 		withCPUSetConstraint("2", 3, shouldNotFail),
@@ -471,55 +472,4 @@ var _ = Describe("Update CPU constraints", func() {
 		withCPUSetConstraint("0,-2,3", 0, shouldFail),
 		withCPUSetConstraint("-1-3", 0, shouldFail),
 	)
-})
-
-var _ = Describe("CPUs and CPU set", func() {
-	type cpuTest struct {
-		cpus         string
-		cpusetcpus   string
-		expectedCpus string
-	}
-
-	var (
-		args          []string
-		id            string
-		cpuTests      []cpuTest
-		exitCode      int
-		stdout        string
-		updateCheckFn func(cpus, cpusetCpus, expectedCpus string)
-	)
-
-	BeforeEach(func() {
-		id = randomDockerName()
-		args = []string{"--rm", "-dt", "--name", id, Image, "sh"}
-		cpuTests = []cpuTest{
-			{"1", "0-1", "2"},
-			{"3", "1,2", "2"},
-			{"2", "1", "1"},
-		}
-		_, _, exitCode = dockerRun(args...)
-		Expect(exitCode).To(BeZero())
-		updateCheckFn = func(cpus, cpusetCpus, expectedCpus string) {
-			args = []string{"--cpus", cpus, "--cpuset-cpus", cpusetCpus, id}
-			_, _, exitCode = dockerUpdate(args...)
-			Expect(exitCode).To(BeZero())
-			stdout, _, exitCode = dockerExec(id, "nproc")
-			Expect(expectedCpus).To(Equal(strings.Trim(stdout, "\n\t ")))
-		}
-	})
-
-	AfterEach(func() {
-		Expect(RemoveDockerContainer(id)).To(BeTrue())
-		Expect(ExistDockerContainer(id)).NotTo(BeTrue())
-	})
-
-	Describe("updating", func() {
-		Context("cpus and cpuset of a running container", func() {
-			It("should have the right number of vCPUs", func() {
-				for _, c := range cpuTests {
-					updateCheckFn(c.cpus, c.cpusetcpus, c.expectedCpus)
-				}
-			})
-		})
-	})
 })
