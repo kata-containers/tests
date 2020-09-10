@@ -12,12 +12,24 @@ set -o pipefail
 source /etc/os-release || source /usr/lib/os-release
 
 crio_config_file="/etc/crio/crio.conf"
+crio_config_dir="/etc/crio/crio.conf.d"
 runc_flag="\/usr\/local\/bin\/crio-runc"
 kata_flag="\/usr\/local\/bin\/containerd-shim-kata-v2"
 
 minor_crio_version=$(crio --version | head -1 | cut -d '.' -f2)
 
-if [ "$minor_crio_version" -ge "12" ]; then
+if [ "$minor_crio_version" -ge "18" ]; then
+	echo "Configure runtimes map for RuntimeClass feature with drop-in configs"
+	echo "- Set kata as default runtime"
+	sudo tee -a "$crio_config_dir/99-runtime.conf" > /dev/null <<EOF
+[crio.runtime]
+default_runtime = "kata"
+[crio.runtime.runtimes.kata]
+runtime_path = "/usr/local/bin/kata-runtime"
+runtime_root = "/run/vc"
+runtime_type = "oci"
+EOF
+elif [ "$minor_crio_version" -ge "12" ]; then
 	echo "Configure runtimes map for RuntimeClass feature"
 	echo "- Set runc as default runtime"
 	runc_configured=$(grep -q $runc_flag $crio_config_file; echo "$?")
