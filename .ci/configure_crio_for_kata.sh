@@ -34,6 +34,10 @@ default_runtime = "kata"
 runtime_path = "/usr/local/bin/kata-runtime"
 runtime_root = "/run/vc"
 runtime_type = "oci"
+[crio.runtime.runtimes.containerd-shim-kata-v2]
+runtime_path = "/usr/local/bin/containerd-shim-kata-v2"
+runtime_root = "/run/vc"
+runtime_type = "vm"
 EOF
 elif [ "$minor_crio_version" -ge "12" ]; then
 	echo "Configure runtimes map for RuntimeClass feature"
