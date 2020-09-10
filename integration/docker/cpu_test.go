@@ -466,8 +466,8 @@ var _ = Describe("Update CPU constraints", func() {
 		withCPUSetConstraint("0-1", 2, shouldNotFail),
 		withCPUSetConstraint("0-2", 3, shouldNotFail),
 		withCPUSetConstraint("0-3", 4, shouldNotFail),
-		withCPUSetConstraint("0,2", 3, shouldNotFail),
-		withCPUSetConstraint("0,3", 4, shouldNotFail),
+		withCPUSetConstraint("0,2", 2, shouldNotFail),
+		withCPUSetConstraint("0,3", 2, shouldNotFail),
 		withCPUSetConstraint("0,-2,3", 0, shouldFail),
 		withCPUSetConstraint("-1-3", 0, shouldFail),
 	)
