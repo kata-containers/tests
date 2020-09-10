@@ -27,7 +27,7 @@ minor_crio_version=$(crio --version | egrep -o "[0-9]+\.[0-9]+\.[0-9]+" | head -
 if [ "$minor_crio_version" -ge "18" ]; then
 	echo "Configure runtimes map for RuntimeClass feature with drop-in configs"
 	echo "- Set kata as default runtime"
-	cat <<EOF >> "$crio_config_dir/99-runtime.conf"
+	sudo tee -a "$crio_config_dir/99-runtime.conf" > /dev/null <<EOF
 [crio.runtime]
 default_runtime = "kata"
 [crio.runtime.runtimes.kata]
