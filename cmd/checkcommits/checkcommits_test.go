@@ -506,7 +506,7 @@ func TestCheckCommitBody(t *testing.T) {
 				strings.Repeat("l", (defaultMaxBodyLineLength/2)+1),
 				strings.Repeat("l", (defaultMaxBodyLineLength/2)+1),
 			),
-			"Signed-off-by: me@foo.com"}, config, false, false},
+			"Signed-off-by: me@foo.com"}, config, true, false},
 
 		{[]string{"foo", "Signed-off-by: me@foo.com"}, config, false, false},
 		{[]string{"你好", "Signed-off-by: me@foo.com"}, config, false, false},
@@ -527,7 +527,7 @@ func TestCheckCommitBody(t *testing.T) {
 		{[]string{"你好", "fixes: #999", "Signed-off-by: me@foo.com"}, config, false, true},
 		{[]string{"你好", "fixes #19123", "Signed-off-by: me@foo.com"}, config, false, true},
 		{[]string{"你好", "fixes #123, #234. Fixes: #3456.", "Signed-off-by: me@foo.com"}, config, false, true},
-		{[]string{"moo", lotsOfFixes, "Signed-off-by: me@foo.com"}, config, false, true},
+		{[]string{"moo", lotsOfFixes, "Signed-off-by: me@foo.com"}, config, true, true},
 		{[]string{"moo", fmt.Sprintf("  %s", lotsOfFixes), "Signed-off-by: me@foo.com"}, config, false, true},
 
 		// SOB can be any length

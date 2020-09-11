@@ -56,7 +56,7 @@ const (
 	defaultFixesString = "Fixes"
 
 	defaultMaxSubjectLineLength = 75
-	defaultMaxBodyLineLength    = 72
+	defaultMaxBodyLineLength    = 150
 
 	defaultCommit = "HEAD"
 	defaultBranch = "master"
@@ -161,10 +161,10 @@ func checkCommitBodyLine(config *CommitConfig, commit *Commit, line string,
 	}
 
 	// Remove all whitespace
-	trimmedLine := strings.TrimSpace(line)
+	trimmedLine := strings.Fields(line)
 
 	if *nonWhitespaceOnlyLine == -1 {
-		if trimmedLine != "" {
+		if len(trimmedLine) > 0 {
 			*nonWhitespaceOnlyLine = lineNum
 		}
 	}
@@ -202,13 +202,8 @@ func checkCommitBodyLine(config *CommitConfig, commit *Commit, line string,
 	// something like a URL (it's certainly very unlikely to be a
 	// normal word if the default lengths are being used), so length
 	// checks won't be applied to it.
-	singleWordLine := false
-	if trimmedLine == line {
-		singleWordLine = true
-	}
-
 	length := len(line)
-	if length > config.MaxBodyLineLength && !singleWordLine {
+	if length > config.MaxBodyLineLength && len(trimmedLine) > 1 {
 		return fmt.Errorf("commit %v: body line %d too long (max %v, got %v): %q",
 			commit.hash, 1+lineNum, config.MaxBodyLineLength, length, line)
 	}
