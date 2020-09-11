@@ -31,6 +31,10 @@ This directory contains scripts used by the [Kata Containers](https://github.com
 | [`static-checks.sh`](static-checks.sh) | Central static analysis script. |
 | [`teardown.sh`](teardown.sh) | Tasks to run at the end of a CI run. |
 
+| Directory | Description |
+| -- | -- |
+| [`openshift-ci`](openshift-ci) | Files for OpenShift CI |
+
 ## Script conventions
 
 The `kata-*` scripts *might* be useful for users to run. These scripts support the

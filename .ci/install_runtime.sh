@@ -124,7 +124,11 @@ if [ "${TEST_CGROUPSV2}" == "false" ]; then
 	case "${KATA_HYPERVISOR}" in
 		"cloud-hypervisor" | "qemu" | "firecracker")
 			echo "Add kata-runtime as a new Docker runtime."
-			"${cidir}/../cmd/container-manager/manage_ctr_mgr.sh" docker configure -r kata-runtime -f
+			if command -v docker >/dev/null; then
+				"${cidir}/../cmd/container-manager/manage_ctr_mgr.sh" docker configure -r kata-runtime -f
+			else
+				echo "Docker is not installed, skipping..."
+			fi
 			;;
 		*)
 			echo "Kata runtime will not be set in Docker"

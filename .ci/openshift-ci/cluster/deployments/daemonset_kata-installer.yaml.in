@@ -1,0 +1,50 @@
+# Copyright (c) 2020 Red Hat, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Start the kata-containers installer daemonset on worker nodes
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: kata-deploy
+spec:
+    selector:
+        matchLabels:
+            name: kata-deploy
+    template:
+        metadata:
+            labels: {name: kata-deploy}
+        spec:
+            nodeSelector:
+              node-role.kubernetes.io/worker: ""
+            containers:
+              - name: kata-installer
+                image: ${KATA_INSTALLER_IMG}
+                securityContext:
+                  privileged: true
+                  runAsUser: 0
+                  stdin: true
+                  stdinOnce: true
+                  tty: true
+                volumeMounts:
+                  - mountPath: /host
+                    name: host
+                env:
+                - name: NODE_NAME
+                  valueFrom:
+                  fieldRef:
+                   fieldPath: spec.nodeName
+            hostNetwork: true
+            hostPID: true
+            #nodeName: $NODE_NAME
+            restartPolicy: Always
+            volumes:
+              - name: host
+                hostPath:
+                  path: /
+                  type: Directory
+updateStrategy:
+    rollingUpdate:
+        maxUnavailable: 1
+    type: RollingUpdate
