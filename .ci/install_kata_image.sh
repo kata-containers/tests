@@ -219,8 +219,21 @@ get_dependencies() {
 
 main() {
 	get_dependencies
-	local os_version=$(get_version "${IMAGE_OS_VERSION_KEY}")
-	local osbuilder_distro=$(get_version "${IMAGE_OS_KEY}")
+	local os_version=""
+	local osbuilder_distro=""
+	local build_method_suffix=""
+	if [ "${BUILD_WITH_DRACUT}" == "yes" ]; then
+		os_version="${VERSION_ID}"
+		osbuilder_distro="${ID}"
+		build_method_suffix=".dracut"
+	else
+		os_version=$(get_version "${IMAGE_OS_VERSION_KEY}")
+		osbuilder_distro=$(get_version "${IMAGE_OS_KEY}")
+		# Images were historically built with the "distro" method exclusively so
+		# there was no need to indicate a build method in image filename.  To stay
+		# compatible, we leave the build method designation for distro-built images
+		# empty.
+	fi
 
 	if [ "${osbuilder_distro}" == "clearlinux" ] && [ "${os_version}" == "latest" ]; then
 		os_version=$(curl -fLs https://download.clearlinux.org/latest)
@@ -232,14 +245,14 @@ main() {
 	image_output="kata-containers-${osbuilder_distro}-${os_version}-osbuilder-${osbuilder_commit}-agent-${agent_commit}"
 
 	if [ "${TEST_INITRD}" == "no" ]; then
-		image_output="${image_output}.img"
+		image_output="${image_output}.img${build_method_suffix}"
 		type="image"
 	else
-		image_output="${image_output}.initrd"
+		image_output="${image_output}.initrd${build_method_suffix}"
 		type="initrd"
 	fi
 
-	latest_file="latest-${type}"
+	latest_file="latest-${type}${build_method_suffix}"
 	info "Image to generate: ${image_output}"
 
 	last_build_image_version=$(curl -fsL "${latest_build_url}/${latest_file}") ||
