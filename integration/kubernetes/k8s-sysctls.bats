@@ -10,14 +10,12 @@ load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
 issue="https://github.com/kata-containers/tests/issues/2574"
 
 setup() {
-	skip "test not working - see: ${issue}"
 	export KUBECONFIG="$HOME/.kube/config"
 	pod_name="sysctl-test"
 	get_pod_config_dir
 }
 
 @test "Setting sysctl" {
-	skip "test not working - see: ${issue}"
 	# Create pod
 	kubectl apply -f "${pod_config_dir}/pod-sysctl.yaml"
 
@@ -31,6 +29,5 @@ setup() {
 }
 
 teardown() {
-	skip "test not working - see: ${issue}"
 	kubectl delete pod "$pod_name"
 }
