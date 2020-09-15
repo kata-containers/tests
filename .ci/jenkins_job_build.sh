@@ -219,6 +219,13 @@ case "${CI_JOB}" in
 	export CRIO="no"
 	export OPENSHIFT="no"
 	;;
+"CRIO")
+	init_ci_flags
+	# FIXME: skip run kata check only for debugging purposes
+	export RUN_KATA_CHECK="false"
+	export TEST_CRIO="true"
+	export CRIO="yes"
+	;;
 "PODMAN")
 	export TEST_CGROUPSV2="true"
 	;;

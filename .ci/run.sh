@@ -90,6 +90,10 @@ END
 	"CLOUD-HYPERVISOR-K8S-E2E-CONTAINERD-FULL")
 		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
 		;;
+	"CRIO")
+		echo "INFO: Running crio tests with kata-runtime ($PWD)"
+		sudo -E PATH="$PATH" RUNTIME="kata-runtime" bash -c "make crio"
+		;;
 	"PODMAN")
 		export TRUSTED_GROUP="kvm"
 		newgrp "${TRUSTED_GROUP}" << END
