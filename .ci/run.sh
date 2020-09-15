@@ -93,6 +93,8 @@ END
 	"CRIO")
 		echo "INFO: Running crio tests with kata-runtime ($PWD)"
 		sudo -E PATH="$PATH" RUNTIME="kata-runtime" bash -c "make crio"
+		echo "INFO: Running crio tests with containerd-shim-kata-v2 ($PWD)"
+		sudo -E PATH="$PATH" RUNTIME="containerd-shim-kata-v2" bash -c "make crio"
 		;;
 	"PODMAN")
 		export TRUSTED_GROUP="kvm"
