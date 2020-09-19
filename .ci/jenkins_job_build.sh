@@ -27,7 +27,12 @@ init_ci_flags() {
 	# Make jobs work like in CI
 	# CI disables non-working tests
 	export CI="true"
-	export KATA_DEV_MODE="false"
+
+	# Many checks assume this environment variable to be not set
+	# (e.g. [ -n $KATA_DEV_MODE ]). As a result, even its value is
+	# set to 'false', the check would think we are in "kata_dev_mode".
+	# export KATA_DEV_MODE="false"
+
 	# Install crio
 	export CRIO="no"
 	# Install cri-containerd
