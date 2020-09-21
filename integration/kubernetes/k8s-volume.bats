@@ -37,7 +37,11 @@ setup() {
 
 	# Check the persistent volume is Available
 	cmd="kubectl get pv $volume_name | grep Available"
-	waitForProcess "$wait_time" "$sleep_time" "$cmd"
+	run waitForProcess "$wait_time" "$sleep_time" "$cmd"
+	echo -e "$output"
+
+	run kubectl get pv $volume_name -o yaml
+	echo -e "$output"
 
 	# Create the persistent volume claim
 	kubectl create -f "${pod_config_dir}/volume-claim.yaml"
