@@ -79,6 +79,7 @@ fi
 
 pushd "$kubernetes_dir"
 ./init.sh
+K8S_TEST_UNION=("k8s-liveness-probes.bats")
 for K8S_TEST_ENTRY in ${K8S_TEST_UNION[@]}
 do
 	bats "${K8S_TEST_ENTRY}"

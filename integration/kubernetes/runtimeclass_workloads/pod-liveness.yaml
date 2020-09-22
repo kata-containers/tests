@@ -18,7 +18,7 @@ spec:
     args:
     - /bin/sh
     - -c
-    - touch /tmp/healthy; echo "Check status"; sleep 6; rm -rf /tmp/healthy; echo "Check dead"; sleep 12
+    - touch /tmp/healthy; echo "Check status"; sleep 6; rm -rf /tmp/healthy; echo "Check dead"; sleep 1000
     livenessProbe:
       exec:
         command:

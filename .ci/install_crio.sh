@@ -76,6 +76,8 @@ then
 	# Only fetch and checkout if we are not testing changes in the cri-o repo. 
 	pushd "${GOPATH}/src/${crio_repo}"
 	git fetch
+	# crio_version=a705db4c6d04d7c14a4d59170a0ebb4b30850675
+	echo "checkout CRIO ${crio_version}"
 	git checkout "${crio_version}"
 	popd
 fi
@@ -153,6 +155,8 @@ sudo sed -i 's/^#registries = \[/registries = \[ "docker.io" \] /' "$crio_config
 
 echo "Set cgroup manager to cgroupfs"
 sudo sed -i 's/\(^cgroup_manager =\) \"systemd\"/\1 \"cgroupfs\"/' "$crio_config_file"
+# sudo sed -i 's/\(^conmon_cgroup =\) \"system.slice\"/\1 \"pod\"/' "$crio_config_file"
+# sudo sed -i 's/\(^log_level =\) \"info\"/\1 \"debug\"/' "$crio_config_file"
 
 service_path="/etc/systemd/system"
 crio_service_file="${cidir}/data/crio.service"

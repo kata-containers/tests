@@ -141,3 +141,13 @@ kubectl create -f "${runtimeclass_files_path}/kata-runtimeclass.yaml"
 
 # Enable the master node to be able to schedule pods.
 kubectl taint nodes "$(hostname)" node-role.kubernetes.io/master:NoSchedule-
+
+echo "Before set log level[kubeadm-flags.env]:"
+sudo cat /var/lib/kubelet/kubeadm-flags.env
+
+sudo cat /var/lib/kubelet/kubeadm-flags.env | sed 's/.$/ --v=4"/' > /tmp/new
+sudo mv /tmp/new /var/lib/kubelet/kubeadm-flags.env
+
+echo "After set log level[kubeadm-flags.env]:"
+sudo cat /var/lib/kubelet/kubeadm-flags.env
+sudo systemctl daemon-reload && sudo systemctl restart kubelet
