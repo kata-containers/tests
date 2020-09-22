@@ -7,10 +7,8 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
-issue="https://github.com/kata-containers/tests/issues/2574"
 
 setup() {
-	skip "test not working - see: ${issue}"
 	export KUBECONFIG="$HOME/.kube/config"
 	pod_name="constraints-cpu-test"
 	container_name="first-cpu-container"
@@ -25,17 +23,24 @@ setup() {
 }
 
 @test "Check CPU constraints" {
-	skip "test not working - see: ${issue}"
 	# Create the pod
 	kubectl create -f "${pod_config_dir}/pod-cpu.yaml"
 
 	# Check pod creation
 	kubectl wait --for=condition=Ready pod "$pod_name"
 
-	# Check the total of cpus
-	total_cpus_container=$(kubectl exec $pod_name -c $container_name nproc)
+	retries="10"
 
-	[ $total_cpus_container -eq $total_cpus ]
+	# Check the total of cpus
+	for _ in $(seq 1 "$retries"); do
+		# Get number of cpus
+		total_cpus_container=$(kubectl exec pod/"$pod_name" -c "$container_name" cat /proc/cpuinfo |grep processor|wc -l)
+		# Verify number of cpus
+		[ "$total_cpus_container" -le "$total_cpus" ]
+		[ "$total_cpus_container" -eq "$total_cpus" ] && break
+		sleep 1
+	done
+	[ "$total_cpus_container" -eq "$total_cpus" ]
 
 	# Check the total of requests
 	total_requests_container=$(kubectl exec $pod_name -c $container_name cat $sharessyspath)
@@ -54,6 +59,5 @@ setup() {
 }
 
 teardown() {
-	skip "test not working - see: ${issue}"
 	kubectl delete pod "$pod_name"
 }

@@ -26,4 +26,5 @@ cat << EOT | sudo tee /etc/containerd/config.toml
              Root = ""
         [plugins.cri.containerd.runtimes.kata]
            runtime_type = "io.containerd.kata.v2"
+           privileged_without_host_devices = true
 EOT
