@@ -28,6 +28,7 @@ default_runtime = "kata"
 runtime_path = "/usr/local/bin/kata-runtime"
 runtime_root = "/run/vc"
 runtime_type = "oci"
+privileged_without_host_devices = true
 EOF
 elif [ "$minor_crio_version" -ge "12" ]; then
 	echo "Configure runtimes map for RuntimeClass feature"
@@ -43,5 +44,6 @@ elif [ "$minor_crio_version" -ge "12" ]; then
 		sudo sed -i '/crio\.runtime\.runtimes\.kata\]/a runtime_path = "/usr/local/bin/containerd-shim-kata-v2"' "$crio_config_file"
 		sudo sed -i '/containerd-shim-kata-v2"/a runtime_root = "/run/vc"' "$crio_config_file"
 		sudo sed -i '/\/run\/vc/a runtime_type = "vm"' "$crio_config_file"
+		sudo sed -i '/runtime_type = "vm"/a privileged_without_host_devices = true' "$crio_config_file"
 	fi
 fi
