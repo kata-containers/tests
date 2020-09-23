@@ -418,9 +418,13 @@ static_check_license_headers()
 	# See: https://spdx.org/licenses/Apache-2.0.html
 	local -r spdx_tag="SPDX-License-Identifier"
 	local -r spdx_license="Apache-2.0"
-	local -r pattern="${spdx_tag}: ${spdx_license}"
+	local -r license_pattern="${spdx_tag}: ${spdx_license}"
+	local -r copyright_pattern="Copyright \(c\) [[:digit:]]{4}"
 
-	info "Checking for SPDX license headers"
+	local header_checks=()
+
+	header_checks+=("SPDX license header::${license_pattern}")
+	header_checks+=("Copyright header:-i:${copyright_pattern}")
 
 	files=$(get_pr_changed_file_details || true)
 
@@ -430,48 +434,59 @@ static_check_license_headers()
 	# no files were changed
 	[ -z "$files" ] && info "No files found" && return
 
-	local missing=$(egrep \
-		--exclude=".git/*" \
-		--exclude=".gitignore" \
-		--exclude="Gopkg.lock" \
-		--exclude="*.gpl.c" \
-		--exclude="*.jpg" \
-		--exclude="*.json" \
-		--exclude="LICENSE" \
-		--exclude="*.md" \
-		--exclude="*.pb.go" \
-		--exclude="*pb_test.go" \
-		--exclude="*.png" \
-		--exclude="*.pub" \
-		--exclude="*.service" \
-		--exclude="*.svg" \
-		--exclude="*.drawio" \
-		--exclude="*.toml" \
-		--exclude="*.txt" \
-		--exclude="vendor/*" \
-		--exclude="VERSION" \
-		--exclude="virtcontainers/pkg/firecracker/*" \
-		--exclude="${ignore_clh_generated_code}*" \
-		--exclude="*.xml" \
-		--exclude="*.yaml" \
-		--exclude="*.yml" \
-		--exclude="go.mod" \
-		--exclude="go.sum" \
-		--exclude="*.lock" \
-		--exclude="grpc-rs/*" \
-		--exclude="target/*" \
-		-EL "\<${pattern}\>" \
-		$files || true)
+	local header_check
 
-	if [ -n "$missing" ]; then
-		cat >&2 <<-EOT
-		ERROR: Required license identifier ('$pattern') missing from following files:
+	for header_check in "${header_checks[@]}"
+	do
+		local desc=$(echo "$header_check"|cut -d: -f1)
+		local extra_args=$(echo "$header_check"|cut -d: -f2)
+		local pattern=$(echo "$header_check"|cut -d: -f3-)
+
+		info "Checking $desc"
+
+		local missing=$(egrep \
+			--exclude=".git/*" \
+			--exclude=".gitignore" \
+			--exclude="Gopkg.lock" \
+			--exclude="*.gpl.c" \
+			--exclude="*.jpg" \
+			--exclude="*.json" \
+			--exclude="LICENSE" \
+			--exclude="*.md" \
+			--exclude="*.pb.go" \
+			--exclude="*pb_test.go" \
+			--exclude="*.png" \
+			--exclude="*.pub" \
+			--exclude="*.service" \
+			--exclude="*.svg" \
+			--exclude="*.drawio" \
+			--exclude="*.toml" \
+			--exclude="*.txt" \
+			--exclude="vendor/*" \
+			--exclude="VERSION" \
+			--exclude="virtcontainers/pkg/firecracker/*" \
+			--exclude="${ignore_clh_generated_code}*" \
+			--exclude="*.xml" \
+			--exclude="*.yaml" \
+			--exclude="*.yml" \
+			--exclude="go.mod" \
+			--exclude="go.sum" \
+			--exclude="*.lock" \
+			--exclude="grpc-rs/*" \
+			--exclude="target/*" \
+			-EL $extra_args "\<${pattern}\>" \
+			$files || true)
+
+		if [ -n "$missing" ]; then
+			cat >&2 <<-EOT
+		ERROR: Required $desc check ('$pattern') failed for the following files:
 
 		$missing
 
 EOT
-		exit 1
-	fi
+			exit 1
+		fi
+	done
 }
 
 check_url()
