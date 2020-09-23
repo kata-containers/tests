@@ -13,20 +13,35 @@ set -o errtrace
 cidir=$(dirname "$0")
 rust_agent_repo="github.com/kata-containers/kata-containers"
 arch=$("${cidir}"/kata-arch.sh -d)
+image_path="${image_path:-/usr/share/kata-containers}"
+image_name="${image_name:-kata-containers.img}"
+initrd_name="${initrd_name:-kata-containers-initrd.img}"
+AGENT_INIT="${AGENT_INIT:-no}"
+TEST_INITRD="${TEST_INITRD:-no}"
 
 build_rust_image() {
 	export RUST_AGENT="yes"
 	osbuilder_path="${GOPATH}/src/${rust_agent_repo}/tools/osbuilder"
 	distro="ubuntu"
 
-	pushd "${osbuilder_path}"
-	echo "Building rust image"
-	sudo -E USE_DOCKER=1 DISTRO="${distro}" make -e image
-
-	image_path="/usr/share/kata-containers/"
 	sudo mkdir -p "${image_path}"
-	echo "Install rust image to ${image_path}"
-	sudo install -D "${osbuilder_path}/kata-containers.img" "${image_path}"
+
+	pushd "${osbuilder_path}"
+
+	if [ "${TEST_INITRD}" == "no" ]; then
+		echo "Building image with AGENT_INIT=${AGENT_INIT}"
+		sudo -E USE_DOCKER=1 DISTRO="${distro}" make -e image
+
+		echo "Install image to ${image_path}"
+		sudo install -D "${osbuilder_path}/${image_name}" "${image_path}"
+	else
+		echo "Building initrd with AGENT_INIT=${AGENT_INIT}"
+		sudo -E USE_DOCKER=1 DISTRO="${distro}" make -e initrd
+
+		echo "Install initrd to ${image_path}"
+		sudo install -D "${osbuilder_path}/${initrd_name}" "${image_path}"
+	fi
+
 	popd
 }
 
