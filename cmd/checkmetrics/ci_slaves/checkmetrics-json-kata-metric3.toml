@@ -31,7 +31,7 @@ checkvar = ".\"memory-footprint\".Results | .[] | .average.Result"
 checktype = "mean"
 midval = 135767.0
 minpercent = 5.0
-maxpercent = 5.0
+maxpercent = 7.0
 
 [[metric]]
 name = "memory-footprint-ksm"
