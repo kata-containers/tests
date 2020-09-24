@@ -250,6 +250,16 @@ case "${CI_JOB}" in
 	export KUBERNETES="yes"
 	export experimental_kernel="true"
 	;;
+"CLOUD-HYPERVISOR-K8S-CONTAINERD-MINIMAL")
+	init_ci_flags
+	export MINIMAL_CONTAINERD_K8S_E2E="true"
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	export KUBERNETES="yes"
+	export experimental_kernel="true"
+	;;
+
 esac
 "${ci_dir_name}/setup.sh"
 
