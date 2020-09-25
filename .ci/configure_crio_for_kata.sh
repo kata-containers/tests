@@ -16,9 +16,13 @@ crio_config_dir="/etc/crio/crio.conf.d"
 runc_flag="\/usr\/local\/bin\/crio-runc"
 kata_flag="\/usr\/local\/bin\/containerd-shim-kata-v2"
 
+echo "crio --version!!!!!!!!!!!!"
+
+crio --version
+
 minor_crio_version=$(crio --version | head -1 | cut -d '.' -f2)
 
-if [ "$minor_crio_version" -ge "18" ]; then
+if [ "$minor_crio_version" -ge "20" ]; then
 	echo "Configure runtimes map for RuntimeClass feature with drop-in configs"
 	echo "- Set kata as default runtime"
 	sudo tee -a "$crio_config_dir/99-runtime.conf" > /dev/null <<EOF

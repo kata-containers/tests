@@ -9,6 +9,14 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# FATA[2020-09-27 09:09:29.173271647Z] Validating runtime config: cgroupfs manager conmon cgroup should be 'pod' or empty 
+
+FILE=/tmp/kubernetes_installed_flg
+if [ -f "$FILE" ]; then
+    echo "Kubernetes already installed"
+    exit 0
+fi
+
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
@@ -65,3 +73,7 @@ EOF"
 else
 	die "Kubernetes configuration not done on $ID"
 fi
+
+# touch file to mark that Kubernetes has already installed.
+touch $FILE
+

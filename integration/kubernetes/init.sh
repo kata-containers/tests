@@ -9,6 +9,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+echo "!!!!! 0000000"
 
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 source "${SCRIPT_PATH}/../../.ci/lib.sh"
@@ -54,6 +55,8 @@ fi
 
 [ "$ID" == "fedora" ] && bash "${SCRIPT_PATH}/../../.ci/install_kubernetes.sh"
 
+echo "!!!!! 111111111"
+
 case "${cri_runtime}" in
 containerd)
 	cri_runtime_socket="/run/containerd/containerd.sock"
@@ -66,8 +69,11 @@ crio)
 	;;
 esac
 
+echo "!!!!! 22222"
+
 # Check no there are no kata processes from previous tests.
 check_processes
+echo "!!!!! 3333333"
 
 # Remove existing CNI configurations:
 cni_config_dir="/etc/cni/net.d"
@@ -78,6 +84,7 @@ if ip a show "$cni_interface"; then
 	sudo ip link set dev "$cni_interface" down
 	sudo ip link del "$cni_interface"
 fi
+echo "!!!!! 4444444444"
 
 echo "Start ${cri_runtime} service"
 sudo systemctl start ${cri_runtime}
@@ -94,6 +101,13 @@ for i in $(seq ${max_cri_socket_check}); do
 	echo "Waiting for cri socket ${cri_runtime_socket} (try ${i})"
 done
 
+if [ $cri_runtime == "crio" ]; then
+	sudo crio version
+	echo "cat /etc/crio/crio.conf !!!!!!!!!!!!"
+	sudo cat /etc/crio/crio.conf | grep -v "^#" | grep -v "^$"
+	echo "!!!!! 555555555"
+fi
+
 sudo systemctl status "${cri_runtime}" --no-pager
 
 echo "Init cluster using ${cri_runtime_socket}"
@@ -108,13 +122,31 @@ trap 'sudo -E sh -c "rm -r "${kubeadm_config_file}""' EXIT
 if [ "${BAREMETAL}" == true ] && [[ $(wc -l /proc/swaps | awk '{print $1}') -gt 1 ]]; then
 	sudo swapoff -a || true
 fi
+
+
+
+
 sudo -E kubeadm init --config "${kubeadm_config_file}"
+echo "!!!!! 777777777"
 
 mkdir -p "$HOME/.kube"
 sudo cp "/etc/kubernetes/admin.conf" "$HOME/.kube/config"
 sudo chown $(id -u):$(id -g) "$HOME/.kube/config"
 export KUBECONFIG="$HOME/.kube/config"
 
+
+
+echo "Before set log level"
+sudo cat /var/lib/kubelet/kubeadm-flags.env
+
+sudo cat /var/lib/kubelet/kubeadm-flags.env | sed 's/.$/ --v=4"/' > /tmp/new
+sudo mv /tmp/new /var/lib/kubelet/kubeadm-flags.env
+
+echo "After set log level"
+sudo cat /var/lib/kubelet/kubeadm-flags.env
+sudo systemctl daemon-reload && sudo systemctl restart kubelet
+
+sleep 1
 kubectl get nodes
 kubectl get pods
 
