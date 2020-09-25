@@ -20,13 +20,11 @@ if [ -z "${version}" ]; then
 fi
 
 if ! command -v rustup > /dev/null; then
-	curl https://sh.rustup.rs -sSf | sh -s -- -y
+	curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain ${version}
 fi
 
 export PATH="${PATH}:${HOME}/.cargo/bin"
 
-rustup toolchain install ${version}
-rustup default ${version}
 rustup target install ${rustarch}-unknown-linux-musl
 rustup component add rustfmt
 sudo ln -sf /usr/bin/g++ /bin/musl-g++
