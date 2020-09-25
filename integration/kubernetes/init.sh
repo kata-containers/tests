@@ -94,8 +94,9 @@ for i in $(seq ${max_cri_socket_check}); do
 	echo "Waiting for cri socket ${cri_runtime_socket} (try ${i})"
 done
 
-sudo crio version || true
+sudo crio version
 
+echo "11111111111111"
 sudo systemctl status "${cri_runtime}" --no-pager
 
 echo "Init cluster using ${cri_runtime_socket}"
@@ -141,15 +142,18 @@ runtimeclass_files_path="${SCRIPT_PATH}/runtimeclass_workloads"
 echo "Create kata RuntimeClass resource"
 kubectl create -f "${runtimeclass_files_path}/kata-runtimeclass.yaml"
 
+echo "222222"
+
 # Enable the master node to be able to schedule pods.
 kubectl taint nodes "$(hostname)" node-role.kubernetes.io/master:NoSchedule-
+echo "33333333333"
 
-echo "Before set log level[kubeadm-flags.env]:"
+echo "Before set log level"
 sudo cat /var/lib/kubelet/kubeadm-flags.env
 
 sudo cat /var/lib/kubelet/kubeadm-flags.env | sed 's/.$/ --v=4"/' > /tmp/new
 sudo mv /tmp/new /var/lib/kubelet/kubeadm-flags.env
 
-echo "After set log level[kubeadm-flags.env]:"
+echo "After set log level"
 sudo cat /var/lib/kubelet/kubeadm-flags.env
 sudo systemctl daemon-reload && sudo systemctl restart kubelet

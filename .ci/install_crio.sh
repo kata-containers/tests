@@ -56,6 +56,9 @@ crictl_tag_prefix="v"
 
 go get -d "$crio_repo" || true
 
+echo "!!!!!!!!! ghprbGhRepository ${ghprbGhRepository}"
+echo "!!!!!!!!! crio_repo ${crio_repo}"
+
 if [ "$ghprbGhRepository" != "${crio_repo/github.com\/}" ]
 then
 	# For Fedora, we use CRI-O version that is compatible with the
@@ -161,7 +164,7 @@ sudo sed -i 's/\(^log_level =\) \"info\"/\1 \"debug\"/' "$crio_config_file"
 service_path="/etc/systemd/system"
 crio_service_file="${cidir}/data/crio.service"
 
-echo "Install crio service (${crio_service_file})"
+echo "!!!!!!!!!Install crio service (${crio_service_file})"
 sudo install -m0444 "${crio_service_file}" "${service_path}"
 
 kubelet_service_dir="${service_path}/kubelet.service.d/"
