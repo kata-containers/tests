@@ -7,10 +7,8 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
-issue="https://github.com/kata-containers/tests/issues/2574"
 
 setup() {
-	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	export KUBECONFIG="$HOME/.kube/config"
 	get_pod_config_dir
 
@@ -26,7 +24,6 @@ setup() {
 }
 
 @test "Block Storage Support" {
-	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	# Create Storage Class
 	kubectl create -f volume/local-storage.yaml
 
@@ -64,7 +61,6 @@ setup() {
 }
 
 teardown() {
-	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working - see: ${issue}"
 	# Delete k8s resources
 	kubectl delete pod "$pod_name"
 	kubectl delete pvc block-loop-pvc
