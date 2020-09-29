@@ -113,6 +113,12 @@ popd
 echo "Installing CRI Tools"
 crictl_url="${crictl_repo}/releases/download/v${crictl_version}/crictl-${crictl_tag_prefix}${crictl_version}-linux-$(${cidir}/kata-arch.sh -g).tar.gz"
 curl -Ls "$crictl_url" | sudo tar xfz - -C /usr/local/bin
+echo "cri tools url: ${crictl_url}"
+
+## FIXME!!!!
+# 16:18:20 Installing CRI Tools
+# 16:18:21 fatal: Not a valid commit name 0f1226b99685f95e83c94dc6668b6452df5056db
+
 
 # Change CRI-O configuration options
 crio_config_file="/etc/crio/crio.conf"
