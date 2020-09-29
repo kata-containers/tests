@@ -83,7 +83,7 @@ then
 	git fetch liubin
 	# crio_version=a705db4c6d04d7c14a4d59170a0ebb4b30850675
 	# echo "checkout CRIO ${crio_version}"
-	crio_version=liubin/fix/set-pid-for-runtime-vm
+	crio_version=liubin/update
 	git checkout "${crio_version}"
 	popd
 fi
