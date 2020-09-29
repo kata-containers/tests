@@ -136,9 +136,7 @@ install_docker(){
 			repo_url="https://download.docker.com/linux/centos/docker-ce.repo"
 			sudo yum-config-manager --add-repo "$repo_url"
 			# With this we will be able to install docker 18.06
-			if [ "$ID" == "centos" ] && [ "$VERSION_ID" -ge "8" ]; then
-				sudo sed -i 's/$releasever/7/g' /etc/yum.repos.d/docker-ce.repo
-			fi
+			sudo sed -i 's/$releasever/7/g' /etc/yum.repos.d/docker-ce.repo
 			sudo yum makecache
 			docker_version_full=$(sudo yum --showduplicate list "$pkg_name" | \
 				grep "$docker_version" | awk '{print $2}' | tail -1 | cut -d':' -f2)
