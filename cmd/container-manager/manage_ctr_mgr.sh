@@ -128,9 +128,8 @@ install_docker(){
 			sudo -E yum install -y yum-utils
 			repo_url="https://download.docker.com/linux/centos/docker-ce.repo"
 			sudo yum-config-manager --add-repo "$repo_url"
-			if [ "$ID" == "centos" ] && [ "$VERSION_ID" -ge "8" ]; then
-				sudo sed -i 's/$releasever/7/g' /etc/yum.repos.d/docker-ce.repo
-			fi
+			# This will enable the possiblity to install the supported docker version
+			sudo sed -i 's/$releasever/7/g' /etc/yum.repos.d/docker-ce.repo
 			sudo yum makecache
 			docker_version_full=$(yum --showduplicate list "$pkg_name" | \
 				grep "$docker_version" | awk '{print $2}' | tail -1 | cut -d':' -f2)
