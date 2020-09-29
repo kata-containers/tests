@@ -96,7 +96,7 @@ build_and_install_qemu() {
 
 	# Apply required patches
 	QEMU_PATCHES_TAG=$(echo "${CURRENT_QEMU_VERSION}" | cut -d '.' -f1-2)
-	QEMU_PATCHES_PATH="${GOPATH}/src/${PACKAGING_REPO}/qemu/patches/${QEMU_PATCHES_TAG}.x"
+	QEMU_PATCHES_PATH="${PACKAGING_DIR}/qemu/patches/${QEMU_PATCHES_TAG}.x"
 	for patch in ${QEMU_PATCHES_PATH}/*.patch; do
 		echo "Applying patch: $patch"
 		git apply "$patch"

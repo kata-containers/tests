@@ -105,10 +105,9 @@ esac
 
 if [ x"${TEST_INITRD}" == x"yes" ]; then
 	echo "Set to test initrd image"
-	sudo sed -i -e '/^image =/d' "${runtime_config_path}"
-else
-	echo "Set to test rootfs image"
-	sudo sed -i -e '/^initrd =/d' "${runtime_config_path}"
+	image_path="${image_path:-$SHAREDIR/kata-containers}"
+	initrd_name=${initrd_name:-kata-containers-initrd.img}
+	sudo sed -i -e "s|^image =.*|initrd = \"$image_path/$initrd_name\"|" "${runtime_config_path}"
 fi
 
 if [ -z "${METRICS_CI}" ]; then
