@@ -18,6 +18,7 @@ setup() {
 	# Pull the images before launching workload.
 	sudo -E crictl pull "$busybox_image"
 	sudo -E crictl pull "$nginx_image"
+	sudo sysctl net.bridge.bridge-nf-call-iptables=0
 
 	get_pod_config_dir
 }
@@ -44,6 +45,8 @@ setup() {
 }
 
 teardown() {
+	sudo sysctl net.bridge.bridge-nf-call-iptables=1
+
 	rm -f "${pod_config_dir}/test-${deployment}.yaml"
 	kubectl delete deployment "$deployment"
 	kubectl delete service "$deployment"

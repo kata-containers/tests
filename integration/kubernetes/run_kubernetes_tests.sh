@@ -55,6 +55,7 @@ K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-shared-volume.bats" \
 	"k8s-uts+ipc-ns.bats" \
 	"k8s-volume.bats" \
+	"nginx.bats" \
 	"k8s-hugepages.bats")
 
 if [ "${KATA_HYPERVISOR:-}" == "cloud-hypervisor" ]; then
