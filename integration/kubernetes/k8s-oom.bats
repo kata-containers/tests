@@ -16,9 +16,6 @@ setup() {
 }
 
 @test "Test OOM events for pods" {
-	if [ "$CI_JOB" == "CRIO_K8S" ]; then
-		skip "test not working on CRI-O, see: ${issue}"
-	fi
 
 	wait_time=20
 	sleep_time=2
@@ -36,8 +33,5 @@ setup() {
 }
 
 teardown() {
-	if [ "$CI_JOB" == "CRIO_K8S" ]; then
-		skip "test not working on CRI-O, see: ${issue}"
-	fi
 	kubectl delete pod "$pod_name"
 }

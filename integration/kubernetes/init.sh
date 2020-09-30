@@ -102,7 +102,7 @@ for i in $(seq ${max_cri_socket_check}); do
 done
 
 if [ $cri_runtime == "crio" ]; then
-	sudo crio version
+	sudo crio version || true
 	echo "cat /etc/crio/crio.conf !!!!!!!!!!!!"
 	sudo cat /etc/crio/crio.conf | grep -v "^#" | grep -v "^$"
 	echo "!!!!! 555555555"
