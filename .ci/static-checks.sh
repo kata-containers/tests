@@ -478,6 +478,8 @@ static_check_license_headers()
 			--exclude="*.lock" \
 			--exclude="grpc-rs/*" \
 			--exclude="target/*" \
+			--exclude="*.patch" \
+			--exclude="*.diff" \
 			-EL $extra_args "\<${pattern}\>" \
 			$files || true)
 
