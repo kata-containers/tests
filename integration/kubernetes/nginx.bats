@@ -23,8 +23,8 @@ setup() {
 }
 
 @test "Verify nginx connectivity between pods" {
-	wait_time=50
-	sleep_time=1
+	wait_time=30
+	sleep_time=3
 
 	# Create test .yaml
 	sed -e "s/\${nginx_version}/${nginx_image}/" \
@@ -45,19 +45,6 @@ setup() {
 
 teardown() {
 	rm -f "${pod_config_dir}/test-${deployment}.yaml"
-	run kubectl get pods -o yaml
-	echo "-----------------"
-	echo $output
-
-	run kubectl logs "$busybox_pod"
-	echo "-----------------"
-	echo $output
-
-	run kubectl get services -o yaml
-	echo "-----------------"
-	echo $output
-
-
 	kubectl delete deployment "$deployment"
 	kubectl delete service "$deployment"
 	kubectl delete pod "$busybox_pod"

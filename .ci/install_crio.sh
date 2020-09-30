@@ -57,9 +57,6 @@ crictl_tag_prefix="v"
 
 go get -d "$crio_repo" || true
 
-echo "!!!!!!!!! ghprbGhRepository ${ghprbGhRepository}"
-echo "!!!!!!!!! crio_repo ${crio_repo}"
-
 if [ "$ghprbGhRepository" != "${crio_repo/github.com\/}" ]
 then
 	# For Fedora, we use CRI-O version that is compatible with the
@@ -113,8 +110,6 @@ popd
 echo "Installing CRI Tools"
 crictl_url="${crictl_repo}/releases/download/v${crictl_version}/crictl-${crictl_tag_prefix}${crictl_version}-linux-$(${cidir}/kata-arch.sh -g).tar.gz"
 curl -Ls "$crictl_url" | sudo tar xfz - -C /usr/local/bin
-echo "cri tools url: ${crictl_url}"
-
 
 # Change CRI-O configuration options
 crio_config_file="/etc/crio/crio.conf"
@@ -125,9 +120,6 @@ crio_config_file="/etc/crio/crio.conf"
 if git merge-base --is-ancestor 0f1226b99685f95e83c94dc6668b6452df5056db HEAD; then
     crio_config_file="/etc/crio/crio.conf.d/00-default.conf"
 fi
-
-## FIXME!!!!
-# 16:18:21 fatal: Not a valid commit name 0f1226b99685f95e83c94dc6668b6452df5056db
 
 # Change socket format and pause image used for infra containers
 # Needed for cri-o 1.10
@@ -166,7 +158,6 @@ sudo sed -i 's/^#registries = \[/registries = \[ "docker.io" \] /' "$crio_config
 
 echo "Set cgroup manager to cgroupfs"
 sudo sed -i 's/\(^cgroup_manager =\) \"systemd\"/\1 \"cgroupfs\"/' "$crio_config_file"
-#sudo sed -i 's/\(^conmon_cgroup =\) \"system.slice\"/\1 \"pod\"/' "$crio_config_file"
 sudo sed -i 's/\(^conmon_cgroup =\) \"system.slice\"/\1 \"pod\"/' "$crio_config_file"
 
 sudo sed -i 's/\(^log_level =\) \"info\"/\1 \"debug\"/' "$crio_config_file"
@@ -174,7 +165,7 @@ sudo sed -i 's/\(^log_level =\) \"info\"/\1 \"debug\"/' "$crio_config_file"
 service_path="/etc/systemd/system"
 crio_service_file="${cidir}/data/crio.service"
 
-echo "!!!!!!!!!Install crio service (${crio_service_file})"
+echo "Install crio service (${crio_service_file})"
 sudo install -m0444 "${crio_service_file}" "${service_path}"
 
 kubelet_service_dir="${service_path}/kubelet.service.d/"

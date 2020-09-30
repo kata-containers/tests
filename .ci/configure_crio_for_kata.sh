@@ -16,10 +16,6 @@ crio_config_dir="/etc/crio/crio.conf.d"
 runc_flag="\/usr\/local\/bin\/crio-runc"
 kata_flag="\/usr\/local\/bin\/containerd-shim-kata-v2"
 
-echo "crio --version!!!!!!!!!!!!"
-
-crio --version
-
 minor_crio_version=$(crio --version | head -1 | cut -d '.' -f2)
 
 if [ "$minor_crio_version" -ge "20" ]; then

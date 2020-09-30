@@ -261,18 +261,13 @@ case "${CI_JOB}" in
 	;;
 
 esac
-
-echo "begin setup ci ${ci_dir_name}"
 "${ci_dir_name}/setup.sh"
-echo "end setup ci"
 
 if [ "${METRICS_CI}" == "false" ]; then
 	# Run integration tests
 	#
 	# Note: this will run all classes of tests for ${tests_repo}.
-	echo "begin run ci ${ci_dir_name}"
 	"${ci_dir_name}/run.sh"
-	echo "end run ci"
 
 	# Code coverage
 	bash <(curl -s https://codecov.io/bash)
