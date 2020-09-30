@@ -115,10 +115,6 @@ crictl_url="${crictl_repo}/releases/download/v${crictl_version}/crictl-${crictl_
 curl -Ls "$crictl_url" | sudo tar xfz - -C /usr/local/bin
 echo "cri tools url: ${crictl_url}"
 
-## FIXME!!!!
-# 16:18:20 Installing CRI Tools
-# 16:18:21 fatal: Not a valid commit name 0f1226b99685f95e83c94dc6668b6452df5056db
-
 
 # Change CRI-O configuration options
 crio_config_file="/etc/crio/crio.conf"
@@ -129,6 +125,9 @@ crio_config_file="/etc/crio/crio.conf"
 if git merge-base --is-ancestor 0f1226b99685f95e83c94dc6668b6452df5056db HEAD; then
     crio_config_file="/etc/crio/crio.conf.d/00-default.conf"
 fi
+
+## FIXME!!!!
+# 16:18:21 fatal: Not a valid commit name 0f1226b99685f95e83c94dc6668b6452df5056db
 
 # Change socket format and pause image used for infra containers
 # Needed for cri-o 1.10
