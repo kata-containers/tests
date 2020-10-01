@@ -81,16 +81,16 @@ install_jq() {
 	package="jq"
 	case "$ID" in
 		centos|rhel)
-			sudo yum -y install "${package}"
+			sudo yum -y install "${package}" 1>&5 2>&1
 			;;
 		debian|ubuntu)
-			sudo apt-get -y install "${package}"
+			sudo apt-get -y install "${package}" 1>&5 2>&1
 			;;
 		opensuse-*|sles)
-			sudo -E zypper install -y "${package}"
+			sudo zypper install -y "${package}" 1>&5 2>&1
 			;;
 		fedora)
-			sudo dnf -y install "${package}"
+			sudo dnf -y install "${package}" 1>&5 2>&1
 			;;
 	esac
 }
