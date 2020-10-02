@@ -12,6 +12,7 @@
 #  - file name patterns from the YAML to see if we can skip all files in the PR
 #  - If potentially skipping, looks for a 'force' label on the PR to force the CI
 #    to run anyway
+#  - Looks for a force label on the PR to always skip the CI.
 
 set -e
 
@@ -41,6 +42,9 @@ unit_yamlfile_gitname="${script_dir_base}/${unit_yamlfile_rootname}"
 
 # Name of the label, that if set on a PR, will force the CI to be run anyway.
 force_label="force-ci"
+
+# Name of the label, that if set on a PR, will force the CI to not be run.
+skip_label="force-skip-ci"
 
 # The list of files to check is held in a global, to make writing the unit test
 # code easier - otherwise we would have to pass two multi-entry lists (the list
@@ -148,29 +152,39 @@ is_label_set() {
 
 	local_info "Checking labels for PR ${repo}/${pr}"
 
-	# Pull the label list for the PR
-	# Ideally we'd use a github auth token here so we don't get rate limited, but to do that we would
-	# have to expose the token into the CI scripts, which is then potentially a security hole.
-	local json=$(curl -sL "https://api.github.com/repos/${repo}/issues/${pr}/labels")
+	local testing_mode=0
 
-	install_jq
+	# If this function was called by a shunit2 function (with the standard
+	# function name prefix), we're running as part of the unit tests
+	[ "${#FUNCNAME[@]}" -gt 1 ] && grep -q "^test" <<< "${FUNCNAME[1]}" && testing_mode=1
 
-	# Pull the label list out
-	local labels=$(jq '.[].name' <<< $json)
+	if [ "$testing_mode" -eq 1 ]
+	then
+		# Always fail
+		echo "1"
+		return 0
+	else
+		# Pull the label list for the PR
+		# Ideally we'd use a github auth token here so we don't get rate limited, but to do that we would
+		# have to expose the token into the CI scripts, which is then potentially a security hole.
+		local json=$(curl -sL "https://api.github.com/repos/${repo}/issues/${pr}/labels")
 
-	# Check if we have the forcing label set
-	for x in $labels; do
-		# Strip off any surrounding '"'s
-		y=$(sed 's/"//g' <<< $x)
+		install_jq
 
-		if [ "$y" == "$label" ]; then
-			echo "1"
-			return 0
-		fi
-	done
+		# Pull the label list out
+		local labels=$(jq '.[].name' <<< $json)
 
-	echo "0"
-	return 0
+		# Check if we have the forcing label set
+		for x in $labels; do
+			# Strip off any surrounding '"'s
+			y=$(sed 's/"//g' <<< $x)
+
+			[ "$y" == "$label" ] && echo "1" && return 0
+		done
+
+		echo "0"
+		return 0
+	fi
 }
 
 
@@ -352,6 +366,27 @@ check_force_label() {
 	return 0
 }
 
+# Check if we have the 'magic label' that forces a CI run to be skipped
+# for a PR.
+#
+# Returns on stdout as string:
+#  0 - No label found.
+#  1 - Label found - should skip the CI
+check_skip_label() {
+	local label="$skip_label"
+
+	local result=$(check_label "$label")
+	if [ "$result" -eq 1 ]; then
+		local_info "Skipping CI"
+		echo "1"
+		return 0
+	fi
+
+	local_info "No CI skip label found"
+	echo "0"
+	return 0
+}
+
 # Unit tests. Check the YAML file reader functions work as expected.
 testYAMLreader() {
 	repos=()
@@ -462,6 +497,9 @@ testIsLabelSet() {
 
 	result=$(is_label_set "repo" "" "label")
 	assertEquals "0" "$result"
+
+	result=$(is_label_set "repo" "pr" "label")
+	assertEquals "1" "$result"
 }
 
 testCheckLabel() {
@@ -524,6 +562,39 @@ testCheckForceLabel() {
 	                ghprbGhRepository="repo"; \
 	                ghprbPullId=123; \
 			check_force_label)
+	assertEquals "1" "$result"
+}
+
+testCheckSkipLabel() {
+	local result=""
+
+	result=$(unset ghprbGhRepository; check_skip_label)
+	assertEquals "0" "$result"
+
+	result=$(unset ghprbPullId; check_skip_label)
+	assertEquals "0" "$result"
+
+	result=$(unset ghprbGhRepository ghprbPullId; check_skip_label)
+	assertEquals "0" "$result"
+
+	result=$(ghprbGhRepository="repo"; \
+		ghprbPullId=123; \
+		skip_label=""; \
+		check_skip_label)
+	assertEquals "0" "$result"
+
+	# Pretend label not found
+	result=$(is_label_set() { echo "0"; return 0; }; \
+	                ghprbGhRepository="repo"; \
+	                ghprbPullId=123; \
+	                check_skip_label "label")
+	assertEquals "0" "$result"
+
+	# Pretend label found
+	result=$(is_label_set() { echo "1"; return 0; }; \
+	                ghprbGhRepository="repo"; \
+	                ghprbPullId=123; \
+	                check_skip_label "label")
 	assertEquals "1" "$result"
 }
 
@@ -590,6 +661,9 @@ main() {
 	fi
 
 	[ $# -gt 0 ] && help
+
+	local res=$(check_skip_label)
+	[ "$res" -eq 1 ] && exit 0
 
 	info "Checking for any changed files that will prevent CI fastpath return"
 	res=$(can_we_skip)
