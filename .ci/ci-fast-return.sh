@@ -78,7 +78,11 @@ read_yaml() {
 
 # Install jq package
 install_jq() {
-	package="jq"
+	local cmd="jq"
+	local package="$cmd"
+
+	command -v "$cmd" &>/dev/null && return 0 || true
+
 	case "$ID" in
 		centos|rhel)
 			sudo yum -y install "${package}" 1>&5 2>&1
