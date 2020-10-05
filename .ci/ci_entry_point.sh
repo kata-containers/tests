@@ -66,4 +66,8 @@ if [ "${repo_to_test}" == "${tests_repo}" ]; then
 	git rebase "origin/${ghprbTargetBranch}"
 fi
 
-.ci/jenkins_job_build.sh "${repo_to_test}"
+if [ "${CI_JOB}" == "VFIO" ]; then
+	.ci/vfio_jenkins_job_build.sh "${repo_to_test}"
+else
+	.ci/jenkins_job_build.sh "${repo_to_test}"
+fi
