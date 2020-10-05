@@ -259,11 +259,41 @@ case "${CI_JOB}" in
 	export KUBERNETES="yes"
 	export experimental_kernel="true"
 	;;
-
+"VFIO")
+	init_ci_flags
+	export CRIO="no"
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="qemu"
+	export KUBERNETES="yes"
+	export OPENSHIFT="no"
+	;;
 esac
 "${ci_dir_name}/setup.sh"
 
-if [ "${METRICS_CI}" == "false" ]; then
+if [ "${CI_JOB}" == "VFIO" ]; then
+	pushd "${GOPATH}/src/${tests_repo}"
+	ci_dir_name=".ci"
+
+	echo "Installing initrd image"
+	export AGENT_INIT=yes TEST_INITRD=yes OSBUILDER_DISTRO=alpine
+	sudo -E PATH=$PATH "${ci_dir_name}/install_kata_image.sh"
+
+	echo "Installing QEMU experimental to get virtiofsd"
+	sudo -E PATH=$PATH "${ci_dir_name}/install_qemu_experimental.sh"
+
+	echo "Installing experimental kernel"
+	export experimental_kernel=true
+	sudo -E PATH=$PATH "${ci_dir_name}/install_kata_kernel.sh"
+
+	echo "Installing Cloud Hypervisor"
+	sudo -E PATH=$PATH "${ci_dir_name}/install_cloud_hypervisor.sh"
+
+	echo "Running VFIO tests"
+	"${ci_dir_name}/run.sh"
+
+	popd
+elif [ "${METRICS_CI}" == "false" ]; then
 	# Run integration tests
 	#
 	# Note: this will run all classes of tests for ${tests_repo}.
