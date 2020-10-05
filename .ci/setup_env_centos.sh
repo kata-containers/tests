@@ -21,14 +21,8 @@ fi
 # Send error when a package is not available in the repositories
 echo "skip_missing_names_on_install=0" | sudo tee -a /etc/yum.conf
 
-# Check EPEL repository is enabled on CentOS
-if [ -z "$(yum repolist | grep "Extra Packages")" ]; then
-	echo >&2 "ERROR: EPEL repository is not enabled on CentOS."
-	# Enable EPEL repository on CentOS
-	sudo -E yum install -y wget rpm
-	wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-${centos_version}.noarch.rpm
-	sudo -E rpm -ivh epel-release-latest-${centos_version}.noarch.rpm
-fi
+echo "Install EPEL repository"
+sudo -E yum install -y epel-release
 
 # Enable priority to CentOS Base repo in order to
 # avoid perl updating issues
