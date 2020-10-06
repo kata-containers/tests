@@ -29,8 +29,8 @@ description = "measure container average footprint"
 # within (inclusive)
 checkvar = ".\"memory-footprint\".Results | .[] | .average.Result"
 checktype = "mean"
-midval = 283923.70
-minpercent = 25.0
+midval = 272586.75
+minpercent = 5.0
 maxpercent = 5.0
 
 [[metric]]
@@ -42,8 +42,8 @@ description = "measure container average footprint with KSM"
 # within (inclusive)
 checkvar = ".\"memory-footprint-ksm\".Results | .[] | .average.Result"
 checktype = "mean"
-midval = 283939.43
-minpercent = 25.0
+midval = 272546.74
+minpercent = 5.0
 maxpercent = 5.0
 
 [[metric]]
@@ -55,9 +55,9 @@ description = "measure container average of blogbench write"
 # within (inclusive)
 checkvar = ".\"blogbench\".Results | .[] | .write.Result"
 checktype = "mean"
-midval = 3927.30
-minpercent = 20.0
-maxpercent = 20.0
+midval = 1161.25
+minpercent = 10.0
+maxpercent = 10.0
 
 [[metric]]
 name = "blogbench"
@@ -68,6 +68,6 @@ description = "measure container average of blogbench read"
 # within (inclusive)
 checkvar = ".\"blogbench\".Results | .[] | .read.Result"
 checktype = "mean"
-midval = 11488.28
-minpercent = 20.0
-maxpercent = 20.0
+midval = 48860.75
+minpercent = 10.0
+maxpercent = 10.0
