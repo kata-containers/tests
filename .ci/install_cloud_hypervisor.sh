@@ -38,6 +38,7 @@ install_clh() {
 	pushd  $(dirname "${GOPATH}/src/${go_cloud_hypervisor_repo}")
 	# packaging build script expects run in the hypervisor repo parent directory
 	# It will find the hypervisor repo and checkout to the version exported above
+	info "DEBUG install clh"
 	"${GOPATH}/src/${packaging_repo}/static-build/cloud-hypervisor/build-static-clh.sh"
 	sudo install -D "cloud-hypervisor/${clh_bin_name}"  "${clh_install_path}"
 	popd
