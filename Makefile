@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+#
+#
 
 ifneq (,$(wildcard /usr/lib/os-release))
 include /usr/lib/os-release
