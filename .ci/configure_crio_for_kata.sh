@@ -32,6 +32,7 @@ if [ "$minor_crio_version" -ge "18" ]; then
 default_runtime = "kata"
 [crio.runtime.runtimes.kata]
 runtime_path = "/usr/local/bin/kata-runtime"
+privileged_without_host_devices = true
 runtime_root = "/run/vc"
 runtime_type = "oci"
 EOF
