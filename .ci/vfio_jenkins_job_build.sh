@@ -124,7 +124,7 @@ ${environment}
     . /etc/environment
     . /etc/os-release
 
-    [ "$ID" = "fedora" ] || (echo >&2 "$0 only supports Fedora"; exit 1)
+    [ "\$ID" = "fedora" ] || (echo >&2 "$0 only supports Fedora"; exit 1)
 
     echo "${dnf_proxy}" | sudo tee -a /etc/dnf/dnf.conf
 
