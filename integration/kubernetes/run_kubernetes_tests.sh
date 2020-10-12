@@ -68,8 +68,10 @@ if [ "${KATA_HYPERVISOR:-}" == "cloud-hypervisor" ]; then
 	info "pod oom: ${oom_issue}"
 else
 	K8S_TEST_UNION+=("k8s-sysctls.bats")
-	K8S_TEST_UNION+=("k8s-oom.bats")
+	# filter_k8s_test.sh requires a space at the end of the last component
+	K8S_TEST_UNION+=("k8s-oom.bats ")
 fi
+
 # we may need to skip a few test cases when running on non-x86_64 arch
 if [ -f "${cidir}/${arch}/configuration_${arch}.yaml" ]; then
 	config_file="${cidir}/${arch}/configuration_${arch}.yaml"
