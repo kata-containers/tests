@@ -201,8 +201,7 @@ fi
 } || true
 if [ "$ret" -eq 0 ]; then
 	echo "Short circuit fast path skipping the rest of the CI."
-	#TODO: testing - remove next comment
-	#exit 0
+	exit 0
 fi
 
 # Setup Kata Containers Environment
