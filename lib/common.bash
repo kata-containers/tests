@@ -158,6 +158,21 @@ extract_kata_env(){
 	NETMON_PATH="/usr/libexec/kata-containers/kata-netmon"
 }
 
+# Checks that containerd-shim-kata-v2 processes are not running
+check_ctr_shim_processes() {
+        general_processes=( containerd-shim-kata-v2 containerd-shim-kata-qemu-v2 containerd-shim-kata-clh-v2 )
+        for shim in "${general_processes[@]}"; do
+                exit_code=0
+                path=$(which "$shim") || exit_code=$?
+                if [[ exit_code -eq 0 ]]; then
+			path=$(readlink -f $path)
+                        if pgrep -f "$path"; then
+                                die "Found unexpected ${shim} present"
+                        fi
+                fi
+        done
+}
+
 # Checks that processes are not running
 check_processes() {
 	extract_kata_env
@@ -208,6 +223,21 @@ check_runtimes() {
 	if [ ${runtime_number} -ne 0 ]; then
 		die "Unexpected runtime ${RUNTIME} running"
 	fi
+}
+
+# Clean environment, this function will try to remove all
+# stopped/running containers using ctr.
+clean_env_ctr()
+{
+	# If the timeout has not been set, default it to 30s
+	# Docker has a built in 10s default timeout, so make ours
+	# longer than that.
+	KATA_DOCKER_TIMEOUT=${KATA_DOCKER_TIMEOUT:-30}
+	containers_running=$(sudo timeout ${KATA_DOCKER_TIMEOUT} ctr c ls -q)
+
+	for task in $containers_running; do
+		sudo timeout ${KATA_DOCKER_TIMEOUT} ctr t kill $task
+	done
 }
 
 # Clean environment, this function will try to remove all
