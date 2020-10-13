@@ -41,7 +41,6 @@ case "${KATA_HYPERVISOR}" in
 	"cloud-hypervisor")
 		"${cidir}/install_cloud_hypervisor.sh"
 		echo "Installing experimental_qemu to install virtiofsd"
-		export experimental_qemu=true
 		install_qemu
 		;;
 	"firecracker")
