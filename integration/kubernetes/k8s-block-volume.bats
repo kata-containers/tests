@@ -60,6 +60,7 @@ setup() {
 
 teardown() {
 	# Delete k8s resources
+	sudo journalctl -t containerd
 	kubectl delete pod "$pod_name"
 	kubectl delete pvc block-loop-pvc
 	kubectl delete pv block-loop-pv
