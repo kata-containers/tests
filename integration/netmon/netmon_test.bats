@@ -6,6 +6,7 @@
 #
 
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+source /etc/os-release || source /usr/lib/os-release
 
 # Environment variables
 IMAGE="busybox"
@@ -14,6 +15,7 @@ CONTAINER_NAME="containerA"
 PAYLOAD_ARGS="tail -f /dev/null"
 MACHINETYPE="${MACHINETYPE:-pc}"
 netmon_issue="https://github.com/kata-containers/runtime/issues/1486"
+centos_netmon_issue="https://github.com/kata-containers/tests/issues/2933"
 
 setup() {
 	if [ "$KATA_HYPERVISOR" == "nemu" ]; then
@@ -21,6 +23,8 @@ setup() {
 	fi
 
 	[ "$MACHINETYPE" == "q35" ] && skip "test not working see: ${netmon_issue}"
+
+	[ "${ID}" == "centos" ] && skip "test not working see: ${centos_netmon_issue}"
 
 	clean_env
 
@@ -41,6 +45,8 @@ setup() {
 	fi
 
 	[ "$MACHINETYPE" == "q35" ] && skip "test not working see: ${netmon_issue}"
+
+	[ "${ID}" == "centos" ] && skip "test not working see: ${centos_netmon_issue}"
 
 	# Create network
 	docker network create $NETWORK_NAME
@@ -82,6 +88,8 @@ teardown() {
 	fi
 
 	[ "$MACHINETYPE" == "q35" ] && skip "test not working see: ${netmon_issue}"
+
+	[ "${ID}" == "centos" ] && skip "test not working see: ${centos_netmon_issue}"
 
 	docker stop "$CONTAINER_NAME"
 
