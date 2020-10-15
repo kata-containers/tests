@@ -91,6 +91,14 @@ setup_configuration_file() {
 	sudo sed -i -e 's/^#\(enable_debug\).*=.*$/\1 = true/g' \
 		-e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug"/g' \
 		"${SYSCONFIG_FILE}"
+
+	# Cloud-hypervisor workaround
+	# Issue: https://github.com/kata-containers/tests/issues/2963
+	if [ "${hypervisor}" = "cloud-hypervisor" ]; then
+		sudo sed -i -e 's|^default_memory.*|default_memory = 1024|g' \
+		            -e 's|^virtio_fs_cache =.*|virtio_fs_cache = "none"|g' \
+		            "${SYSCONFIG_FILE}"
+	fi
 }
 
 run_test() {
