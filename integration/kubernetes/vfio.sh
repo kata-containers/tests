@@ -168,8 +168,10 @@ main() {
 	# https://github.com/kata-containers/kata-containers/issues/900
 	# run_test initrd "" cloud-hypervisor false
 	# run_test initrd "" cloud-hypervisor false
-	run_test image "" cloud-hypervisor false
-	run_test image "" cloud-hypervisor true
+	# Skip clh
+	# https://github.com/kata-containers/tests/issues/2963
+	# run_test image "" cloud-hypervisor false
+	# run_test image "" cloud-hypervisor true
 	run_test image "q35" qemu false
 	run_test image "q35" qemu true
 	run_test initrd "q35" qemu false
