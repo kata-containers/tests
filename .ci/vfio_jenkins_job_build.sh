@@ -28,6 +28,7 @@ data_dir="${HOME}/k8s-vfio-test"
 ssh_key_file="${data_dir}/key"
 arch=$(uname -m)
 artifacts_dir="${WORKSPACE}/artifacts"
+DEBUG_VFIO="${DEBUG_VFIO:-}"
 
 kill_vms() {
 	sudo killall -9 qemu-system-${arch}
@@ -37,7 +38,20 @@ cleanup() {
 	mkdir -p ${artifacts_dir}
 	sudo chown -R ${USER} ${artifacts_dir}
 	scp_vm ${artifacts_dir}/* ${artifacts_dir} || true
-	kill_vms
+
+	if [ -n "${DEBUG_VFIO}" ]; then
+		cat<<EOF
+#######################################################################
+VFIO VM won't be killed. You can login running the following command:
+
+$ ssh -v -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ${data_dir}/key -p ${vm_port} $USER@${vm_ip}
+
+Don'f forget to turn it off once you're done
+#######################################################################
+EOF
+	else
+		kill_vms
+	fi
 }
 
 create_ssh_key() {
