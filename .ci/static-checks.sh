@@ -464,10 +464,13 @@ static_check_license_headers()
 			--exclude="*.pub" \
 			--exclude="*.service" \
 			--exclude="*.svg" \
+			--exclude="*.drawio" \
 			--exclude="*.toml" \
 			--exclude="*.txt" \
 			--exclude="vendor/*" \
 			--exclude="VERSION" \
+			--exclude="kata_config_version" \
+			--exclude="tools/packaging/kernel/configs" \
 			--exclude="virtcontainers/pkg/firecracker/*" \
 			--exclude="${ignore_clh_generated_code}*" \
 			--exclude="*.xml" \
