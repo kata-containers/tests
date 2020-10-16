@@ -109,13 +109,6 @@ curl -Ls "$crictl_url" | sudo tar xfz - -C /usr/local/bin
 # Change CRI-O configuration options
 crio_config_file="/etc/crio/crio.conf"
 
-# This commit contains changes regarding CRI-O’s default configuration files,
-# so we have to use a new default config path from here.
-# https://github.com/cri-o/cri-o/commit/0f1226b99685f95e83c94dc6668b6452df5056db
-if git merge-base --is-ancestor 0f1226b99685f95e83c94dc6668b6452df5056db HEAD; then
-    crio_config_file="/etc/crio/crio.conf.d/00-default.conf"
-fi
-
 # Change socket format and pause image used for infra containers
 # Needed for cri-o 1.10
 if crio --version | grep '1.10'; then
