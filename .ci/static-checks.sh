@@ -483,6 +483,7 @@ static_check_license_headers()
 			--exclude="target/*" \
 			--exclude="*.patch" \
 			--exclude="*.diff" \
+			--exclude="tools/packaging/static-build/qemu.blacklist" \
 			-EL $extra_args "\<${pattern}\>" \
 			$files || true)
 
