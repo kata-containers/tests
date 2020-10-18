@@ -8,6 +8,7 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -x
 
 
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
@@ -35,12 +36,20 @@ wait_pods_ready()
 	local system_pod=($apiserver_pod $controller_pod $etcd_pod $scheduler_pod $dns_pod)
 	for pod_entry in "${system_pod[@]}"
 	do
+		if [ "$pod_entry" == $dns_pod ]; then
+			pod_name=$(kubectl get pods --all-namespaces|grep coredns |head -n 1|awk '{print $2}')
+			if [ "x$pod_name" != "x" ]; then
+				kubectl describe pod -n kube-system $pod_name
+			fi
+		fi
 		waitForProcess "$system_pod_wait_time" "$sleep_time" "$pods_status | grep $pod_entry"
 	done
 }
 
 cri_runtime="${CRI_RUNTIME:-crio}"
 kubernetes_version=$(get_version "externals.kubernetes.version")
+df -h
+sudo docker images
 
 # store iptables if CI running on bare-metal
 BAREMETAL="${BAREMETAL:-false}"
@@ -79,6 +88,7 @@ fi
 
 echo "Start ${cri_runtime} service"
 sudo systemctl start ${cri_runtime}
+sudo systemctl status ${cri_runtime}
 max_cri_socket_check=5
 wait_time_cri_socket_check=5
 
@@ -92,6 +102,7 @@ for i in $(seq ${max_cri_socket_check}); do
 	echo "Waiting for cri socket ${cri_runtime_socket} (try ${i})"
 done
 
+sudo crictl rmp -a -f || true
 sudo systemctl status "${cri_runtime}" --no-pager
 
 echo "Init cluster using ${cri_runtime_socket}"

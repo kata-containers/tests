@@ -91,11 +91,16 @@ case "${KATA_HYPERVISOR}" in
 		else
 			enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-qemu.toml"
 		fi
-		if [ "$(uname -m)" == "x86_64" ]; then
+		if [ "$arch" == "x86_64" ]; then
 			# Due to a KVM bug, vmx-rdseed-exit must be disabled in QEMU >= 4.2
 			# All CI now uses qemu 5.0+, disabled in the time..
 			# see https://github.com/kata-containers/runtime/pull/2355#issuecomment-625469252
 			sudo sed -i 's|^cpu_features="|cpu_features="-vmx-rdseed-exit,|g' "${runtime_config_path}"
+		fi
+		if [ "$arch" == "aarch64" ]; then
+			# virtio-fs is not working on aarch64 yet.
+			# See https://github.com/kata-containers/tests/pull/2980#issuecomment-711111668
+			sudo sed -i 's|^shared_fs = "virtio-fs"|shared_fs = "virtio-9p"|g' "${runtime_config_path}"
 		fi
 		;;
 	*)

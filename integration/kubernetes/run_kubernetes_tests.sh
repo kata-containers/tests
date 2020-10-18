@@ -23,6 +23,8 @@ fi
 # Using trap to ensure the cleanup occurs when the script exists.
 trap '${kubernetes_dir}/cleanup_env.sh' EXIT
 
+${kubernetes_dir}/cleanup_env.sh || true
+
 # Docker is required to initialize kubeadm, even if we are
 # using cri-o as the runtime.
 systemctl is-active --quiet docker || sudo systemctl start docker

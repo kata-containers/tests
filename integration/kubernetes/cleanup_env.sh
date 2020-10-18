@@ -24,8 +24,10 @@ crio)
 esac
 
 export KUBECONFIG="$HOME/.kube/config"
+kubectl describe node $(hostname)
 sudo -E kubeadm reset -f --cri-socket="${cri_runtime_socket}"
 
+sudo crictl pods -q |xargs sudo crictl rmp -f || true
 sudo systemctl stop "${cri_runtime}"
 
 sudo ip link set dev cni0 down || true
