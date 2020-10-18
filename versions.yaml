@@ -40,7 +40,7 @@ externals:
 
   flannel:
     url: "https://github.com/coreos/flannel"
-    version: "862c448ef28fd890e2ac4e5fddc49e7fe9693b31"
+    version: "v0.13.0-rc2"
 
   xurls:
     description: |
@@ -70,4 +70,4 @@ externals:
   sonobuoy:
     description: "Tool to run kubernetes e2e conformance tests"
     url: "https://github.com/vmware-tanzu/sonobuoy"
-    version: "0.17.2"
+    version: "0.18.5"

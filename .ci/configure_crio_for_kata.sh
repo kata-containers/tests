@@ -16,19 +16,24 @@ crio_config_dir="/etc/crio/crio.conf.d"
 runc_flag="\/usr\/local\/bin\/crio-runc"
 kata_flag="\/usr\/local\/bin\/containerd-shim-kata-v2"
 
-minor_crio_version=$(crio --version | head -1 | cut -d '.' -f2)
+minor_crio_version=$(crio --version | egrep -o "[0-9]+\.[0-9]+\.[0-9]+" | head -1 | cut -d '.' -f2)
 
 if [ "$minor_crio_version" -ge "18" ]; then
 	echo "Configure runtimes map for RuntimeClass feature with drop-in configs"
-	echo "- Set kata as default runtime"
+	echo "- Add kata as alternative runtime"
 	sudo tee -a "$crio_config_dir/99-runtime.conf" > /dev/null <<EOF
 [crio.runtime]
-default_runtime = "kata"
+default_runtime = "runc"
+manage_ns_lifecycle = true
 [crio.runtime.runtimes.kata]
-runtime_path = "/usr/local/bin/kata-runtime"
+runtime_path = "/usr/local/bin/containerd-shim-kata-v2"
 runtime_root = "/run/vc"
-runtime_type = "oci"
+runtime_type = "vm"
 privileged_without_host_devices = true
+[crio.runtime.runtimes.runc]
+runtime_path = "/usr/local/bin/crio-runc"
+runtime_type = "oci"
+runtime_root = "/run/runc"
 EOF
 elif [ "$minor_crio_version" -ge "12" ]; then
 	echo "Configure runtimes map for RuntimeClass feature"

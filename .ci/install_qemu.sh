@@ -50,6 +50,9 @@ uncompress_static_qemu() {
 	local qemu_tar_location="$1"
 	[ -n "$qemu_tar_location" ] || die "provide the location of the QEMU compressed file"
 	sudo tar -xf "${qemu_tar_location}" -C /
+	# verify installed binaries existance
+	ls /usr/libexec/kata-qemu/virtiofsd || return 1
+	ls /usr/bin/qemu-system-x86_64 || return 1
 }
 
 build_and_install_static_qemu() {
@@ -114,6 +117,9 @@ build_and_install_qemu() {
 
 	echo "Install QEMU"
 	sudo -E make install
+	# qemu by default installs virtiofsd under libexec
+	sudo mkdir -p /usr/libexec/kata-qemu/
+	sudo ln -sf ${PREFIX}/libexec/qemu/virtiofsd /usr/libexec/kata-qemu/virtiofsd
 	popd
 }
 

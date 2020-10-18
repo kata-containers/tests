@@ -196,13 +196,18 @@ fi
 # Work around the 'set -e' dying if the check fails by using a bash
 # '{ group command }' to encapsulate.
 {
-	"${tests_repo_dir}/.ci/ci-fast-return.sh"
-	ret=$?
+	if [ "${pr_number:-}"  != "" ]; then
+		echo "Testing a PR check if can fastpath return/skip"
+		"${tests_repo_dir}/.ci/ci-fast-return.sh"
+		ret=$?
+	else
+		echo "not a PR will run all the CI"
+		ret=1
+	fi
 } || true
 if [ "$ret" -eq 0 ]; then
 	echo "Short circuit fast path skipping the rest of the CI."
-	#TODO: testing - remove next comment
-	#exit 0
+	exit 0
 fi
 
 # Setup Kata Containers Environment
@@ -259,11 +264,41 @@ case "${CI_JOB}" in
 	export KUBERNETES="yes"
 	export experimental_kernel="true"
 	;;
-
+"VFIO")
+	init_ci_flags
+	export CRIO="no"
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="qemu"
+	export KUBERNETES="yes"
+	export OPENSHIFT="no"
+	;;
 esac
 "${ci_dir_name}/setup.sh"
 
-if [ "${METRICS_CI}" == "false" ]; then
+if [ "${CI_JOB}" == "VFIO" ]; then
+	pushd "${GOPATH}/src/${tests_repo}"
+	ci_dir_name=".ci"
+
+	echo "Installing initrd image"
+	export AGENT_INIT=yes TEST_INITRD=yes OSBUILDER_DISTRO=alpine
+	sudo -E PATH=$PATH "${ci_dir_name}/install_kata_image.sh"
+
+	echo "Installing QEMU experimental to get virtiofsd"
+	sudo -E PATH=$PATH "${ci_dir_name}/install_qemu_experimental.sh"
+
+	echo "Installing experimental kernel"
+	export experimental_kernel=true
+	sudo -E PATH=$PATH "${ci_dir_name}/install_kata_kernel.sh"
+
+	echo "Installing Cloud Hypervisor"
+	sudo -E PATH=$PATH "${ci_dir_name}/install_cloud_hypervisor.sh"
+
+	echo "Running VFIO tests"
+	"${ci_dir_name}/run.sh"
+
+	popd
+elif [ "${METRICS_CI}" == "false" ]; then
 	# Run integration tests
 	#
 	# Note: this will run all classes of tests for ${tests_repo}.

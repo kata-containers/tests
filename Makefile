@@ -235,6 +235,9 @@ $(INSTALL_TARGETS): install-%: .ci/install_%.sh
 list-install-targets:
 	@echo $(INSTALL_TARGETS) | tr " " "\n"
 
+vfio:
+	bash -f integration/kubernetes/vfio.sh
+
 help:
 	@echo Subsets of the tests can be run using the following specific make targets:
 	@echo " $(UNION)" | sed 's/ /\n\t/g'
@@ -269,4 +272,5 @@ help:
 	test \
 	tracing \
 	vcpus \
+	vfio \
 	vm-factory

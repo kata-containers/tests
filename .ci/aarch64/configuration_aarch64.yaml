@@ -37,3 +37,6 @@ kubernetes:
   - k8s-limit-range
   - k8s-number-cpus
   - k8s-expose-ip
+  - k8s-oom
+  - k8s-block-volume
+  - k8s-memory
