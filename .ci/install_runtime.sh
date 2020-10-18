@@ -102,6 +102,7 @@ case "${KATA_HYPERVISOR}" in
 			# See https://github.com/kata-containers/kata-containers/issues/990
 			sudo sed -i 's|^shared_fs = "virtio-fs"|shared_fs = "virtio-9p"|g' "${runtime_config_path}"
 		fi
+		sudo sed -i 's|^#enable_debug|enable_debug|g' "${runtime_config_path}"
 		;;
 	*)
 		die "failed to enable config for '${KATA_HYPERVISOR}', not supported"

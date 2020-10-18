@@ -189,6 +189,7 @@ check_pods_in_dir() {
 		# Verify that pods were not left
 		pods_number=$(ls ${DIR} | wc -l)
 		if [ ${pods_number} -ne 0 ]; then
+			sudo journalctl -t containerd
             ls ${DIR}
 			die "${pods_number} pods left and found at ${DIR}"
 		fi
