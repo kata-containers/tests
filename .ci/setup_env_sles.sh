@@ -26,11 +26,6 @@ sudo -E zypper refresh  ${leap_repo_name}
 echo "Install perl-IPC-Run"
 sudo -E zypper -n install perl-IPC-Run
 
-echo "Add repo for moreutils"
-moreutils_repo="https://download.opensuse.org/repositories/utilities/SLE_${VERSION//-/_}/utilities.repo"
-sudo -E zypper addrepo --no-gpgcheck ${moreutils_repo}
-sudo -E zypper refresh
-
 echo "Add repo for filesystems"
 filesystems_repo="https://download.opensuse.org/repositories/filesystems/SLE_${VERSION//-/_}/filesystems.repo"
 sudo -E zypper refresh
