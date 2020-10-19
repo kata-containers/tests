@@ -84,6 +84,11 @@ END
 	"CLOUD-HYPERVISOR-K8S-E2E-CONTAINERD-MINIMAL")
 		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
 		;;
+	"CLOUD-HYPERVISOR-K8S-E2E-CONTAINERD-SHIMV2-MINIMAL")
+		echo "Running containerd k8s shimv2 e2e minimal tests"
+		export RUNTIME="containerd-shim-kata-v2"
+		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
+		;;
 	"CLOUD-HYPERVISOR-K8S-E2E-CRIO-FULL")
 		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
 		;;
