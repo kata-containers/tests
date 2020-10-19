@@ -29,4 +29,7 @@ if ! bash ./init.sh; then
 	bash ./init.sh
 fi
 crictl --version
+kubectl get runtimeclass
+kubectl apply -f "${SCRIPT_PATH}/../kubernetes/runtimeclass_workloads/kata-runtimeclass.yaml"
+kubectl describe runtimeclass kata
 kubectl get pods --all-namespaces
