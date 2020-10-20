@@ -23,15 +23,27 @@ RUNTIME="${RUNTIME:-kata-runtime}"
 # File to save ramdisk results
 TMP_FILE=$(mktemp ramdisk.XXXXXXXXXX)
 
-remove_tmp_file() {
+docker_json="/etc/docker/daemon.json"
+docker_json_bk="${docker_json}-ramdisk-backup"
+
+cleanup() {
+	if [ -f "${docker_json_bk}" ];then
+		sudo mv "${docker_json_bk}" "${docker_json}"
+	fi
+	echo "Running teardown"
+	teardown
 	rm -rf $TMP_FILE
 }
 
-trap remove_tmp_file EXIT
+trap cleanup EXIT
 
 setup() {
 	extract_kata_env
 	clean_env
+
+	if [ -f "${docker_json}" ];then
+		sudo mv "${docker_json}" "${docker_json_bk}"
+	fi
 
 	# Stop docker
 	sudo -E systemctl stop docker
@@ -87,5 +99,3 @@ setup
 echo "Running ramdisk test"
 test_ramdisk
 
-echo "Running teardown"
-teardown

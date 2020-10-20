@@ -286,7 +286,7 @@ ExecStart=/usr/bin/dockerd ${docker_options}
 EOF
 	echo "Reloading unit files and starting docker service"
 	sudo systemctl daemon-reload
-	sudo systemctl restart docker
+	sudo systemctl restart docker || sudo journalctl -u docker
 }
 
 # This function configures docker to work by default with the
@@ -327,7 +327,25 @@ configure_docker(){
 				kata_runtime_bin="$(which $runtime)" || \
 					die "$runtime cannot be found in $PATH, please make sure it is installed"
 			fi
-			docker_options="-D --add-runtime $runtime=$kata_runtime_bin --default-runtime=$default_runtime --storage-driver=$storage_driver"
+			docker_options="-D"
+			daemon_json="/etc/docker/daemon.json"
+			if [ ! -f "${daemon_json}" ]; then
+				echo '{"runtimes": {}}' | sudo tee "${daemon_json}"
+			fi
+
+			log_message "Adding runtime ${runtime}=${kata_runtime_bin}"
+			sudo cat "${daemon_json}"  | jq \
+				--arg "runtime" "${runtime}" \
+				--arg "path" "${kata_runtime_bin}" \
+				'.runtimes += { ($runtime) : { "path": $path }}' | \
+				sudo tee "${daemon_json}"
+
+			log_message "Adding storage-driver=${storage_driver}"
+			sudo cat "${daemon_json}"  | jq \
+				--arg "storage" "${storage_driver}" \
+				'. + {"storage-driver": $storage}' | \
+				sudo tee "${daemon_json}"
+
 			modify_docker_service "$docker_options"
 		elif [ "$runtime" == "runc" ]  ; then
 			docker_options="-D --storage-driver=$storage_driver"
