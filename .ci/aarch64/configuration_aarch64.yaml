@@ -19,6 +19,7 @@ test:
 docker:
   Describe:
     - CPUs and CPU set
+    - CPU constraints
     - Update number of CPUs
     - Hot plug CPUs
     - Update CPU constraints
