@@ -573,6 +573,13 @@ func createLoopDevice() (string, string, error) {
 	if len(loopPath) == 0 {
 		return "", "", fmt.Errorf("Unable to get loop device path, stdout: %s, stderr: %s", stdout, stderr)
 	}
+
+	// set loop device to rw using blockdev --setrw
+	setrwLoopDevice := tests.NewCommand("blockdev", "--setrw", loopPath[0])
+	stdout, stderr, exitCode = setrwLoopDevice.Run()
+	if exitCode != 0 {
+		return "", "", fmt.Errorf("exitCode: %d, stdout: %s, stderr: %s ", exitCode, stdout, stderr)
+	}
 	return f.Name(), loopPath[0], nil
 }
 
