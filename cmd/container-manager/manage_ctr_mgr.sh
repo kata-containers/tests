@@ -150,8 +150,17 @@ install_docker(){
 			docker_version_full=$(apt-cache madison $pkg_name | grep "$docker_version" | awk '{print $3}' | head -1)
 			sudo -E apt-get -y install "${pkg_name}=${docker_version_full}"
 		elif [[ "$ID" =~ ^opensuse.*$ ]] || [ "$ID" == "sles" ]; then
+			# We need docker 18.06 for now, which is only provided by an older Leap 15 release
+			# Instead of adding the repo to the system (via zypper addrepo) we just install
+			# the package and its dependencies directly here. Mainly to avoid other packages
+			# from that repo creeping in.
+			leap15_repo="https://download.opensuse.org/repositories/openSUSE:/Leap:/15.0:/Update/standard/rpms/x86_64"
 			sudo zypper removelock docker
-			sudo zypper -n  install 'docker<19.03'
+			sudo zypper -n --no-gpg-checks install \
+                            $leap15_repo/docker-18.06.1_ce-lp150.5.6.1.x86_64.rpm \
+                            $leap15_repo/containerd-1.1.2-lp150.4.3.1.x86_64.rpm \
+                            $leap15_repo/docker-runc-1.0.0rc5+gitr3562_69663f0bd4b6-lp150.5.3.1.x86_64.rpm \
+                            $leap15_repo/docker-libnetwork-0.7.0.1+gitr2664_3ac297bc7fd0-lp150.3.3.1.x86_64.rpm
 			sudo zypper addlock docker
 		fi
 	elif [ "$tag" == "swarm" ]; then
