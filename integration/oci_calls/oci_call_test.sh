@@ -21,6 +21,8 @@ IMAGE="busybox"
 PAYLOAD="tail -f /dev/null"
 NAME="testoci"
 
+DOCKER_VERSION=$(docker version --format '{{.Server.Version}}' | cut -d '.' -f1-2)
+
 function remove_tmp_file {
 	rm "$TMP_FILE"
 }
@@ -75,7 +77,11 @@ function setup() {
 }
 
 function run_oci_call() {
-	local -a oci_call=( "create" "start" "state" )
+	if [ "$(echo "$DOCKER_VERSION>=19.03" | bc)" -eq 1 ]; then
+		local -a oci_call=( "create" "start" )
+	else
+		local -a oci_call=( "create" "start" "state" )
+	fi
 
 	# This sleep is necessary to gather the correct logs
 	sleep 10
@@ -93,7 +99,11 @@ function run_oci_call() {
 }
 
 function stop_oci_call() {
-	local -a oci_call=( "kill" "delete" "state" )
+	if [ "$(echo "$DOCKER_VERSION>=19.03" | bc)" -eq 1 ]; then
+		local -a oci_call=( "kill" "delete" )
+	else
+		local -a oci_call=( "kill" "delete" "state" )
+	fi
 
 	# This sleep is necessary to gather the correct logs
 	sleep 10
@@ -113,10 +123,9 @@ function stop_oci_call() {
 }
 
 function run_oci_call_true() {
-	# Find docker version
-	version=$(docker version --format '{{.Server.Version}}' | cut -d '.' -f1-2)
-	result=$(echo "$version>18.06" | bc)
-	if [ "${result}" -eq 1 ]; then
+	if [ "$(echo "$DOCKER_VERSION>=19.03" | bc)" -eq 1 ]; then
+		local -a oci_call=( "create" "start" "delete" )
+	elif [ "$(echo "$DOCKER_VERSION>18.06" | bc)" -eq 1 ]; then
 		local -a oci_call=( "create" "start" "delete" "state" )
 	else
 		local -a oci_call=( "create" "start" "kill" "delete" "state" )
