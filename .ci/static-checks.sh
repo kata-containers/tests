@@ -484,6 +484,8 @@ static_check_license_headers()
 			--exclude="*.patch" \
 			--exclude="*.diff" \
 			--exclude="tools/packaging/static-build/qemu.blacklist" \
+			--exclude="src/agent/protocols/protos/gogo/*" \
+			--exclude="src/agent/protocols/protos/google/*" \
 			-EL $extra_args "\<${pattern}\>" \
 			$files || true)
 
