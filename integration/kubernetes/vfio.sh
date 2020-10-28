@@ -174,20 +174,20 @@ main() {
 		sleep 5
 	done
 
-	# Skip clh + initrd:
+	# Skip clh/QEMU + initrd:
 	# https://github.com/kata-containers/kata-containers/issues/900
 	# run_test initrd "" cloud-hypervisor false
 	# run_test initrd "" cloud-hypervisor false
+	# run_test initrd "q35" qemu false
+	# run_test initrd "q35" qemu true
+	# run_test initrd "pc" qemu false
+	# run_test initrd "pc" qemu true
 	run_test image "" cloud-hypervisor false
 	run_test image "" cloud-hypervisor true
 	run_test image "q35" qemu false
 	run_test image "q35" qemu true
-	run_test initrd "q35" qemu false
-	run_test initrd "q35" qemu true
 	run_test image "pc" qemu false
 	run_test image "pc" qemu true
-	run_test initrd "pc" qemu false
-	run_test initrd "pc" qemu true
 }
 
 main $@
