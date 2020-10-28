@@ -115,7 +115,7 @@ run_test() {
 
 	setup_configuration_file "$image_type" "$machine_type" "$hypervisor" "$sandbox_cgroup_only"
 
-	sudo -E kubectl apply -f "${SCRIPT_DIR}/runtimeclass_workloads/vfio.yaml"
+	sudo -E kubectl create -f "${SCRIPT_DIR}/runtimeclass_workloads/vfio.yaml"
 
 	pod_name=vfio
 	sudo -E kubectl wait --for=condition=Ready pod "${pod_name}"
@@ -127,6 +127,8 @@ run_test() {
 	else
 		info "Success: found 2 network interfaces"
 	fi
+
+	sudo -E kubectl delete -f "${SCRIPT_DIR}/runtimeclass_workloads/vfio.yaml"
 }
 
 main() {
