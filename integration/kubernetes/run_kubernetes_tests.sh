@@ -16,10 +16,6 @@ arch="$(uname -m)"
 
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 
-if [ "$KATA_HYPERVISOR" == "firecracker" ]; then
-	die "Kubernetes tests will not run with $KATA_HYPERVISOR"
-fi
-
 # Using trap to ensure the cleanup occurs when the script exists.
 trap '${kubernetes_dir}/cleanup_env.sh' EXIT
 

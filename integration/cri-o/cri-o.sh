@@ -15,6 +15,7 @@ source /etc/os-release || source /usr/lib/os-release
 
 export JOBS="${JOBS:-$(nproc)}"
 export CONTAINER_RUNTIME="${CONTAINER_RUNTIME:-$RUNTIME}"
+KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 
 # Skip the cri-o tests if TEST_CRIO is not true
 # and we are on a CI job.
@@ -80,7 +81,7 @@ done
 IFS=$OLD_IFS
 
 # run CRI-O tests using devicemapper on ubuntu
-if [ "$ID" == "ubuntu" ]; then
+if [ "$ID" == "ubuntu" ] || [ "$KATA_HYPERVISOR" == "firecracker" ]; then
 	if [ ! -b "${LVM_DEVICE}" ]; then
 		info "Creating a loop device to use it as LVM device"
 		# create a loop device and use it as lvm device
