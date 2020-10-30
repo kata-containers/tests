@@ -40,6 +40,8 @@ HugePage/AB
 Hyp
 hypercall/A
 hypervisor/A
+implementer/A
+implementor/A
 iptables
 Kat/AB		# "Kat Herding Team" :)
 keypair/A
@@ -74,6 +76,7 @@ refactor/ACD
 remediate
 repo/A
 runtime/AB
+serverless
 signoff/A
 stalebot/B
 startup
