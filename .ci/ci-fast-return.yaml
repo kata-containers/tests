@@ -36,6 +36,8 @@ common:
                 *\.travis\.yml
                 .*\.txt
                 ^VERSION$
+                cmd/check-spelling/data/.*\.aff$
+                cmd/check-spelling/data/.*\.txt$
         check_patterns:
 
 documentation:
