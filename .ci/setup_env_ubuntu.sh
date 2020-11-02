@@ -27,7 +27,7 @@ declare -A minimal_packages=( \
 )
 
 declare -A packages=( \
-	[kata_containers_dependencies]="libtool automake autotools-dev autoconf bc libpixman-1-dev coreutils curl" \
+	[kata_containers_dependencies]="libtool automake autotools-dev autoconf bc libpixman-1-dev coreutils curl expect" \
 	[qemu_dependencies]="libcap-dev libattr1-dev libcap-ng-dev librbd-dev ninja-build" \
 	[kernel_dependencies]="libelf-dev flex" \
 	[crio_dependencies]="libglib2.0-dev libseccomp-dev libapparmor-dev libgpgme11-dev thin-provisioning-tools" \

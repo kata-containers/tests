@@ -25,7 +25,7 @@ declare -A minimal_packages=( \
 )
 
 declare -A packages=( \
-	[general_dependencies]="curl git libcontainers-common libdevmapper1_03 util-linux" \
+	[general_dependencies]="curl git libcontainers-common libdevmapper1_03 util-linux expect" \
 	[kata_containers_dependencies]="libtool automake autoconf bc perl-Alien-SDL libpixman-1-0-devel coreutils python2-pkgconfig" \
 	[qemu_dependencies]="libcap-devel libattr1 libcap-ng-devel librbd-devel ninja" \
 	[kernel_dependencies]="libelf-devel flex glibc-devel-static thin-provisioning-tools" \
