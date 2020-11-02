@@ -37,7 +37,7 @@ declare -A minimal_packages=( \
 )
 
 declare -A packages=( \
-	[general_dependencies]="curl git patch"
+	[general_dependencies]="curl git patch expect"
 	[kata_containers_dependencies]="libtool automake autoconf bc libpixman-1-0-devel coreutils" \
 	[qemu_dependencies]="libcap-devel libattr1 libcap-ng-devel librbd-devel ninja" \
 	[kernel_dependencies]="libelf-devel flex" \
