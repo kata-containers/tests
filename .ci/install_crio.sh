@@ -154,7 +154,7 @@ sudo mkdir -p "${kubelet_service_dir}"
 
 cat <<EOF| sudo tee "${kubelet_service_dir}/0-crio.conf"
 [Service]
-Environment="KUBELET_EXTRA_ARGS=--container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///var/run/crio/crio.sock"
+Environment="KUBELET_EXTRA_ARGS=--cgroup-driver=systemd --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///var/run/crio/crio.sock"
 EOF
 
 echo "Reload systemd services"
