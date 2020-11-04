@@ -62,7 +62,7 @@ create_user_data() {
 	ssh_pub_key="$(cat "${ssh_pub_key_file}")"
 	dnf_proxy=""
 	service_proxy=""
-	docker_user_proxy=""
+	docker_user_proxy="{}"
 	environment=$(env | egrep "ghprb|WORKSPACE|KATA|GIT|JENKINS|_PROXY|_proxy" | \
 	                    sed -e "s/'/'\"'\"'/g" \
 	                        -e "s/\(^[[:alnum:]_]\+\)=/\1='/" \
