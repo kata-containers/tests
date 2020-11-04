@@ -19,7 +19,9 @@ SYSCONFIG_FILE="/etc/kata-containers/configuration.toml"
 trap cleanup EXIT
 cleanup() {
 	sudo rm -rf "${SYSCONFIG_FILE}"
-	${SCRIPT_DIR}/cleanup_env.sh
+	# Don't fail the test if cleanup fails
+	# VM will be destroyed anyway.
+	${SCRIPT_DIR}/cleanup_env.sh || true
 }
 
 setup_configuration_file() {
