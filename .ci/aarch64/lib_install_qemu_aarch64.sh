@@ -61,7 +61,7 @@ build_and_install_qemu() {
         [ -d "ui/keycodemapdb" ] || git clone  https://github.com/qemu/keycodemapdb.git --depth 1 ui/keycodemapdb
 
         # Apply required patches
-        QEMU_PATCHES_PATH="${PACKAGING_DIR}/obs-packaging/qemu-aarch64/patches"
+        QEMU_PATCHES_PATH="${PACKAGING_DIR}/qemu/patches/5.1.x"
         for patch in ${QEMU_PATCHES_PATH}/*.patch; do
                 echo "Applying patch: $patch"
                 patch -p1 <"$patch"
@@ -79,5 +79,7 @@ build_and_install_qemu() {
             # Add link from /usr/local/bin to /usr/bin
             sudo ln -sf $(command -v qemu-system-${QEMU_ARCH}) "/usr/bin/qemu-system-${QEMU_ARCH}"
         fi
+	sudo mkdir -p /usr/libexec/kata-qemu/
+	sudo ln -sf $(dirname ${qemu_bin})/../libexec/qemu/virtiofsd /usr/libexec/kata-qemu/virtiofsd
         popd
 }

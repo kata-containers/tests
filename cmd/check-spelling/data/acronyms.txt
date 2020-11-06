@@ -19,6 +19,7 @@ CVE/AB
 DAX/AB
 DMA/AB
 DPDK/AB
+FaaS/AB
 FS/AB
 fs/B	# For terms like "virtio-fs"
 GCE/AB

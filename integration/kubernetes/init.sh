@@ -52,8 +52,6 @@ if [ "${BAREMETAL}" == true ]; then
 	iptables-save > "$iptables_cache"
 fi
 
-[ "$ID" == "fedora" ] && bash "${SCRIPT_PATH}/../../.ci/install_kubernetes.sh"
-
 case "${cri_runtime}" in
 containerd)
 	cri_runtime_socket="/run/containerd/containerd.sock"

@@ -114,13 +114,6 @@ curl -Ls "$crictl_url" | sudo tar xfz - -C /usr/local/bin
 # Change CRI-O configuration options
 crio_config_file="/etc/crio/crio.conf"
 
-# This commit contains changes regarding CRI-O’s default configuration files,
-# so we have to use a new default config path from here.
-# https://github.com/cri-o/cri-o/commit/0f1226b99685f95e83c94dc6668b6452df5056db
-if git merge-base --is-ancestor 0f1226b99685f95e83c94dc6668b6452df5056db HEAD; then
-    crio_config_file="/etc/crio/crio.conf.d/00-default.conf"
-fi
-
 # Change socket format and pause image used for infra containers
 # Needed for cri-o 1.10
 if crio --version | grep '1.10'; then
@@ -144,11 +137,6 @@ done
 make BUILDTAGS="$(IFS=" "; echo "${build_union[*]}")"
 sudo -E install -D -m0755 runc "/usr/local/bin/crio-runc"
 popd
-
-echo "Set manage_network_ns_lifecycle to true"
-network_ns_flag="manage_network_ns_lifecycle"
-sudo sed -i "/\[crio.runtime\]/a$network_ns_flag = true" "$crio_config_file"
-sudo sed -i 's/manage_network_ns_lifecycle = false/#manage_network_ns_lifecycle = false/' "$crio_config_file"
 
 echo "Add docker.io registry to pull images"
 # Matches cri-o 1.10 file format

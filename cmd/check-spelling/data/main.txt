@@ -12,6 +12,7 @@ backport/ACD
 backtick/AB
 backtrace
 bootloader/AB
+centric/B
 checkbox/A
 chipset/AB
 codebase
@@ -19,6 +20,7 @@ commandline
 config/AB
 crypto		# Cryptography
 DaemonSet/AB
+deliverable/AB
 devicemapper/B
 dialer
 dialog/A
@@ -38,6 +40,8 @@ HugePage/AB
 Hyp
 hypercall/A
 hypervisor/A
+implementer/A
+implementor/A
 iptables
 Kat/AB		# "Kat Herding Team" :)
 keypair/A
@@ -53,11 +57,14 @@ nack/A
 namespace/ABCD
 Nvidia
 OS/AB
+onwards
 parallelize/AC
 passthrough
 patchset/A
+pluggable/AB
 portmapper/AB
 portmapping/A
+pre
 prestart
 programmatically
 proxying
@@ -69,6 +76,7 @@ refactor/ACD
 remediate
 repo/A
 runtime/AB
+serverless
 signoff/A
 stalebot/B
 startup
@@ -78,6 +86,7 @@ teardown
 templating
 timestamp/AB
 tracability
+ttRPC/B
 udev/B
 uevent/AB
 unbootable
@@ -98,3 +107,4 @@ webhook/AB
 whitespace
 workflow/A
 Xeon/A
+netlink
