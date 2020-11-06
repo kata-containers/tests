@@ -7,7 +7,8 @@
 # are not running correctly using kata-runtime.
 
 containerd:
-  - \[sig-api-machinery\] Aggregator should be able to support the 1.17 Sample API Server using the current Aggregator \[Conformance\]
+  - \[sig-api-machinery\] Aggregator Should be able to support the 1.17 Sample API Server using the current Aggregator \[Conformance\]
+  - Daemon set \[Serial\] should rollback without unnecessary restarts
 
 crio:
   - Daemon set \[Serial\] should rollback without unnecessary restarts
