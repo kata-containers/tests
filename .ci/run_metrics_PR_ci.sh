@@ -134,7 +134,8 @@ teardown() {
 	fi
 }
 
+trap teardown EXIT QUIT KILL
+
 init
 run
 check
-teardown
