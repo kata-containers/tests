@@ -7,9 +7,10 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
-issue="https://github.com/kata-containers/tests/issues/2574"
+issue="https://github.com/cri-o/cri-o/issues/4353"
 
 setup() {
+	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working with CRI-O - see: ${issue}"
 	export KUBECONFIG="$HOME/.kube/config"
 	pod_name="test-env"
 	get_pod_config_dir
@@ -18,6 +19,7 @@ setup() {
 }
 
 @test "Copy file in a pod" {
+	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working with CRI-O - see: ${issue}"
 	# Create pod
 	kubectl create -f "${pod_config_dir}/pod-env.yaml"
 
@@ -35,6 +37,7 @@ setup() {
 }
 
 @test "Copy from pod to host" {
+	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working with CRI-O - see: ${issue}"
 	# Create pod
 	kubectl create -f "${pod_config_dir}/pod-env.yaml"
 
@@ -52,6 +55,7 @@ setup() {
 }
 
 teardown() {
+	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working with CRI-O - see: ${issue}"
 	rm -f "$file_name"
 	kubectl delete pod "$pod_name"
 }
