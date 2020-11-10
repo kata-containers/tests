@@ -113,6 +113,12 @@ sudo cp "/etc/kubernetes/admin.conf" "$HOME/.kube/config"
 sudo chown $(id -u):$(id -g) "$HOME/.kube/config"
 export KUBECONFIG="$HOME/.kube/config"
 
+# enable debug log for kubelet
+sudo sed -i 's/.$/ --v=4"/' /var/lib/kubelet/kubeadm-flags.env
+echo "Kubelet options:"
+sudo cat /var/lib/kubelet/kubeadm-flags.env
+sudo systemctl daemon-reload && sudo systemctl restart kubelet
+
 kubectl get nodes
 kubectl get pods
 
