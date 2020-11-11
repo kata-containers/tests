@@ -157,6 +157,7 @@ collect_logs()
 		prefixes+=" ${vc_throttler_log_prefix}"
 		prefixes+=" ${kernel_log_prefix}"
 		prefixes+=" ${virtiofs_log_prefix}"
+		prefixes+=" ${kata_hypervisor_log_prefix}"
 
 		[ "${have_collect_script}" = "yes" ] && prefixes+=" ${collect_data_log_prefix}"
 
