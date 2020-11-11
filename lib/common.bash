@@ -189,17 +189,31 @@ check_pods_in_dir() {
 		# Verify that pods were not left
 		pods_number=$(ls ${DIR} | wc -l)
 		if [ ${pods_number} -ne 0 ]; then
-            ls ${DIR}
-			die "${pods_number} pods left and found at ${DIR}"
+            ls -R ${DIR}
+			echo "${pods_number} pods left and found at ${DIR}"
+			return ${pods_number}
 		fi
 	else
 		echo "Not ${DIR} directory found"
+		return 0
 	fi
 }
 
 # Checks that pods were not left
 check_pods() {
-	check_pods_in_dir ${VC_POD_DIR}
+	for i in {1..5}
+	do
+		check_pods_in_dir ${VC_POD_DIR}
+		r=$?
+		if [ "$r" -ne "0" ]
+		then
+			die "${r} pods left and found at ${VC_POD_DIR}"
+			sleep 3
+		else
+			return 0
+		fi
+	done
+
 }
 
 # Check that runtimes are not running, they should be transient
