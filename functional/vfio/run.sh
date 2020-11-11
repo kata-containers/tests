@@ -109,7 +109,6 @@ EOF
 
 setup_configuration_file() {
 	local qemu_config_file="configuration-qemu.toml"
-	local qemu_virtiofs_config_file="configuration-qemu-virtiofs.toml"
 	local clh_config_file="configuration-clh.toml"
 	local image_file="/usr/share/kata-containers/kata-containers.img"
 	local initrd_file="/usr/share/kata-containers/kata-containers-initrd.img"
@@ -120,8 +119,6 @@ setup_configuration_file() {
 
 		if [ "$HYPERVISOR" = "qemu" ]; then
 			config_filename="${qemu_config_file}"
-		elif [ "$HYPERVISOR" = "qemu-virtiofs" ]; then
-			config_filename="${qemu_virtiofs_config_file}"
 		elif [ "$HYPERVISOR" = "clh" ]; then
 			config_filename="${clh_config_file}"
 		fi
