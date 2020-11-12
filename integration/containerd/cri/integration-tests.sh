@@ -10,6 +10,9 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 
+SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
+source "${SCRIPT_PATH}/../../../lib/common.bash"
+
 # runc is installed in /usr/local/sbin/ add that path
 export PATH="$PATH:/usr/local/sbin"
 
@@ -72,7 +75,6 @@ ci_config() {
 		fi
 	fi
 
-	SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 	if [ -n "${CI}" ]; then
 		(
 		echo "Install cni config"
@@ -213,6 +215,8 @@ EOF
 }
 
 main() {
+	echo "00000000000000000"
+	check_pods
 
 	info "Stop crio service"
 	systemctl is-active --quiet crio && sudo systemctl stop crio
@@ -237,6 +241,9 @@ main() {
 	info "containerd(cri): testing using runtime: ${containerd_runtime_test}"
 
 	create_containerd_config "${containerd_runtime_test}"
+	echo "111111111111111111111111"
+	sudo cp ${REPORT_DIR}/containerd.log /tmp/cri-containerd.log
+	check_pods
 
 	info "containerd(cri): Running cri-tools"
 	sudo -E PATH="${PATH}:/usr/local/bin" \
@@ -246,6 +253,10 @@ main() {
 		REPORT_DIR="${REPORT_DIR}" \
 		CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE" \
 		make -e test-cri
+
+	echo "2222222222222222222"
+	sudo cp ${REPORT_DIR}/containerd.log /tmp/cri-containerd.log
+	check_pods
 
 	info "containerd(cri): Running test-integration"
 
@@ -277,8 +288,17 @@ main() {
 			CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE" \
 			make -e test-integration
 	done
+	echo "33333333333333333333"
+	sudo cp ${REPORT_DIR}/containerd.log /tmp/cri-containerd.log
+	check_pods
 
 	TestKilledVmmCleanup
+
+	sudo cp ${REPORT_DIR}/containerd.log /tmp/cri-containerd.log
+
+	# Checks that pods were not left
+	echo "4444444444444444444"
+	check_pods
 
 	popd
 }

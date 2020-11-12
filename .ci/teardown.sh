@@ -32,6 +32,10 @@ collect_logs()
 	local -r containerd_log_path="${log_copy_dest}/${containerd_log_filename}"
 	local -r containerd_log_prefix="containerd_"
 
+	local -r cri_containerd_log_filename="cri-containerd.log"
+	local -r cri_containerd_log_path="${log_copy_dest}/${cri_containerd_log_filename}"
+	local -r cri_containerd_log_prefix="cri_containerd_"
+
 	local -r crio_log_filename="crio.log"
 	local -r crio_log_path="${log_copy_dest}/${crio_log_filename}"
 	local -r crio_log_prefix="crio_"
@@ -94,6 +98,9 @@ collect_logs()
 		sudo journalctl --no-pager -t kernel > "${kernel_log_path}"
 		sudo journalctl --no-pager -t virtiofsd > "${virtiofs_log_path}"
 
+		#### FIXME
+		sudo mv /tmp/cri-containerd.log  ${cri_containerd_log_path} || true
+
 		[ "${have_collect_script}" = "yes" ] && sudo -E PATH="$PATH" "${collect_script_path}" > "${collect_data_log_path}"
 
 		tracing_log_directory="/var/log/kata-tests/logs/traces"
@@ -111,6 +118,7 @@ collect_logs()
 		split -b "${subfile_size}" -d "${ksm_throttler_log_path}" "${ksm_throttler_log_prefix}"
 		split -b "${subfile_size}" -d "${vc_throttler_log_path}" "${vc_throttler_log_prefix}"
 		split -b "${subfile_size}" -d "${containerd_log_path}" "${containerd_log_prefix}"
+		split -b "${subfile_size}" -d "${cri_containerd_log_path}" "${cri_containerd_log_prefix}"
 		split -b "${subfile_size}" -d "${crio_log_path}" "${crio_log_prefix}"
 		split -b "${subfile_size}" -d "${docker_log_path}" "${docker_log_prefix}"
 		split -b "${subfile_size}" -d "${kubelet_log_path}" "${kubelet_log_prefix}"
@@ -126,6 +134,7 @@ collect_logs()
 		prefixes+=" ${containerd_shim_kata_v2_log_prefix}"
 		prefixes+=" ${kata_runtime_log_prefix}"
 		prefixes+=" ${containerd_log_prefix}"
+		prefixes+=" ${cri_containerd_log_prefix}"
 		prefixes+=" ${crio_log_prefix}"
 		prefixes+=" ${docker_log_prefix}"
 		prefixes+=" ${kubelet_log_prefix}"
