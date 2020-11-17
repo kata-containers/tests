@@ -40,6 +40,9 @@ export SHAREDIR
 
 USE_VSOCK="${USE_VSOCK:-no}"
 
+# Whether running on OpenShift CI or not.
+OPENSHIFT_CI="${OPENSHIFT_CI:-false}"
+
 runtime_config_path="${SYSCONFDIR}/kata-containers/configuration.toml"
 
 PKGDEFAULTSDIR="${SHAREDIR}/defaults/kata-containers"
@@ -110,13 +113,16 @@ if [ "$USE_VSOCK" == "yes" ]; then
 	echo "Configure use of VSOCK in ${runtime_config_path}"
 	sudo sed -i -e 's/^#use_vsock.*/use_vsock = true/' "${runtime_config_path}"
 
-	vsock_module="vhost_vsock"
-	echo "Check if ${vsock_module} is loaded"
-	if lsmod | grep -q "$vsock_module" &> /dev/null ; then
-		echo "Module ${vsock_module} is already loaded"
-	else
-		echo "Load ${vsock_module} module"
-		sudo modprobe "${vsock_module}"
+	# On OpenShift CI the vhost module should not be loaded on build time.
+	if [ "$OPENSHIFT_CI" == "false" ]; then
+		vsock_module="vhost_vsock"
+		echo "Check if ${vsock_module} is loaded"
+		if lsmod | grep -q "$vsock_module" &> /dev/null ; then
+			echo "Module ${vsock_module} is already loaded"
+		else
+			echo "Load ${vsock_module} module"
+			sudo modprobe "${vsock_module}"
+		fi
 	fi
 fi
 
