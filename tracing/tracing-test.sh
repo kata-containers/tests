@@ -24,7 +24,8 @@ DEBUG_KEEP_JAEGER=${DEBUG_KEEP_JAEGER:-}
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 source "${SCRIPT_PATH}/../lib/common.bash"
 
-RUNTIME=${RUNTIME:-kata-runtime}
+RUNTIME="io.containerd.kata.v2"
+CONTAINER_IMAGE="quay.io/prometheus/busybox:latest"
 
 TRACE_LOG_DIR=${TRACE_LOG_DIR:-${KATA_TESTS_LOGDIR}/traces}
 
@@ -75,7 +76,8 @@ cleanup()
 # Run an operation to generate Jaeger trace spans
 create_traces()
 {
-	sudo docker run -i --runtime "$RUNTIME" --net=none --rm busybox true
+	sudo ctr image pull "$CONTAINER_IMAGE"
+	sudo ctr run --runtime "$RUNTIME" --rm "$CONTAINER_IMAGE" tracing-test true
 }
 
 start_jaeger()
@@ -286,6 +288,9 @@ check_jaeger_status()
 
 setup()
 {
+	# containerd must be running in order to use ctr to generate traces
+	sudo systemctl restart containerd
+
 	start_jaeger
 
 	"${SCRIPT_PATH}/../.ci/configure_tracing_for_kata.sh" enable
@@ -330,8 +335,7 @@ run_tests()
 	#   when create_traces() is called a single time.
 	local -a services
 
-	services+=("kata-runtime:10")
-	services+=("kata-shim:4")
+	services+=("kata:4")
 
 	create_traces
 
