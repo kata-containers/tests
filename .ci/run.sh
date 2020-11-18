@@ -125,8 +125,26 @@ END
 		echo "INFO: Running kubernetes tests ($PWD)"
 		sudo -E PATH="$PATH" bash -c "make kubernetes"
 
-		echo "INFO: Running shimv2 tests ($PWD)"
-		sudo -E PATH="$PATH" bash -c "make shimv2"
+		;;
+	"VIRTIOFS_STABLE")
+		echo "INFO: Running docker tests ($PWD)"
+		sudo -E PATH="$PATH" bash -c "make docker"
+
+		echo "INFO: Running crio tests ($PWD)"
+		sudo -E PATH="$PATH" bash -c "make crio"
+
+		echo "INFO: Running kubernetes tests ($PWD)"
+		sudo -E PATH="$PATH" bash -c "make kubernetes"
+		;;
+	"VIRTIOFS_EXPERIMENTAL")
+		echo "INFO: Running docker tests ($PWD)"
+		sudo -E PATH="$PATH" bash -c "make docker"
+
+		echo "INFO: Running crio tests ($PWD)"
+		sudo -E PATH="$PATH" bash -c "make crio"
+
+		echo "INFO: Running kubernetes tests ($PWD)"
+		sudo -E PATH="$PATH" bash -c "make kubernetes"
 		;;
 	*)
 		echo "INFO: Running checks"

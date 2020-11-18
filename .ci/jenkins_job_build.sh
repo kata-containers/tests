@@ -46,6 +46,9 @@ init_ci_flags() {
 	# Use experimental kernel
 	# Values: true|false
 	export experimental_kernel="false"
+	# Use experimental qemu
+	# Values: true|false
+	export experimental_qemu="true"
 	# Run the kata-check checks
 	export RUN_KATA_CHECK="true"
 
@@ -227,6 +230,17 @@ case "${CI_JOB}" in
 	export experimental_kernel="true"
 	export METRICS_CI="true"
 	export METRICS_CI_PROFILE="virtiofs-baremetal"
+	;;
+"VIRTIOFS_STABLE")
+	init_ci_flags
+	export experimental_qemu="false"
+	export experimental_kernel="false"
+	export DOCKERFILE
+	;;
+"VIRTIOFS_EXPERIMENTAL")
+	init_ci_flags
+	export experimental_qemu="true"
+	export experimental_kernel="true"
 	;;
 "SANDBOX_CGROUP_ONLY")
 	# Used by runtime makefile to enable option on intall
