@@ -117,7 +117,7 @@ if [ "$USE_VSOCK" == "yes" ]; then
 	if [ "$OPENSHIFT_CI" == "false" ]; then
 		vsock_module="vhost_vsock"
 		echo "Check if ${vsock_module} is loaded"
-		if lsmod | grep -q "$vsock_module" &> /dev/null ; then
+		if lsmod | grep -q "\<${vsock_module}\>" ; then
 			echo "Module ${vsock_module} is already loaded"
 		else
 			echo "Load ${vsock_module} module"
