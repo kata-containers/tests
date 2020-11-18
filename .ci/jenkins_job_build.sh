@@ -253,6 +253,12 @@ case "${CI_JOB}" in
 		export TEST_CRIO="true"
 	fi
 	;;
+"CRIO_K8S_COMPLETE")
+	init_ci_flags
+	export CRI_RUNTIME="crio"
+	export CRIO="yes"
+	export KUBERNETES="yes"
+	;;
 "CRIO_K8S_MINIMAL")
 	init_ci_flags
 	export CRI_RUNTIME="crio"
