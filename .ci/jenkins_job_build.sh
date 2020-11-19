@@ -280,6 +280,15 @@ case "${CI_JOB}" in
 	export KUBERNETES="yes"
 	export experimental_kernel="true"
 	;;
+"FIRECRACKER")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export CRIO="no"
+	export KATA_HYPERVISOR="firecracker"
+	export KUBERNETES="yes"
+	export OPENSHIFT="no"
+;;
 "VFIO")
 	init_ci_flags
 	export CRIO="no"

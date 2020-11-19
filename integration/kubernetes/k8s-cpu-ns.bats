@@ -7,8 +7,11 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+fc_limitations="https://github.com/kata-containers/documentation/issues/351"
 
 setup() {
+	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
+
 	export KUBECONFIG="$HOME/.kube/config"
 	pod_name="constraints-cpu-test"
 	container_name="first-cpu-container"
@@ -23,6 +26,8 @@ setup() {
 }
 
 @test "Check CPU constraints" {
+	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
+
 	# Create the pod
 	kubectl create -f "${pod_config_dir}/pod-cpu.yaml"
 
@@ -59,5 +64,7 @@ setup() {
 }
 
 teardown() {
+	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
+
 	kubectl delete pod "$pod_name"
 }
