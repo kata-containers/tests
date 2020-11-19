@@ -213,9 +213,10 @@ pull_fedora_cloud_image() {
 	# disable selinux
 	sudo sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /mnt/etc/selinux/config
 
-	# add intel_iommu=on to the guest kernel command line
-	sudo sed -i 's|default_kernelopts="|default_kernelopts="intel_iommu |g' /mnt/boot/grub2/grub.cfg
-	sudo sed -i 's|kernelopts=|kernelopts=intel_iommu=on |g' /mnt/boot/grub2/grubenv
+	# Fix docker and enable iommu
+	kernelopts="intel_iommu=on systemd.unified_cgroup_hierarchy=0 selinux=0 "
+	sudo sed -i 's|kernelopts="|kernelopts="'"${kernelopts}"'|g' /mnt/boot/grub2/grub.cfg
+	sudo sed -i 's|kernelopts=|kernelopts='"${kernelopts}"'|g' /mnt/boot/grub2/grubenv
 
 	# cleanup
 	sudo umount -R /mnt/
