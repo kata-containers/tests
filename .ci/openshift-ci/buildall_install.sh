@@ -21,6 +21,9 @@ source "${cidir}/lib.sh"
 export DESTDIR="$1"
 info "Build and install Kata Containers at ${DESTDIR}"
 
+# Let the scripts know it is in OpenShift CI context.
+export OPENSHIFT_CI="true"
+
 # This script is evoked within a variant of CentOS container image in the
 # OpenShift Build process. So it was implemented for running in CentOS.
 [ "$ID" != "centos" ] && die "Expect the build root to be CentOS"
@@ -44,9 +47,7 @@ export experimental_kernel="false"
 export TEST_INITRD="yes"
 
 # Configure to use vsock.
-# TODO: install_runtime.sh will try to load the vsock module and the script
-# fail. See https://github.com/kata-containers/tests/issues/2614
-#export USE_VSOCK="yes"
+export USE_VSOCK="yes"
 
 # Configure the QEMU machine type.
 export MACHINETYPE="q35"
