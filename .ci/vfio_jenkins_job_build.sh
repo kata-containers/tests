@@ -191,10 +191,10 @@ create_config_iso() {
 pull_fedora_cloud_image() {
 	fedora_img="$1"
 	fedora_img_cache="${fedora_img}.cache"
-	fedora_version=30
+	fedora_version=32
 
 	if [ ! -f "${fedora_img_cache}" ]; then
-		curl -Lk "https://download.fedoraproject.org/pub/fedora/linux/releases/${fedora_version}/Cloud/${arch}/images/Fedora-Cloud-Base-${fedora_version}-1.2.${arch}.raw.xz" -o "${fedora_img_cache}.xz"
+		curl -Lk "https://download.fedoraproject.org/pub/fedora/linux/releases/${fedora_version}/Cloud/${arch}/images/Fedora-Cloud-Base-${fedora_version}-1.6.${arch}.raw.xz" -o "${fedora_img_cache}.xz"
 		xz -f -d "${fedora_img_cache}.xz"
 		sync
 	fi
