@@ -65,7 +65,7 @@ create_user_data() {
 	ssh_pub_key="$(cat "${ssh_pub_key_file}")"
 	dnf_proxy=""
 	docker_proxy=""
-	docker_user_proxy=""
+	docker_user_proxy="{}"
 	environment=$(env | egrep "ghprb|WORK|KATA|GIT|JENKINS|_PROXY|_proxy" | \
 	                    sed -e "s/'/'\"'\"'/g" \
 	                        -e "s/\(^[[:alnum:]_]\+\)=/\1='/" \
@@ -118,6 +118,9 @@ ${environment}
 - content: |
     ${docker_user_proxy}
   path: ${HOME}/.docker/config.json
+- content: |
+    ${docker_user_proxy}
+  path: /root/.docker/config.json
 - content: |
     set -x
     set -o errexit
