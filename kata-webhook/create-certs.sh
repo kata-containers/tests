@@ -10,7 +10,7 @@ WEBHOOK_SVC="${WEBHOOK_NAME}-webhook"
 
 # Create certs for our webhook
 openssl genrsa -out webhookCA.key 2048
-openssl req -new -key ./webhookCA.key -subj "/CN=${WEBHOOK_SVC}.${WEBHOOK_NS}.svc" -out ./webhookCA.csr 
+openssl req -new -key ./webhookCA.key -subj "/CN=${WEBHOOK_SVC}.${WEBHOOK_NS}.svc" -out ./webhookCA.csr
 openssl x509 -req -days 365 -in webhookCA.csr -signkey webhookCA.key -out webhook.crt
 
 # Create certs secrets for k8s
@@ -20,8 +20,12 @@ kubectl create secret generic \
     --from-file=cert.pem=./webhook.crt \
     --dry-run -o yaml > ./deploy/webhook-certs.yaml
 
+BASE64_OPT="-w0"
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    BASE64_OPT=""
+fi
 # Set the CABundle on the webhook registration
-CA_BUNDLE=$(cat ./webhook.crt | base64 -w0)
+CA_BUNDLE=$(cat ./webhook.crt | base64 $BASE64_OPT)
 sed "s/CA_BUNDLE/${CA_BUNDLE}/" ./deploy/webhook-registration.yaml.tpl > ./deploy/webhook-registration.yaml
 
 # Clean
