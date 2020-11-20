@@ -65,7 +65,7 @@ create_user_data() {
 	ssh_pub_key="$(cat "${ssh_pub_key_file}")"
 	dnf_proxy=""
 	docker_proxy=""
-	docker_user_proxy=""
+	docker_user_proxy="{}"
 	environment=$(env | egrep "ghprb|WORK|KATA|GIT|JENKINS|_PROXY|_proxy" | \
 	                    sed -e "s/'/'\"'\"'/g" \
 	                        -e "s/\(^[[:alnum:]_]\+\)=/\1='/" \
@@ -118,6 +118,9 @@ ${environment}
 - content: |
     ${docker_user_proxy}
   path: ${HOME}/.docker/config.json
+- content: |
+    ${docker_user_proxy}
+  path: /root/.docker/config.json
 - content: |
     set -x
     set -o errexit
@@ -191,10 +194,10 @@ create_config_iso() {
 pull_fedora_cloud_image() {
 	fedora_img="$1"
 	fedora_img_cache="${fedora_img}.cache"
-	fedora_version=30
+	fedora_version=32
 
 	if [ ! -f "${fedora_img_cache}" ]; then
-		curl -Lk "https://download.fedoraproject.org/pub/fedora/linux/releases/${fedora_version}/Cloud/${arch}/images/Fedora-Cloud-Base-${fedora_version}-1.2.${arch}.raw.xz" -o "${fedora_img_cache}.xz"
+		curl -Lk "https://download.fedoraproject.org/pub/fedora/linux/releases/${fedora_version}/Cloud/${arch}/images/Fedora-Cloud-Base-${fedora_version}-1.6.${arch}.raw.xz" -o "${fedora_img_cache}.xz"
 		xz -f -d "${fedora_img_cache}.xz"
 		sync
 	fi
@@ -210,9 +213,10 @@ pull_fedora_cloud_image() {
 	# disable selinux
 	sudo sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /mnt/etc/selinux/config
 
-	# add intel_iommu=on to the guest kernel command line
-	sudo sed -i 's|default_kernelopts="|default_kernelopts="intel_iommu |g' /mnt/boot/grub2/grub.cfg
-	sudo sed -i 's|kernelopts=|kernelopts=intel_iommu=on |g' /mnt/boot/grub2/grubenv
+	# Fix docker and enable iommu
+	kernelopts="intel_iommu=on systemd.unified_cgroup_hierarchy=0 selinux=0 "
+	sudo sed -i 's|kernelopts="|kernelopts="'"${kernelopts}"'|g' /mnt/boot/grub2/grub.cfg
+	sudo sed -i 's|kernelopts=|kernelopts='"${kernelopts}"'|g' /mnt/boot/grub2/grubenv
 
 	# cleanup
 	sudo umount -R /mnt/
