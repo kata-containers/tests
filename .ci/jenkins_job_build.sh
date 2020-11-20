@@ -247,6 +247,13 @@ case "${CI_JOB}" in
 		export TEST_CRIO="true"
 	fi
 	;;
+"CRIO_K8S_MINIMAL")
+	export MINIMAL_CONTAINERD_K8S_E2E="true"
+	export CRI_CONTAINERD="no"
+	export KUBERNETES="yes"
+	export CRIO="yes"
+	export OPENSHIFT="no"
+	;;
 "CLOUD-HYPERVISOR-K8S-CONTAINERD")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
