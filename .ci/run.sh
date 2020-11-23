@@ -18,6 +18,8 @@ export CI_JOB="${CI_JOB:-default}"
 
 case "${CI_JOB}" in
 	"CRI_CONTAINERD_K8S")
+		echo "INFO: Running stability test"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
 		echo "INFO: Containerd checks"
 		sudo -E PATH="$PATH" bash -c "make cri-containerd"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
