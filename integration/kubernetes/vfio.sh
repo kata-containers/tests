@@ -152,7 +152,7 @@ main() {
 	# Install network (device) plugin
 	sriov_plugin_url=$(get_version "plugins.sriov-network-device.url")
 	sriov_plugin_version=$(get_version "plugins.sriov-network-device.version")
-	git clone --depth=1 "${sriov_plugin_url}"
+	git clone "${sriov_plugin_url}"
 	pushd sriov-network-device-plugin
 	git checkout "${sriov_plugin_version}"
 	sed -i 's|resourceList.*|resourceList": [{"resourceName":"virtio_net","selectors":{"vendors":["'"${vendor_id}"'"],"devices":["'"${device_id}"'"],"drivers":["vfio-pci"],"pfNames":["eth1"]}},{|g' deployments/configMap.yaml
