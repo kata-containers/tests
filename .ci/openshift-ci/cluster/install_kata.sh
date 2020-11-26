@@ -13,6 +13,11 @@ configs_dir=${scripts_dir}/configs
 
 source ${scripts_dir}/../../lib.sh
 
+# Set to 'yes' if you want to configure SELinux to permissive on the cluster
+# workers.
+#
+SELINUX_PERMISSIVE=${SELINUX_PERMISSIVE:-no}
+
 # Wait all worker nodes reboot.
 #
 # Params:
@@ -128,15 +133,20 @@ oc apply -f ${deployments_dir}/runtimeclass_kata.yaml
 oc get runtimeclass/kata || die "kata runtime class not found"
 
 # Set SELinux to permissive mode
-info "Configuring SELinux"
-if [ -z "$SELINUX_CONF_BASE64" ]; then
-	export SELINUX_CONF_BASE64=$(echo \
-		$(cat $configs_dir/selinux.conf|base64) | sed -e 's/\s//g')
+if [ ${SELINUX_PERMISSIVE} == "yes" ]; then
+	info "Configuring SELinux"
+	if [ -z "$SELINUX_CONF_BASE64" ]; then
+		export SELINUX_CONF_BASE64=$(echo \
+			$(cat $configs_dir/selinux.conf|base64) | \
+			sed -e 's/\s//g')
+	fi
+	envsubst < ${deployments_dir}/machineconfig_selinux.yaml.in | \
+		oc apply -f -
+	oc get machineconfig/51-kata-selinux || \
+		die "SELinux machineconfig not found"
+	# The new SELinux configuration will trigger another reboot.
+	wait_for_reboot
 fi
-envsubst < ${deployments_dir}/machineconfig_selinux.yaml.in | oc apply -f -
-oc get machineconfig/51-kata-selinux || die "SELinux machineconfig not found"
-# The new SELinux configuration will trigger another reboot.
-wait_for_reboot
 
 # At this point kata is installed on workers
 info "Set state annotation to installed on all worker nodes"

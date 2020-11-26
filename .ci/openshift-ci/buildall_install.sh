@@ -52,8 +52,8 @@ export USE_VSOCK="yes"
 # Configure the QEMU machine type.
 export MACHINETYPE="q35"
 
-# Disable SELinux.
-export FEATURE_SELINUX="no"
+# Enable SELinux.
+export FEATURE_SELINUX="yes"
 
 # The default /usr prefix makes the deployment on Red Hat CoreOS (rhcos) more
 # complex because that directory is read-only by design. Another prefix than
