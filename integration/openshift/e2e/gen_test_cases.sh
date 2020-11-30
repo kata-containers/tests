@@ -24,6 +24,7 @@ source "$script_dir/../lib.sh"
 
 # Tests that should be included. Leave it empty to pick them all.
 filter_patterns=(
+	'\[NodeConformance\]'
         )
 
 # Tests that should be excluded.
