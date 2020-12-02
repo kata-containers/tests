@@ -7,7 +7,6 @@
 WEBHOOK_NS=${1:-"default"}
 WEBHOOK_NAME=${2:-"pod-annotate"}
 WEBHOOK_SVC="${WEBHOOK_NAME}-webhook"
-
 # Create certs for our webhook
 openssl genrsa -out webhookCA.key 2048
 openssl req -new -key ./webhookCA.key -subj "/CN=${WEBHOOK_SVC}.${WEBHOOK_NS}.svc" -out ./webhookCA.csr 
@@ -22,7 +21,8 @@ kubectl create secret generic \
 
 # Set the CABundle on the webhook registration
 CA_BUNDLE=$(cat ./webhook.crt | base64 -w0)
-sed "s/CA_BUNDLE/${CA_BUNDLE}/" ./deploy/webhook-registration.yaml.tpl > ./deploy/webhook-registration.yaml
+sed -e "s/CA_BUNDLE/${CA_BUNDLE}/"  -e "s/PROJECT_NAMESPACE/${WEBHOOK_NS}/" ./deploy/webhook-registration.yaml.tpl > ./deploy/webhook-registration.yaml
+
 
 # Clean
 rm ./webhookCA* && rm ./webhook.crt
