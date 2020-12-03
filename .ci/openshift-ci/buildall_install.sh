@@ -45,6 +45,8 @@ export experimental_kernel="false"
 
 # Configure to use the initrd rootfs.
 export TEST_INITRD="yes"
+export BUILD_WITH_DRACUT="yes"
+export IGNORE_CACHED_ARTIFACTS="no"
 
 # Configure to use vsock.
 export USE_VSOCK="yes"
