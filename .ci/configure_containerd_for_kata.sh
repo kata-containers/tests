@@ -26,6 +26,7 @@ cat << EOT | sudo tee /etc/containerd/config.toml
              Root = ""
         [plugins.cri.containerd.runtimes.kata]
            runtime_type = "io.containerd.runc.v1"
+           privileged_without_host_devices = true
            pod_annotations = ["io.kata-containers.*"]
            [plugins.cri.containerd.runtimes.kata.options]
              BinaryName = "${kata_runtime_path}"

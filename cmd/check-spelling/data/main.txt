@@ -12,6 +12,7 @@ backport/ACD
 backtick/AB
 backtrace
 bootloader/AB
+centric
 checkbox/A
 chipset/AB
 codebase
@@ -19,6 +20,7 @@ commandline
 config/AB
 crypto		# Cryptography
 DaemonSet/AB
+deliverable/AB
 devicemapper/B
 dialer
 dialog/A
@@ -52,12 +54,15 @@ miniOS
 nack/A
 namespace/ABCD
 Nvidia
+onwards
 OS/AB
 parallelize/AC
 passthrough
 patchset/A
+pluggable/AB
 portmapper/AB
 portmapping/A
+pre
 prestart
 programmatically
 proxying
@@ -78,6 +83,7 @@ teardown
 templating
 timestamp/AB
 tracability
+ttRPC
 udev/B
 uevent/AB
 unbootable

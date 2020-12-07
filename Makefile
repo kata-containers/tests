@@ -293,6 +293,9 @@ openshift:
 	bash -f .ci/install_bats.sh
 	bash -f integration/openshift/run_openshift_tests.sh
 
+openshift-e2e:
+	bash -f integration/openshift/e2e/run_tests.sh
+
 pentest:
 	bash -f pentest/all.sh
 

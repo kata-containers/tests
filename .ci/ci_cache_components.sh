@@ -66,7 +66,11 @@ cache_cloud_hypervisor() {
 # This builds the image by specifying the image version from
 # /usr/share/kata-containers and the image name
 cache_image_artifacts() {
+	local build_with_dracut="${1}"
 	local image_name="image"
+	if [ "${build_with_dracut}" == "true" ]; then
+		image_name="${image_name}.dracut"
+	fi
 	local image_path="${kata_dir}/kata-containers.img"
 	local path=$(readlink -f "${image_path}")
 	local image_version=$(echo $(basename "${path}"))
@@ -77,7 +81,11 @@ cache_image_artifacts() {
 # This builds the initrd image by specifying the image initrd version
 # from /usr/share/kata-containers and the image initrd name
 cache_image_initrd_artifacts() {
+	local build_with_dracut="${1}"
 	local image_name="initrd"
+	if [ "${build_with_dracut}" == "true" ]; then
+		image_name="${image_name}.dracut"
+	fi
 	local image_path="${kata_dir}/kata-containers-initrd.img"
 	local path=$(readlink -f "${image_path}")
 	local image_version=$(echo $(basename "${path}"))
@@ -110,14 +118,18 @@ create_cache_asset() {
 	if [ ! -z "${check_image}" ]; then
 		if [ ! -z "${check_initrd}" ]; then
 			image_path="${kata_dir}/kata-containers-initrd.img"
-			image_name="initrd"
 		else
 			image_path="${kata_dir}/kata-containers.img"
-			image_name="image"
 		fi
+		image_name="${component_name}"
 		path=$(readlink -f "${image_path}")
 		echo $(basename "${path}") > "latest-${image_name}"
-		sudo cp "${path}" "${kata_dir}/osbuilder-${image_name}.yaml"  .
+		# ${image_name} might be decorated with build method if the image was
+		# built by dracut.  In that case, it will have a format "<image_type>.dracut".
+		# We need to get rid of the possible ".dracut" suffix to get the correct
+		# .yaml file name.
+		local image_type="$(echo ${image_name} | tr "." "\n" | head -1)"
+		sudo cp "${path}" "${kata_dir}/osbuilder-${image_type}.yaml" .
 	else
 		echo "${component_version}" >  "latest"
 	fi
@@ -165,7 +177,7 @@ EOT
 
 main() {
 	local OPTIND
-	while getopts "achiknqr" opt; do
+	while getopts "achiknqrd" opt; do
 		case "$opt" in
 		a)
 			build_qemu_experimental="true"
@@ -188,6 +200,9 @@ main() {
 			;;
 		r)
 			build_image_initrd="true"
+			;;
+		d)
+			build_with_dracut="true"
 			;;
 		esac
         done
@@ -213,9 +228,9 @@ main() {
 
 	[ "$build_qemu_experimental" == "true" ] && cache_qemu_experimental_artifacts
 
-	[ "$build_image" == "true" ] && cache_image_artifacts
+	[ "$build_image" == "true" ] && cache_image_artifacts "${build_with_dracut}"
 
-	[ "$build_image_initrd" == "true" ] && cache_image_initrd_artifacts
+	[ "$build_image_initrd" == "true" ] && cache_image_initrd_artifacts "${build_with_dracut}"
 
 	ls -la "${WORKSPACE}/artifacts/"
 	popd

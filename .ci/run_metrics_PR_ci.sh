@@ -126,6 +126,16 @@ check() {
 	fi
 }
 
+teardown() {
+	docker_configuration_path="/etc/docker"
+	docker_configuration_file="${docker_configuration_path}/daemon.json"
+	if [ -f "${docker_configuration_file}" ]; then
+		sudo rm -f "${docker_configuration_file}"
+	fi
+}
+
+trap teardown EXIT QUIT KILL
+
 init
 run
 check

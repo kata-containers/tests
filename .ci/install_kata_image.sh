@@ -29,6 +29,8 @@ ARCH="$(${cidir}/kata-arch.sh -d)"
 AGENT_INIT=${AGENT_INIT:-no}
 TEST_INITRD=${TEST_INITRD:-no}
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
+BUILD_WITH_DRACUT="${BUILD_WITH_DRACUT:-no}"
+IGNORE_CACHED_ARTIFACTS="${IGNORE_CACHED_ARTIFACTS:-no}"
 
 PREFIX=${PREFIX:-/usr}
 IMAGE_DIR=${DESTDIR:-}${PREFIX}/share/kata-containers
@@ -95,6 +97,56 @@ check_not_empty() {
 	fi
 }
 
+build_image_with_dracut() {
+	image_output="${1}"
+	os_version="${2}"
+	agent_commit="${3}"
+
+	check_not_empty "$image_output" "Missing image"
+	check_not_empty "$os_version" "Missing OS version"
+	check_not_empty "$agent_commit" "Missing agent commit"
+
+	pushd "${osbuilder_path}" >/dev/null
+
+	local image_name=""
+	local make_target=""
+	if [ "${TEST_INITRD}" == "yes" ]; then
+		image_name="kata-containers-initrd.img"
+		make_target="initrd"
+	else
+		make_target="image"
+		image_name="kata-containers.img"
+	fi
+
+	AGENT_VERSION="${agent_commit}" \
+		PATH="$PATH" \
+		GOPATH="$GOPATH" \
+		OS_VERSION=${os_version} \
+		make BUILD_METHOD=dracut \
+		AGENT_INIT="${AGENT_INIT}" \
+		"$make_target"
+
+	sudo install -o root -g root -m 0640 -D ${image_name} "${IMAGE_DIR}/${image_output}"
+
+	# Unlike the distro method, the dracut-based method doesn't leave
+	# behind an unpacked root filesystem tree, so to get access to
+	# osbuilder.yaml in order to install it, we need to extract it to
+	# a temporary directory from the initrd.
+	tmpdir=$(mktemp -d)
+	local image_abs_name=${PWD}/${image_name}
+	pushd ${tmpdir} >/dev/null
+	cat ${image_abs_name} | cpio -idmv var/lib/osbuilder/osbuilder.yaml
+	popd >/dev/null
+
+	sudo install -o root -g root -m 0640 -D "${tmpdir}/var/lib/osbuilder/osbuilder.yaml" "${IMAGE_DIR}/${OSBUILDER_YAML_INSTALL_NAME}"
+
+	rm -rf ${tmpdir}
+
+	(cd ${IMAGE_DIR} && sudo ln -sf "${IMAGE_DIR}/${image_output}" "${LINK_PATH}")
+
+	popd >/dev/null
+}
+
 build_image() {
 	image_output=${1}
 	distro=${2}
@@ -103,7 +155,7 @@ build_image() {
 
 	check_not_empty "$image_output" "Missing image"
 	check_not_empty "$distro" "Missing distro"
-	check_not_empty "$os_version" "Missing os version"
+	check_not_empty "$os_version" "Missing OS version"
 	check_not_empty "$agent_commit" "Missing agent commit"
 
 	pushd "${osbuilder_path}" >/dev/null
@@ -148,7 +200,7 @@ build_image() {
 
 	sudo install -o root -g root -m 0640 -D ${image_name} "${IMAGE_DIR}/${image_output}"
 	sudo install -o root -g root -m 0640 -D "${ROOTFS_DIR}/var/lib/osbuilder/osbuilder.yaml" "${IMAGE_DIR}/${OSBUILDER_YAML_INSTALL_NAME}"
-	(cd /usr/share/kata-containers && sudo ln -sf "${IMAGE_DIR}/${image_output}" "${LINK_PATH}")
+	(cd ${IMAGE_DIR} && sudo ln -sf "${IMAGE_DIR}/${image_output}" "${LINK_PATH}")
 
 	popd >/dev/null
 }
@@ -167,8 +219,21 @@ get_dependencies() {
 
 main() {
 	get_dependencies
-	local os_version=$(get_version "${IMAGE_OS_VERSION_KEY}")
-	local osbuilder_distro=$(get_version "${IMAGE_OS_KEY}")
+	local os_version=""
+	local osbuilder_distro=""
+	local build_method_suffix=""
+	if [ "${BUILD_WITH_DRACUT}" == "yes" ]; then
+		os_version="${VERSION_ID}"
+		osbuilder_distro="${ID}"
+		build_method_suffix=".dracut"
+	else
+		os_version=$(get_version "${IMAGE_OS_VERSION_KEY}")
+		osbuilder_distro=$(get_version "${IMAGE_OS_KEY}")
+		# Images were historically built with the "distro" method exclusively so
+		# there was no need to indicate a build method in image filename.  To stay
+		# compatible, we leave the build method designation for distro-built images
+		# empty.
+	fi
 
 	if [ "${osbuilder_distro}" == "clearlinux" ] && [ "${os_version}" == "latest" ]; then
 		os_version=$(curl -fLs https://download.clearlinux.org/latest)
@@ -180,14 +245,14 @@ main() {
 	image_output="kata-containers-${osbuilder_distro}-${os_version}-osbuilder-${osbuilder_commit}-agent-${agent_commit}"
 
 	if [ "${TEST_INITRD}" == "no" ]; then
-		image_output="${image_output}.img"
+		image_output="${image_output}.img${build_method_suffix}"
 		type="image"
 	else
-		image_output="${image_output}.initrd"
+		image_output="${image_output}.initrd${build_method_suffix}"
 		type="initrd"
 	fi
 
-	latest_file="latest-${type}"
+	latest_file="latest-${type}${build_method_suffix}"
 	info "Image to generate: ${image_output}"
 
 	last_build_image_version=$(curl -fsL "${latest_build_url}/${latest_file}") ||
@@ -195,14 +260,18 @@ main() {
 
 	info "Latest cached image: ${last_build_image_version}"
 
-	if [ "$image_output" == "$last_build_image_version" ]; then
+	if [ "$image_output" == "$last_build_image_version" ] && [ "${IGNORE_CACHED_ARTIFACTS}" == "no" ]; then
 		info "Cached image is same to be generated"
 		if ! install_ci_cache_image "${type}"; then
 			info "failed to install cached image, trying to build from source"
 			build_image "${image_output}" "${osbuilder_distro}" "${os_version}" "${agent_commit}"
 		fi
 	else
-		build_image "${image_output}" "${osbuilder_distro}" "${os_version}" "${agent_commit}"
+		if [ "${BUILD_WITH_DRACUT}" == "yes" ]; then
+			build_image_with_dracut "${image_output}" "${os_version}" "${agent_commit}"
+		else
+			build_image "${image_output}" "${osbuilder_distro}" "${os_version}" "${agent_commit}"
+		fi
 	fi
 
 	if [ ! -L "${LINK_PATH}" ]; then

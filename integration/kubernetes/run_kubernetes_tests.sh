@@ -62,18 +62,12 @@ K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-scale-nginx.bats" \
 	"k8s-security-context.bats" \
 	"k8s-shared-volume.bats" \
+	"k8s-sysctls.bats" \
 	"k8s-uts+ipc-ns.bats" \
 	"k8s-volume.bats" \
 	"nginx.bats" \
 	"k8s-hugepages.bats")
 
-if [ "${KATA_HYPERVISOR:-}" == "cloud-hypervisor" ]; then
-	sysctl_issue="https://github.com/kata-containers/tests/issues/2324"
-	info "$KATA_HYPERVISOR sysctl is failing:"
-	info "sysctls: ${sysctl_issue}"
-else
-	K8S_TEST_UNION+=("k8s-sysctls.bats")
-fi
 # we may need to skip a few test cases when running on non-x86_64 arch
 if [ -f "${cidir}/${arch}/configuration_${arch}.yaml" ]; then
 	config_file="${cidir}/${arch}/configuration_${arch}.yaml"
