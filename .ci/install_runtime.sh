@@ -19,7 +19,8 @@ KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 KATA_EXPERIMENTAL_FEATURES="${KATA_EXPERIMENTAL_FEATURES:-}"
 MACHINETYPE="${MACHINETYPE:-pc}"
 METRICS_CI="${METRICS_CI:-}"
-PREFIX=${PREFIX:-/usr}
+PREFIX="${PREFIX:-/usr}"
+DESTDIR="${DESTDIR:-/}"
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
 TEST_INITRD="${TEST_INITRD:-}"
 USE_VSOCK="${USE_VSOCK:-yes}"
@@ -43,7 +44,7 @@ export SHAREDIR=${PREFIX}/share
 runtime_config_path="${SYSCONFDIR}/kata-containers/configuration.toml"
 runtime_src_path="${GOPATH}/src/${KATA_REPO}/src/runtime"
 
-PKGDEFAULTSDIR="${SHAREDIR}/defaults/kata-containers"
+PKGDEFAULTSDIR="${DESTDIR}${SHAREDIR}/defaults/kata-containers"
 NEW_RUNTIME_CONFIG="${PKGDEFAULTSDIR}/configuration.toml"
 # Note: This will also install the config file.
 
@@ -53,7 +54,7 @@ build_install_shim_v2(){
 	fi
 	pushd "$runtime_src_path"
 	make
-	sudo make install
+	sudo -E make install
 	popd
 }
 
