@@ -13,7 +13,9 @@ set -o errtrace
 cidir=$(dirname "$0")
 rust_agent_repo="github.com/kata-containers/kata-containers"
 arch=$("${cidir}"/kata-arch.sh -d)
-image_path="${image_path:-/usr/share/kata-containers}"
+PREFIX="${PREFIX:-/usr}"
+DESTDIR="${DESTDIR:-/}"
+image_path="${DESTDIR}${image_path:-${PREFIX}/share/kata-containers}"
 image_name="${image_name:-kata-containers.img}"
 initrd_name="${initrd_name:-kata-containers-initrd.img}"
 AGENT_INIT="${AGENT_INIT:-no}"
