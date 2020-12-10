@@ -17,7 +17,7 @@ arch=$("${cidir}"/kata-arch.sh -d)
 INSTALL_KATA="${INSTALL_KATA:-yes}"
 CI=${CI:-false}
 
-# values indicating whether related intergration tests have been supported
+# values indicating whether related integration tests have been supported
 CRIO="${CRIO:-yes}"
 CRI_CONTAINERD="${CRI_CONTAINERD:-no}"
 KUBERNETES="${KUBERNETES:-yes}"
@@ -140,7 +140,7 @@ main() {
 
 	[ "$setup_type" = "minimal" ] && info "finished minimal setup" && exit 0
 
-	install_docker
+	#install_docker
 	enable_nested_virtualization
 	install_kata
 	install_extra_tools
