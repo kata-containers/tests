@@ -49,6 +49,7 @@ PCDIMM/AB
 PCI/AB
 PCIe/AB
 PID/AB
+pmem/B	# persistent memory
 PNG/AB
 POD/AB
 PR/AB
@@ -61,6 +62,7 @@ RDMA/AB
 RNG/AB
 SCSI/AB
 SDK/AB
+seccomp # secure computing mode
 SHA/AB
 SPDX/AB
 SRIOV/AB
@@ -86,6 +88,7 @@ Virtio-mem/AB
 VLAN/AB
 VM/AB
 VMCache/AB
+vmm
 VMM/AB
 VMX/AB
 VPP/AB
