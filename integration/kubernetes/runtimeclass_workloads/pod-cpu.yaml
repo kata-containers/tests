@@ -12,7 +12,7 @@ spec:
   runtimeClassName: kata
   containers:
   - name: first-cpu-container
-    image: busybox
+    image: quay.io/prometheus/busybox:latest
     command:
         - sleep
         - "30"

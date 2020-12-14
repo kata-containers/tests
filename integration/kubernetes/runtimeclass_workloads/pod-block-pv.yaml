@@ -7,7 +7,7 @@ spec:
   runtimeClassName: kata
   containers:
     - name: my-container
-      image: ubuntu:18.04
+      image: quay.io/footloose/ubuntu18.04
       command: ["tail", "-f", "/dev/null"]
       volumeDevices:
         - devicePath: DEVICE_PATH

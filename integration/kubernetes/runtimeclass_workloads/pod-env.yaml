@@ -12,7 +12,7 @@ spec:
   runtimeClassName: kata
   containers:
     - name: test-container
-      image: busybox
+      image: quay.io/prometheus/busybox:latest
       command: [ "sh", "-c"]
       args:
       - while true; do

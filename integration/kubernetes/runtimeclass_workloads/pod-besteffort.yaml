@@ -12,5 +12,5 @@ spec:
   runtimeClassName: kata
   containers:
   - name: qos-besteffort
-    image: busybox
+    image: quay.io/prometheus/busybox:latest
     command: ["/bin/sh", "-c", "tail -f /dev/null"]

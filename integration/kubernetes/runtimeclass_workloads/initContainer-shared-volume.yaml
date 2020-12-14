@@ -12,14 +12,14 @@ spec:
   runtimeClassName: kata
   initContainers:
   - name: first
-    image: busybox
+    image: quay.io/prometheus/busybox:latest
     command: [ "sh", "-c", "echo ${EPOCHREALTIME//.} > /volume/initContainer" ]
     volumeMounts:
       - mountPath: /volume
         name: volume
   containers:
   - name: last
-    image: busybox
+    image: quay.io/prometheus/busybox:latest
     command: [ "sh", "-c", "echo ${EPOCHREALTIME//.} > /volume/container; tail -f /dev/null" ]
     volumeMounts:
     - mountPath: /volume
