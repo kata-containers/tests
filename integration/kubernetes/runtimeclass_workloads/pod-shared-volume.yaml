@@ -16,14 +16,14 @@ spec:
     emptyDir: {}
   containers:
   - name: busybox-first-container
-    image: busybox
+    image: quay.io/prometheus/busybox:latest
     volumeMounts:
     - name: shared-data
       mountPath: /tmp
     command: ["/bin/sh"]
     args: ["-c", "tail -f /dev/null"]
   - name: busybox-second-container
-    image: busybox
+    image: quay.io/prometheus/busybox:latest
     volumeMounts:
     - name: shared-data
       mountPath: /tmp

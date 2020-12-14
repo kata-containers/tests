@@ -12,7 +12,7 @@ spec:
   runtimeClassName: kata
   containers:
   - name: memory-test-ctr
-    image: polinux/stress
+    image: containerstack/alpine-stress:latest
     resources:
       limits:
         memory: "${memory_size}"

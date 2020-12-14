@@ -13,7 +13,7 @@ spec:
   shareProcessNamespace: true
   containers:
   - name: busybox
-    image: busybox
+    image: quay.io/prometheus/busybox:latest
     command:
       - sleep
       - "120"

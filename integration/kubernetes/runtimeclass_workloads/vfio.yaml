@@ -12,7 +12,7 @@ spec:
   runtimeClassName: kata
   containers:
   - name: c1
-    image: busybox
+    image: quay.io/prometheus/busybox:latest
     command:
       - sh
     tty: true

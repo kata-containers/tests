@@ -13,7 +13,7 @@ spec:
   runtimeClassName: kata
   containers:
   - name: handlers-container
-    image: "${nginx_version}"
+    image: quay.io/sjenning/${nginx_version}
     lifecycle:
       postStart:
         exec:

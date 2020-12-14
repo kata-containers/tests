@@ -27,7 +27,7 @@ spec:
       runtimeClassName: kata
       containers:
       - name: master
-        image: redis
+        image: quay.io/libpod/redis
         resources:
           requests:
             cpu: 100m
