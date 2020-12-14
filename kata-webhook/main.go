@@ -50,7 +50,7 @@ func annotatePodMutator(ctx context.Context, obj metav1.Object) (bool, error) {
 	}
 
 	for i := range pod.Spec.Containers {
-		if pod.Spec.Containers[i].SecurityContext != nil {
+		if pod.Spec.Containers[i].SecurityContext != nil && pod.Spec.Containers[i].SecurityContext.Privileged != nil {
 			if *pod.Spec.Containers[i].SecurityContext.Privileged {
 				fmt.Println("privileged container: ", pod.GetNamespace(), pod.GetName())
 				return false, nil
