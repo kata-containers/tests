@@ -43,7 +43,7 @@ sudo -E yum -y update
 if [ "$centos_version" == "8" ]; then
 	echo "Enable PowerTools repository"
 	sudo -E yum install -y yum-utils
-	sudo yum-config-manager --enable PowerTools
+	sudo yum-config-manager --enable powertools
 fi
 
 echo "Install chronic"
