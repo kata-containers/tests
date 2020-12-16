@@ -261,7 +261,8 @@ main() {
 	TestSandboxCleanRemove
 	)
 
-	if [ "${KATA_HYPERVISOR}" == "cloud-hypervisor" ]; then
+	if [[ "${KATA_HYPERVISOR}" == "cloud-hypervisor" || \
+		"${KATA_HYPERVISOR}" == "qemu" ]]; then
 		issue="https://github.com/kata-containers/tests/issues/2318"
 		info "${KATA_HYPERVISOR} fails with TestContainerListStatsWithSandboxIdFilter }"
 		info "see ${issue}"
