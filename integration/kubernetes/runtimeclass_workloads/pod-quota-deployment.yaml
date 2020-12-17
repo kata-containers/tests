@@ -21,5 +21,5 @@ spec:
       runtimeClassName: kata
       containers:
       - name: pod-quota-demo
-        image: busybox
+        image: quay.io/prometheus/busybox:latest
         command: ["tail", "-f", "/dev/null"]

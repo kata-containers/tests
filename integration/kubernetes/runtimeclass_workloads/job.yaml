@@ -14,7 +14,7 @@ spec:
       runtimeClassName: kata
       containers:
       - name: pi
-        image: busybox
+        image: quay.io/prometheus/busybox:latest
         command: ["/bin/sh", "-c", "echo 'scale=5; 4*a(1)' | bc -l"]
       restartPolicy: Never
   backoffLimit: 4

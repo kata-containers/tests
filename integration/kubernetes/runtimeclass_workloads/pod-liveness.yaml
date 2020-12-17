@@ -14,7 +14,7 @@ spec:
   runtimeClassName: kata
   containers:
   - name: liveness
-    image: busybox
+    image: quay.io/prometheus/busybox:latest
     args:
     - /bin/sh
     - -c
