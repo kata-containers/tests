@@ -23,7 +23,7 @@ Options:
 
  -d, --default         : Show arch(1) architecture (this is the default).
  -g, --golang          : Show architecture name using golang naming.
- -r, --rust            : Shoe architecture name using rust naming
+ -r, --rust            : Show architecture name using rust naming
  -h, --help            : Show this help.
  -k, --kernel          : Show architecture name compatible with Linux* build system.
 
