@@ -203,6 +203,7 @@ remove_docker(){
 	if [ -z "$pkg_name" ]; then
 		die "Docker not found in this system"
 	else
+		sudo systemctl stop docker.socket || true
 		sudo systemctl stop docker
 		version=$(get_docker_version)
 		log_message "Removing package: $pkg_name version: $version"
