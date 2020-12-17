@@ -13,6 +13,10 @@ setup() {
 	get_pod_config_dir
 
 	pod_name="pod-block-pv"
+	volume_name="block-loop-pv"
+	volume_claim="block-loop-pvc"
+	wait_time=10
+	sleep_time=2
 	ctr_dev_path="/dev/xda"
 	vol_capacity="500M"
 
@@ -33,6 +37,8 @@ setup() {
 	sed -i "s|HOSTNAME|$(hostname)|" "$tmp_pv_yaml"
 	sed -i "s|CAPACITY|${vol_capacity}|" "$tmp_pv_yaml"
 	kubectl create -f "$tmp_pv_yaml"
+	cmd="kubectl get pv/${volume_name} | grep Available"
+	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 
 	# Create Persistent Volume Claim
 	tmp_pvc_yaml=$(mktemp --tmpdir block_persistent_vol.XXXXX.yaml)
@@ -46,7 +52,7 @@ setup() {
 	kubectl wait --for condition=ready "pod/${pod_name}"
 
 	# Verify persistent volume claim is bound
-	kubectl get pvc | grep "Bound"
+	kubectl get "pvc/${volume_claim}" | grep "Bound"
 
 	# make fs, mount device and write on it
 	kubectl exec "$pod_name" -- sh -c "mkfs.ext4 $ctr_dev_path"
@@ -61,8 +67,8 @@ setup() {
 teardown() {
 	# Delete k8s resources
 	kubectl delete pod "$pod_name"
-	kubectl delete pvc block-loop-pvc
-	kubectl delete pv block-loop-pv
+	kubectl delete pvc "$volume_claim"
+	kubectl delete pv "$volume_name"
 	kubectl delete storageclass local-storage
 
 	# Delete temporary yaml files
