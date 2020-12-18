@@ -12,7 +12,6 @@ issue="https://github.com/cri-o/cri-o/issues/4353"
 setup() {
 	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working with CRI-O - see: ${issue}"
 	export KUBECONFIG="$HOME/.kube/config"
-	pod_name="test-env"
 	get_pod_config_dir
 	file_name="file.txt"
 	content="Hello"
@@ -21,7 +20,15 @@ setup() {
 @test "Copy file in a pod" {
 	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working with CRI-O - see: ${issue}"
 	# Create pod
-	kubectl create -f "${pod_config_dir}/pod-env.yaml"
+	pod_name="pod-copy-file-from-host"
+	ctr_name="ctr-copy-file-from-host"
+
+	pod_config=$(mktemp --tmpdir pod_config.XXXXXX.yaml)
+	cp "$pod_config_dir/busybox-template.yaml" "$pod_config"
+	sed -i "s/POD_NAME/$pod_name/" "$pod_config"
+	sed -i "s/CTR_NAME/$ctr_name/" "$pod_config"
+
+	kubectl create -f "${pod_config}"
 
 	# Check pod creation
 	kubectl wait --for=condition=Ready pod "$pod_name"
@@ -39,13 +46,29 @@ setup() {
 @test "Copy from pod to host" {
 	[ "${CI_JOB}" == "CRIO_K8S" ] && skip "test not working with CRI-O - see: ${issue}"
 	# Create pod
-	kubectl create -f "${pod_config_dir}/pod-env.yaml"
+	pod_name="pod-copy-file-to-host"
+	ctr_name="ctr-copy-file-to-host"
+
+	pod_config=$(mktemp --tmpdir pod_config.XXXXXX.yaml)
+	cp "$pod_config_dir/busybox-template.yaml" "$pod_config"
+	sed -i "s/POD_NAME/$pod_name/" "$pod_config"
+	sed -i "s/CTR_NAME/$ctr_name/" "$pod_config"
+
+	kubectl create -f "${pod_config}"
 
 	# Check pod creation
 	kubectl wait --for=condition=Ready pod "$pod_name"
 
+	kubectl logs "$pod_name" || true
+	kubectl describe pod "$pod_name" || true
+	kubectl get pods --all-namespaces
+
 	# Create a file in the pod
 	kubectl exec "$pod_name" -- sh -c "cd /tmp && echo $content > $file_name"
+
+	kubectl logs "$pod_name" || true
+	kubectl describe pod "$pod_name" || true
+	kubectl get pods --all-namespaces
 
 	# Copy file from pod to host
 	kubectl cp "$pod_name":/tmp/"$file_name" "$file_name"
