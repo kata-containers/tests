@@ -45,7 +45,7 @@ setup() {
 	# Check the total of requests
 	total_requests_container=$(kubectl exec $pod_name -c $container_name cat $sharessyspath)
 
-	[ $total_requests_container -eq $total_requests ]
+	[ "$total_requests_container" -eq "$total_requests" ]
 
 	# Check the cpus inside the container
 
@@ -55,7 +55,7 @@ setup() {
 
 	division_quota_period=$(echo $((total_cpu_quota/total_cpu_period)))
 
-	[ $division_quota_period -eq $total_cpu_container ]
+	[ "$division_quota_period" -eq "$total_cpu_container" ]
 }
 
 teardown() {
