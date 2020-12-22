@@ -152,13 +152,22 @@ run_sonobuoy() {
 }
 
 cleanup() {
-	info "Results directory "${e2e_result_dir}" will not be deleted"
-	info "View results"
-	cat ${e2e_result_dir}/plugins/e2e/results/global/e2e.log
-	info "View sonobuoy status"
-	sonobuoy status
-	# Remove sonobuoy execution pods
-	sonobuoy delete
+	if [ -d "${e2e_result_dir:-}" ]; then
+		info "Results directory "${e2e_result_dir}" will not be deleted"
+		log_file="${e2e_result_dir}/plugins/e2e/results/global/e2e.log"
+		if [ -f "${log_file}" ]; then
+			info "View results"
+			cat ${log_file}
+		else
+			warn "Tests results file ${log_file} not found"
+		fi
+	fi
+	{
+		info "View sonobuoy status"
+		sonobuoy status
+		# Remove sonobuoy execution pods
+		sonobuoy delete
+	} || true
 }
 
 trap "{ cleanup; }" EXIT
