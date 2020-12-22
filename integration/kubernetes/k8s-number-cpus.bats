@@ -26,9 +26,11 @@ setup() {
 	retries="10"
 	max_number_cpus="3"
 
+	num_cpus_cmd='cat /proc/cpuinfo |grep processor|wc -l'
 	for _ in $(seq 1 "$retries"); do
 		# Get number of cpus
-		number_cpus=$(kubectl exec pod/"$pod_name" -c "$container_name" cat /proc/cpuinfo |grep processor|wc -l)
+		number_cpus=$(kubectl exec pod/"$pod_name" -c "$container_name" \
+			-- sh -c "$num_cpus_cmd")
 		# Verify number of cpus
 		[ "$number_cpus" -le "$max_number_cpus" ]
 		[ "$number_cpus" -eq "$max_number_cpus" ] && break
