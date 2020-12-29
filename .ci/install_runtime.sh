@@ -19,7 +19,8 @@ KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 KATA_EXPERIMENTAL_FEATURES="${KATA_EXPERIMENTAL_FEATURES:-}"
 MACHINETYPE="${MACHINETYPE:-pc}"
 METRICS_CI="${METRICS_CI:-}"
-PREFIX=${PREFIX:-/usr}
+PREFIX="${PREFIX:-/usr}"
+DESTDIR="${DESTDIR:-/}"
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
 TEST_INITRD="${TEST_INITRD:-}"
 USE_VSOCK="${USE_VSOCK:-yes}"
@@ -40,10 +41,13 @@ export SYSCONFDIR=/etc
 # Artifacts (kernel + image) live below here
 export SHAREDIR=${PREFIX}/share
 
+# Whether running on OpenShift CI or not.
+OPENSHIFT_CI="${OPENSHIFT_CI:-false}"
+
 runtime_config_path="${SYSCONFDIR}/kata-containers/configuration.toml"
 runtime_src_path="${GOPATH}/src/${KATA_REPO}/src/runtime"
 
-PKGDEFAULTSDIR="${SHAREDIR}/defaults/kata-containers"
+PKGDEFAULTSDIR="${DESTDIR}${SHAREDIR}/defaults/kata-containers"
 NEW_RUNTIME_CONFIG="${PKGDEFAULTSDIR}/configuration.toml"
 # Note: This will also install the config file.
 
@@ -53,7 +57,7 @@ build_install_shim_v2(){
 	fi
 	pushd "$runtime_src_path"
 	make
-	sudo make install
+	sudo -E make install
 	popd
 }
 
@@ -127,13 +131,16 @@ if [ "$USE_VSOCK" == "yes" ]; then
 	echo "Configure use of VSOCK in ${runtime_config_path}"
 	sudo sed -i -e 's/^#use_vsock.*/use_vsock = true/' "${runtime_config_path}"
 
-	vsock_module="vhost_vsock"
-	echo "Check if ${vsock_module} is loaded"
-	if lsmod | grep -q "$vsock_module" &> /dev/null ; then
-		echo "Module ${vsock_module} is already loaded"
-	else
-		echo "Load ${vsock_module} module"
-		sudo modprobe "${vsock_module}"
+	# On OpenShift CI the vhost module should not be loaded on build time.
+	if [ "$OPENSHIFT_CI" == "false" ]; then
+		vsock_module="vhost_vsock"
+		echo "Check if ${vsock_module} is loaded"
+		if lsmod | grep -q "\<${vsock_module}\>" ; then
+			echo "Module ${vsock_module} is already loaded"
+		else
+			echo "Load ${vsock_module} module"
+			sudo modprobe "${vsock_module}"
+		fi
 	fi
 fi
 
