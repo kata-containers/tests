@@ -214,6 +214,19 @@ show_system_state() {
 	fi
 }
 
+show_system_ctr_state() {
+	echo "Showing system state:"
+	echo " --Check containers--"
+	sudo ctr c list -q
+
+	local processes="containerd-shim-kata-v2 kata-runtime"
+
+	for p in ${processes}; do
+		echo " --pgrep ${p}--"
+		pgrep -a ${p}
+	done
+}
+
 common_init(){
 
 	# If we are running a kata runtime, go extract its environment

@@ -1,12 +1,12 @@
 #!/bin/bash
 #
-# Copyright (c) 2017-2018 Intel Corporation
+# Copyright (c) 2017-2018, 2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
 # This test will run a number of parallel containers, and then try to
 # 'rm -f' them all at the same time. It will check after each run and
-# rm that we have the expected number of containers, shims, proxys,
+# rm that we have the expected number of containers, shims,
 # qemus and runtimes active
 # The goals are two fold:
 # - spot any stuck or non-started components
@@ -25,7 +25,7 @@ ITERATIONS="${ITERATIONS:-5}"
 MEM_CUTOFF="${MEM_CUTOFF:-(2*1024*1024*1024)}"
 
 # do we need a command argument for this payload?
-COMMAND="${COMMAND:-}"
+COMMAND="${COMMAND:-tail -f /dev/null}"
 
 # Runtime path
 RUNTIME_PATH=$(command -v $RUNTIME)
@@ -62,7 +62,7 @@ disable_netmon() {
 }
 
 count_containers() {
-	docker ps -qa | wc -l
+	sudo ctr c list -q | wc -l
 }
 
 check_all_running() {
@@ -80,20 +80,9 @@ check_all_running() {
 
 	# Only check for Kata components if we are using a Kata runtime
 	if (( $check_kata_components )); then
-		if [ "$KATA_HYPERVISOR" == "qemu" ]; then
-			# Only run proxy check if vsock is disabled
-			if ! check_vsock_active; then
-				# Check we have one proxy per container
-				how_many_proxys=$(pgrep -a -f ${PROXY_PATH} | wc -l)
-				if (( ${how_many_running} != ${how_many_proxys} )); then
-					echo "Wrong number of proxys running (${how_many_running} containers, ${how_many_proxys} proxys) - stopping"
-					((goterror++))
-				fi
-			fi
-		fi
 
 		# check we have the right number of shims
-		how_many_shims=$(pgrep -a -f ${SHIM_PATH} | wc -l)
+		how_many_shims=$(pgrep -a -f ${SHIM_PATH} | grep containerd.sock | wc -l)
 		# one shim process per container...
 		if (( ${how_many_running} != ${how_many_shims} )); then
 			echo "Wrong number of shims running (${how_many_running} != ${how_many_shims}) - stopping"
@@ -123,13 +112,6 @@ check_all_running() {
 			((goterror++))
 		fi
 
-		# check how many containers the runtime list thinks we have
-		num_list=$(sudo ${RUNTIME_PATH} list -q | wc -l)
-		if (( ${how_many_running} != ${num_list} )); then
-			echo "Wrong number of 'runtime list' containers running (${how_many_running} != ${num_list}) - stopping"
-			((goterror++))
-		fi
-
 		# if this is kata-runtime, check how many pods virtcontainers thinks we have
 		if [[ "$RUNTIME" == "kata-runtime" ]]; then
 			num_vc_pods=$(sudo ls -1 ${VC_POD_DIR} | wc -l)
@@ -142,7 +124,7 @@ check_all_running() {
 	fi
 
 	if (( goterror != 0 )); then
-		show_system_state
+		show_system_ctr_state
 		die "Got $goterror errors, quitting"
 	fi
 }
@@ -160,10 +142,13 @@ go() {
 	while true; do {
 		check_all_running
 
-		echo "Run $RUNTIME: $nginx_image: $COMMAND"
-		docker run --runtime=${RUNTIME} -tid ${nginx_image} ${COMMAND}
+		for ((i=1; i<= ${MAX_CONTAINERS}; i++)); do
+			containers+=($(random_name))
+			containerd_runtime="io.containerd.kata.v2"
+			sudo ctr run --runtime=${containerd_runtime} -d ${nginx_image} ${containers[-1]} sh -c ${COMMAND}
+			((how_many++))
+		done
 
-		((how_many++))
 		if (( ${how_many} >= ${MAX_CONTAINERS} )); then
 			echo "And we have hit the max ${how_many} containers"
 			return
@@ -179,9 +164,11 @@ go() {
 }
 
 kill_all_containers() {
-	present=$(docker ps -qa | wc -l)
+	present=$(sudo ctr c list -q | wc -l)
 	if ((${present})); then
-		docker rm -f $(docker ps -qa)
+		sudo ctr tasks kill $(sudo ctr task ls -q)
+		sudo ctr tasks rm -f $(sudo ctr task list -q)
+		sudo ctr c rm $(sudo ctr c list -q)
 	fi
 }
 
@@ -192,12 +179,14 @@ count_mounts() {
 check_mounts() {
 	final_mount_count=$(count_mounts)
 
-	if [[ $final_mount_count != $initial_mount_count ]]; then
+	if [[ $final_mount_count < $initial_mount_count ]]; then
 		echo "Final mount count does not match initial count (${final_mount_count} != ${initial_mount_count})"
 	fi
 }
 
 init() {
+	sudo systemctl restart containerd
+	extract_kata_env
 	kill_all_containers
 
 	# Enable netmon
@@ -218,10 +207,10 @@ init() {
 
 	versions_file="${cidir}/../../versions.yaml"
 	nginx_version=$("${GOPATH}/bin/yq" read "$versions_file" "docker_images.nginx.version")
-	nginx_image="nginx:$nginx_version"
+	nginx_image="docker.io/library/nginx:$nginx_version"
 
 	# Pull nginx image
-	docker pull ${nginx_image}
+	sudo ctr image pull ${nginx_image}
 	if [ $? != 0 ]; then
 		die "Unable to retry docker image ${nginx_image}"
 	fi
