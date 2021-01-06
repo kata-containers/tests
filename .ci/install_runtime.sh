@@ -22,10 +22,14 @@ METRICS_CI="${METRICS_CI:-}"
 PREFIX="${PREFIX:-/usr}"
 DESTDIR="${DESTDIR:-/}"
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
-TEST_INITRD="${TEST_INITRD:-}"
 USE_VSOCK="${USE_VSOCK:-yes}"
 
 arch=$("${cidir}"/kata-arch.sh -d)
+if [ "${arch}" == "ppc64le" ]; then
+  TEST_INITRD="${TEST_INITRD:-yes}"
+else
+  TEST_INITRD="${TEST_INITRD:-}"
+fi
 
 # Modify the runtimes build-time defaults
 
