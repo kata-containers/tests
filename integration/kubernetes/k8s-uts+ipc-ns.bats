@@ -11,18 +11,22 @@ load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
 setup() {
 	busybox_image="busybox"
 	export KUBECONFIG="$HOME/.kube/config"
-	first_pod_name="first-test"
-	second_pod_name="second-test"
+	first_pod_name="pod-first-test"
+	first_ctr_name="ctr-first-test"
+	second_pod_name="pod-second-test"
+	second_ctr_name="ctr-second-test"
 	# Pull the images before launching workload.
 	sudo -E crictl pull "$busybox_image"
 
 	get_pod_config_dir
 	first_pod_config=$(mktemp --tmpdir pod_config.XXXXXX.yaml)
 	cp "$pod_config_dir/busybox-template.yaml" "$first_pod_config"
-	sed -i "s/NAME/${first_pod_name}/" "$first_pod_config"
+	sed -i "s/POD_NAME/${first_pod_name}/" "$first_pod_config"
+	sed -i "s/CTR_NAME/${first_ctr_name}/" "$first_pod_config"
 	second_pod_config=$(mktemp --tmpdir pod_config.XXXXXX.yaml)
 	cp "$pod_config_dir/busybox-template.yaml" "$second_pod_config"
-	sed -i "s/NAME/${second_pod_name}/" "$second_pod_config"
+	sed -i "s/POD_NAME/${second_pod_name}/" "$second_pod_config"
+	sed -i "s/CTR_NAME/${second_ctr_name}/" "$second_pod_config"
 
 	uts_cmd="ls -la /proc/self/ns/uts"
 	ipc_cmd="ls -la /proc/self/ns/ipc"
