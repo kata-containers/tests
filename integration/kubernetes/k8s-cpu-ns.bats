@@ -31,10 +31,12 @@ setup() {
 
 	retries="10"
 
+	num_cpus_cmd='grep -e "^processor" /proc/cpuinfo |wc -l'
 	# Check the total of cpus
 	for _ in $(seq 1 "$retries"); do
 		# Get number of cpus
-		total_cpus_container=$(kubectl exec pod/"$pod_name" -c "$container_name" cat /proc/cpuinfo |grep processor|wc -l)
+		total_cpus_container=$(kubectl exec pod/"$pod_name" -c "$container_name" \
+			-- sh -c "$num_cpus_cmd")
 		# Verify number of cpus
 		[ "$total_cpus_container" -le "$total_cpus" ]
 		[ "$total_cpus_container" -eq "$total_cpus" ] && break
@@ -43,19 +45,22 @@ setup() {
 	[ "$total_cpus_container" -eq "$total_cpus" ]
 
 	# Check the total of requests
-	total_requests_container=$(kubectl exec $pod_name -c $container_name cat $sharessyspath)
+	total_requests_container=$(kubectl exec $pod_name -c $container_name \
+		-- sh -c "cat $sharessyspath")
 
-	[ $total_requests_container -eq $total_requests ]
+	[ "$total_requests_container" -eq "$total_requests" ]
 
 	# Check the cpus inside the container
 
-	total_cpu_quota=$(kubectl exec $pod_name -c $container_name cat $quotasyspath)
+	total_cpu_quota=$(kubectl exec $pod_name -c $container_name \
+		-- sh -c "cat $quotasyspath")
 
-	total_cpu_period=$(kubectl exec $pod_name -c $container_name cat $periodsyspath)
+	total_cpu_period=$(kubectl exec $pod_name -c $container_name \
+		-- sh -c "cat $periodsyspath")
 
 	division_quota_period=$(echo $((total_cpu_quota/total_cpu_period)))
 
-	[ $division_quota_period -eq $total_cpu_container ]
+	[ "$division_quota_period" -eq "$total_cpu_container" ]
 }
 
 teardown() {
