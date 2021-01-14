@@ -425,7 +425,7 @@ static_check_license_headers()
 	local -r spdx_tag="SPDX-License-Identifier"
 	local -r spdx_license="Apache-2.0"
 	local -r license_pattern="${spdx_tag}: ${spdx_license}"
-	local -r copyright_pattern="Copyright \(c\) [[:digit:]]{4}"
+	local -r copyright_pattern="Copyright"
 
 	local header_checks=()
 
