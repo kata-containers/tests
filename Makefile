@@ -223,6 +223,9 @@ vcpus:
 ipv6:
 	bash -f integration/ipv6/ipv6.sh
 
+pmem:
+	bash -f integration/pmem/pmem_test.sh
+
 test: ${UNION}
 
 check: checkcommits log-parser
@@ -271,4 +274,5 @@ help:
 	tracing \
 	vcpus \
 	vfio \
-	vm-factory
+	vm-factory \
+	pmem
