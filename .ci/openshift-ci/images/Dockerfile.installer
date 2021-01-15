@@ -1,0 +1,22 @@
+# Copyright (c) 2020 Red Hat Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Build the image which wraps the kata-containers installation along with the
+# install script. It is used on a daemonset to deploy kata on OpenShift.
+#
+FROM centos:7
+
+RUN yum install -y rsync
+
+# Load the installation files.
+COPY ./_out ./_out
+
+# QEMU was built separated from other components (agent, runtime...) so the
+# tarball's content should be merged with the remain of the installation.
+COPY ./kata-static-qemu.tar.gz .
+RUN tar -C ./_out/build_install -xvzf ./kata-static-qemu.tar.gz
+
+COPY ./entrypoint.sh /usr/bin
+
+ENTRYPOINT /usr/bin/entrypoint.sh
