@@ -34,4 +34,5 @@ sed -i -e 's#\(ARG QEMU_REPO\).*#\1="'"$qemu_url"'"#' static-build/qemu/Dockerfi
 sed -i -e 's#\(ARG QEMU_VERSION\).*#\1="'${qemu_version}'"#' static-build/qemu/Dockerfile.ci
 sed -i -e 's#\(ARG PREFIX\).*#\1="'${prefix}'"#' static-build/qemu/Dockerfile.ci
 sed -i -e 's/\(ARG QEMU_TARBALL\).*/\1="kata-static-qemu.tar.gz"/' static-build/qemu/Dockerfile.ci
+sed -i -e 's#\(ARG QEMU_DESTDIR\).*#\1="/tmp/qemu-static"#' static-build/qemu/Dockerfile.ci
 popd
