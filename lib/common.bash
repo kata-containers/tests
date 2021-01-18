@@ -231,6 +231,16 @@ clean_env()
 	fi
 }
 
+clean_env_ctr()
+{
+	check_containers=$(sudo ctr c list -q | wc -l)
+	if ((${check_containers})); then
+		sudo ctr tasks kill $(sudo ctr task list -q)
+		sudo ctr tasks rm -f $(sudo ctr task list -q)
+		sudo ctr c rm $(sudo ctr c list -q)
+	fi
+}
+
 get_pod_config_dir() {
 	pod_config_dir="${BATS_TEST_DIRNAME}/runtimeclass_workloads"
 	info "k8s configured to use runtimeclass"
