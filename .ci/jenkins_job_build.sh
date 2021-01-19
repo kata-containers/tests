@@ -260,7 +260,6 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
-	export experimental_kernel="true"
 	;;
 "CLOUD-HYPERVISOR-K8S-CONTAINERD-MINIMAL")
 	init_ci_flags
@@ -269,7 +268,14 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
-	export experimental_kernel="true"
+	;;
+"CLOUD-HYPERVISOR-K8S-CONTAINERD-FULL")
+	init_ci_flags
+	export MINIMAL_CONTAINERD_K8S_E2E="false"
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	export KUBERNETES="yes"
 	;;
 "VFIO")
 	init_ci_flags
@@ -291,11 +297,6 @@ if [ "${CI_JOB}" == "VFIO" ]; then
 	export AGENT_INIT=yes TEST_INITRD=yes OSBUILDER_DISTRO=alpine
 	sudo -E PATH=$PATH "${ci_dir_name}/install_kata_image.sh"
 
-	echo "Installing QEMU experimental to get virtiofsd"
-	sudo -E PATH=$PATH "${ci_dir_name}/install_qemu_experimental.sh"
-
-	echo "Installing experimental kernel"
-	export experimental_kernel=true
 	sudo -E PATH=$PATH "${ci_dir_name}/install_kata_kernel.sh"
 
 	echo "Installing Cloud Hypervisor"
