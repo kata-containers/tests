@@ -27,10 +27,8 @@ ifeq (${CI}, true)
         endif
 endif
 
-# union for 'make test'
-UNION := functional debug-console $(DOCKER_DEPENDENCY) openshift crio docker-compose network \
-	docker-stability oci netmon kubernetes swarm vm-factory \
-	entropy ramdisk shimv2 tracing time-drift compatibility vcpus $(PODMAN_DEPENDENCY)
+# union for `make test`
+UNION := crio kubernetes pmem
 
 # filter scheme script for docker integration test suites
 FILTER_FILE = .ci/filter/filter_docker_test.sh
