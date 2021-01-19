@@ -57,7 +57,7 @@ build_install_shim_v2(){
 	fi
 	pushd "$runtime_src_path"
 	make
-	sudo -E make install
+	sudo -E PATH=$PATH make install
 	popd
 }
 
