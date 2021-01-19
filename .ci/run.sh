@@ -115,6 +115,12 @@ END
 		echo "INFO: Running VFIO functional tests"
 		sudo -E PATH="$PATH" bash -c "make vfio"
 		;;
+	"VIRTIOFS")
+		echo "INFO: Running ${CI_JOB} functional tests"
+		sudo -E PATH="$PATH" bash -c "make compatibility"
+		sudo -E PATH="$PATH" bash -c "make conformance"
+		sudo -E PATH="$PATH" bash -c "make docker"
+		;;
 	"SNAP")
 		echo "INFO: Running docker tests ($PWD)"
 		sudo -E PATH="$PATH" bash -c "make docker"

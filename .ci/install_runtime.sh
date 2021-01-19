@@ -49,7 +49,7 @@ PKGDEFAULTSDIR="${SHAREDIR}/defaults/kata-containers"
 NEW_RUNTIME_CONFIG="${PKGDEFAULTSDIR}/configuration.toml"
 # Note: This will also install the config file.
 build_and_install "${runtime_repo}" "" "true" "${tag}"
-experimental_qemu="${experimental_qemu:-false}"
+SHARED_FS="${SHARED_FS:-9pfs}"
 
 if [ -e "${NEW_RUNTIME_CONFIG}" ]; then
 	# Remove the legacy config file
@@ -76,7 +76,7 @@ case "${KATA_HYPERVISOR}" in
 		enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-fc.toml"
 		;;
 	"qemu")
-		if [ "$experimental_qemu" == "true" ]; then
+		if [ "$SHARED_FS" == "virtiofs" ]; then
 			enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-qemu-virtiofs.toml"
 		else
 			enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-qemu.toml"
