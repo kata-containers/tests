@@ -66,8 +66,6 @@ wait_for_reboot() {
 	done
 }
 
-[ "$(id -u)" -ne 0 ] && die "$0 must be executed by privileged user"
-
 oc project default
 
 worker_nodes=$(oc get nodes |  awk '{if ($3 == "worker") { print $1 } }')
