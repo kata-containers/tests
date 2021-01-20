@@ -15,10 +15,6 @@
         * [Requirements to run Kata Containers tests](#requirements-to-run-kata-containers-tests)
         * [Prepare an environment](#prepare-an-environment)
         * [Run the tests](#run-the-tests)
-        * [Running subsets of tests](#running-subsets-of-tests)
-            * [Running `Bats` based tests](#running-bats-based-tests)
-            * [Running `Ginkgo` based tests](#running-ginkgo-based-tests)
-    * [Metrics tests](#metrics-tests)
     * [Kata Admission controller webhook](#kata-admission-controller-webhook)
 
 This repository contains various types of tests and utilities (called
@@ -36,19 +32,11 @@ $ go get -d github.com/kata-containers/tests
 We provide several tests to ensure Kata-Containers run on different scenarios
 and with different container managers.
 
-1. [Functional tests](https://github.com/kata-containers/tests/tree/master/functional)
-2. Integration tests to ensure compatibility with:
-   - [Docker](https://github.com/kata-containers/tests/tree/master/integration/docker)
-   - [Kubernetes](https://github.com/kata-containers/tests/tree/master/integration/kubernetes)
-   - [CRI-O](https://github.com/kata-containers/tests/tree/master/integration/cri-o)
-   - [Containerd](https://github.com/kata-containers/tests/tree/master/integration/containerd)
-   - [OpenShift](https://github.com/kata-containers/tests/tree/master/integration/openshift)
-3. [Network tests](https://github.com/kata-containers/tests/tree/master/integration/network)
-4. [Stability tests](https://github.com/kata-containers/tests/tree/master/integration/stability)
-5. [Metrics](https://github.com/kata-containers/tests/tree/master/metrics)
-
-> **Note:** The unit tests of the different Kata Containers components are stored in each repository
-> along with the source code they test.
+1. Integration tests to ensure compatibility with:
+   - [Kubernetes](https://github.com/kata-containers/tests/tree/2.0-dev/integration/kubernetes)
+   - [CRI-O](https://github.com/kata-containers/tests/tree/2.0-dev/integration/cri-o)
+   - [Containerd](https://github.com/kata-containers/tests/tree/2.0-dev/integration/containerd)
+2. [Stability tests](https://github.com/kata-containers/tests/tree/2.0-dev/integration/stability)
 
 ## CI Content
 
@@ -211,7 +199,7 @@ all steps from the beginning and not from the failed step.
 ### Run the tests
 
 If you have already installed the Kata Containers packages and a container
-manager (i.e. Docker or Kubernetes), and you want to execute the content
+manager (i.e. Kubernetes), and you want to execute the content
 for all the tests, run the following:
 
 ```
@@ -221,9 +209,9 @@ $ sudo -E PATH=$PATH make test
 ```
 
 You can also execute a single test suite. For example, if you want to execute
-the docker integration tests, run the following:
+the Kubernetes integration tests, run the following:
 ```
-$ sudo -E PATH=$PATH make docker
+$ sudo -E PATH=$PATH make kubernetes
 ```
 
 A list of available test suite `make` targets can be found by running the
@@ -261,29 +249,5 @@ kubernetes:
         bash -f integration/kubernetes/run_kubernetes_tests.sh
 ```
 
-#### Running Ginkgo based tests
-
-Ginkgo supports selecting, filtering and excluding tests to be run using command
-line parameters. The tests repository `Makefile` supports passing the environment
-variables `FOCUS` and `SKIP` through to the `ginkgo` command in most cases. Check
-the `Makefile` specifics before you use this functionality.
-
-Ginkgo accepts [Golang regexp](https://golang.org/pkg/regexp/) regular expressions
-for the `FOCUS` and `SKIP` arguments. See the
-[Ginkgo documentation](https://onsi.github.io/ginkgo/#focused-specs) for more
-specifics. Example:
-
-```sh
-$ make docker					# all tests
-$ export FOCUS=".*CPU.*"; $ make docker		# any test with 'CPU' in its name
-$ export FOCUS="CPU constraints"; $ make docker	# One specific test
-$ export SKIP="CPU constraints"; $ make docker	# Skip one specific test
-```
-
-## Metrics tests
-
-See the [metrics documentation](metrics).
-
 ## Kata Admission controller webhook
-
 See the [webhook documentation](kata-webhook).
