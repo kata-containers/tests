@@ -377,30 +377,6 @@ build_install_cmake() {
 	rm -fr "${tdir}"
 }
 
-build_install_musl() {
-	local version=$(get_version "externals.musl.version")
-	local url=$(get_version "externals.musl.url")
-	[ "${url}" != "null" ] && [ "${version}" != "null" ]
-	local file="musl-${version}.tar.gz"
-	local dir="musl-${version}"
-	local download="${url}/releases/${file}"
-	local tdir=$(mktemp -d)
-	local muslarch=$(uname -m)
-
-	pushd "${tdir}"
-	curl -sLO "${download}"
-	tar -zxf "${file}"
-	cd "${dir}"
-	sed -i "s/^ARCH = .*/ARCH = ${muslarch}/g"  dist/config.mak
-	./configure
-	make
-	sudo make install
-	sudo echo '"/usr/local/musl/lib"' > /etc/ld-musl-${muslarch}.path
-	export PATH=${PATH}:/usr/local/musl/bin
-	popd
-	rm -fr "${tdir}"
-}
-
 check_git_version() {
 	result="true"
 
