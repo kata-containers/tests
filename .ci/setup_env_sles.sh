@@ -55,7 +55,6 @@ declare -A packages=( \
 	[metrics_dependencies]="jq" \
 	[cri-containerd_dependencies]="libseccomp-devel libapparmor-devel make pkg-config" \
 	[haveged]="haveged" \
- 	[gnu_parallel]="gnu_parallel" \
 	[libsystemd]="systemd-devel" \
 )
 

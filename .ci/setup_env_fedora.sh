@@ -40,7 +40,6 @@ declare -A packages=( \
 	[crudini]="crudini" \
 	[procenv]="procenv" \
 	[haveged]="haveged" \
-	[gnu_parallel]="parallel" \
 	[libsystemd]="systemd-devel" \
 	[redis]="redis" \
 	[versionlock]="python3-dnf-plugin-versionlock" \
