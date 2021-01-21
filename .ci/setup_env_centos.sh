@@ -73,7 +73,6 @@ declare -A packages=( \
 	[crudini]="crudini" \
 	[procenv]="procenv" \
 	[haveged]="haveged" \
-	[gnu_parallel_dependencies]="perl bzip2 make" \
 	[libsystemd]="systemd-devel" \
 	[redis]="redis" \
 )
@@ -101,15 +100,6 @@ main()
 	chronic sudo -E yum -y install $pkgs_to_install
 
 	[ "$setup_type" = "minimal" ] && exit 0
-
-	if [ "$centos_version" == 7 ]; then
-		info "Build and install GNU parallel"
-		# GNU parallel not available in Centos repos, so build it instead.
-		build_install_parallel
-	else
-		info "The following package will be installed: parallel"
-		chronic sudo -E yum -y install parallel
-	fi
 
 	if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
 		echo "Install ${KATA_KSM_THROTTLER_JOB}"

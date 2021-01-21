@@ -357,24 +357,6 @@ gen_clean_arch() {
 	[ -d "${KATA_TESTS_BASEDIR}" ] && sudo rm -rf ${KATA_TESTS_BASEDIR}/*
 }
 
-build_install_parallel() {
-	gnu_parallel_url=$(get_test_version "externals.parallel.url")
-	gnu_parallel_version=$(get_test_version "externals.parallel.version")
-	gnu_parallel_tar_pkg="parallel-${gnu_parallel_version}.tar.bz2"
-	gnu_parallel_dir="./${gnu_parallel_tar_pkg//.*}"
-
-	chronic curl -sLO "${gnu_parallel_url}/${gnu_parallel_tar_pkg}"
-	tar -xf "${gnu_parallel_tar_pkg}"
-
-	pushd "${gnu_parallel_dir}"
-	chronic ./configure
-	chronic make
-	chronic sudo make install
-	popd
-
-	rm -rf "$gnu_parallel_dir" "$gnu_parallel_tar_pkg"
-}
-
 build_install_cmake() {
 	local version=$(get_version "externals.cmake.version")
 	local url=$(get_version "externals.cmake.url")
