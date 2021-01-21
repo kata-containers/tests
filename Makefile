@@ -166,6 +166,7 @@ swarm:
 stability:
 	cd integration/stability && \
 	ITERATIONS=2 MAX_CONTAINERS=20 ./soak_parallel_rm.sh
+	cd integration/stability && ./hypervisor_stability_kill_test.sh
 
 shimv2:
 	bash integration/containerd/shimv2/shimv2-tests.sh

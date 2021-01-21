@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2019 HyperHQ Inc.
+# Copyright (c) 2019-2021 HyperHQ Inc, Intel Corporation.
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -14,18 +14,20 @@ cidir=$(dirname "$0")
 source "${cidir}/../../metrics/lib/common.bash"
 
 # Environment variables
-IMAGE="${IMAGE:-busybox}"
+IMAGE="${IMAGE:-docker.io/library/busybox:latest}"
 CONTAINER_NAME="${CONTAINER_NAME:-test}"
 PAYLOAD_ARGS="${PAYLOAD_ARGS:-tail -f /dev/null}"
 
-# Set the runtime if not set already
-RUNTIME="${RUNTIME:-kata-runtime}"
-
-HYPERVISOR_NAME=$(basename ${HYPERVISOR_PATH})
-
 setup()  {
-	clean_env
-	sudo docker run --runtime=$RUNTIME -d --name $CONTAINER_NAME $IMAGE $PAYLOAD_ARGS
+	sudo systemctl restart containerd
+	extract_kata_env
+	clean_env_ctr
+	HYPERVISOR_NAME=$(basename ${HYPERVISOR_PATH})
+	CONTAINERD_RUNTIME="io.containerd.kata.v2"
+	sudo ctr image pull $IMAGE
+	[ $? != 0 ] && die "Unable to get image $IMAGE"
+
+	sudo ctr run --runtime=$CONTAINERD_RUNTIME -d $IMAGE $CONTAINER_NAME sh -c $PAYLOAD_ARGS
 	num=$(pidof ${HYPERVISOR_NAME} | wc -w)
 	[ ${num} -eq 1 ] || die "hypervisor count:${num} expected:1"
 }
@@ -38,13 +40,14 @@ kill_hypervisor()  {
 	sleep 1
 	num=$(pidof ${HYPERVISOR_NAME} | wc -w)
 	[ ${num} -eq 0 ] || die "hypervisor count:${num} expected:0"
-	sudo docker rm -f $CONTAINER_NAME
+	sudo ctr tasks rm -f $(sudo ctr task list -q)
+	sudo ctr c rm $(sudo ctr c list -q)
 	[ $? -eq 0 ] || die "failed to force removing container $CONTAINER_NAME"
 }
 
 teardown()  {
 	echo "Ending hypervisor stability test"
-	clean_env
+	clean_env_ctr
 }
 
 trap teardown EXIT
