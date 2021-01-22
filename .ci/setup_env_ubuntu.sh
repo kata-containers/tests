@@ -14,6 +14,9 @@ source "${cidir}/lib.sh"
 echo "Update apt repositories"
 sudo -E apt update
 
+echo "Try to preemptively fix broken dependencies, if any"
+sudo -E apt --fix-broken install -y
+
 echo "Install chronic"
 sudo -E apt install -y moreutils
 
