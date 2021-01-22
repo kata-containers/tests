@@ -50,7 +50,7 @@ mkdir -p "${tests_repo_dir}"
 git clone "https://${tests_repo}.git" "${tests_repo_dir}"
 cd "${tests_repo_dir}"
 
-# Checkout to target branch: master, stable-X.Y, 2.0-dev etc
+# Checkout to target branch: master, stable-X.Y, main etc
 git checkout "origin/${ghprbTargetBranch}"
 
 # If the changes are in the repository to test:

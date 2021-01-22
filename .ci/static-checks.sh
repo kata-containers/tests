@@ -231,8 +231,8 @@ static_check_commits()
 	# ensure the utility is built before running it.
 	# for master branch
 	# (cd "${tests_repo_dir}" && make checkcommits)
-	# for 2.0-dev branch
-	(cd "${tests_repo_dir}" && make checkcommits && git remote set-branches origin '2.0-dev' && git fetch -v)
+	# for main branch
+	(cd "${tests_repo_dir}" && make checkcommits && git remote set-branches origin 'main' && git fetch -v)
 
 	# Check the commits in the branch
 	{
@@ -242,7 +242,7 @@ static_check_commits()
 			--ignore-fixes-for-subsystem "release" \
 			--verbose \
 			HEAD \
-			2.0-dev; \
+			main; \
 			rc="$?";
 	} || true
 
@@ -1202,7 +1202,7 @@ main()
 	for func in $all_check_funcs
 	do
 		if [ "$func" = "static_check_commits" ]; then
-			if [ -n "$TRAVIS_BRANCH" ] && [ "$TRAVIS_BRANCH" != "2.0-dev" ]
+			if [ -n "$TRAVIS_BRANCH" ] && [ "$TRAVIS_BRANCH" != "main" ]
 			then
 				echo "Skipping checkcommits"
 				echo "See issue: https://github.com/kata-containers/tests/issues/632"
