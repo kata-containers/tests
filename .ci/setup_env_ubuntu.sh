@@ -40,7 +40,6 @@ declare -A packages=( \
 	[crudini]="crudini" \
 	[procenv]="procenv" \
 	[haveged]="haveged" \
-	[gnu_parallel]="parallel" \
 	[libsystemd]="libsystemd-dev" \
 	[redis]="redis-server" \
 )

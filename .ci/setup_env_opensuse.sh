@@ -38,7 +38,6 @@ declare -A packages=( \
 	[cri-containerd_dependencies]="libseccomp-devel libapparmor-devel make pkg-config libbtrfs-devel patterns-base-apparmor" \
 	[crudini]="crudini" \
 	[haveged]="haveged" \
-	[gnu_parallel]="gnu_parallel" \
 	[libsystemd]="systemd-devel" \
 	[redis]="redis" \
 )
