@@ -23,6 +23,8 @@ TEST_INITRD="${TEST_INITRD:-no}"
 experimental_qemu="${experimental_qemu:-false}"
 # List of containers to remove before exit
 list_containers=()
+RUNTIME="io.containerd.kata.v2"
+arch=$("${dir_path}"/../../.ci/kata-arch.sh -d)
 
 if [ "$TEST_INITRD" == "yes" ]; then
 	echo "Skip pmem test: nvdimm is disabled when initrd is used as rootfs"
@@ -34,8 +36,14 @@ if [ "$experimental_qemu" == "true" ]; then
 	exit 0
 fi
 
+if [ "$arch" == "aarch64" ]; then
+	echo "Skip pmem test: $arch can't ensure data persistence for the lack of libpmem support"
+	exit 0
+fi
+
 function setup() {
-	clean_env
+	sudo systemctl restart containerd
+	clean_env_ctr
 	check_processes
 	if [ ! -d "${osbuilder_repository_path}" ]; then
 		go get -d "${osbuilder_repository}" || true
@@ -141,7 +149,7 @@ function teardown() {
 		ctr_rm_rf "${c}" 2&> /dev/null || true
 	done
 
-	clean_env
+	clean_env_ctr
 	check_processes
 }
 
