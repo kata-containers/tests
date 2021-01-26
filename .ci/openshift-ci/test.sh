@@ -19,6 +19,7 @@ export PATH=/tmp/shared:$PATH
 oc version || die "Test cluster is unreachable"
 
 info "Install and configure kata into the test cluster"
+export SELINUX_PERMISSIVE="yes"
 ${script_dir}/cluster/install_kata.sh || die "Failed to install kata-containers"
 
 info "Run test suite: $suite"
