@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2018 Intel Corporation
+# Copyright (c) 2018-2021 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -15,12 +15,10 @@ cidir=$(dirname "$0")
 source "${cidir}/../../metrics/lib/common.bash"
 
 # Environment variables
-IMAGE="${IMAGE:-busybox}"
+IMAGE="${IMAGE:-quay.io/prometheus/busybox:latest}"
 CONTAINER_NAME="${CONTAINER_NAME:-test}"
 PAYLOAD_ARGS="${PAYLOAD_ARGS:-tail -f /dev/null}"
 
-# Set the runtime if not set already
-RUNTIME="${RUNTIME:-kata-runtime}"
 
 # Timeout is the duration of this test (seconds)
 # We want to stress the agent for a significant
@@ -30,24 +28,27 @@ start_time=$(date +%s)
 end_time=$((start_time+timeout))
 
 function setup {
-	clean_env
-	docker run --runtime=$RUNTIME -d --name $CONTAINER_NAME $IMAGE $PAYLOAD_ARGS
+	sudo systemctl restart containerd
+	clean_env_ctr
+	CONTAINERD_RUNTIME="io.containerd.kata.v2"
+	sudo ctr image pull $IMAGE
+	sudo ctr run --runtime=$CONTAINERD_RUNTIME -d $IMAGE $CONTAINER_NAME sh -c $PAYLOAD_ARGS
 }
 
 function exec_loop {
-	docker exec $CONTAINER_NAME sh -c "echo 'hello world' > file"
-	docker exec $CONTAINER_NAME sh -c "rm -rf /file"
-	docker exec $CONTAINER_NAME sh -c "ls /etc/resolv.conf 2>/dev/null " | grep "/etc/resolv.conf"
-	docker exec $CONTAINER_NAME sh -c "touch /tmp/execWorks"
-	docker exec $CONTAINER_NAME sh -c "ls /tmp | grep execWorks"
-	docker exec $CONTAINER_NAME sh -c "rm -rf /tmp/execWorks"
-	docker exec $CONTAINER_NAME sh -c "ls /etc/foo" || echo "Fail expected"
-	docker exec $CONTAINER_NAME sh -c "cat /tmp/one" || echo "Fail expected"
-	docker exec $CONTAINER_NAME sh -c "exit 42" || echo "Fail expected"
+	cmd="sudo ctr t exec --exec-id 1 $CONTAINER_NAME sh -c"
+	$cmd "echo 'hello world' > file"
+	$cmd "rm -rf /file"
+	$cmd "touch /tmp/execWorks"
+	$cmd "ls /tmp | grep execWorks"
+	$cmd "rm -rf /tmp/execWorks"
+	$cmd "ls /etc/foo" || echo "Fail expected"
+	$cmd "cat /tmp/one" || echo "Fail expected"
+	$cmd "exit 42" || echo "Fail expected"
 }
 
 function teardown {
-	clean_env
+	clean_env_ctr
 }
 
 echo "Starting stability test"
