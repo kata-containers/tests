@@ -79,6 +79,8 @@ init_ci_flags() {
 	# Generate a report using a jenkins job data
 	# Name of the job to get data from
 	export METRICS_JOB_BASELINE=""
+	# Configure test to use Kata SHIM V2
+	export SHIMV2_TEST="true"
 }
 
 # Run noninteractive on debian and ubuntu
