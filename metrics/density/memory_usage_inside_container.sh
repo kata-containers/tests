@@ -1,10 +1,10 @@
 #!/bin/bash
-# Copyright (c) 2017-2018 Intel Corporation
+# Copyright (c) 2017-2021 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
 #  Description of the test:
-#  This test launches an alpine container and inside
+#  This test launches a busybox container and inside
 #  memory free, memory available and total memory
 #  is measured by using /proc/meminfo.
 
@@ -16,8 +16,7 @@ source "${SCRIPT_PATH}/../lib/common.bash"
 
 TEST_NAME="memory footprint inside container"
 VERSIONS_FILE="${SCRIPT_PATH}/../../versions.yaml"
-ALPINE_VERSION=$("${GOPATH}/bin/yq" read "$VERSIONS_FILE" "docker_images.alpine.version")
-IMAGE="alpine:$ALPINE_VERSION"
+IMAGE='mirror.gcr.io/library/busybox:latest'
 CMD="sleep 10; cat /proc/meminfo"
 # We specify here in 'k', as that then matches the results we get from the meminfo,
 # which makes later direct comparison easier.
@@ -25,14 +24,15 @@ MEMSIZE=${MEMSIZE:-$((2048*1024))}
 
 function main() {
 	# Check tools/commands dependencies
-	cmds=("awk" "docker")
+	cmds=("awk" "ctr")
 
 	init_env
 	check_cmds "${cmds[@]}"
+	check_images "${IMAGE}"
 
 	metrics_json_init
 
-	local output=$(docker run -m ${MEMSIZE}k --rm --runtime=$RUNTIME $IMAGE sh -c "$CMD")
+	local output=$(ctr run --memory-limit $((MEMSIZE*1024)) --rm --runtime=$CTR_RUNTIME $IMAGE busybox sh -c "$CMD" 2>&1)
 
 	# Save configuration
 	metrics_json_start_array
