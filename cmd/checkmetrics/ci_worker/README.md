@@ -1,4 +1,4 @@
-# CI slaves reference files
+# CI workers reference files
 
 This directory contains the reference `checkmetrics` configuration files
 utilised by the CI system build machines to check CI metrics results.
@@ -15,5 +15,5 @@ using the CI build machine hostname to locate the correct file:
 local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DIR}/checkmetrics-json-$(uname -n).toml"
 ```
 
-Thus, each CI metrics slave machine should be uniquely named, to allow for file
+Thus, each CI metrics worker machine should be uniquely named, to allow for file
 differentiation in this directory.
