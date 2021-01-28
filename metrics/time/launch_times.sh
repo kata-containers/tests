@@ -1,6 +1,6 @@
 #!/bin/bash
-# Copyright (c) 2017-2018 Intel Corporation
-# 
+# Copyright (c) 2017-2021 Intel Corporation
+#
 # SPDX-License-Identifier: Apache-2.0
 #
 #  Description of the test:
@@ -59,9 +59,12 @@ check_entropy_level() {
 
 # convert a 'seconds:nanoseconds' string into nanoseconds
 sn_to_ns() {
+	# !!: Remove 0's from beginning otherwise the number will be converted to octal
+	s=$(echo ${1%:*} | sed 's/^0*//g')
+	ns=$(echo ${1##*:} | sed 's/^0*//g')
 	# use shell magic to strip out the 's' and 'ns' fields and print
 	# them as a 0-padded ns string...
-	printf "%d%09d" ${1%:*} ${1##*:}
+	printf "%d%09d" ${s} ${ns}
 }
 
 # convert 'nanoseconds' (since epoch) into a 'float' seconds
@@ -77,7 +80,7 @@ run_workload() {
 
 	# Run the image and command and capture the results into an array...
 	declare workload_result
-	readarray -n 0 workload_result < <(docker run --cap-add SYSLOG --rm --runtime=${RUNTIME} ${NETWORK_OPTION} ${IMAGE} sh -c "$DATECMD $DMESGCMD")
+	readarray -n 0 workload_result < <(ctr run --rm --runtime=${CTR_RUNTIME} ${IMAGE} test bash -c "$DATECMD $DMESGCMD")
 
 	end_time=$($DATECMD)
 
@@ -163,12 +166,12 @@ EOF
 	# between each of our 'test' containers. The aim being to see if our launch times
 	# are linear with the number of running containers or not
 	if [ -n "$SCALING" ]; then
-		docker run --runtime=${RUNTIME} -d ${IMAGE} sh -c "tail -f /dev/null"
+		ctr run --runtime=${CTR_RUNTIME} -d ${IMAGE} test bash -c "tail -f /dev/null"
 	fi
 }
 
 init () {
-	TEST_ARGS="image=${IMAGE} runtime=${RUNTIME} units=seconds"
+	TEST_ARGS="image=${IMAGE} runtime=${CTR_RUNTIME} units=seconds"
 
 	# We set the generic name here, but we save the different time results separately,
 	# and append the actual detail to the name at the time of saving...
@@ -176,9 +179,6 @@ init () {
 
 	# If we are scaling, note that in the name
 	[ -n "$SCALING" ] && TEST_NAME="${TEST_NAME} scaling"
-
-	[ -n "$NONETWORKING" ] && NETWORK_OPTION="--network none" && \
-		TEST_NAME="${TEST_NAME} nonet"
 
 	echo "Executing test: ${TEST_NAME} ${TEST_ARGS}"
 	check_cmds "${REQUIRED_CMDS[@]}"
@@ -208,7 +208,6 @@ Usage: $0 [-h] [options]
         This script takes time measurements for different
 	stages of a boot/run/rm cycle
    Options:
-        -d,         Disable network bringup
         -h,         Help
         -i <name>,  Image name (mandatory)
         -n <n>,     Number of containers to run (mandatory)
@@ -222,9 +221,6 @@ main() {
 	local OPTIND
 	while getopts "dhi:n:s" opt;do
 		case ${opt} in
-		d)
-		    NONETWORKING=true
-		    ;;
 		h)
 		    help
 		    exit 0;
