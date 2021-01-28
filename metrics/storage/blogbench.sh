@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2018 Intel Corporation
+# Copyright (c) 2018-2021 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -17,7 +17,7 @@ SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 source "${SCRIPT_PATH}/../lib/common.bash"
 
 TEST_NAME="blogbench"
-IMAGE="local-blogbench"
+IMAGE="docker.io/library/local-blogbench:latest"
 DOCKERFILE="${SCRIPT_PATH}/blogbench_dockerfile/Dockerfile"
 
 # Number of iterations for blogbench to run - note, results are not
@@ -35,11 +35,11 @@ function main() {
 
 	init_env
 	check_cmds "${cmds[@]}"
-	check_dockerfiles_images "$IMAGE" "$DOCKERFILE"
+	check_ctr_images "$IMAGE" "$DOCKERFILE"
 
 	metrics_json_init
 
-	local output=$(docker run --rm --runtime=$RUNTIME $IMAGE $CMD)
+	local output=$(ctr run --rm --runtime=${CTR_RUNTIME} $IMAGE test $CMD)
 
 	# Save configuration
 	metrics_json_start_array
