@@ -18,6 +18,7 @@ echo "Install Kubernetes components"
 cidir=$(dirname "$0")
 source /etc/os-release || source /usr/lib/os-release
 kubernetes_version=$(get_version "externals.kubernetes.version")
+ARCH=$(uname -m)
 
 if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
 	sudo bash -c "cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
@@ -29,10 +30,15 @@ EOF"
 	chronic sudo -E apt update
 	chronic sudo -E apt install --allow-downgrades -y kubelet="$kubernetes_version" kubeadm="$kubernetes_version" kubectl="$kubernetes_version"
 elif [ "$ID" == "centos" ] || [ "$ID" == "fedora" ]; then
-	sudo bash -c "cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+	url=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+        if [ "${ARCH}" == "ppc64le" ]; then
+           url=https://packages.cloud.google.com/yum/repos/kubernetes-el7-ppc64le
+        fi
+        echo "Install ${url} for ${ARCH}"
+        sudo bash -c "cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 	[kubernetes]
 	name=Kubernetes
-	baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+        baseurl=${url}
 	enabled=1
 	gpgcheck=1
 	repo_gpgcheck=1
