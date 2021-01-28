@@ -195,4 +195,4 @@ $ ./checkmetrics --basefile ${BASEFILE} --metricsdir ${METRICSDIR}
 
 ## See also
 
-- [CI slaves reference files](ci_slaves)
+- [CI worker reference files](ci_worker)

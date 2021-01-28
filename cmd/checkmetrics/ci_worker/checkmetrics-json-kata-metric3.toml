@@ -1,11 +1,11 @@
-# Copyright (c) 2019 Intel Corporation
+# Copyright (c) 2021 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
 # This file contains baseline expectations
 # for checked results by checkmetrics tool.
 #
-# values set specifically for packet.com c1.small slave.
+# values set specifically for packet.com c1.small worker.
 
 [[metric]]
 name = "boot-times"
@@ -16,7 +16,7 @@ description = "measure container lifecycle timings"
 # within (inclusive)
 checkvar = ".\"boot-times\".Results | .[] | .\"to-workload\".Result"
 checktype = "mean"
-midval = 0.80
+midval = 0.73
 minpercent = 5.0
 maxpercent = 5.0
 
@@ -29,7 +29,7 @@ description = "measure container average footprint"
 # within (inclusive)
 checkvar = ".\"memory-footprint\".Results | .[] | .average.Result"
 checktype = "mean"
-midval = 122904.0
+midval = 109400.0
 minpercent = 5.0
 maxpercent = 5.0
 
@@ -42,7 +42,32 @@ description = "measure container average footprint with KSM"
 # within (inclusive)
 checkvar = ".\"memory-footprint-ksm\".Results | .[] | .average.Result"
 checktype = "mean"
-midval = 49821.0
+midval = 107138.0
 minpercent = 5.0
 maxpercent = 5.0
 
+[[metric]]
+name = "blogbench"
+type = "json"
+description = "measure container average of blogbench write"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"blogbench\".Results | .[] | .write.Result"
+checktype = "mean"
+midval = 945.0
+minpercent = 10.0
+maxpercent = 10.0
+
+[[metric]]
+name = "blogbench"
+type = "json"
+description = "measure container average of blogbench read"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"blogbench\".Results | .[] | .read.Result"
+checktype = "mean"
+midval = 53300.0
+minpercent = 10.0
+maxpercent = 10.0
