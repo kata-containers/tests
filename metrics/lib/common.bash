@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2017,2018 Intel Corporation
+# Copyright (c) 2017-2021 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -11,10 +11,11 @@ RESULT_DIR="${LIB_DIR}/../results"
 source ${LIB_DIR}/../../lib/common.bash
 source ${LIB_DIR}/json.bash
 source /etc/os-release || source /usr/lib/os-release
-KATA_KSM_THROTTLER="${KATA_KSM_THROTTLER:-no}"
 
 # Set variables to reasonable defaults if unset or empty
+CTR_EXE="${CTR_EXE:-ctr}"
 DOCKER_EXE="${DOCKER_EXE:-docker}"
+CTR_RUNTIME="${CTR_RUNTIME:-io.containerd.run.kata.v2}"
 RUNTIME="${RUNTIME:-kata-runtime}"
 
 KSM_BASE="/sys/kernel/mm/ksm"
@@ -60,7 +61,7 @@ check_cmds()
 	done
 }
 
-# This function performs a docker pull on the image names
+# This function performs a pull on the image names
 # passed in (notionally as 'about to be used'), to ensure
 #  - that we have the most upto date images
 #  - that any pull/refresh time (for a first pull) does not
@@ -74,15 +75,15 @@ check_images()
 {
 	local img req_images=( "$@" )
 	for img in "${req_images[@]}"; do
-		echo "docker pull'ing: $img"
-		if ! docker pull "$img"; then
-			die "Failed to docker pull image $img"
+		echo "ctr pull'ing: $img"
+		if ! ctr image pull "$img"; then
+			die "Failed to pull image $img"
 		fi
-		echo "docker pull'd: $img"
+		echo "ctr pull'd: $img"
 	done
 }
 
-# This function performs a docker build on the image names
+# This function performs a build on the image names
 # passed in, to ensure that we have the latest changes from
 # the dockerfiles
 build_dockerfile_image()
@@ -92,42 +93,28 @@ build_dockerfile_image()
 	local dockerfile_dir=${2%/*}
 
 	echo "docker building $image"
-	if ! docker build --label "$image" --tag "${image}" -f "$dockerfile_path" "$dockerfile_dir"; then
+	if ! ${DOCKER_EXE} build --label "$image" --tag "${image}" -f "$dockerfile_path" "$dockerfile_dir"; then
 		die "Failed to docker build image $image"
 	fi
 }
 
-# This function verifies that the dockerfile version is
-# equal to the test version in order to build the image or
-# just run the test
-check_dockerfiles_images()
+# This function removes the ctr image, builds a new one using a dockerfile
+# and imports the image from docker to ctr
+check_ctr_images()
 {
-	local image="$1"
+	local ctr_image="$1"
 	local dockerfile_path="$2"
+	local docker_image="$(echo ${ctr_image} | cut -d/ -f3 | cut -d: -f1)"
 
-	if [ -z "$image" ] || [ -z "$dockerfile_path" ]; then
+	if [ -z "$ctr_image" ] || [ -z "$dockerfile_path" ]; then
 		die "Missing image or dockerfile path variable"
 	fi
 
-	# Verify that dockerfile version is equal to test version
-	check_image=$(docker images "$image" -q)
-	if [ -n "$check_image" ]; then
-		# Check image label
-		check_image_version=$(docker image inspect $image | grep -w DOCKERFILE_VERSION | head -1 | cut -d '"' -f4)
-		if [ -n "$check_image_version" ]; then
-			echo "$image is not updated"
-			build_dockerfile_image "$image" "$dockerfile_path"
-		else
-			# Check dockerfile label
-			dockerfile_version=$(grep DOCKERFILE_VERSION $dockerfile_path | cut -d '"' -f2)
-			if [ "$dockerfile_version" != "$check_image_version" ]; then
-				echo "$dockerfile_version is not equal to $check_image_version"
-				build_dockerfile_image "$image" "$dockerfile_path"
-			fi
-		fi
-	else
-		build_dockerfile_image "$image" "$dockerfile_path"
-	fi
+	ctr i rm "${ctr_image}"
+	build_dockerfile_image "${docker_image}" "${dockerfile_path}"
+	${DOCKER_EXE} save -o "${docker_image}.tar" "${docker_image}"
+	ctr i import "${docker_image}.tar"
+	rm -rf ${docker_image}.tar
 }
 
 # A one time (per uber test cycle) init that tries to get the
@@ -140,7 +127,7 @@ metrics_onetime_init()
 	fi
 
 	# Restart services
-	sudo systemctl restart docker
+	sudo systemctl restart docker containerd
 
 	# We want this to be seen in sub shells as well...
 	# otherwise init_env() cannot check us
@@ -160,13 +147,14 @@ init_env()
 {
 	test_banner "${TEST_NAME}"
 
-	cmd=("docker")
+	cmd=("docker" "ctr")
 
 	# check dependencies
 	check_cmds "${cmd[@]}"
 
 	# Remove all stopped containers
 	clean_env
+	clean_env_ctr
 
 	# This clean up is more aggressive, this is in order to
 	# decrease the factors that could affect the metrics results.
@@ -179,6 +167,10 @@ init_env()
 kill_processes_before_start() {
 	DOCKER_PROCS=$(${DOCKER_EXE} ps -q)
 	[[ -n "${DOCKER_PROCS}" ]] && clean_env
+
+	CTR_PROCS=$(${CTR_EXE} t list -q)
+	[[ -n "${CTR_PROCS}" ]] && clean_env_ctr
+
 	check_processes
 }
 
@@ -188,36 +180,12 @@ random_name() {
 	mktemp -u kata-XXXXXX
 }
 
-# Dump diagnostics about our current system state.
-# Very useful for diagnosing if we have failed a sanity check
-show_system_state() {
-	echo "Showing system state:"
-	echo " --Docker ps--"
-	${DOCKER_EXE} ps -a
-	echo " --${RUNTIME} list--"
-	local RPATH=$(command -v ${RUNTIME})
-	sudo ${RPATH} list
-
-	local processes="kata-proxy kata-shim kata-runtime $(basename ${HYPERVISOR_PATH} | cut -d '-' -f1)"
-
-	for p in ${processes}; do
-		echo " --pgrep ${p}--"
-		pgrep -a ${p}
-	done
-
-	# Verify kata-ksm-throttler
-	if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
-		process="kata-ksm-throttler"
-		process_path=$(whereis ${process} | tr -d '[:space:]'| cut -d ':' -f2)
-		echo " --pgrep ${process}--"
-		pgrep -f ${process_path} > /dev/null
-	fi
-}
-
 show_system_ctr_state() {
 	echo "Showing system state:"
 	echo " --Check containers--"
-	sudo ctr c list -q
+	sudo ctr c list
+	echo " --Check tasks--"
+	sudo ctr task list
 
 	local processes="containerd-shim-kata-v2 kata-runtime"
 
@@ -236,7 +204,7 @@ common_init(){
 	if [ "$iskata" == "1" ]; then
 		extract_kata_env
 	else
-		# We know we have nothing to do for runc
+		# We know we have nothing to do for runc or shimv2
 		if [ "$RUNTIME" != "runc" ]; then
 			warning "Unrecognised runtime ${RUNTIME}"
 		fi
