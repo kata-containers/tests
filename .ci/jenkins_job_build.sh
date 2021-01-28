@@ -79,6 +79,8 @@ init_ci_flags() {
 	# Generate a report using a jenkins job data
 	# Name of the job to get data from
 	export METRICS_JOB_BASELINE=""
+	# Configure test to use Kata SHIM V2
+	export SHIMV2_TEST="true"
 }
 
 # Run noninteractive on debian and ubuntu
@@ -260,7 +262,6 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
-	export experimental_kernel="true"
 	;;
 "CLOUD-HYPERVISOR-K8S-CONTAINERD-MINIMAL")
 	init_ci_flags
@@ -269,7 +270,6 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
-	export experimental_kernel="true"
 	;;
 "CLOUD-HYPERVISOR-K8S-CONTAINERD-FULL")
 	init_ci_flags
@@ -278,8 +278,16 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
-	export experimental_kernel="true"
 	;;
+"FIRECRACKER")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export CRIO="no"
+	export KATA_HYPERVISOR="firecracker"
+	export KUBERNETES="yes"
+	export OPENSHIFT="no"
+;;
 "VFIO")
 	init_ci_flags
 	export CRIO="no"
@@ -300,11 +308,6 @@ if [ "${CI_JOB}" == "VFIO" ]; then
 	export AGENT_INIT=yes TEST_INITRD=yes OSBUILDER_DISTRO=alpine
 	sudo -E PATH=$PATH "${ci_dir_name}/install_kata_image.sh"
 
-	echo "Installing QEMU experimental to get virtiofsd"
-	sudo -E PATH=$PATH "${ci_dir_name}/install_qemu_experimental.sh"
-
-	echo "Installing experimental kernel"
-	export experimental_kernel=true
 	sudo -E PATH=$PATH "${ci_dir_name}/install_kata_kernel.sh"
 
 	echo "Installing Cloud Hypervisor"

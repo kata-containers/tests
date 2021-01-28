@@ -7,13 +7,18 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+fc_limitations="https://github.com/kata-containers/documentation/issues/351"
 
 setup() {
+	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
+
 	export KUBECONFIG="$HOME/.kube/config"
 	get_pod_config_dir
 }
 
 @test "Credentials using secrets" {
+	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
+
 	secret_name="test-secret"
 	pod_name="secret-test-pod"
 	second_pod_name="secret-envars-test-pod"
@@ -48,6 +53,8 @@ setup() {
 }
 
 teardown() {
+	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
+
 	kubectl delete pod "$pod_name" "$second_pod_name"
 	kubectl delete secret "$secret_name"
 }

@@ -357,26 +357,6 @@ gen_clean_arch() {
 	[ -d "${KATA_TESTS_BASEDIR}" ] && sudo rm -rf ${KATA_TESTS_BASEDIR}/*
 }
 
-build_install_cmake() {
-	local version=$(get_version "externals.cmake.version")
-	local url=$(get_version "externals.cmake.url")
-	[ "${url}" != "null" ] && [ "${version}" != "null" ]
-	local file="cmake-${version}.tar.gz"
-	local dir="cmake-${version}"
-	local download="${url}/releases/download/v${version}/${file}"
-	local tdir=$(mktemp -d)
-
-	pushd "${tdir}"
-	curl -sLO "${download}"
-	tar -zxf "${file}"
-	cd "${dir}"
-	./bootstrap
-	make
-	sudo make install
-	popd
-	rm -fr "${tdir}"
-}
-
 check_git_version() {
 	result="true"
 

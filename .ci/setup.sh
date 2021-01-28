@@ -20,6 +20,7 @@ CI=${CI:-false}
 # values indicating whether related intergration tests have been supported
 CRIO="${CRIO:-yes}"
 CRI_CONTAINERD="${CRI_CONTAINERD:-no}"
+KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 KUBERNETES="${KUBERNETES:-yes}"
 OPENSHIFT="${OPENSHIFT:-yes}"
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
@@ -114,6 +115,11 @@ install_extra_tools() {
 		bash -f "${cidir}/install_cri_containerd.sh" &&
 		bash -f "${cidir}/configure_containerd_for_kata.sh" ||
 		echo "containerd not installed"
+
+	[ "${KATA_HYPERVISOR}" == "firecracker" ] &&
+		echo "Configure devicemapper for firecracker" &&
+		bash -f "${cidir}/containerd_devmapper_setup.sh" ||
+		echo "Devicemapper not configured"
 
 	[ "${KUBERNETES}" = "yes" ] &&
 		echo "Install Kubernetes" &&

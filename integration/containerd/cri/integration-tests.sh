@@ -134,6 +134,13 @@ create_containerd_config() {
 [plugins.linux]
        shim = "${containerd_shim_path}"
 EOT
+
+if [ "$KATA_HYPERVISOR" == "firecracker" ]; then
+	sudo sed -i 's|^\(\[plugins\]\).*|\1\n  \[plugins.devmapper\]\n    pool_name = \"contd-thin-pool\"\n    base_image_size = \"4096MB\"|' ${CONTAINERD_CONFIG_FILE}
+	echo "Devicemapper configured"
+	cat "${CONTAINERD_CONFIG_FILE}"
+fi
+
 }
 
 cleanup() {
