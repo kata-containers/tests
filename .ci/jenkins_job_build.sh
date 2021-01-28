@@ -289,6 +289,16 @@ case "${CI_JOB}" in
 	export KUBERNETES="yes"
 	export OPENSHIFT="no"
 	;;
+"METRICS")
+	init_ci_flags
+	export CRIO="no"
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="qemu"
+	export KUBERNETES="no"
+	export OPENSHIFT="no"
+	export METRICS_CI=1
+;;
 esac
 "${ci_dir_name}/setup.sh"
 
@@ -324,7 +334,7 @@ elif [ "${METRICS_CI}" == "false" ]; then
 	bash <(curl -s https://codecov.io/bash)
 else
 	echo "Running the metrics tests:"
-	"${tests_repo_dir}/.ci/run_metrics_PR_ci.sh"
+	"${ci_dir_name}/run.sh"
 fi
 
 popd

@@ -1,6 +1,6 @@
 #!/bin/bash
-# Copyright (c) 2017-2018 Intel Corporation
-# 
+# Copyright (c) 2017-2021 Intel Corporation
+#
 # SPDX-License-Identifier: Apache-2.0
 
 # Note - no 'set -e' in this file - if one of the metrics tests fails
@@ -15,7 +15,7 @@ CHECKMETRICS_DIR=${SCRIPT_DIR}/../cmd/checkmetrics
 # Where to look by default, if this machine is not a static CI machine with a fixed name.
 CHECKMETRICS_CONFIG_DEFDIR="/etc/checkmetrics"
 # Where to look if this machine is a static CI machine with a known fixed name.
-CHECKMETRICS_CONFIG_DIR="${CHECKMETRICS_DIR}/ci_slaves"
+CHECKMETRICS_CONFIG_DIR="${CHECKMETRICS_DIR}/ci_worker"
 CM_DEFAULT_DENSITY_CONFIG="${CHECKMETRICS_DIR}/baseline/density-CI.toml"
 
 # Set up the initial state
@@ -38,7 +38,7 @@ run() {
 
 		# Run the memory footprint test - the main test that
 		# KSM affects.
-		bash density/docker_memory_usage.sh 20 300 auto
+		bash density/memory_usage.sh 20 300 auto
 
 		# And now ensure KSM is turned off for the rest of the tests
 		disable_ksm
@@ -46,23 +46,20 @@ run() {
 
 	# Run the density tests - no KSM, so no need to wait for settle
 	# (so set a token 5s wait)
-	bash density/docker_memory_usage.sh 20 5
+	bash density/memory_usage.sh 20 5
 
 	# Run the density test inside the container
 	bash density/memory_usage_inside_container.sh
 
-	# We only run these tests if we are not on a transient cloud machine. We
-	# need a repeatable non-noisy environment for these tests to be useful.
-	if [ -z "${METRICS_CI_CLOUD}" ]; then
-		# Run the time tests
-		bash time/launch_times.sh -i ubuntu -n 20
+	# Run the time tests
+	bash time/launch_times.sh -i mirror.gcr.io/library/ubuntu:latest -n 20
 
-		# Run storage tests
-		bash storage/blogbench.sh
+	# Run storage tests
+	bash storage/blogbench.sh
 
-		# Run the cpu statistics test
-		bash network/cpu_statistics_iperf.sh
-	fi
+	# Skip: Issue: https://github.com/kata-containers/tests/issues/3203
+	# Run the cpu statistics test
+	# bash network/cpu_statistics_iperf.sh
 
 	popd
 }
