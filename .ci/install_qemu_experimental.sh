@@ -39,8 +39,6 @@ install_cached_qemu_experimental() {
 	curl -fsOL "${qemu_experimental_latest_build_url}/sha256sum-${QEMU_TAR}" || return 1
 	sha256sum -c "sha256sum-${QEMU_TAR}" || return 1
 	uncompress_experimental_qemu "${QEMU_TAR}"
-	sudo -E ln -sf "${QEMU_PATH}" "${DEST_QEMU_PATH}"
-	sudo -E ln -sf "${VIRTIOFSD_PATH}" "${DEST_VIRTIOFSD_PATH}"
 	sudo mkdir -p "${KATA_TESTS_CACHEDIR}"
 	sudo mv "${QEMU_TAR}" "${KATA_TESTS_CACHEDIR}"
 }
@@ -48,8 +46,6 @@ install_cached_qemu_experimental() {
 build_and_install_static_experimental_qemu() {
 	build_experimental_qemu
 	uncompress_experimental_qemu "${KATA_TESTS_CACHEDIR}/${QEMU_TAR}"
-	sudo -E ln -sf "${QEMU_PATH}" $bindir
-	sudo -E ln -sf "${VIRTIOFS_PATH}" $bindir
 }
 
 build_experimental_qemu() {
@@ -72,6 +68,10 @@ main() {
 	else
 		build_and_install_static_experimental_qemu
 	fi
+
+	info "Symlink experimental qemu to deault qemu path"
+	sudo -E ln -sf "${QEMU_PATH}" "${DEST_QEMU_PATH}"
+	sudo -E ln -sf "${VIRTIOFSD_PATH}" "${DEST_VIRTIOFSD_PATH}"
 }
 
 main
