@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2017-2018 Intel Corporation
+# Copyright (c) 2017-2021 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -19,9 +19,9 @@ source "${SCRIPT_PATH}/../lib/common.bash"
 # Busybox image: Choose a small workload image, this is
 # in order to measure the runtime footprint, not the workload
 # footprint.
-IMAGE='busybox'
+IMAGE='mirror.gcr.io/library/busybox:latest'
 
-CMD='sh'
+CMD='tail -f /dev/null'
 NUM_CONTAINERS="$1"
 WAIT_TIME="$2"
 AUTO_MODE="$3"
@@ -167,6 +167,8 @@ get_pss_memory_virtiofsd() {
 		die "virtiofsd_path not provided"
 	fi
 
+	echo "${virtiofsd_path}" >> $PS_TMP_FILE
+
 	virtiofsd_pids=$(ps aux | grep [v]irtiofsd | awk '{print $2}')
 	data=$(sudo smem --no-header -P "^${virtiofsd_path}" -c pid -c "pid pss")
 
@@ -220,16 +222,19 @@ get_individual_memory(){
 	{
 		"$first_process_name memory": [
 			$(for ((i=0;i<${NUM_CONTAINERS[@]};++i)); do
+				[ -n "${first_values[i]}" ] &&
 				printf '%s\n\t\t\t' "${first_values[i]}"
 			done)
 		],
 		"$second_process_name memory": [
 			$(for ((i=0;i<${NUM_CONTAINERS[@]};++i)); do
+				[ -n "${second_values[i]}" ] &&
 				printf '%s\n\t\t\t' "${second_values[i]}"
 			done)
 		],
 		"$third_process_name memory": [
 			$(for ((i=0;i<${NUM_CONTAINERS[@]};++i)); do
+				[ -n "${third_values[i]}" ] &&
 				printf '%s\n\t\t\t' "${third_values[i]}"
 			done)
 		]
@@ -253,7 +258,7 @@ get_docker_memory_usage(){
 
 	for ((i=1; i<= NUM_CONTAINERS; i++)); do
 		containers+=($(random_name))
-		${DOCKER_EXE} run --runtime "$RUNTIME" --name ${containers[-1]} -tid $IMAGE $CMD
+		${CTR_EXE} run --runtime "${CTR_RUNTIME}" -d ${IMAGE}  ${containers[-1]} ${CMD}
 	done
 
 	if [ "$AUTO_MODE" == "auto" ]; then
@@ -296,9 +301,8 @@ EOF
 		# And check that the smem search has found the process - we get a "0"
 		#  back if that procedure fails (such as if a process has changed its name
 		#  or is not running when expected to be so)
-		# As an added bonus - this script must be run as root (or at least as
-		#  a user with enough rights to allow smem to read the smap stats for
-		#  the docker owned processes). Now if you do not have enough rights
+		# As an added bonus - this script must be run as root.
+		# Now if you do not have enough rights
 		#  the smem failure to read the stats will also be trapped.
 
 		hypervisor_mem="$(get_pss_memory "$HYPERVISOR_PATH")"
@@ -361,7 +365,8 @@ EOF
 	metrics_json_add_array_element "$json"
 	metrics_json_end_array "Results"
 
-	docker rm -f ${containers[@]}
+	${CTR_EXE} t rm -f ${containers[@]}
+	${CTR_EXE} c rm ${containers[@]}
 }
 
 save_config(){
@@ -377,6 +382,7 @@ save_config(){
 		"command": "$CMD"
 	}
 EOF
+
 )"
 	metrics_json_add_array_element "$json"
 	metrics_json_end_array "Config"
