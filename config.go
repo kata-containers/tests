@@ -81,6 +81,9 @@ const (
 	// DefaultHypervisor default hypervisor
 	DefaultHypervisor = "qemu"
 
+	// QemuHypervisor is Qemu
+	QemuHypervisor = "qemu"
+
 	// FirecrackerHypervisor is firecracker
 	FirecrackerHypervisor = "firecracker"
 
@@ -144,6 +147,8 @@ func KataInit() {
 		KataHypervisor = CloudHypervisor
 	case "firecracker":
 		KataHypervisor = FirecrackerHypervisor
+	case "qemu":
+		KataHypervisor = QemuHypervisor
 	case "":
 		log.Printf("'-hypervisor' to ginkgo is not set, using 'DefaultHypervisor': '%v'\n", DefaultHypervisor)
 		KataHypervisor = DefaultHypervisor
