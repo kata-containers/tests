@@ -95,7 +95,7 @@ function wait_for_postgres {
 function test_database {
 	"${dir_path}/../../cmd/pmemctl/pmemctl.sh" -s 1G -f xfs -m "${test_directory}" xfs.img
 
-	rows=10000
+	rows=100
 	cont_image="docker.io/library/postgres:latest"
 	postgresql_cont_dir="/var/lib/postgresql/data"
 
