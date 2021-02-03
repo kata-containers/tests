@@ -16,7 +16,7 @@ source "${SCRIPT_PATH}/../lib/common.bash"
 
 TEST_NAME="memory footprint inside container"
 VERSIONS_FILE="${SCRIPT_PATH}/../../versions.yaml"
-IMAGE='mirror.gcr.io/library/busybox:latest'
+IMAGE='quay.io/prometheus/busybox:latest'
 CMD="sleep 10; cat /proc/meminfo"
 # We specify here in 'k', as that then matches the results we get from the meminfo,
 # which makes later direct comparison easier.
