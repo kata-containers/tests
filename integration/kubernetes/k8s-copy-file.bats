@@ -74,6 +74,9 @@ setup() {
 }
 
 teardown() {
+	# Debugging information
+	kubectl describe "pod/$pod_name"
+
 	rm -f "$file_name"
 	kubectl delete pod "$pod_name"
 }

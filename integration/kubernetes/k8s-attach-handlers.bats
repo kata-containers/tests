@@ -36,6 +36,9 @@ setup() {
 }
 
 teardown(){
+	# Debugging information
+	kubectl describe "pod/$pod_name"
+
 	rm -f "${pod_config_dir}/test-lifecycle-events.yaml"
 	kubectl delete pod "$pod_name"
 }

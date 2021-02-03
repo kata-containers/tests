@@ -64,6 +64,9 @@ teardown() {
 	[ "${TEST_INITRD}" == "yes" ] && skip "test not working see: ${issue}"
 	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
 
+	# Debugging information
+	kubectl describe "pod/$pod_name"
+
 	kubectl delete pod "$pod_name"
 	kubectl delete pvc "$volume_claim"
 	kubectl delete pv "$volume_name"

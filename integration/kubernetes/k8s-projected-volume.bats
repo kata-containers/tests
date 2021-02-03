@@ -56,6 +56,9 @@ setup() {
 teardown() {
 	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
 
+	# Debugging information
+	kubectl describe "pod/$pod_name"
+
 	rm -f $TMP_FILE $SECOND_TMP_FILE
 	kubectl delete pod "$pod_name"
 	kubectl delete secret pass user

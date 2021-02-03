@@ -65,6 +65,9 @@ setup() {
 }
 
 teardown() {
+	# Debugging information
+	kubectl describe "pod/$pod_name"
+
 	# Delete k8s resources
 	kubectl delete pod "$pod_name"
 	kubectl delete pvc "$volume_claim"
