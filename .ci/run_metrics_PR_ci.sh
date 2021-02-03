@@ -96,7 +96,7 @@ check() {
 			local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DIR}/checkmetrics-json-$(uname -n).toml"
 		fi
 
-		checkmetrics --percentage --basefile ${CM_BASE_FILE} --metricsdir ${RESULTS_DIR}
+		checkmetrics --debug --percentage --basefile ${CM_BASE_FILE} --metricsdir ${RESULTS_DIR}
 		cm_result=$?
 		if [ ${cm_result} != 0 ]; then
 			echo "checkmetrics FAILED (${cm_result})"
