@@ -77,18 +77,6 @@ ginkgo:
 	GOPATH=$(PWD)/vendor go build ./vendor/github.com/onsi/ginkgo/ginkgo
 	unlink vendor/src
 
-functional: ginkgo
-ifeq (${RUNTIME},)
-	$(error RUNTIME is not set)
-else
-	./ginkgo -failFast -v -focus "${FOCUS}" -skip "${SKIP}" \
-		functional/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT}
-	bash sanity/check_sanity.sh
-endif
-
-debug-console:
-	bash -f ./functional/debug_console/run.sh
-
 docker: ginkgo
 ifeq ($(RUNTIME),)
 	$(error RUNTIME is not set)
@@ -254,12 +242,10 @@ help:
 	check \
 	checkcommits \
 	crio \
-	debug-console \
 	docker \
 	docker-compose \
 	docker-stability \
 	entropy \
-	functional \
 	ginkgo \
 	$(INSTALL_TARGETS) \
 	podman \
