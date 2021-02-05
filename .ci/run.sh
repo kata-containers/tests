@@ -23,8 +23,9 @@ case "${CI_JOB}" in
 		echo "INFO: Containerd checks"
 		sudo -E PATH="$PATH" bash -c "make cri-containerd"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
-		echo "INFO: Running pmem integration test"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make pmem"
+		echo "INFO: Skipping pmem test: Issue: https://github.com/kata-containers/tests/issues/3223"
+		# echo "INFO: Running pmem integration test"
+		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make pmem"
 		;;
 	"CRI_CONTAINERD_K8S_COMPLETE")
 		echo "INFO: Running e2e kubernetes tests"
