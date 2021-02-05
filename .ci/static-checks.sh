@@ -570,13 +570,12 @@ static_check_docs()
 
 		local version
 		local url
-		local dir
 
 		version=$(get_test_version "externals.xurls.version")
 		url=$(get_test_version "externals.xurls.url")
-		dir=$(echo "$url"|sed 's!https://!!g')
 
-		build_version "${dir}" "" "${version}"
+		# xurls is very fussy about how it's built.
+		GO111MODULE=on go get "${url}@${version}"
 	fi
 
 	info "Checking documentation"
