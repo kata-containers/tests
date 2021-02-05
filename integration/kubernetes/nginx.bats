@@ -44,6 +44,9 @@ setup() {
 }
 
 teardown() {
+	# Debugging information
+	kubectl describe "pod/$busybox_pod"
+
 	rm -f "${pod_config_dir}/test-${deployment}.yaml"
 	kubectl delete deployment "$deployment"
 	kubectl delete service "$deployment"

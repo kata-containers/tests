@@ -55,6 +55,10 @@ setup() {
 teardown() {
 	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
 
+	# Debugging information
+	kubectl describe "pod/$pod_name"
+	kubectl describe "pod/$second_pod_name"
+
 	kubectl delete pod "$pod_name" "$second_pod_name"
 	kubectl delete secret "$secret_name"
 }

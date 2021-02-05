@@ -51,6 +51,10 @@ setup() {
 }
 
 teardown() {
+	# Debugging information
+	kubectl describe "pod/$first_pod_name"
+	kubectl describe "pod/$second_pod_name"
+
 	kubectl delete pod "$first_pod_name"
 	kubectl delete pod "$second_pod_name"
 	rm -rf "$first_pod_config"
