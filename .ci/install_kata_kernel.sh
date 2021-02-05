@@ -154,6 +154,19 @@ main() {
 	else
 		build_and_install_kernel
 	fi
+
+	if [ "${experimental_kernel}" == "true" ]; then
+		info  "Symlink expermiental kernel to default kernel path"
+		local vmlinux_binary_name="vmlinux-${current_kernel_version}"
+		local vmlinux_binary_path="${kernel_dir}/${vmlinux_binary_name}"
+		vmlinux_symlink="${kernel_dir}/vmlinux.container"
+		sudo -E ln -sf "${vmlinux_binary_path}" "${vmlinux_symlink}"
+
+		local vmlinuz_binary_name="vmlinuz-${current_kernel_version}"
+		local vmlinuz_binary_path="${kernel_dir}/${vmlinuz_binary_name}"
+		vmlinuz_symlink="${kernel_dir}/vmlinuz.container"
+		sudo -E ln -sf "${vmlinuz_binary_path}" "${vmlinuz_symlink}"
+	fi
 }
 
 main

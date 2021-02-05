@@ -46,6 +46,11 @@ init_ci_flags() {
 	# Use experimental kernel
 	# Values: true|false
 	export experimental_kernel="false"
+	# Use experimental qemu
+	export experimental_qemu="false"
+	# shared fs to use
+	# Values: 9pfs|virtiofs
+	export SHARED_FS="9pfs"
 	# Run the kata-check checks
 	export RUN_KATA_CHECK="true"
 
@@ -210,7 +215,6 @@ case "${CI_JOB}" in
 "CLOUD-HYPERVISOR-PODMAN")
         export KATA_HYPERVISOR="cloud-hypervisor"
         export TEST_CGROUPSV2="true"
-        export experimental_kernel="true"
         ;;
 "CRI_CONTAINERD_K8S")
 	# This job only tests containerd + k8s
@@ -223,10 +227,11 @@ case "${CI_JOB}" in
 	export TEST_CGROUPSV2="true"
 	;;
 "VIRTIOFS-METRICS-BAREMETAL")
-	export experimental_qemu="true"
-	export experimental_kernel="true"
 	export METRICS_CI="true"
+	export SHARED_FS="virtiofs"
 	export METRICS_CI_PROFILE="virtiofs-baremetal"
+	export experimental_kernel="true"
+	export experimental_qemu="true"
 	;;
 "SANDBOX_CGROUP_ONLY")
 	# Used by runtime makefile to enable option on intall
@@ -241,7 +246,6 @@ case "${CI_JOB}" in
 	export OPENSHIFT="no"
 	export TEST_CRIO="false"
 	export TEST_DOCKER="true"
-	export experimental_kernel="true"
 	;;
 "CLOUD-HYPERVISOR-DOCKER")
 	export CRIO="no"
@@ -251,7 +255,6 @@ case "${CI_JOB}" in
 	export OPENSHIFT="no"
 	export TEST_CRIO="false"
 	export TEST_DOCKER="true"
-	export experimental_kernel="true"
 	;;
 "CLOUD-HYPERVISOR-K8S-CONTAINERD")
 	init_ci_flags
@@ -259,7 +262,6 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
-	export experimental_kernel="true"
 	;;
 "CLOUD-HYPERVISOR-K8S-E2E-CRIO-MINIMAL")
 	init_ci_flags
@@ -268,7 +270,6 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
 	export MINIMAL_K8S_E2E="true"
-	export experimental_kernel="true"
 	;;
 "CLOUD-HYPERVISOR-K8S-E2E-CONTAINERD-MINIMAL")
 	init_ci_flags
@@ -277,7 +278,6 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
 	export MINIMAL_K8S_E2E="true"
-	export experimental_kernel="true"
 	;;
 "CLOUD-HYPERVISOR-K8S-E2E-CONTAINERD-SHIMV2-MINIMAL")
 	init_ci_flags
@@ -286,7 +286,6 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
 	export MINIMAL_K8S_E2E="true"
-	export experimental_kernel="true"
 	;;
 "CLOUD-HYPERVISOR-K8S-E2E-CRIO-FULL")
 	init_ci_flags
@@ -295,7 +294,6 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
 	export MINIMAL_K8S_E2E="false"
-	export experimental_kernel="true"
 	;;
 "CLOUD-HYPERVISOR-K8S-E2E-CONTAINERD-FULL")
 	init_ci_flags
@@ -304,15 +302,20 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
 	export MINIMAL_K8S_E2E="false"
-	export experimental_kernel="true"
 	;;
 "CLOUD-HYPERVISOR-METRICS-BAREMETAL")
 	init_ci_flags
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export METRICS_CI="true"
-	export experimental_kernel="true"
 	export METRICS_CI_PROFILE="clh-baremetal"
 	export METRICS_JOB_BASELINE="metrics/job/clh-master"
+	;;
+"VIRTIOFS")
+	init_ci_flags
+	export SHARED_FS="virtiofs"
+	export TEST_DOCKER=true
+	export TEST_CONFORMANCE=true
+
 	;;
 esac
 "${ci_dir_name}/setup.sh"
@@ -336,11 +339,6 @@ elif [ -n "${VFIO_CI}" ]; then
 	export AGENT_INIT=yes TEST_INITRD=yes OSBUILDER_DISTRO=alpine
 	sudo -E PATH=$PATH "${ci_dir_name}/install_kata_image.sh"
 
-	echo "Installing QEMU experimental to get virtiofsd"
-	sudo -E PATH=$PATH "${ci_dir_name}/install_qemu_experimental.sh"
-
-	echo "Installing experimental kernel"
-	export experimental_kernel=true
 	sudo -E PATH=$PATH "${ci_dir_name}/install_kata_kernel.sh"
 
 	echo "Installing Cloud Hypervisor"
