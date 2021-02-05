@@ -19,7 +19,7 @@ source "${SCRIPT_PATH}/../lib/common.bash"
 # Busybox image: Choose a small workload image, this is
 # in order to measure the runtime footprint, not the workload
 # footprint.
-IMAGE='mirror.gcr.io/library/busybox:latest'
+IMAGE='quay.io/prometheus/busybox:latest'
 
 CMD='tail -f /dev/null'
 NUM_CONTAINERS="$1"
