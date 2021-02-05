@@ -15,6 +15,7 @@
         * [Requirements to run Kata Containers tests](#requirements-to-run-kata-containers-tests)
         * [Prepare an environment](#prepare-an-environment)
         * [Run the tests](#run-the-tests)
+    * [Metrics tests](#metrics-tests)
     * [Kata Admission controller webhook](#kata-admission-controller-webhook)
 
 This repository contains various types of tests and utilities (called
@@ -37,6 +38,7 @@ and with different container managers.
    - [CRI-O](https://github.com/kata-containers/tests/tree/main/integration/cri-o)
    - [Containerd](https://github.com/kata-containers/tests/tree/main/integration/containerd)
 2. [Stability tests](https://github.com/kata-containers/tests/tree/main/integration/stability)
+3. [Metrics](https://github.com/kata-containers/tests/tree/main/metrics)
 
 ## CI Content
 
@@ -248,6 +250,9 @@ kubernetes:
         bash -f .ci/install_bats.sh
         bash -f integration/kubernetes/run_kubernetes_tests.sh
 ```
+
+## Metrics tests
+See the [metrics documentation](metrics).
 
 ## Kata Admission controller webhook
 See the [webhook documentation](kata-webhook).
