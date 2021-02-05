@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+set -x
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -25,6 +26,7 @@ experimental_qemu="${experimental_qemu:-false}"
 list_containers=()
 RUNTIME="io.containerd.kata.v2"
 arch=$("${dir_path}"/../../.ci/kata-arch.sh -d)
+exec_id=1
 
 if [ "$TEST_INITRD" == "yes" ]; then
 	echo "Skip pmem test: nvdimm is disabled when initrd is used as rootfs"
@@ -50,6 +52,20 @@ function setup() {
 	fi
 }
 
+function ctr_exec {
+	args=()
+	for i; do
+		if [[ $i = *" "* ]]; then
+			args+=(\""${i}"\")
+		else
+			args+=("${i}")
+		fi
+	done
+
+	eval ctr t exec --exec-id $((exec_id++)) "${args[@]}"
+	return $?
+}
+
 function ctr_rm_rf {
 	container=$1
 	while [ -n "$(ctr t list | grep RUNNING | grep "${container}")" ]; do
@@ -62,7 +78,7 @@ function ctr_rm_rf {
 function test_pmem_mount {
 	local container_name="test-pmem"
 	local payload="tail -f /dev/null"
-	local image="docker.io/library/fedora:latest"
+	local image="quay.io/prometheus/busybox:latest"
 
 	"${dir_path}/../../cmd/pmemctl/pmemctl.sh" -s 128M -f xfs -m "${test_directory}" xfs.img
 
@@ -74,7 +90,7 @@ function test_pmem_mount {
 	ctr run -d --runtime ${RUNTIME} --mount type=bind,src="${test_directory}",dst="/${test_directory_name}",options=rbind:rw "${image}" "${container_name}" sh -c "${payload}"
 
 	# Check container
-	ctr t exec --exec-id 1 "${container_name}" mount | grep ${test_directory_name} | grep '/dev/pmem' | grep 'dax'
+	ctr_exec "${container_name}" mount | grep ${test_directory_name} | grep '/dev/pmem' | grep 'dax'
 
 	ctr_rm_rf "${container_name}"
 	sudo umount "${test_directory}"
@@ -84,8 +100,9 @@ function test_pmem_mount {
 
 function wait_for_postgres {
 	container="$1"
-	for i in $(seq 1 20); do
-		if ctr t exec --exec-id 1 "${container}" su - postgres -c "psql -c '\l'"; then
+	for i in {1..30}; do
+		echo "Waiting for the data base..."
+		if ctr_exec "${container}" su - postgres -c "psql -c '\l'" 2> /dev/null; then
 			break
 		fi
 		sleep 5
@@ -107,12 +124,12 @@ function test_database {
 		--mount type=bind,src="${test_directory}",dst="${postgresql_cont_dir}",options=rbind:rw \
 		--mount type=bind,src=$(realpath ${dir_path}/data),dst=/data,options=rbind:rw \
 		--env POSTGRES_PASSWORD=mysecretpassword --env PGDATA="${postgresql_cont_dir}/pgdata" ${cont_image} "${producer_cont}"
-	ctr t exec --exec-id 1 "${producer_cont}" sh -c "mount | grep ${postgresql_cont_dir} | grep dax"
-	ctr t exec --exec-id 1 "${producer_cont}" chown postgres "${postgresql_cont_dir}"
+	ctr_exec "${producer_cont}" sh -c "mount | grep ${postgresql_cont_dir} | grep dax"
+	ctr_exec "${producer_cont}" chown postgres "${postgresql_cont_dir}"
 	wait_for_postgres "${producer_cont}"
 
 	echo "Inserting into the database..."
-	ctr t exec --exec-id 1 "${producer_cont}" su - postgres -c "/data/dbinsert.sh ${rows}"
+	ctr_exec "${producer_cont}" su - postgres -c "/data/dbinsert.sh ${rows}"
 	ctr_rm_rf "${producer_cont}"
 
 	consumer_cont="consumer"
@@ -123,19 +140,20 @@ function test_database {
 	wait_for_postgres "${consumer_cont}"
 
 	echo "Checking the data base..."
-	ctr t exec --exec-id 1 "${consumer_cont}" su - postgres -c "psql -d \"${db_name}\" \
-		-c \"select count(*) from ${db_table_name}\" | grep ${rows}"
+	ctr_exec "${consumer_cont}" su - postgres -c "psql -d ${db_name} \
+		-c 'select count(*) from '${db_table_name}'' | grep ${rows}"
 
-	[ -n "$(ctr t exec --exec-id 1 "${consumer_cont}" su - postgres -c "psql -d \"${db_name}\" \
-	  --tuples-only -c \"select name from ${db_table_name} where id=1;\"")" ]
+    ctr_exec "${consumer_cont}" su - postgres -c "psql -d ${db_name} \
+	  --tuples-only -c 'select name from '${db_table_name}' where id=1;'" | xargs test -n
 
-	[ -n "$(ctr t exec --exec-id 1 "${consumer_cont}" su - postgres -c "psql -d \"${db_name}\" \
-	  --tuples-only -c \"select name from ${db_table_name} where id=${rows+100};\"")" ]
+    ctr_exec "${consumer_cont}" su - postgres -c "psql -d ${db_name} \
+	  --tuples-only -c 'select name from '${db_table_name}' where id=${rows};'" | xargs test -n
 
 	# check random rows
-	for i in $(seq 1 20); do
-		[ -n "$(ctr t exec --exec-id 1 "${consumer_cont}" su - postgres -c "psql -d \"${db_name}\" \
-		  --tuples-only -c \"select name from ${db_table_name} where id=$((RANDOM%rows+1));\"")" ]
+	for i in {1..20}; do
+		((exec_id++))
+	    ctr_exec "${consumer_cont}" su - postgres -c "psql -d ${db_name} \
+		  --tuples-only -c 'select name from '${db_table_name}' where id=$((RANDOM%rows+1));'" | xargs test -n
 	done
 
 	ctr_rm_rf "${consumer_cont}"
