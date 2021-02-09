@@ -19,15 +19,9 @@ DESTDIR="${DESTDIR:-/}"
 image_path="${DESTDIR}${image_path:-${PREFIX}/share/kata-containers}"
 image_name="${image_name:-kata-containers.img}"
 initrd_name="${initrd_name:-kata-containers-initrd.img}"
+AGENT_INIT="${AGENT_INIT:-no}"
+TEST_INITRD="${TEST_INITRD:-no}"
 build_method="${BUILD_METHOD:-distro}"
-
-if [ "${arch}" == "ppc64le" ]; then
-   AGENT_INIT="${AGENT_INIT:-yes}"
-   TEST_INITRD="${TEST_INITRD:-yes}"
-else
-   AGENT_INIT="${AGENT_INIT:-no}"
-   TEST_INITRD="${TEST_INITRD:-no}"
-fi
 
 build_rust_image() {
 	export RUST_AGENT="yes"
@@ -42,20 +36,12 @@ build_rust_image() {
 		target_image="initrd"
 		file_to_install="${osbuilder_path}/${initrd_name}"
 	fi
-
 	info "Building ${target_image} with AGENT_INIT=${AGENT_INIT}"
 	case "$build_method" in
 		"distro")
-                        if [ "${arch}" == "ppc64le" ]; then
-                          distro="${osbuilder_distro:-fedora}"
-                          use_docker="${osbuild_docker:-0}"
-                        else
-                          distro="${osbuilder_distro:-ubuntu}"
-                          use_docker="${osbuild_docker:-1}"
-                        fi
-
-                        info "Building ${target_image} with AGENT_INIT=${AGENT_INIT} TEST_INITRD=${TEST_INITRD} USE_DOCKER=${use_docker} for ${distro} on ${arch}"
-			sudo -E USE_DOCKER="${use_docker}" DISTRO="${distro}" AGENT_INIT="${AGENT_INIT}" \
+			distro="${osbuilder_distro:-ubuntu}"
+			use_docker="${osbuild_docker:-1}"
+			sudo -E USE_DOCKER="${use_docker}" DISTRO="${distro}" \
 				make -e "${target_image}"
 			;;
 		"dracut")
