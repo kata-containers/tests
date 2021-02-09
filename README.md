@@ -160,7 +160,7 @@ You need to install the following to run Kata Containers tests:
 - [golang](https://golang.org/dl)
 
   To view the versions of go known to work, see the `golang` entry in the
-  [versions database](https://github.com/kata-containers/runtime/blob/master/versions.yaml).
+  [versions database](https://github.com/kata-containers/kata-containers/blob/main/versions.yaml).
 
 - `make`.
 
