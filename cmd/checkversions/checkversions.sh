@@ -25,7 +25,7 @@
 #  - tabulates the results and prints a report
 #  - returns the number of components that could be updated (fails) as the return value
 
-runtime_repo="github.com/kata-containers/runtime"
+runtime_repo="github.com/kata-containers/kata-containers"
 runtime_repo_dir="$GOPATH/src/${runtime_repo}"
 versions_file="${runtime_repo_dir}/versions.yaml"
 YQ=$(which yq)
