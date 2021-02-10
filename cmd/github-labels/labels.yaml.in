@@ -110,7 +110,7 @@ categories:
   - name: related
     description: |
       Related project. Base set can be generated from
-      https://github.com/kata-containers/runtime/blob/master/versions.yaml.
+      https://github.com/kata-containers/kata-containers/blob/main/versions.yaml.
 
   - name: release
     description: Related to production of new versions.
