@@ -122,6 +122,9 @@ run_test() {
 	pod_name=vfio
 	sudo -E kubectl wait --for=condition=Ready pod "${pod_name}"
 
+	# wait for the container to be ready
+	waitForProcess 15 3 "sudo -E kubectl exec ${pod_name} -- ip a"
+
 	# Expecting 2 network interaces -> 2 mac addresses
 	mac_addrs=$(sudo -E kubectl exec -t "${pod_name}" -- ip a | grep "link/ether" | wc -l)
 	if [ ${mac_addrs} -ne 2 ]; then
