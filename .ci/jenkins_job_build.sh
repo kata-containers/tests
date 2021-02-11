@@ -256,6 +256,12 @@ case "${CI_JOB}" in
 	export CRIO="yes"
 	export OPENSHIFT="no"
 	;;
+"CLOUD-HYPERVISOR-K8S-CRIO")
+	init_ci_flags
+	export KUBERNETES=yes
+	export CRIO=yes
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	;;
 "CLOUD-HYPERVISOR-K8S-CONTAINERD")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
