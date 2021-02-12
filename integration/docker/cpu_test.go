@@ -152,7 +152,12 @@ var _ = Describe("CPU constraints", func() {
 		quota      int = 20000
 		period     int = 15000
 		cpusetCpus int = 0
-		cpusetMems int = 0
+		// We are now not constraining the guest cgroup/cpuset
+		// values at all, e.g. we are allowing all onlined vCPUs
+		// to be used by the container. In this test, we use the
+		// hard-coded value below assuming the default vCPU is '1'
+		cpusetCpusExpected string = "0-1"
+		cpusetMems         int    = 0
 	)
 
 	BeforeEach(func() {
@@ -193,11 +198,11 @@ var _ = Describe("CPU constraints", func() {
 		})
 
 		Context(fmt.Sprintf("with cpuset-cpus to %d", cpusetCpus), func() {
-			It(fmt.Sprintf("%s should have %d", cpusetCpusSysPath, cpusetCpus), func() {
+			It(fmt.Sprintf("%s should have %s (with 'default_vCPU=1')", cpusetCpusSysPath, cpusetCpusExpected), func() {
 				args = append(args, "--cpuset-cpus", fmt.Sprintf("%d", cpusetCpus), Image, "cat", cpusetCpusSysPath)
 				stdout, _, exitCode := dockerRun(args...)
 				Expect(exitCode).To(BeZero())
-				Expect(fmt.Sprintf("%d", cpusetCpus)).To(Equal(strings.Trim(stdout, "\n\t ")))
+				Expect(cpusetCpusExpected).To(Equal(strings.Trim(stdout, "\n\t ")))
 			})
 		})
 
