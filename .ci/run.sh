@@ -43,6 +43,10 @@ case "${CI_JOB}" in
 		echo "INFO: Running kubernetes tests (minimal) with CRI-O"
 		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
 		;;
+	"CLOUD-HYPERVISOR-K8S-CRIO")
+		echo "INFO: Running kubernetes tests"
+		sudo -E PATH="$PATH" bash -c "make kubernetes"
+		;;
 	"CLOUD-HYPERVISOR-K8S-CONTAINERD")
 		echo "INFO: Containerd checks"
 		sudo -E PATH="$PATH" bash -c "make cri-containerd"
