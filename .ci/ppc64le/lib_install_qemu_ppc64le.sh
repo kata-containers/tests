@@ -71,5 +71,9 @@ build_and_install_qemu() {
         sudo -E make install
 
         sudo ln -sf $(command -v ${BUILT_QEMU}) "/usr/bin/qemu-system-${QEMU_ARCH}"
+
+        echo "Link virtiofsd to /usr/libexec/kata-qemu/virtiofsd"
+        sudo mkdir -p /usr/libexec/kata-qemu/
+        sudo ln -sf $(pwd)/virtiofsd /usr/libexec/kata-qemu/virtiofsd
         popd
 }
