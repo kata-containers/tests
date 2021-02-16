@@ -20,11 +20,14 @@ case "${CI_JOB}" in
 	"CRI_CONTAINERD_K8S")
 		echo "INFO: Containerd checks"
 		sudo -E PATH="$PATH" bash -c "make cri-containerd"
+		echo "INFO: Running kubernetes tests"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
 
 		# Make sure the feature works with K8s + containerd
+		echo "INFO: Containerd checks with 'sandbox_cgroup_only=true'"
 		"${cidir}/toggle_sandbox_cgroup_only.sh" true
 		sudo -E PATH="$PATH" bash -c "make cri-containerd"
+		echo "INFO: Running kubernetes tests with 'sandbox_cgroup_only=true'"
 		"${cidir}/toggle_sandbox_cgroup_only.sh" true
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
 		# remove config created by toggle_sandbox_cgroup_only.sh
