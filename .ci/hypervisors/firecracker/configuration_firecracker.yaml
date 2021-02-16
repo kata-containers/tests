@@ -26,6 +26,7 @@ docker:
     - docker volume
     - docker env
     - CPUs and CPU set
+    - CPU constraints
     - docker exit code
     - run container with docker
     - run hot plug block devices
