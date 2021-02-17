@@ -90,11 +90,7 @@ case "${KATA_HYPERVISOR}" in
 		enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-fc.toml"
 		;;
 	"qemu")
-		if [ "$experimental_qemu" == "true" ]; then
-			enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-qemu-virtiofs.toml"
-		else
 			enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-qemu.toml"
-		fi
 		if [ "$arch" == "x86_64" ]; then
 			# Due to a KVM bug, vmx-rdseed-exit must be disabled in QEMU >= 4.2
 			# All CI now uses qemu 5.0+, disabled in the time..
