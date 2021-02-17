@@ -12,20 +12,15 @@ source "${SCRIPT_PATH}/../../metrics/lib/common.bash"
 source "${SCRIPT_PATH}/../../lib/common.bash"
 
 # Env variables
-IMAGE="${IMAGE:-fstest}"
+IMAGE="docker.io/library/local-fstest:latest"
 DOCKERFILE="${SCRIPT_PATH}/Dockerfile"
 CONT_NAME="${CONT_NAME:-fstest}"
 RUNTIME="${RUNTIME:-kata-runtime}"
 PAYLOAD_ARGS="${PAYLOAD_ARGS:-tail -f /dev/null}"
 
 function main() {
-	clean_env
-	check_dockerfiles_images "$IMAGE" "$DOCKERFILE"
-	ctr run --rm --runtime=${CTR_RUNTIME} $IMAGE test $CMD
-
-	docker exec $CONT_NAME bash -c "cd /pjdfstest && prove -r"
-
-	clean_env
+	check_ctr_images "$IMAGE" "$DOCKERFILE"
+	ctr run --rm --runtime=${CTR_RUNTIME} $IMAGE fstest bash -c "cd /pjdfstest && prove -r"
 }
 
 main "$@"
