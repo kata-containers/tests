@@ -62,6 +62,9 @@ init_ci_flags() {
 	# Use experimental kernel
 	# Values: true|false
 	export experimental_kernel="false"
+	# Use experimental qemu
+	# Values: true|false
+	export experimental_qemu="false"
 	# Run the kata-check checks
 	export RUN_KATA_CHECK="true"
 
@@ -308,6 +311,7 @@ case "${CI_JOB}" in
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export KUBERNETES="yes"
+	export experimental_qemu="true"
 	;;
 "METRICS")
 	init_ci_flags
