@@ -35,7 +35,7 @@ typeset -r arch_func_regex="_arch_specific$"
 repo=""
 specific_branch="false"
 force="false"
-branch=${branch:-master}
+branch=${branch:-main}
 
 # Which static check functions to consider.
 handle_funcs="all"
