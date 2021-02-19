@@ -256,23 +256,6 @@ install_dependencies() {
 			die "Unsupported distro: ${ID}"
 			;;
 	esac
-
-	# Build and Install QEMU
-	qemu_version=$(get_version "assets.hypervisor.qemu.version")
-	qemu_dir="${data_dir}/qemu-${qemu_version}"
-	qemu_tar_file="${data_dir}/qemu-${qemu_version}.tar.xz"
-
-	rm -rf "${qemu_dir}"
-	mkdir -p "${qemu_dir}"
-
-	pushd "${qemu_dir}"
-	[ ! -f "${qemu_tar_file}" ] && curl -sL https://download.qemu.org/qemu-${qemu_version}.tar.xz -o "${qemu_tar_file}"
-	tar --strip-components=1 -xf "${qemu_tar_file}"
-	curl -sLO https://raw.githubusercontent.com/kata-containers/packaging/master/scripts/configure-hypervisor.sh
-	bash configure-hypervisor.sh qemu | sed -e 's|--disable-slirp||' -e 's|--enable-libpmem||' | xargs ./configure
-	make -j$(($(nproc)-1))
-	sudo make install
-	popd
 }
 
 ssh_vm() {
