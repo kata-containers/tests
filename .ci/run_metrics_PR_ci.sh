@@ -93,8 +93,9 @@ check() {
 		else
 			# For bare metal repeatable machines, the config file name is tied
 			# to the uname of the machine.
-			local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DIR}/checkmetrics-json-$(uname -n).toml"
+			local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DIR}/checkmetrics-json-${KATA_HYPERVISOR}-$(uname -n).toml"
 		fi
+
 
 		checkmetrics --debug --percentage --basefile ${CM_BASE_FILE} --metricsdir ${RESULTS_DIR}
 		cm_result=$?
@@ -102,6 +103,13 @@ check() {
 			echo "checkmetrics FAILED (${cm_result})"
 			exit ${cm_result}
 		fi
+
+		# Save results
+		sudo mkdir -p "${RESULTS_DIR}/artifacts"
+		echo "Move results"
+		for f in ${RESULTS_DIR}/*.json; do
+			mv -- "$f" "${RESULTS_DIR}/artifacts/${KATA_HYPERVISOR}-$(basename $f)"
+		done
 	fi
 }
 
