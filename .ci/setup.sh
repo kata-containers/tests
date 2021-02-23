@@ -56,18 +56,8 @@ install_docker() {
 	if ! command -v docker >/dev/null; then
 		"${cidir}/../cmd/container-manager/manage_ctr_mgr.sh" docker install
 	fi
-	# If on CI, check that docker version is the one defined
-	# in versions.yaml. If there is a different version installed,
-	# install the correct version..
-	docker_version=$(get_version "externals.docker.version")
-	docker_version=${docker_version/v/}
-	docker_version=${docker_version/-*/}
 
 	sudo systemctl restart docker
-
-	if ( ! sudo docker version | grep -q "$docker_version" ) && [ "$CI" == true ]; then
-		"${cidir}/../cmd/container-manager/manage_ctr_mgr.sh" docker install -f
-	fi
 }
 
 enable_nested_virtualization() {

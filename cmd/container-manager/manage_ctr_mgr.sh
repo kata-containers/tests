@@ -96,10 +96,7 @@ install_docker(){
 
 	if [ -z "$tag" ] || [ "$tag" == "latest" ] ; then
 		# If no tag is recevied, install latest compatible version
-		docker_version=$(get_version "externals.docker.version")
-		log_message "Installing docker $docker_version"
-		docker_version=${docker_version/v}
-		docker_version=${docker_version/-*}
+		log_message "Installing docker"
 		pkg_name="docker-ce"
 		if [ "$ID" == "ubuntu" ]; then
 			sudo -E apt-get -y install apt-transport-https ca-certificates software-properties-common
@@ -107,40 +104,29 @@ install_docker(){
 			curl -fsSL "${repo_url}/gpg" | sudo apt-key add -
 			sudo -E add-apt-repository "deb [arch=${arch}] ${repo_url} $(lsb_release -cs) stable"
 			sudo -E apt-get update
-			if [ "$(echo "${VERSION_ID} <= 18.04" | bc -q)" == "1" ]; then
-				docker_version_full=$(apt-cache madison $pkg_name | grep "$docker_version" | awk '{print $3}' | head -1)
-			else
-				docker_version_full=$(apt-cache madison docker-ce | awk '{print $3}' | tail -1)
-			fi
-			sudo -E apt-get -y install "${pkg_name}=${docker_version_full}"
+			sudo -E apt-get -y install "${pkg_name}"
 		elif [ "$ID" == "fedora" ]; then
 			repo_url="https://download.docker.com/linux/fedora/docker-ce.repo"
 			sudo -E dnf -y install dnf-plugins-core
 			sudo -E dnf config-manager --add-repo "$repo_url"
 			sudo -E dnf makecache
-			docker_version_full=$(dnf --showduplicate list "$pkg_name" | grep "$docker_version" | awk '{print $2}' | tail -1)
-			sudo -E dnf -y install "${pkg_name}-${docker_version_full}"
+			sudo -E dnf -y install "${pkg_name}"
 		elif [ "$ID" == "centos" ] || [ "$ID" == "rhel" ]; then
 			sudo -E yum install -y yum-utils
 			repo_url="https://download.docker.com/linux/centos/docker-ce.repo"
 			sudo yum-config-manager --add-repo "$repo_url"
-			# This will enable the possiblity to install the supported docker version
-			sudo sed -i 's/$releasever/7/g' /etc/yum.repos.d/docker-ce.repo
 			sudo yum makecache
-			docker_version_full=$(yum --showduplicate list "$pkg_name" | \
-				grep "$docker_version" | awk '{print $2}' | tail -1 | cut -d':' -f2)
-			sudo -E yum -y install "${pkg_name}-${docker_version_full}"
+			sudo -E yum -y install "${pkg_name}"
 		elif [ "$ID" == "debian" ]; then
 			sudo -E apt-get -y install apt-transport-https ca-certificates software-properties-common
 			curl -sL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
 			arch=$(dpkg --print-architecture)
 			sudo -E add-apt-repository "deb [arch=${arch}] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
 			sudo -E apt-get update
-			docker_version_full=$(apt-cache madison $pkg_name | grep "$docker_version" | awk '{print $3}' | head -1)
-			sudo -E apt-get -y install "${pkg_name}=${docker_version_full}"
+			sudo -E apt-get -y install "${pkg_name}"
 		elif [[ "$ID" =~ ^opensuse.*$ ]] || [ "$ID" == "sles" ]; then
 			sudo zypper removelock docker
-			sudo zypper -n  install 'docker<19.03'
+			sudo zypper -n  install "${pkg_name}" 
 			sudo zypper addlock docker
 		fi
 	elif [ "$tag" == "swarm" ]; then
