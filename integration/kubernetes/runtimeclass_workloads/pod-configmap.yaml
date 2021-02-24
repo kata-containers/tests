@@ -12,7 +12,7 @@ spec:
   runtimeClassName: kata
   containers:
     - name: test-container
-      image: busybox
+      image: quay.io/prometheus/busybox:latest
       command: ["tail", "-f", "/dev/null"]
       env:
         - name: KUBE_CONFIG_1

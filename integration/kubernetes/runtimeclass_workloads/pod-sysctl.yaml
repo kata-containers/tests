@@ -18,11 +18,11 @@ spec:
   - name: test
     securityContext:
       privileged: true
-    image: busybox
+    image: quay.io/prometheus/busybox:latest
     command: ["tail", "-f", "/dev/null"]
   initContainers:
   - name: init-sys
     securityContext:
       privileged: true
-    image: busybox
+    image: quay.io/prometheus/busybox:latest
     command: ['sh', '-c', 'echo "64000" > /proc/sys/vm/max_map_count']

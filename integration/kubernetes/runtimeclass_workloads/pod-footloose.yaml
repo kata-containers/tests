@@ -52,7 +52,7 @@ spec:
   # These containers are run during pod initialization
   initContainers:
   - name: install
-    image: busybox
+    image: quay.io/prometheus/busybox:latest
     command: ["sh", "-c", "chmod 700 /root/.ssh"]
     volumeMounts:
     - name: ssh-dir

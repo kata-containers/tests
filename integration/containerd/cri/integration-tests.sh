@@ -18,6 +18,7 @@ RUNTIME=${RUNTIME:-containerd-shim-kata-v2}
 SHIMV2_TEST=${SHIMV2_TEST:-""}
 FACTORY_TEST=${FACTORY_TEST:-""}
 KILL_VMM_TEST=${KILL_VMM_TEST:-""}
+KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 
 default_runtime_type="io.containerd.runtime.v1.linux"
 # Type of containerd runtime to be tested
@@ -260,7 +261,7 @@ main() {
 	TestSandboxCleanRemove
 	)
 
-	if [ "${KATA_HYPERVISOR:-}" == "cloud-hypervisor" ]; then
+	if [ "${KATA_HYPERVISOR}" == "cloud-hypervisor" ]; then
 		issue="https://github.com/kata-containers/tests/issues/2318"
 		info "${KATA_HYPERVISOR} fails with TestContainerListStatsWithSandboxIdFilter }"
 		info "see ${issue}"

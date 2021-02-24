@@ -16,7 +16,7 @@ spec:
        claimName: pv-claim
   containers:
     - name: pv-container
-      image: busybox
+      image: quay.io/prometheus/busybox:latest
       ports:
       command:
         - sleep
