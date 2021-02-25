@@ -8,7 +8,6 @@ test:
   - docker
   - network
   - ramdisk
-  - docker-compose
   - docker-stability
   - entropy
 

@@ -114,11 +114,6 @@ crio:
 	bash .ci/install_bats.sh
 	RUNTIME=${RUNTIME} ./integration/cri-o/cri-o.sh
 
-docker-compose:
-	bash .ci/install_bats.sh
-	cd integration/docker-compose && \
-	bats docker-compose.bats
-
 docker-stability:
 	systemctl is-active --quiet docker || sudo systemctl start docker
 	cd integration/stability && \
@@ -243,7 +238,6 @@ help:
 	checkcommits \
 	crio \
 	docker \
-	docker-compose \
 	docker-stability \
 	entropy \
 	ginkgo \
