@@ -75,5 +75,6 @@ build_and_install_qemu() {
         echo "Link virtiofsd to /usr/libexec/kata-qemu/virtiofsd"
         sudo mkdir -p /usr/libexec/kata-qemu/
         sudo ln -sf $(pwd)/virtiofsd /usr/libexec/kata-qemu/virtiofsd
+        ls -l /usr/libexec/kata-qemu/virtiofsd || return 1
         popd
 }
