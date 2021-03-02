@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2020 Intel Corporation
+# Copyright (c) 2020-2021 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -17,21 +17,31 @@ source "${dir_path}/../../lib/common.bash"
 source "${dir_path}/../../.ci/lib.sh"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 name="${name:-default_vcpus}"
+IMAGE="${IMAGE:-quay.io/prometheus/busybox:latest}"
+CONTAINER_NAME="${CONTAINER_NAME:-test}"
+PAYLOAD_ARGS="${PAYLOAD_ARGS:-nproc | grep 4}"
+RUNTIME_CONFIG_PATH="${RUNTIME_CONFIG_PATH:-}"
 
 function setup() {
-	clean_env
+	sudo systemctl restart containerd
+	clean_env_ctr
 	check_processes
 	extract_kata_env
 	sudo sed -i "s/${name} = 1/${name} = 4/g" "${RUNTIME_CONFIG_PATH}"
 }
 
-function test_docker_with_vcpus() {
-	docker run --runtime="${RUNTIME}" busybox nproc | grep "4"
+function test_ctr_with_vcpus() {
+	CONTAINERD_RUNTIME="io.containerd.kata.v2"
+	sudo ctr image pull "${IMAGE}"
+	[ $? != 0 ] && die "Unable to get image $IMAGE"
+	sudo ctr run --runtime="${CONTAINERD_RUNTIME}" -d "${IMAGE}" "${CONTAINER_NAME}" sh -c "${PAYLOAD_ARGS}"
 }
 
 function teardown() {
 	sudo sed -i "s/${name} = 4/${name} = 1/g" "${RUNTIME_CONFIG_PATH}"
-	clean_env
+	sudo ctr tasks rm -f $(sudo ctr task list -q)
+	sudo ctr c rm $(sudo ctr c list -q)
+	clean_env_ctr
 	check_processes
 }
 
@@ -40,5 +50,5 @@ trap teardown EXIT
 echo "Running setup"
 setup
 
-echo "Running docker integration tests with vcpus"
-test_docker_with_vcpus
+echo "Running ctr integration tests with vcpus"
+test_ctr_with_vcpus
