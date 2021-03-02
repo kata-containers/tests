@@ -8,9 +8,9 @@
 
 description: |
   This file contains test specific version details.
-  For other version details, see the master database:
+  For other version details, see the main database:
 
-  https://github.com/kata-containers/runtime/blob/master/versions.yaml
+  https://github.com/kata-containers/kata-containers/blob/main/versions.yaml
 
 docker_images:
   description: "Docker hub images used for testing"
