@@ -312,6 +312,14 @@ case "${CI_JOB}" in
 	export KUBERNETES="no"
 	export OPENSHIFT="no"
 	export METRICS_CI=1
+	;;
+"METRICS_CLH_CONTAINERD")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	export KUBERNETES="no"
+	export METRICS_CI=1
 ;;
 esac
 "${ci_dir_name}/setup.sh"

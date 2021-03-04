@@ -78,6 +78,13 @@ case "${CI_JOB}" in
 		echo "INFO: Running metrics tests"
 		sudo -E PATH="$PATH" ".ci/run_metrics_PR_ci.sh"
 		;;
+	"METRICS_CLH_CONTAINERD")
+		export RUNTIME="kata-runtime"
+		export KATA_HYPERVISOR="cloud-hypervisor"
+		export CTR_RUNTIME="io.containerd.run.kata.v2"
+		echo "INFO: Running metrics tests with ${KATA_HYPERVISOR}"
+		sudo -E PATH="$PATH" ".ci/run_metrics_PR_ci.sh"
+		;;
 	*)
 		echo "INFO: Running checks"
 		sudo -E PATH="$PATH" bash -c "make check"

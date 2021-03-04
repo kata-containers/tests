@@ -17,6 +17,7 @@ CHECKMETRICS_CONFIG_DEFDIR="/etc/checkmetrics"
 # Where to look if this machine is a static CI machine with a known fixed name.
 CHECKMETRICS_CONFIG_DIR="${CHECKMETRICS_DIR}/ci_worker"
 CM_DEFAULT_DENSITY_CONFIG="${CHECKMETRICS_DIR}/baseline/density-CI.toml"
+CI_JOB="${CI_JOB:-}"
 
 # Set up the initial state
 init() {
@@ -27,32 +28,33 @@ init() {
 run() {
 	pushd "$SCRIPT_DIR/../metrics"
 
-	# If KSM is available on this platform, let's run any tests that are
-	# affected by having KSM on/orr first, and then turn it off for the
-	# rest of the tests, as KSM may introduce some extra noise in the
-	# results by stealing CPU time for instance.
-	if [[ -f ${KSM_ENABLE_FILE} ]]; then
-		save_ksm_settings
-		trap restore_ksm_settings EXIT QUIT KILL
-		set_ksm_aggressive
+	if [ "${CI_JOB}" != "METRICS_CLH_CONTAINERD" ]; then
+		# If KSM is available on this platform, let's run any tests that are
+		# affected by having KSM on/orr first, and then turn it off for the
+		# rest of the tests, as KSM may introduce some extra noise in the
+		# results by stealing CPU time for instance.
+		if [[ -f ${KSM_ENABLE_FILE} ]]; then
+			save_ksm_settings
+			trap restore_ksm_settings EXIT QUIT KILL
+			set_ksm_aggressive
 
-		# Run the memory footprint test - the main test that
-		# KSM affects.
-		bash density/memory_usage.sh 20 300 auto
+			# Run the memory footprint test - the main test that
+			# KSM affects.
+			bash density/memory_usage.sh 20 300 auto
+			# And now ensure KSM is turned off for the rest of the tests
+			disable_ksm
+		fi
 
-		# And now ensure KSM is turned off for the rest of the tests
-		disable_ksm
+		# Run the density tests - no KSM, so no need to wait for settle
+		# (so set a token 5s wait)
+		bash density/memory_usage.sh 20 5
+
+		# Run the density test inside the container
+		bash density/memory_usage_inside_container.sh
+
+		# Run the time tests
+		bash time/launch_times.sh -i mirror.gcr.io/library/ubuntu:latest -n 20
 	fi
-
-	# Run the density tests - no KSM, so no need to wait for settle
-	# (so set a token 5s wait)
-	bash density/memory_usage.sh 20 5
-
-	# Run the density test inside the container
-	bash density/memory_usage_inside_container.sh
-
-	# Run the time tests
-	bash time/launch_times.sh -i mirror.gcr.io/library/ubuntu:latest -n 20
 
 	# Run storage tests
 	bash storage/blogbench.sh
@@ -93,7 +95,7 @@ check() {
 		else
 			# For bare metal repeatable machines, the config file name is tied
 			# to the uname of the machine.
-			local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DIR}/checkmetrics-json-$(uname -n).toml"
+			local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DIR}/checkmetrics-json-${KATA_HYPERVISOR}-$(uname -n).toml"
 		fi
 
 		checkmetrics --debug --percentage --basefile ${CM_BASE_FILE} --metricsdir ${RESULTS_DIR}
