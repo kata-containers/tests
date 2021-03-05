@@ -140,12 +140,6 @@ ksm:
 sandbox-cgroup:
 	bash -f integration/sandbox_cgroup/sandbox_cgroup_test.sh
 
-swarm:
-	systemctl is-active --quiet docker || sudo systemctl start docker
-	bash -f .ci/install_bats.sh
-	cd integration/swarm && \
-	bats swarm.bats
-
 stability:
 	cd integration/stability && \
 	ITERATIONS=2 MAX_CONTAINERS=20 ./soak_parallel_rm.sh
@@ -251,7 +245,6 @@ help:
 	openshift \
 	pentest \
 	sandbox-cgroup \
-	swarm \
 	netmon \
 	network \
 	ramdisk \
