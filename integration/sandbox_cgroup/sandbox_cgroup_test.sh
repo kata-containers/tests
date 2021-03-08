@@ -1,11 +1,11 @@
 #!/bin/bash
 #
-# Copyright (c) 2020 Intel Corporation
+# Copyright (c) 2020-2021 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
 # This will enable the sandbox_cgroup_only
-# to true in order to test that docker is
+# to true in order to test that ctr is
 # working properly when this feature is
 # enabled
 
@@ -26,20 +26,22 @@ if [ -z "${TEST_SANDBOX_CGROUP_ONLY}" ]; then
 fi
 
 function setup() {
-	clean_env
+	sudo systemctl restart containerd
+	clean_env_ctr
+	CONTAINERD_RUNTIME="io.containerd.kata.v2"
 	check_processes
 }
 
-function test_docker() {
+function test_stability() {
 	pushd "${GOPATH}/src/${tests_repo}"
 	".ci/toggle_sandbox_cgroup_only.sh" true
-	sudo -E PATH="$PATH" bash -c "make docker"
+	sudo -E PATH="$PATH" bash -c "make stability"
 	".ci/toggle_sandbox_cgroup_only.sh" false
 	popd
 }
 
 function teardown() {
-	clean_env
+	clean_env_ctr
 	check_processes
 }
 
@@ -48,5 +50,5 @@ trap teardown EXIT
 echo "Running setup"
 setup
 
-echo "Running docker integration tests with sandbox cgroup enabled"
-test_docker
+echo "Running stability integration tests with sandbox cgroup enabled"
+test_stability

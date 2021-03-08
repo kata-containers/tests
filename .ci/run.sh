@@ -26,6 +26,9 @@ case "${CI_JOB}" in
 		echo "INFO: Running vcpus test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make vcpus"
 		echo "INFO: Skipping pmem test: Issue: https://github.com/kata-containers/tests/issues/3223"
+		echo "INFO: Running stability test with sandbox_cgroup_only"
+		export TEST_SANDBOX_CGROUP_ONLY=true
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
 		# echo "INFO: Running pmem integration test"
 		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make pmem"
 		;;
