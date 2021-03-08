@@ -114,16 +114,10 @@ crio:
 	bash .ci/install_bats.sh
 	RUNTIME=${RUNTIME} ./integration/cri-o/cri-o.sh
 
-docker-compose:
-	bash .ci/install_bats.sh
-	cd integration/docker-compose && \
-	bats docker-compose.bats
-
 docker-stability:
 	systemctl is-active --quiet docker || sudo systemctl start docker
 	cd integration/stability && \
 	export ITERATIONS=2 && export MAX_CONTAINERS=20 && ./soak_parallel_rm.sh
-	cd integration/stability && ./bind_mount_linux.sh
 	cd integration/stability && ./hypervisor_stability_kill_test.sh
 
 podman:
@@ -139,17 +133,8 @@ kubernetes-e2e:
 	bash ./setup.sh &&\
 	bash ./run.sh
 
-ksm:
-	bash -f integration/ksm/ksm_test.sh
-
 sandbox-cgroup:
 	bash -f integration/sandbox_cgroup/sandbox_cgroup_test.sh
-
-swarm:
-	systemctl is-active --quiet docker || sudo systemctl start docker
-	bash -f .ci/install_bats.sh
-	cd integration/swarm && \
-	bats swarm.bats
 
 stability:
 	cd integration/stability && \
@@ -166,11 +151,6 @@ cri-containerd:
 log-parser:
 	make -C cmd/log-parser
 
-oci:
-	systemctl is-active --quiet docker || sudo systemctl start docker
-	cd integration/oci_calls && \
-	bash -f oci_call_test.sh
-
 openshift:
 	bash -f .ci/install_bats.sh
 	bash -f integration/openshift/run_openshift_tests.sh
@@ -178,43 +158,11 @@ openshift:
 pentest:
 	bash -f pentest/all.sh
 
-vm-factory:
-	bash -f integration/vm_factory/vm_templating_test.sh
-
-
-network:
-	systemctl is-active --quiet docker || sudo systemctl start docker
-	bash -f .ci/install_bats.sh
-	bats integration/network/macvlan/macvlan_driver.bats
-	bats integration/network/ipvlan/ipvlan_driver.bats
-	bats integration/network/disable_net/net_none.bats
-
-ramdisk:
-	bash -f integration/ramdisk/ramdisk.sh
-
-entropy:
-	bash -f .ci/install_bats.sh
-	bats integration/entropy/entropy_time.bats
-
-netmon:
-	systemctl is-active --quiet docker || sudo systemctl start docker
-	bash -f .ci/install_bats.sh
-	bats integration/netmon/netmon_test.bats
-
 tracing:
 	bash tracing/tracing-test.sh
 
-time-drift:
-	bats integration/time_drift/time_drift.bats
-
-compatibility:
-	bash -f integration/compatibility/run.sh
-
 vcpus:
 	bash -f integration/vcpus/default_vcpus_test.sh
-
-ipv6:
-	bash -f integration/ipv6/ipv6.sh
 
 pmem:
 	bash -f integration/pmem/pmem_test.sh
@@ -238,32 +186,22 @@ help:
 
 # PHONY in alphabetical order
 .PHONY: \
-	compatibility \
 	check \
 	checkcommits \
 	crio \
 	docker \
-	docker-compose \
 	docker-stability \
-	entropy \
 	ginkgo \
 	$(INSTALL_TARGETS) \
 	podman \
-	ipv6 \
 	kubernetes \
 	list-install-targets \
 	log-parser \
-	oci \
 	openshift \
 	pentest \
 	sandbox-cgroup \
-	swarm \
-	netmon \
-	network \
-	ramdisk \
 	test \
 	tracing \
 	vcpus \
 	vfio \
-	vm-factory \
 	pmem

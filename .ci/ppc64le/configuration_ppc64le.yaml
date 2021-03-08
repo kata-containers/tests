@@ -9,7 +9,6 @@
 test:
   - functional
   - docker
-  - docker-compose
 
 # for now, not all test suites under docker integration are fully passed in ppc64le.
 # some need to be tested, and some need to be refined.
