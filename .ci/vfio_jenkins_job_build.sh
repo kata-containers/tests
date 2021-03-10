@@ -268,8 +268,10 @@ install_dependencies() {
 	pushd "${qemu_dir}"
 	[ ! -f "${qemu_tar_file}" ] && curl -sL https://download.qemu.org/qemu-${qemu_version}.tar.xz -o "${qemu_tar_file}"
 	tar --strip-components=1 -xf "${qemu_tar_file}"
-	curl -sLO https://raw.githubusercontent.com/kata-containers/kata-containers/main/tools/packaging/scripts/configure-hypervisor.sh
-	bash configure-hypervisor.sh qemu | sed -e 's|--disable-slirp||' -e 's|--enable-libpmem||' | xargs ./configure
+	local pkg_dir="${kata_repo_dir}/tools/packaging"
+	local patches_dir="${pkg_dir}/qemu/patches/$(echo ${qemu_version} | sed -e 's/^v//' -e 's/.\d*$/x/')"
+	bash ${pkg_dir}/scripts/apply_patches.sh ${patches_dir}
+	bash ${pkg_dir}/scripts/configure-hypervisor.sh qemu | sed -e 's|--disable-slirp||' -e 's|--enable-libpmem||' | xargs ./configure
 	make -j$(($(nproc)-1))
 	sudo make install
 	popd
