@@ -149,7 +149,7 @@ ${environment}
 
     trap "cd \${tests_repo_dir} && sudo -E PATH=\$PATH .ci/teardown.sh ${artifacts_dir} || true; sudo chown -R \${USER} ${artifacts_dir}" EXIT
 
-    curl -sLO https://raw.githubusercontent.com/kata-containers/tests/master/.ci/ci_entry_point.sh
+    curl -sLO https://raw.githubusercontent.com/kata-containers/tests/main/.ci/ci_entry_point.sh
     bash -f ci_entry_point.sh "\${GIT_URL}"
 
   path: /home/${USER}/run.sh
@@ -268,7 +268,7 @@ install_dependencies() {
 	pushd "${qemu_dir}"
 	[ ! -f "${qemu_tar_file}" ] && curl -sL https://download.qemu.org/qemu-${qemu_version}.tar.xz -o "${qemu_tar_file}"
 	tar --strip-components=1 -xf "${qemu_tar_file}"
-	curl -sLO https://raw.githubusercontent.com/kata-containers/packaging/master/scripts/configure-hypervisor.sh
+	curl -sLO https://raw.githubusercontent.com/kata-containers/kata-containers/main/tools/packaging/scripts/configure-hypervisor.sh
 	bash configure-hypervisor.sh qemu | sed -e 's|--disable-slirp||' -e 's|--enable-libpmem||' | xargs ./configure
 	make -j$(($(nproc)-1))
 	sudo make install
