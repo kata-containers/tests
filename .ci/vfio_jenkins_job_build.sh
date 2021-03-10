@@ -237,7 +237,7 @@ install_dependencies() {
 			deps=(xorriso curl qemu-utils openssh-client)
 
 			# QEMU dependencies
-			deps+=(libcap-dev libattr1-dev libcap-ng-dev librbd-dev gcc pkg-config libglib2.0-dev libpixman-1-dev psmisc)
+			deps+=(libcap-dev libattr1-dev libcap-ng-dev librbd-dev gcc pkg-config libglib2.0-dev libpixman-1-dev psmisc ninja-build)
 
 			sudo apt-get update
 			sudo apt-get install -y ${deps[@]}
@@ -247,7 +247,7 @@ install_dependencies() {
 			deps=(xorriso curl qemu-img openssh)
 
 			# QEMU dependencies
-			deps+=(libcap-devel libattr-devel libcap-ng-devel librbd-devel gcc glib2-devel pixman-devel psmisc)
+			deps+=(libcap-devel libattr-devel libcap-ng-devel librbd-devel gcc glib2-devel pixman-devel psmisc ninja-build)
 
 			sudo dnf install -y ${deps[@]}
 			;;
