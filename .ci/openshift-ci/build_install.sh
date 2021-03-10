@@ -75,9 +75,3 @@ unset VERSION
 "${cidir}/install_kata_image.sh"
 
 "${cidir}/install_runtime.sh"
-config_file="${DESTDIR}/${PREFIX}/share/defaults/kata-containers/configuration.toml"
-# TODO: currently the virtio-fs backend cannot be tested on OpenShift.
-# See issue https://github.com/kata-containers/kata-containers/issues/1238
-if [ -f "$config_file" ]; then
-	sed -i 's|^shared_fs = "virtio-fs"|shared_fs = "virtio-9p"|g' "$config_file"
-fi
