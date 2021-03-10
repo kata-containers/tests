@@ -105,22 +105,33 @@ setup_configuration_file() {
 
 run_test() {
 	local image_type="${1:-}"
-	[ -n "$image_type" ] || die "need image type"
-
+	# QEMU machine type
 	local machine_type="${2:-}"
-
 	local hypervisor="${3:-}"
-	[ -n "$hypervisor" ] || die "need hypervisor"
-
 	local sandbox_cgroup_only="${4:-}"
-	[ -n "$sandbox_cgroup_only" ] || die "need sandbox cgroup only"
+
+	info "Run test case: hypervisor=${hypervisor}" \
+		"${machine_type:+machine=$machine_type}" \
+		"image=${image_type} sandbox_cgroup_only=${sandbox_cgroup_only}"
+
+	if [ -z "$image_type" ]; then
+		die "need image type"
+	elif [ -z "$hypervisor" ]; then
+		die "need hypervisor"
+	elif [ -z "$sandbox_cgroup_only" ]; then
+		die "need sandbox cgroup only"
+	fi
 
 	setup_configuration_file "$image_type" "$machine_type" "$hypervisor" "$sandbox_cgroup_only"
 
 	sudo -E kubectl create -f "${SCRIPT_DIR}/runtimeclass_workloads/vfio.yaml"
 
 	pod_name=vfio
-	sudo -E kubectl wait --for=condition=Ready pod "${pod_name}"
+	sudo -E kubectl wait --for=condition=Ready pod "${pod_name}" || \
+		{
+			sudo -E kubectl describe pod "${pod_name}";
+			die "Pod ${pod_name} failed to start";
+		}
 
 	# wait for the container to be ready
 	waitForProcess 15 3 "sudo -E kubectl exec ${pod_name} -- ip a"
