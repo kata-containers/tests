@@ -11,6 +11,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
+set -x
 
 dir_path=$(dirname "$0")
 source "${dir_path}/../../lib/common.bash"
