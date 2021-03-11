@@ -138,19 +138,31 @@ ${environment}
     export GOPATH=\${WORKSPACE}/go
     export PATH=\${GOPATH}/bin:/usr/local/go/bin:/usr/sbin:\${PATH}
     export GOROOT="/usr/local/go"
+    export ghprbPullId
+    export ghprbTargetBranch
 
     # Make sure the packages were installed
     # Sometimes cloud-init is unable to install them
     sudo dnf makecache
     sudo dnf install -y git make pciutils
 
-    tests_repo_dir="\${GOPATH}/src/github.com/kata-containers/tests"
+    tests_repo="github.com/kata-containers/tests"
+    tests_repo_dir="\${GOPATH}/src/\${tests_repo}"
     mkdir -p "\${tests_repo_dir}"
+    git clone https://\${tests_repo} "\${tests_repo_dir}"
+    cd "\${tests_repo_dir}"
 
-    trap "cd \${tests_repo_dir} && sudo -E PATH=\$PATH .ci/teardown.sh ${artifacts_dir} || true; sudo chown -R \${USER} ${artifacts_dir}" EXIT
+    trap "cd \${tests_repo_dir}; sudo -E PATH=\$PATH .ci/teardown.sh ${artifacts_dir} || true; sudo chown -R \${USER} ${artifacts_dir}" EXIT
 
-    curl -sLO https://raw.githubusercontent.com/kata-containers/tests/main/.ci/ci_entry_point.sh
-    bash -f ci_entry_point.sh "\${GIT_URL}"
+    if echo \${GIT_URL} | grep -q tests; then
+        pr_number="\${ghprbPullId}"
+        pr_branch="PR_\${pr_number}"
+        git fetch origin "pull/\${pr_number}/head:\${pr_branch}"
+        git checkout "\${pr_branch}"
+        git rebase "origin/\${ghprbTargetBranch}"
+    fi
+
+    sudo -E PATH=\$PATH .ci/jenkins_job_build.sh "\$(echo \${GIT_URL} | sed -e 's|https://||' -e 's|.git||')"
 
   path: /home/${USER}/run.sh
   permissions: '0755'
