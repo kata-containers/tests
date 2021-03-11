@@ -16,6 +16,7 @@ set -o errtrace
 
 script_name=${0##*/}
 script_dir=$(dirname "$(readlink -f "$0")")
+CI_JOB="${CI_JOB:-}"
 
 handle_error() {
 	local exit_code="${?}"
