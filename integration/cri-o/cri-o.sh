@@ -38,13 +38,6 @@ cleanup() {
 # Check no processes are left behind
 check_processes
 
-# devicemapper device and options
-LVM_DEVICE=${LVM_DEVICE:-/dev/vdb}
-DM_STORAGE_OPTIONS="--storage-driver devicemapper
-	--storage-opt dm.directlvm_device_force=true --storage-opt dm.thinp_percent=95
-	--storage-opt dm.thinp_metapercent=1 --storage-opt dm.thinp_autoextend_threshold=80
-	--storage-opt dm.thinp_autoextend_percent=20"
-
 # overlay storage options
 OVERLAY_STORAGE_OPTIONS="--storage-driver overlay"
 
@@ -79,44 +72,10 @@ done
 
 IFS=$OLD_IFS
 
-# run CRI-O tests using devicemapper on ubuntu
-if [ "$ID" == "ubuntu" ]; then
-	if [ ! -b "${LVM_DEVICE}" ]; then
-		info "Creating a loop device to use it as LVM device"
-		# create a loop device and use it as lvm device
-		trap cleanup EXIT
-		img_file=devmap.img
-		dd if=/dev/zero of=${img_file} count=20 bs=50M
-		sync
-		printf "g\nn\n\n\nw\n" | fdisk ${img_file}
-		loop_device="$(sudo losetup --show -P -f ${img_file})"
-		sudo mkfs.ext4 "${loop_device}"
-		LVM_DEVICE="${loop_device}"
-	fi
-
-	# Block device attached to the VM where we run the CI
-	# If the block device has a partition, cri-o will not be able to use it.
-	export LVM_DEVICE
-	if sudo fdisk -l "$LVM_DEVICE" | grep "${LVM_DEVICE}[1-9]"; then
-		die "detected partitions on block device: ${LVM_DEVICE}. Will not continue"
-	fi
-	# When using devicemapper, do not run tests in parallel as each test
-	# will launch a new cri-o process which will try to use same block device.
-	export JOBS=1 \
-		STORAGE_OPTIONS="$DM_STORAGE_OPTIONS --storage-opt dm.directlvm_device=${LVM_DEVICE}"
-
-fi
-
 # On other distros or on ZUUL, use overlay.
 # This will allow us to run tests with at least 2 different
 # storage drivers.
-if [ "$ID" == "fedora" ] || [ "$ID" == "centos" ]; then
-	export STORAGE_OPTIONS="$OVERLAY_STORAGE_OPTIONS"
-fi
-
-if [ "$ZUUL" = true ]; then
-	export STORAGE_OPTIONS="$OVERLAY_STORAGE_OPTIONS"
-fi
+export STORAGE_OPTIONS="$OVERLAY_STORAGE_OPTIONS"
 
 echo "Ensure crio service is stopped before running the tests"
 if systemctl is-active --quiet crio; then

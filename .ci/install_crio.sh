@@ -89,14 +89,7 @@ fi
 pushd "${GOPATH}/src/${crio_repo}"
 echo "Installing CRI-O"
 make clean
-if [ "$ID" == "centos" ] || [ "$ID" == "fedora" ]; then
-	# This is necessary to avoid crashing `make` with `No package devmapper found`
-	# by disabling the devmapper driver when the library it requires is not installed
-	sed -i 's|$(shell hack/selinux_tag.sh)||' Makefile
-	make BUILDTAGS='exclude_graphdriver_devicemapper libdm_no_deferred_remove'
-else
-	make
-fi
+make BUILDTAGS='exclude_graphdriver_devicemapper libdm_no_deferred_remove'
 make test-binaries
 sudo -E PATH=$PATH sh -c "make install"
 sudo -E PATH=$PATH sh -c "make install.config"
