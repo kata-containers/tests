@@ -17,8 +17,8 @@ NUM_BUILDS=5
 
 # What is the default set of repos (Jenkins jobs) we evaluate
 default_repos=()
-default_repos+=("kata-containers-2.0-metrics-ubuntu-18-04-PR")
-default_repos+=("kata-containers-2.0-tests-metrics-ubuntu-18-04-PR")
+default_repos+=("kata-containers-2.0-metrics-ubuntu-20-04-PR")
+default_repos+=("kata-containers-2.0-tests-metrics-ubuntu-20-04-PR")
 repos=()
 
 # What test results do we evaluate for each build
