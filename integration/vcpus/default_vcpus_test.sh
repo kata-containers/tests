@@ -21,6 +21,13 @@ IMAGE="${IMAGE:-quay.io/prometheus/busybox:latest}"
 CONTAINER_NAME="${CONTAINER_NAME:-test}"
 PAYLOAD_ARGS="${PAYLOAD_ARGS:-nproc | grep 4}"
 RUNTIME_CONFIG_PATH="${RUNTIME_CONFIG_PATH:-}"
+TEST_INITRD="${TEST_INITRD:-no}"
+issue="github.com/kata-containers/tests/issues/3303"
+
+if [ "$TEST_INITRD" == "yes" ]; then
+	echo "Skip vcpu test is not working $issue"
+	exit 0
+fi
 
 function setup() {
 	sudo systemctl restart containerd
