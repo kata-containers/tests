@@ -64,6 +64,10 @@ if [ -f "${KATA_ETC_CONFIG_PATH}" ] && [ "${KATA_ETC_CONFIG_PATH}" != ${kata_con
 fi
 
 if [ "${KATA_ETC_CONFIG_PATH}" != "${kata_config_path}" ]; then
+	kata_etc_dir="/etc/kata-containers"
+	if [ ! -d "${kata_etc_dir}" ]; then
+		sudo mkdir -p "${kata_etc_dir}"
+	fi
 	info "Creating etc config based on ${kata_config_path}"
 	sudo cp "${kata_config_path}" "${KATA_ETC_CONFIG_PATH}"
 fi
