@@ -75,6 +75,7 @@ declare -A packages=( \
 	[haveged]="haveged" \
 	[libsystemd]="systemd-devel" \
 	[redis]="redis" \
+	[make]="make" \
 )
 
 main()
