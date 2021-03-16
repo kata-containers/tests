@@ -9,6 +9,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
+set -x
 
 source "/etc/os-release" || source "/usr/lib/os-release"
 
