@@ -6,6 +6,7 @@
 #
 # This test measures the following network essentials:
 # - bandwith simplex
+# - jitter
 #
 # These metrics/results will be got from the interconnection between
 # a client and a server using iperf3 tool.
@@ -33,7 +34,62 @@ function remove_tmp_file() {
 trap remove_tmp_file EXIT
 
 function iperf3_bandwidth() {
+	iperf3_start_deployment
 	local TEST_NAME="network iperf3 bandwidth"
+	metrics_json_init
+
+	# Start server
+	local transmit_timeout="30"
+
+	kubectl exec -ti "$client_pod_name" -- sh -c "iperf3 -J -c ${server_ip_add} -t ${transmit_timeout}" | jq '.end.sum_received.bits_per_second' > "${iperf_file}"
+	result=$(cat "${iperf_file}")
+
+	local json="$(cat << EOF
+	{
+		"bandwidth": {
+			"Result" : "$result",
+			"Units" : "bits per second"
+		}
+	}
+EOF
+)"
+
+	metrics_json_add_array_element "$json"
+	metrics_json_end_array "Results"
+
+	metrics_json_save
+	iperf3_deployment_cleanup
+}
+
+function iperf3_utc_jitter() {
+	iperf3_start_deployment
+	local TEST_NAME="network iperf3 utc jitter"
+	metrics_json_init
+
+	# Start server
+	local transmit_timeout="30"
+
+	kubectl exec -ti "$client_pod_name" -- sh -c "iperf3 -J -c ${server_ip_add} -u -t ${transmit_timeout}" | jq '.end.sum.jitter_ms' > "${iperf_file}"
+	result=$(cat "${iperf_file}")
+
+	local json="$(cat << EOF
+	{
+		"jitter": {
+			"Result" : "$result",
+			"Units" : "ms"
+		}
+	}
+EOF
+)"
+
+	metrics_json_add_array_element "$json"
+	metrics_json_end_array "Results"
+
+	metrics_json_save
+	iperf3_deployment_cleanup
+}
+
+function iperf3_start_deployment() {
 	cmds=("bc" "jq")
 	check_cmds "${cmds[@]}"
 
@@ -44,8 +100,8 @@ function iperf3_bandwidth() {
 	start_kubernetes
 
 	export KUBECONFIG="$HOME/.kube/config"
-	local service="iperf3-server"
-	local deployment="iperf3-server-deployment"
+	export service="iperf3-server"
+	export deployment="iperf3-server-deployment"
 
 	wait_time=20
 	sleep_time=2
@@ -64,49 +120,27 @@ function iperf3_bandwidth() {
 	kubectl expose deployment/"${deployment}"
 
 	# Get the names of the server pod
-	local server_pod_name=$(kubectl get pods -o name | grep server | cut -d '/' -f2)
+	export server_pod_name=$(kubectl get pods -o name | grep server | cut -d '/' -f2)
 
 	# Verify the server pod is working
 	local cmd="kubectl get pod $server_pod_name -o yaml | grep 'phase: Running'"
 	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 
 	# Get the names of client pod
-	local client_pod_name=$(kubectl get pods -o name | grep client | cut -d '/' -f2)
+	export client_pod_name=$(kubectl get pods -o name | grep client | cut -d '/' -f2)
 
 	# Verify the client pod is working
 	local cmd="kubectl get pod $client_pod_name -o yaml | grep 'phase: Running'"
 	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 
 	# Get the ip address of the server pod
-	local server_ip_add=$(kubectl get pod "$server_pod_name" -o jsonpath='{.status.podIP}')
+	export server_ip_add=$(kubectl get pod "$server_pod_name" -o jsonpath='{.status.podIP}')
+}
 
-	metrics_json_init
-
-	# Start server
-	local transmit_timeout="30"
-
-	kubectl exec -ti "$client_pod_name" -- sh -c "iperf3 -J -c ${server_ip_add} -t ${transmit_timeout}" | jq '.end.sum_received.bits_per_second' > "${iperf_file}"
-	result=$(cat "${iperf_file}")
-
-	local json="$(cat << EOF
-	{
-		"jitter": {
-			"Result" : "$result",
-			"Units" : "bits per second"
-		}
-	}
-EOF
-)"
-
-	metrics_json_add_array_element "$json"
-	metrics_json_end_array "Results"
-
-	metrics_json_save
-
+function iperf3_deployment_cleanup() {
 	kubectl delete deployment "$deployment"
 	kubectl delete service "$deployment"
 	end_kubernetes
-
 	check_processes
 }
 
@@ -124,4 +158,61 @@ function end_kubernetes() {
 	popd
 }
 
-iperf3_bandwidth
+function help() {
+echo "$(cat << EOF
+Usage: $0 "[options]"
+	Description:
+		This script implements a number of network metrics
+		using iperf3.
+
+	Options:
+		-a	Run all tests
+		-b 	Run bandwidth tests
+		-h	Help
+		-j	Run jitter tests
+EOF
+)"
+}
+
+function main() {
+	local OPTIND
+	while getopts ":abjh:" opt
+	do
+		case "$opt" in
+		a)	# all tests
+			test_bandwidth="1"
+			test_jitter="1"
+			;;
+		b)	# bandwith test
+			test_bandwith="1"
+			;;
+		h)
+			help
+			exit 0;
+			;;
+		j)	# jitter tests
+			test_jitter="1"
+			;;
+		:)
+			echo "Missing argument for -$OPTARG";
+			help
+			exit 1;
+			;;
+		esac
+	done
+	shift $((OPTIND-1))
+
+	[[ -z "$test_bandwith" ]] && \
+	[[ -z "$test_jitter" ]] && \
+		help && die "Must choose at least one test"
+
+	if [ "$test_bandwith" == "1" ]; then
+		iperf3_bandwidth
+	fi
+
+	if [ "$test_jitter" == "1" ]; then
+		iperf3_jitter
+	fi
+}
+
+main "$@"
