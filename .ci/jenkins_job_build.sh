@@ -296,9 +296,8 @@ case "${CI_JOB}" in
 ;;
 "VFIO")
 	init_ci_flags
-	export CRIO="no"
-	export CRI_CONTAINERD="yes"
-	export CRI_RUNTIME="containerd"
+	export CRIO="yes"
+	export CRI_CONTAINERD="no"
 	export KATA_HYPERVISOR="qemu"
 	export KUBERNETES="yes"
 	export OPENSHIFT="no"
