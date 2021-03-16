@@ -56,9 +56,13 @@ run() {
 
 		# Run the time tests
 		bash time/launch_times.sh -i mirror.gcr.io/library/ubuntu:latest -n 20
+
+		# Run iperf3 bandwidth test
+		bash network/iperf3_kubernetes/k8s-network-metrics-iperf3.sh -b
 	fi
 
 	# Run storage tests
+	sudo systemctl restart docker
 	bash storage/blogbench.sh
 
 	# Skip: Issue: https://github.com/kata-containers/tests/issues/3203
