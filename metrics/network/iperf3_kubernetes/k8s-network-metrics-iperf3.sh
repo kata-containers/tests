@@ -41,13 +41,13 @@ function iperf3_bandwidth() {
 	# Start server
 	local transmit_timeout="30"
 
-	kubectl exec -ti "$client_pod_name" -- sh -c "iperf3 -J -c ${server_ip_add} -t ${transmit_timeout}" | jq '.end.sum_received.bits_per_second' > "${iperf_file}"
+	kubectl exec -i "$client_pod_name" -- sh -c "iperf3 -J -c ${server_ip_add} -t ${transmit_timeout}" | jq '.end.sum_received.bits_per_second' > "${iperf_file}"
 	result=$(cat "${iperf_file}")
 
 	local json="$(cat << EOF
 	{
 		"bandwidth": {
-			"Result" : "$result",
+			"Result" : $result,
 			"Units" : "bits per second"
 		}
 	}
@@ -69,13 +69,13 @@ function iperf3_utc_jitter() {
 	# Start server
 	local transmit_timeout="30"
 
-	kubectl exec -ti "$client_pod_name" -- sh -c "iperf3 -J -c ${server_ip_add} -u -t ${transmit_timeout}" | jq '.end.sum.jitter_ms' > "${iperf_file}"
+	kubectl exec -i "$client_pod_name" -- sh -c "iperf3 -J -c ${server_ip_add} -u -t ${transmit_timeout}" | jq '.end.sum.jitter_ms' > "${iperf_file}"
 	result=$(cat "${iperf_file}")
 
 	local json="$(cat << EOF
 	{
 		"jitter": {
-			"Result" : "$result",
+			"Result" : $result,
 			"Units" : "ms"
 		}
 	}
