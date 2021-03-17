@@ -50,7 +50,7 @@ create_meta_data() {
 	cat <<EOF > "${file}"
 {
   "uuid": "d1b4aafa-5d75-4f9c-87eb-2ceabe110c39",
-  "hostname": "test"
+  "hostname": "d1b4aafa"
 }
 EOF
 }
@@ -140,6 +140,9 @@ ${environment}
     export GOROOT="/usr/local/go"
     export ghprbPullId
     export ghprbTargetBranch
+
+    # Fix kubernetes pre-flight checks
+    sudo sed -i 's/localhost /localhost '\$(hostname)' /g' /etc/hosts
 
     # Make sure the packages were installed
     # Sometimes cloud-init is unable to install them
