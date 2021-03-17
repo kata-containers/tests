@@ -50,7 +50,7 @@ echo "Install chronic"
 sudo -E yum -y install moreutils
 
 if [ "$centos_version" == "8" ]; then
-	chronic sudo -E yum install pkgconf-pkg-config
+	chronic sudo -E yum install -y pkgconf-pkg-config
 fi 
 
 declare -A minimal_packages=( \
@@ -75,6 +75,7 @@ declare -A packages=( \
 	[haveged]="haveged" \
 	[libsystemd]="systemd-devel" \
 	[redis]="redis" \
+	[make]="make" \
 )
 
 main()
