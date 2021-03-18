@@ -137,8 +137,9 @@ run_test() {
 	waitForProcess 15 3 "sudo -E kubectl exec ${pod_name} -- ip a"
 
 	# Expecting 2 network interaces -> 2 mac addresses
-	mac_addrs=$(sudo -E kubectl exec "${pod_name}" -- ip a | grep "link/ether" | wc -l)
+	mac_addrs=$(sudo -E kubectl exec "${pod_name}" -- ip a | grep "link/ether" | wc -l || true)
 	if [ ${mac_addrs} -ne 2 ]; then
+		sudo -E kubectl describe pod "${pod_name}" || true
 		die "Error: expecting 2 network interfaces, Got: $(kubectl exec "${pod_name}" -- ip a)"
 	else
 		info "Success: found 2 network interfaces"
