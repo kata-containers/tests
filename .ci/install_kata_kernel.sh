@@ -83,11 +83,7 @@ install_cached_kernel(){
 	else
 		sudo -E curl -fL --progress-bar "${latest_build_url}/${kernel_binary_name}" -o "${kernel_binary_path}" || return 1
 	fi
-	if [ "${experimental_kernel}" == "true" ]; then
-		kernel_symlink="${kernel_dir}/${kernel_binary}-virtiofs.container"
-	else
-		kernel_symlink="${kernel_dir}/${kernel_binary}.container"
-	fi
+	kernel_symlink="${kernel_dir}/${kernel_binary}.container"
 	info "Installing ${kernel_binary_path} and symlink ${kernel_symlink}"
 	sudo -E ln -sf "${kernel_binary_path}" "${kernel_symlink}"
 }
