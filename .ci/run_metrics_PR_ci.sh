@@ -57,8 +57,8 @@ run() {
 		# Run the time tests
 		bash time/launch_times.sh -i mirror.gcr.io/library/ubuntu:latest -n 20
 
-		# Run iperf3 bandwidth test
-		bash network/iperf3_kubernetes/k8s-network-metrics-iperf3.sh -b
+		# Run iperf3 network tests
+		bash network/iperf3_kubernetes/k8s-network-metrics-iperf3.sh -a
 	fi
 
 	# Run storage tests

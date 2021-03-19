@@ -28,15 +28,15 @@ test_repo="${test_repo:-github.com/kata-containers/tests}"
 iperf_file=$(mktemp iperfresults.XXXXXXXXXX)
 
 function remove_tmp_file() {
-	rm -rf "${iperf_file}"
+	rm -rf "${iperf_file}" "${jitter_iperf_file}"
 }
 
 trap remove_tmp_file EXIT
 
 function iperf3_bandwidth() {
-	iperf3_start_deployment
 	local TEST_NAME="network iperf3 bandwidth"
 	metrics_json_init
+	metrics_json_start_array
 
 	# Start server
 	local transmit_timeout="30"
@@ -58,13 +58,12 @@ EOF
 	metrics_json_end_array "Results"
 
 	metrics_json_save
-	iperf3_deployment_cleanup
 }
 
-function iperf3_utc_jitter() {
-	iperf3_start_deployment
-	local TEST_NAME="network iperf3 utc jitter"
+function iperf3_jitter() {
+	local TEST_NAME="network iperf3 jitter"
 	metrics_json_init
+	metrics_json_start_array
 
 	# Start server
 	local transmit_timeout="30"
@@ -86,7 +85,6 @@ EOF
 	metrics_json_end_array "Results"
 
 	metrics_json_save
-	iperf3_deployment_cleanup
 }
 
 function cpu_metrics_iperf3() {
@@ -174,6 +172,12 @@ function iperf3_deployment_cleanup() {
 	kubectl delete service "$deployment"
 	end_kubernetes
 	check_processes
+	if [ "$(ls -A /var/lib/etcd)" ]; then
+		sudo rm -rf /var/lib/etcd/*
+	fi
+	if [ "$(ls -A /etc/kubernetes)" ]; then
+		sudo rm -rf /etc/kubernetes/*
+	fi
 }
 
 function start_kubernetes() {
@@ -213,11 +217,10 @@ function main() {
 	do
 		case "$opt" in
 		a)	# all tests
-			test_bandwidth="1"
-			test_jitter="1"
+			test_all="1"
 			;;
 		b)	# bandwith test
-			test_bandwith="1"
+			test_bandwidth="1"
 			;;
 		c)
 			# run cpu tests
@@ -239,21 +242,33 @@ function main() {
 	done
 	shift $((OPTIND-1))
 
-	[[ -z "$test_bandwith" ]] && \
+	[[ -z "$test_bandwidth" ]] && \
 	[[ -z "$test_jitter" ]] && \
 	[[ -z "$test_cpu" ]] && \
+	[[ -z "$test_all" ]] && \
 		help && die "Must choose at least one test"
 
-	if [ "$test_bandwith" == "1" ]; then
+	if [ "$test_bandwidth" == "1" ]; then
+		iperf3_start_deployment
 		iperf3_bandwidth
+		iperf3_deployment_cleanup
 	fi
 
 	if [ "$test_jitter" == "1" ]; then
+		iperf3_start_deployment
 		iperf3_jitter
+		iperf3_deployment_cleanup
 	fi
 
 	if [ "$test_cpu" == "1" ]; then
 		cpu_metrics_iperf3
+	fi
+
+	if [ "$test_all" == "1" ]; then
+		iperf3_start_deployment
+		iperf3_bandwidth
+		iperf3_jitter
+		iperf3_deployment_cleanup
 	fi
 }
 

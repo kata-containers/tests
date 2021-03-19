@@ -84,3 +84,16 @@ checktype = "mean"
 midval = 30811123135.60
 minpercent = 10.0
 maxpercent = 10.0
+
+[[metric]]
+name = "network-iperf3-jitter"
+type = "json"
+description = "measure container utc jitter using iperf3"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"network-iperf3-jitter\".Results | .[] | .jitter.Result"
+checktype = "mean"
+midval = 0.0221
+minpercent = 20.0
+maxpercent = 20.0
