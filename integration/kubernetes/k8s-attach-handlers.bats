@@ -28,7 +28,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/test-lifecycle-events.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod $pod_name
 
 	# Check postStart message
 	display_message="cat /usr/share/message"

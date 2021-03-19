@@ -15,6 +15,8 @@ export KATA_ETC_CONFIG_PATH="/etc/kata-containers/configuration.toml"
 export kata_repo="github.com/kata-containers/kata-containers"
 export kata_repo_dir="${GOPATH}/src/${kata_repo}"
 export kata_default_branch="${kata_default_branch:-main}"
+export timeout="60s"
+
 
 # Name of systemd service for the throttler
 KATA_KSM_THROTTLER_JOB="kata-ksm-throttler"
