@@ -127,14 +127,14 @@ run_test() {
 	sudo -E kubectl create -f "${SCRIPT_DIR}/runtimeclass_workloads/vfio.yaml"
 
 	pod_name=vfio
-	sudo -E kubectl wait --for=condition=Ready pod "${pod_name}" || \
-		{
-			sudo -E kubectl describe pod "${pod_name}";
-			die "Pod ${pod_name} failed to start";
-		}
+
+	cmd="sudo -E kubectl wait --for=condition=Ready pod ${pod_name}"
+	waitForProcess 20 5 "$cmd"
+
+	sudo -E kubectl describe pod "${pod_name}" | grep "Started container"
 
 	# wait for the container to be ready
-	waitForProcess 15 3 "sudo -E kubectl exec ${pod_name} -- ip a"
+	waitForProcess 20 5 "sudo -E kubectl exec ${pod_name} -- ip a"
 
 	# Expecting 2 network interaces -> 2 mac addresses
 	mac_addrs=$(sudo -E kubectl exec "${pod_name}" -- ip a | grep "link/ether" | wc -l)
@@ -184,10 +184,10 @@ main() {
 	sudo -E kubectl --namespace=kube-system wait --for=condition=Ready pod "${sriov_pod}"
 
 	# wait for the virtio_net resource
-	for _ in $(seq 1 30); do
+	for _ in $(seq 1 40); do
 		v="$(sudo -E kubectl get node $(hostname) -o json | jq '.status.allocatable["intel.com/virtio_net"]')"
 		[ "${v}" == \"1\" ] && break
-		sleep 5
+		sleep 10
 	done
 
 	# Skip clh/QEMU + initrd:
