@@ -22,7 +22,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-shared-volume.yaml"
 
 	# Check pods
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod $pod_name
 
 	# Communicate containers
 	cmd="cat /tmp/pod-data"
@@ -38,7 +38,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/initContainer-shared-volume.yaml"
 
 	# Check pods
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod $pod_name
 
 	cmd='test $(cat /volume/initContainer) -lt $(cat /volume/container)'
 	kubectl exec "$pod_name" -c "$last_container" -- sh -c "$cmd"

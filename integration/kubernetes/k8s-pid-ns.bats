@@ -22,7 +22,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/busybox-pod.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod $pod_name
 
 	# Check PID from first container
 	first_pid_container=$(kubectl exec $pod_name -c $first_container_name ps | grep "/pause")

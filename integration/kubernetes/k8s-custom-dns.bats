@@ -20,7 +20,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-custom-dns.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod $pod_name
 
 	# Check dns config at /etc/resolv.conf
 	kubectl exec "$pod_name" -- cat "$file_name" | grep -q "nameserver 1.2.3.4"

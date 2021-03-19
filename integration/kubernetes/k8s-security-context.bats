@@ -20,7 +20,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-security-context.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Check user
 	cmd="ps --user 1000 -f"

@@ -31,7 +31,7 @@ setup() {
 	kubectl create -f "${pod_config}"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod $pod_name
 
 	# Create a file
 	echo "$content" > "$file_name"
@@ -57,7 +57,7 @@ setup() {
 	kubectl create -f "${pod_config}"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod $pod_name
 
 	kubectl logs "$pod_name" || true
 	kubectl describe pod "$pod_name" || true
