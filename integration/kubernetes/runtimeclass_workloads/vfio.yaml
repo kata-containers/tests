@@ -6,7 +6,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: pod-name
+  name: vfio
 spec:
   terminationGracePeriodSeconds: 0
   runtimeClassName: kata
