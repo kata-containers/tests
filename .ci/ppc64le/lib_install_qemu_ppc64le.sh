@@ -7,8 +7,11 @@
 set -e
 
 CURRENT_QEMU_TAG=$(get_version "assets.hypervisor.qemu.tag")
+stable_branch=$(echo $CURRENT_QEMU_TAG | tr -d 'v' | awk 'BEGIN { FS = "." } {print $1 "." $2 ".x"}')
 PACKAGED_QEMU="qemu-system-ppc"
 BUILT_QEMU="qemu-system-ppc64"
+export source_repo="${source_repo:-github.com/kata-containers/kata-containers}"
+export packaging_dir="$GOPATH/src/${source_repo}/tools/packaging"
 
 source "${cidir}/lib.sh"
 
@@ -62,7 +65,9 @@ build_and_install_qemu() {
 
         [ -d "capstone" ] || git clone https://github.com/qemu/capstone.git capstone
         [ -d "ui/keycodemapdb" ] || git clone  https://github.com/qemu/keycodemapdb.git ui/keycodemapdb
-
+	
+        ${packaging_dir}/scripts/apply_patches.sh "${packaging_dir}/qemu/patches/${stable_branch}"        
+	
         echo "Build Qemu"
         "${QEMU_CONFIG_SCRIPT}" "qemu" | xargs ./configure
         make -j $(nproc)
@@ -73,9 +78,9 @@ build_and_install_qemu() {
         sudo ln -sf $(command -v ${BUILT_QEMU}) "/usr/bin/qemu-system-${QEMU_ARCH}"
 
         echo "Link virtiofsd to /usr/libexec/kata-qemu/virtiofsd"
-        ls -l $(pwd)/virtiofsd || return 1
+        ls -l $(pwd)/build/tools/virtiofsd/virtiofsd || return 1
         sudo mkdir -p /usr/libexec/kata-qemu/
-        sudo ln -sf $(pwd)/virtiofsd /usr/libexec/kata-qemu/virtiofsd
+        sudo ln -sf $(pwd)/build/tools/virtiofsd/virtiofsd /usr/libexec/kata-qemu/virtiofsd
         ls -l /usr/libexec/kata-qemu/virtiofsd || return 1
         popd
 }
