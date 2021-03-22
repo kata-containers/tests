@@ -133,6 +133,7 @@ run_test() {
 	sudo -E kubectl wait --for=condition=Ready pod "${pod_name}" || \
 		{
 			sudo -E kubectl describe pod "${pod_name}";
+			sudo -E kubectl get pod "${pod_name}" -o yaml;
 			die "Pod ${pod_name} failed to start";
 		}
 
