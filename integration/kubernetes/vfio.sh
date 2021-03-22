@@ -109,6 +109,7 @@ run_test() {
 	local machine_type="${2:-}"
 	local hypervisor="${3:-}"
 	local sandbox_cgroup_only="${4:-}"
+	local pod_name="${5:-}"
 
 	info "Run test case: hypervisor=${hypervisor}" \
 		"${machine_type:+machine=$machine_type}" \
@@ -124,9 +125,11 @@ run_test() {
 
 	setup_configuration_file "$image_type" "$machine_type" "$hypervisor" "$sandbox_cgroup_only"
 
-	sudo -E kubectl create -f "${SCRIPT_DIR}/runtimeclass_workloads/vfio.yaml"
+	sudo -E sed "s/pod-name/${pod_name}/" ${SCRIPT_DIR}/runtimeclass_workloads/vfio.yaml > ${SCRIPT_DIR}/runtimeclass_workloads/tmp_vfio.yaml
 
-	pod_name=vfio
+	sudo -E kubectl create -f "${SCRIPT_DIR}/runtimeclass_workloads/tmp_vfio.yaml"
+
+	# pod_name=vfio
 	sudo -E kubectl wait --for=condition=Ready pod "${pod_name}" || \
 		{
 			sudo -E kubectl describe pod "${pod_name}";
@@ -134,17 +137,27 @@ run_test() {
 		}
 
 	# wait for the container to be ready
+	# waitForProcess 15 3 "sudo -E kubectl exec ${pod_name} -- ip a"
 	for iii in $(seq 1 30); do
 		mac_addrs=$(sudo -E kubectl exec "${pod_name}" -- ip a)
 		info "++++"
-		info "try get pod's IP [${pod_name}/${iii}] : ${mac_addrs}"
+		info "[${pod_name}/${iii}] : ${mac_addrs}"
 		info "----"
 		[ "${mac_addrs}" != "" ] && break
 	done
 	info "Got mac_addrs for ${pod_name}: ${mac_addrs}"
 
 	# Expecting 2 network interaces -> 2 mac addresses
+	# mac_addrs=$(sudo -E kubectl exec "${pod_name}" -- ip a)
+
+	# sudo -E kubectl exec "${pod_name}" -- ip a > "${SCRIPT_DIR}/runtimeclass_workloads/addrs.log"
+	# mac_addrs=$(sudo -E cat "${SCRIPT_DIR}/runtimeclass_workloads/addrs.log")
+	# info "mac_addrs for ${pod_name}: ${mac_addrs}"
+	# sudo -E cat "${SCRIPT_DIR}/runtimeclass_workloads/addrs.log"
+
 	mac_addrs_count=$(echo "${mac_addrs}" | grep "link/ether" | wc -l || true)
+	# mac_addrs=$(grep "link/ether" ${SCRIPT_DIR}/runtimeclass_workloads/addrs.log | wc -l || true)
+	# sudo -E rm ${SCRIPT_DIR}/runtimeclass_workloads/addrs.log
 	if [ ${mac_addrs_count} -ne 2 ]; then
 		sudo -E kubectl describe pod "${pod_name}" || true
 		die "Error: expecting 2 network interfaces, Got: ${mac_addrs}"
@@ -152,7 +165,7 @@ run_test() {
 		info "Success: found 2 network interfaces"
 	fi
 
-	sudo -E kubectl delete -f "${SCRIPT_DIR}/runtimeclass_workloads/vfio.yaml"
+	sudo -E kubectl delete -f "${SCRIPT_DIR}/runtimeclass_workloads/tmp_vfio.yaml"
 }
 
 main() {
@@ -206,12 +219,12 @@ main() {
 	# run_test initrd "q35" qemu true
 	# run_test initrd "pc" qemu false
 	# run_test initrd "pc" qemu true
-	run_test image "" cloud-hypervisor false
-	run_test image "" cloud-hypervisor true
-	run_test image "q35" qemu false
-	run_test image "q35" qemu true
-	run_test image "pc" qemu false
-	run_test image "pc" qemu true
+	run_test image "" cloud-hypervisor false clh1
+	run_test image "" cloud-hypervisor true clh2
+	run_test image "q35" qemu false qemu1
+	run_test image "q35" qemu true qemu2
+	run_test image "pc" qemu false qemu3
+	run_test image "pc" qemu true qemu4
 }
 
 main $@
