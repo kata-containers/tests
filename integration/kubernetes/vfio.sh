@@ -149,6 +149,7 @@ run_test() {
 
 	# mac_addrs=$(echo ${mac_addrs} | grep "link/ether" | wc -l || true)
 	mac_addrs=$(grep "link/ether" ${SCRIPT_DIR}/runtimeclass_workloads/addrs.log | wc -l || true)
+	sudo -E rm ${SCRIPT_DIR}/runtimeclass_workloads/addrs.log
 	if [ ${mac_addrs} -ne 2 ]; then
 		sudo -E kubectl describe pod "${pod_name}" || true
 		die "Error: expecting 2 network interfaces, Got: $(kubectl exec "${pod_name}" -- ip a)"
