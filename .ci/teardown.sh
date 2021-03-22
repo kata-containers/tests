@@ -102,8 +102,8 @@ collect_logs()
 			cp "${tracing_log_directory}/${tracing_log_filename}" "${tracing_log_path}"
 		fi
 
-		# Split them in 5 MiB subfiles to avoid too large files.
-		local -r subfile_size=5242880
+		# Split them in 50 MiB subfiles to avoid too large files.
+		local -r subfile_size=52428800
 
 		pushd "${log_copy_dest}"
 		split -b "${subfile_size}" -d "${containerd_shim_kata_v2_log_path}" "${containerd_shim_kata_v2_log_prefix}"
