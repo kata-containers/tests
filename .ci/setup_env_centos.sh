@@ -22,7 +22,7 @@ fi
 echo "skip_missing_names_on_install=0" | sudo tee -a /etc/yum.conf
 
 # Check EPEL repository is enabled on CentOS
-if [ -z $(yum repolist | grep "Extra Packages") ]; then
+if [ -z "$(yum repolist | grep 'Extra Packages')" ]; then
 	echo >&2 "ERROR: EPEL repository is not enabled on CentOS."
 	# Enable EPEL repository on CentOS
 	sudo -E yum install -y wget rpm
@@ -42,14 +42,15 @@ sudo -E yum -y update
 
 if [ "$centos_version" == "8" ]; then
 	echo "Enable PowerTools repository"
-	sudo yum-config-manager --enable PowerTools
+	sudo -E yum install -y yum-utils
+	sudo yum-config-manager --enable powertools
 fi
 
 echo "Install chronic"
 sudo -E yum -y install moreutils
 
 if [ "$centos_version" == "8" ]; then
-	chronic sudo -E yum install pkgconf-pkg-config
+	chronic sudo -E yum install -y pkgconf-pkg-config
 fi 
 
 declare -A minimal_packages=( \
@@ -68,13 +69,13 @@ declare -A packages=( \
 	[general_dependencies]="gpgme-devel glib2-devel glibc-devel bzip2 m4 gettext-devel automake autoconf pixman-devel coreutils" \
 	[build_tools]="python3 pkgconfig zlib-devel" \
 	[ostree]="ostree-devel" \
-	[metrics_dependencies]="jq" \
+	[metrics_dependencies]="bc jq" \
 	[crudini]="crudini" \
 	[procenv]="procenv" \
 	[haveged]="haveged" \
-	[gnu_parallel_dependencies]="perl bzip2 make" \
 	[libsystemd]="systemd-devel" \
 	[redis]="redis" \
+	[make]="make" \
 )
 
 main()
@@ -100,10 +101,6 @@ main()
 	chronic sudo -E yum -y install $pkgs_to_install
 
 	[ "$setup_type" = "minimal" ] && exit 0
-
-	echo "Install GNU parallel"
-	# GNU parallel not available in Centos repos, so build it instead.
-	build_install_parallel
 
 	if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
 		echo "Install ${KATA_KSM_THROTTLER_JOB}"
