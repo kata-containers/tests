@@ -30,7 +30,7 @@ wait_pods_ready()
 	local controller_pod="kube-controller-manager.*1/1.*Running"
 	local etcd_pod="etcd.*1/1.*Running"
 	local scheduler_pod="kube-scheduler.*1/1.*Running"
-	local dns_pod="coredns.*1/1.*Running"
+	# local dns_pod="coredns.*1/1.*Running"
 
 	local system_pod=($apiserver_pod $controller_pod $etcd_pod $scheduler_pod $dns_pod)
 	for pod_entry in "${system_pod[@]}"
