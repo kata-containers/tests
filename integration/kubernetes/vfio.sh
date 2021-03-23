@@ -138,10 +138,11 @@ run_test() {
 		}
 
 	# wait for the container to be ready
-	for iii in $(seq 1 30); do
-		mac_addrs=$(sudo -E kubectl exec "${pod_name}" -- ip a)
-		[ "${mac_addrs}" != "" ] && break
-	done
+	# for iii in $(seq 1 30); do
+	# 	mac_addrs=$(sudo -E kubectl exec "${pod_name}" -- ip a)
+	# 	[ "${mac_addrs}" != "" ] && break
+	# done
+	mac_addrs=$(sudo -E kubectl exec "${pod_name}" -- ip a)
 	info "Got mac_addrs for ${pod_name}: ${mac_addrs}"
 
 	# Expecting 2 network interaces -> 2 mac addresses
