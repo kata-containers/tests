@@ -58,6 +58,18 @@ build_and_install_kernel() {
 		"${kernel_repo_dir}/kernel/build-kernel.sh" -e setup
 		"${kernel_repo_dir}/kernel/build-kernel.sh" -e build
 		sudo -E PATH="$PATH" "${kernel_repo_dir}/kernel/build-kernel.sh" -e install
+
+		local vmlinux_symlink="${kernel_dir}/vmlinux.container"
+		local vmlinux_experimental_path=$(readlink -f "${kernel_dir}/vmlinux-experimental.container")
+		[ -e "$vmlinux_experimental_path" ] || die "Not found experimental kernel installed '${vmlinux_experimental_path}'"
+		info "Installing ${vmlinux_experimental_path} and symlink ${vmlinux_symlink}"
+		sudo -E ln -sf "${vmlinux_experimental_path}" "${vmlinux_symlink}"
+
+		local vmlinuz_symlink="${kernel_dir}/vmlinuz.container"
+		local vmlinuz_experimental_path=$(readlink -f "${kernel_dir}/vmlinuz-experimental.container")
+		[ -e "$vmlinuz_experimental_path" ] || die "Not found experimental kernel installed '${vmlinuz_experimental_path}'"
+		info "Installing ${vmlinuz_experimental_path} and symlink ${vmlinuz_symlink}"
+		sudo -E ln -sf "${vmlinuz_experimental_path}" "${vmlinuz_symlink}"
 		popd >> /dev/null
 	else
 		# Always build and install the kernel version found locally

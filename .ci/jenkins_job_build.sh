@@ -312,6 +312,7 @@ case "${CI_JOB}" in
 	export CRI_CONTAINERD="yes"
 	export KUBERNETES="yes"
 	export experimental_qemu="true"
+	export experimental_kernel="true"
 	;;
 "METRICS")
 	init_ci_flags
