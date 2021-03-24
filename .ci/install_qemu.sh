@@ -19,7 +19,6 @@ PREFIX=${PREFIX:-/usr}
 KATA_DEV_MODE="${KATA_DEV_MODE:-}"
 
 CURRENT_QEMU_VERSION=$(get_version "assets.hypervisor.qemu.version")
-CURRENT_QEMU_TAG=$(get_version "assets.hypervisor.qemu.tag")
 QEMU_REPO_URL=$(get_version "assets.hypervisor.qemu.url")
 # Remove 'https://' from the repo url to be able to git clone the repo
 QEMU_REPO=${QEMU_REPO_URL/https:\/\//}
@@ -37,13 +36,16 @@ build_static_qemu() {
 	# only x86_64 is supported for building static QEMU
 	[ "$ARCH" != "x86_64" ] && return 1
 
-	prefix="${KATA_QEMU_DESTDIR}" "${PACKAGING_DIR}/static-build/qemu/build-static-qemu.sh"
+	(
+	cd "${PACKAGING_DIR}/static-build/qemu"
+	prefix="${KATA_QEMU_DESTDIR}" make
 
 	# We need to move the tar file to a specific location so we
 	# can know where it is and then we can perform the build cache
 	# operations
 	sudo mkdir -p "${KATA_TESTS_CACHEDIR}"
 	sudo mv ${QEMU_TAR} ${KATA_TESTS_CACHEDIR}
+	)
 }
 
 uncompress_static_qemu() {
@@ -74,9 +76,9 @@ clone_qemu_repo() {
         git_shadow_clone=$(check_git_version "${GIT_SHADOW_VERSION}")
 
 	if [ "$git_shadow_clone" == "true" ]; then
-		git clone --branch "${CURRENT_QEMU_TAG}" --single-branch --depth 1 --shallow-submodules "${QEMU_REPO_URL}" "${GOPATH}/src/${QEMU_REPO}"
+		git clone --branch "${CURRENT_QEMU_VERSION}" --single-branch --depth 1 --shallow-submodules "${QEMU_REPO_URL}" "${GOPATH}/src/${QEMU_REPO}"
 	else
-		git clone --branch "${CURRENT_QEMU_TAG}" --single-branch --depth 1 "${QEMU_REPO_URL}" "${GOPATH}/src/${QEMU_REPO}"
+		git clone --branch "${CURRENT_QEMU_VERSION}" --single-branch --depth 1 "${QEMU_REPO_URL}" "${GOPATH}/src/${QEMU_REPO}"
 	fi
 }
 
@@ -98,10 +100,20 @@ build_and_install_qemu() {
 	[ -n "$(ls -A ui/keycodemapdb)" ] || git clone  https://github.com/qemu/keycodemapdb.git ui/keycodemapdb
 
 	# Apply required patches
-	QEMU_PATCHES_TAG=$(echo "${CURRENT_QEMU_VERSION}" | cut -d '.' -f1-2)
-	QEMU_PATCHES_PATH="${PACKAGING_DIR}/qemu/patches/${QEMU_PATCHES_TAG}.x"
+	QEMU_PATCHES_BRANCH=$(echo "${CURRENT_QEMU_VERSION}" | cut -d '.' -f1-2)
+	QEMU_PATCHES_BRANCH=${QEMU_PATCHES_BRANCH#"v"}
+	QEMU_PATCHES_PATH="${PACKAGING_DIR}/qemu/patches/${QEMU_PATCHES_BRANCH}.x"
+	QEMU_VERSION_PATCHES_PATH="${PACKAGING_DIR}/qemu/patches/tag_patches/${CURRENT_QEMU_VERSION}"
 	for patch in ${QEMU_PATCHES_PATH}/*.patch; do
 		echo "Applying patch: $patch"
+		git apply "$patch"
+	done
+
+	echo "INFO: Apply patches for qemu version ${CURRENT_QEMU_VERSION}"
+	patches=($(find "$QEMU_VERSION_PATCHES_PATH" -name '*.patch'|sort -t- -k1,1n))
+	echo "INFO: Found ${#patches[@]} patches"
+	for patch in ${patches[@]}; do
+		echo "Applying patch for version ${CURRENT_QEMU_VERSION}: $patch"
 		git apply "$patch"
 	done
 
@@ -136,15 +148,8 @@ main() {
 			info "current QEMU version: $CURRENT_QEMU_VERSION"
 			info "cached QEMU version: $cached_qemu_version"
 
-			# When testing initrd, build qemu instead of using the cached qemu
-			# as there seems to be an issue with the statically built qemu when
-			# running the factory-vm tests.
-			if [ "${AGENT_INIT:-}" == "yes" ] || [ -n "${FORCE_BUILD_QEMU:-}" ]; then
+			if [ -n "${FORCE_BUILD_QEMU:-}" ]; then
 				build_and_install_qemu
-			elif [ "$cached_qemu_version" == "$CURRENT_QEMU_VERSION" ]; then
-				# If installing cached QEMU fails,
-				# then build and install it from sources.
-				install_cached_qemu || build_and_install_static_qemu
 			else
 				build_and_install_static_qemu
 			fi

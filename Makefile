@@ -167,6 +167,9 @@ vcpus:
 pmem:
 	bash -f integration/pmem/pmem_test.sh
 
+filesystem:
+	bash -f ./conformance/posixfs/fstests.sh
+
 test: ${UNION}
 
 check: checkcommits log-parser
@@ -191,6 +194,7 @@ help:
 	crio \
 	docker \
 	docker-stability \
+	filesystem \
 	ginkgo \
 	$(INSTALL_TARGETS) \
 	podman \

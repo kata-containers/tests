@@ -62,6 +62,9 @@ init_ci_flags() {
 	# Use experimental kernel
 	# Values: true|false
 	export experimental_kernel="false"
+	# Use experimental qemu
+	# Values: true|false
+	export experimental_qemu="false"
 	# Run the kata-check checks
 	export RUN_KATA_CHECK="true"
 
@@ -81,6 +84,7 @@ init_ci_flags() {
 	export METRICS_JOB_BASELINE=""
 	# Configure test to use Kata SHIM V2
 	export SHIMV2_TEST="true"
+	export CTR_RUNTIME="io.containerd.run.kata.v2"
 }
 
 # Run noninteractive on debian and ubuntu
@@ -302,6 +306,13 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="qemu"
 	export KUBERNETES="yes"
 	export OPENSHIFT="no"
+	;;
+"VIRTIOFS_EXPERIMENTAL")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export KUBERNETES="yes"
+	export experimental_qemu="true"
+	export experimental_kernel="true"
 	;;
 "METRICS")
 	init_ci_flags
