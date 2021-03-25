@@ -28,7 +28,7 @@ export PATH="${PATH}:${HOME}/.cargo/bin"
 echo "Install rust"
 rustup toolchain install ${version}
 rustup default ${version}
-if [ "${rustarch}" == "powerpc64le" ]; then
+if [ "${rustarch}" == "powerpc64le" ] || [ "${rustarch}" == "s390x" ] ; then
 	rustup target add ${rustarch}-unknown-linux-gnu
 else
 	rustup target add ${rustarch}-unknown-linux-musl
