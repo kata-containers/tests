@@ -24,7 +24,7 @@ https_proxy=${https_proxy:-}
 vm_ip="127.0.15.1"
 vm_port="10022"
 # Don't save data in /tmp, we need it after rebooting the system
-data_dir="${HOME}/k8s-vfio-test"
+data_dir="${HOME}/functional-vfio-test"
 ssh_key_file="${data_dir}/key"
 arch=$(uname -m)
 artifacts_dir="${WORKSPACE}/artifacts"
@@ -105,9 +105,6 @@ ${environment}
   path: /etc/systemd/system/docker.service.d/http-proxy.conf
 - content: |
     ${service_proxy}
-  path: /etc/systemd/system/kubelet.service.d/http-proxy.conf
-- content: |
-    ${service_proxy}
   path: /etc/systemd/system/containerd.service.d/http-proxy.conf
 - content: |
     ${docker_user_proxy}
@@ -138,13 +135,17 @@ ${environment}
     export GOPATH=\${WORKSPACE}/go
     export PATH=\${GOPATH}/bin:/usr/local/go/bin:/usr/sbin:\${PATH}
     export GOROOT="/usr/local/go"
+    export KUBERNETES="no"
     export ghprbPullId
     export ghprbTargetBranch
 
     # Make sure the packages were installed
     # Sometimes cloud-init is unable to install them
     sudo dnf makecache
-    sudo dnf install -y git make pciutils
+    sudo dnf install -y git make pciutils containerd
+
+    git config --global user.email "foo@bar"
+    git config --global user.name "Foo Bar"
 
     tests_repo="github.com/kata-containers/tests"
     tests_repo_dir="\${GOPATH}/src/\${tests_repo}"
@@ -226,7 +227,7 @@ run_vm() {
 	disable_modern="off"
 	hostname="$(hostname)"
 	memory="16384M"
-	cpus=4
+	cpus=$(nproc)
 	machine_type="q35"
 
 	/usr/bin/qemu-system-${arch} -m "${memory}" -smp cpus="${cpus}" \
@@ -270,7 +271,7 @@ install_dependencies() {
 	esac
 
 	# Build and Install QEMU
-	qemu_version=$(get_version "assets.hypervisor.qemu.version")
+	qemu_version=$(get_version "assets.hypervisor.qemu.version" | tr -d v)
 	qemu_dir="${data_dir}/qemu-${qemu_version}"
 	qemu_tar_file="${data_dir}/qemu-${qemu_version}.tar.xz"
 

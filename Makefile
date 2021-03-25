@@ -181,7 +181,7 @@ list-install-targets:
 	@echo $(INSTALL_TARGETS) | tr " " "\n"
 
 vfio:
-	bash -f integration/kubernetes/vfio.sh
+	bash -f functional/vfio/run.sh
 
 help:
 	@echo Subsets of the tests can be run using the following specific make targets:

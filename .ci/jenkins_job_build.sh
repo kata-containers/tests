@@ -304,7 +304,7 @@ case "${CI_JOB}" in
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
-	export KUBERNETES="yes"
+	export KUBERNETES="no"
 	export OPENSHIFT="no"
 	;;
 "VIRTIOFS_EXPERIMENTAL")
