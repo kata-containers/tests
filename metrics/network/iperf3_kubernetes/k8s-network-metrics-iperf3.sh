@@ -89,6 +89,38 @@ EOF
 	iperf3_deployment_cleanup
 }
 
+function cpu_metrics_iperf3() {
+	cmd=("awk")
+	check_cmds "${cmds[@]}"
+
+	iperf3_start_deployment
+	local TEST_NAME="cpu metrics running iperf3"
+
+	# Start server
+	local transmit_timeout="80"
+
+	kubectl exec -i "$client_pod_name" -- sh -c "iperf3 -J -c ${server_ip_add} -t ${transmit_timeout}" | jq '.end.cpu_utilization_percent.host_total' > "${iperf_file}"
+	result=$(cat "${iperf_file}")
+
+	metrics_json_init
+
+	local json="$(cat << EOF
+	{
+		"cpu utilization host total": {
+			"Result" : $result,
+			"Units"  : "percent"
+		}
+	}
+EOF
+)"
+
+	metrics_json_add_array_element "$json"
+	metrics_json_end_array "Results"
+
+	metrics_json_save
+	iperf3_deployment_cleanup
+}
+
 function iperf3_start_deployment() {
 	cmds=("bc" "jq")
 	check_cmds "${cmds[@]}"
@@ -168,6 +200,7 @@ Usage: $0 "[options]"
 	Options:
 		-a	Run all tests
 		-b 	Run bandwidth tests
+		-c	Run cpu metrics tests
 		-h	Help
 		-j	Run jitter tests
 EOF
@@ -176,7 +209,7 @@ EOF
 
 function main() {
 	local OPTIND
-	while getopts ":abjh:" opt
+	while getopts ":abcjh:" opt
 	do
 		case "$opt" in
 		a)	# all tests
@@ -185,6 +218,10 @@ function main() {
 			;;
 		b)	# bandwith test
 			test_bandwith="1"
+			;;
+		c)
+			# run cpu tests
+			test_cpu="1"
 			;;
 		h)
 			help
@@ -204,6 +241,7 @@ function main() {
 
 	[[ -z "$test_bandwith" ]] && \
 	[[ -z "$test_jitter" ]] && \
+	[[ -z "$test_cpu" ]] && \
 		help && die "Must choose at least one test"
 
 	if [ "$test_bandwith" == "1" ]; then
@@ -212,6 +250,10 @@ function main() {
 
 	if [ "$test_jitter" == "1" ]; then
 		iperf3_jitter
+	fi
+
+	if [ "$test_cpu" == "1" ]; then
+		cpu_metrics_iperf3
 	fi
 }
 
