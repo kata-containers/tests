@@ -304,7 +304,7 @@ case "${CI_JOB}" in
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
-	export KUBERNETES="yes"
+	export KUBERNETES="no"
 	export OPENSHIFT="no"
 	;;
 "VIRTIOFS_EXPERIMENTAL")
@@ -332,9 +332,9 @@ if [ "${CI_JOB}" == "VFIO" ]; then
 	ci_dir_name=".ci"
 
 	echo "Installing initrd image"
-	export AGENT_INIT=yes TEST_INITRD=yes OSBUILDER_DISTRO=alpine
-	sudo -E PATH=$PATH "${ci_dir_name}/install_kata_image.sh"
+	sudo -E AGENT_INIT=yes TEST_INITRD=yes osbuilder_distro=alpine PATH=$PATH "${ci_dir_name}/install_kata_image.sh"
 
+	echo "Installing kernel"
 	sudo -E PATH=$PATH "${ci_dir_name}/install_kata_kernel.sh"
 
 	echo "Installing Cloud Hypervisor"
