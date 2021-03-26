@@ -17,7 +17,6 @@ linters:
     - deadcode
     - gocyclo
     - gofmt
-    - golint
     - gosimple
     - govet
     - ineffassign
