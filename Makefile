@@ -230,7 +230,12 @@ list-install-targets:
 	@echo $(INSTALL_TARGETS) | tr " " "\n"
 
 vfio:
-	bash -f integration/kubernetes/vfio.sh
+	bash -f functional/vfio/run.sh -s false -p clh -i image
+	bash -f functional/vfio/run.sh -s true -p clh -i image
+	bash -f functional/vfio/run.sh -s false -p qemu -m pc -i image
+	bash -f functional/vfio/run.sh -s true -p qemu -m pc -i image
+	bash -f functional/vfio/run.sh -s false -p qemu -m q35 -i image
+	bash -f functional/vfio/run.sh -s true -p qemu -m q35 -i image
 
 help:
 	@echo Subsets of the tests can be run using the following specific make targets:
