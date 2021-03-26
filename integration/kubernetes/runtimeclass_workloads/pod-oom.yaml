@@ -17,7 +17,7 @@ spec:
       imagePullPolicy: Always
       name: oom-test
       command: ["/bin/sh"]
-      args: ["-c", "sleep 2; stress --vm 2 --vm-bytes 400M --timeout 5s"]
+      args: ["-c", "sleep 2; stress --vm 2 --vm-bytes 400M --timeout 60s"]
       resources:
         limits:
           memory: 500Mi

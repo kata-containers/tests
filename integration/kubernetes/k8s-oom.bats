@@ -15,7 +15,7 @@ setup() {
 }
 
 @test "Test OOM events for pods" {
-	wait_time=20
+	wait_time=30
 	sleep_time=2
 
 	# Create pod
@@ -33,6 +33,7 @@ setup() {
 teardown() {
 	# Debugging information
 	kubectl describe "pod/$pod_name"
+	kubectl get "pod/$pod_name" -o yaml
 
 	kubectl delete pod "$pod_name"
 }
