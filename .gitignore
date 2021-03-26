@@ -1,3 +1,5 @@
 ginkgo
 !/**/ginkgo
+/cmd/github-labels/kata-github-labels
+/cmd/github-labels/labels.yaml
 /cmd/log-parser/kata-log-parser
