@@ -23,9 +23,6 @@ source ./scripts/lib.sh
 qemu_url=$(get_from_kata_deps "assets.hypervisor.qemu.url" "${kata_version}")
 
 qemu_version=$(get_from_kata_deps "assets.hypervisor.qemu.version" "${kata_version}")
-if ! (git ls-remote --heads "${qemu_url}" | grep -q "refs/heads/${qemu_version}"); then
-        qemu_version=$(get_from_kata_deps "assets.hypervisor.qemu.tag" "${kata_version}")
-fi
 
 # Create a new dockerfile and replace the ARG statements with values
 # from versions.yml.
