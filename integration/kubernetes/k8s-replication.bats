@@ -15,7 +15,7 @@ setup() {
 	nginx_version=$("${GOPATH}/bin/yq" read "$versions_file" "docker_images.nginx.version")
 	nginx_image="nginx:$nginx_version"
 
-	export KUBECONFIG="$HOME/.kube/config"
+	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	get_pod_config_dir
 }
 

@@ -10,7 +10,7 @@ load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
 issue="https://github.com/kata-containers/tests/issues/2574"
 
 setup() {
-	export KUBECONFIG="$HOME/.kube/config"
+	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	pod_name="sysctl-test"
 	get_pod_config_dir
 }
