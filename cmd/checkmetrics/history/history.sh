@@ -9,6 +9,8 @@
 
 set -e
 
+export KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
+
 # Base dir of where we store the downloaded data. 
 datadir=$(dirname "$0")/data
 
@@ -40,7 +42,7 @@ url_base="http://jenkins.katacontainers.io/job"
 url_index="api/json"
 
 # Where do we get the actual build results from
-url_artifacts="artifact/go/src/github.com/kata-containers/tests/metrics/results"
+url_artifacts="artifact/go/src/github.com/kata-containers/tests/metrics/results/artifacts"
 
 # Gather up the results (json) files from all the defined repos for the range
 # of dates?
@@ -68,8 +70,8 @@ gather_data() {
 			local build_url="${url_base}/${repo}/${build}/${url_artifacts}/${testfilename}"
 			echo "Pulling result from $build_url"
 			for test in "${tests[@]}"; do
-				local testfile=${builddir}/${test}.json
-				local test_url="${build_url}/${test}.json"
+				local testfile=${builddir}/${KATA_HYPERVISOR}-${test}.json
+				local test_url="${build_url}/${KATA_HYPERVISOR}-${test}.json"
 				echo "    $test_url"
 				# Can fail if the build failed to generate any results
 				curl -L -o ${testfile} $test_url || true
@@ -96,7 +98,7 @@ process_data() {
 		local total=0
 		local min=$(printf "%u" -1)
 		local max=0
-		files=$(find ${resultsdir} -name ${test}.json -print)
+		files=$(find ${resultsdir} -name ${KATA_HYPERVISOR}-${test}.json -print)
 		for file in ${files}; do
 			echo "  Look at file $file"
 			value=$(jq "$query" $file || true)
