@@ -9,8 +9,7 @@ load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
 
 setup() {
-	versions_file="${BATS_TEST_DIRNAME}/../../versions.yaml"
-	nginx_version=$("${GOPATH}/bin/yq" read "$versions_file" "docker_images.nginx.version")
+	nginx_version=$(get_test_version "docker_images.nginx.version")
 	nginx_image="nginx:$nginx_version"
 
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"

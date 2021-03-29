@@ -11,8 +11,7 @@ issue="https://github.com/kata-containers/runtime/issues/1931"
 
 setup() {
 	skip "test not working with ${ID} see: ${issue}"
-	versions_file="${BATS_TEST_DIRNAME}/../../versions.yaml"
-	nginx_version=$("${GOPATH}/bin/yq" read "$versions_file" "docker_images.nginx.version")
+	nginx_version=$(get_test_version "docker_images.nginx.version")
 	nginx_image="nginx:$nginx_version"
 
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
