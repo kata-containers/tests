@@ -311,6 +311,7 @@ case "${CI_JOB}" in
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export KUBERNETES="yes"
+	export DEFVIRTIOFSCACHESIZE="1024"
 	export experimental_qemu="true"
 	export experimental_kernel="true"
 	;;
