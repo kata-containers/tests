@@ -58,3 +58,7 @@ if [ "${TEST_CGROUPSV2}" == "true" ]; then
 	echo "Configure podman with kata"
 	"${cidir}/configure_podman_for_kata.sh"
 fi
+
+kata-runtime kata-env
+echo "Kata config:"
+cat $(kata-runtime kata-env  --json | jq .Runtime.Config.Path -r)
