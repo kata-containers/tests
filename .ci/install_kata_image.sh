@@ -57,6 +57,7 @@ build_rust_image() {
 }
 
 main() {
+	echo "DEBUG: build image"
 	build_rust_image
 }
 
