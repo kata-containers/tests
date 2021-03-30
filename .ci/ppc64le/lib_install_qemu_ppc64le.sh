@@ -6,7 +6,7 @@
 
 set -e
 
-CURRENT_QEMU_TAG=$(get_version "assets.hypervisor.qemu.tag")
+CURRENT_QEMU_TAG=$(get_version "assets.hypervisor.qemu.version")
 stable_branch=$(echo $CURRENT_QEMU_TAG | tr -d 'v' | awk 'BEGIN { FS = "." } {print $1 "." $2 ".x"}')
 PACKAGED_QEMU="qemu-system-ppc"
 BUILT_QEMU="qemu-system-ppc64"
