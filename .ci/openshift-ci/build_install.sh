@@ -11,7 +11,8 @@
 
 set -e
 
-export PATH="${GOPATH}/bin:$PATH"
+export GOPATH="${GOPATH:-/go}"
+export PATH="${GOPATH}/bin:/usr/local/go/bin/:$PATH"
 
 cidir="$(dirname "$0")/.."
 source /etc/os-release
@@ -24,19 +25,20 @@ info "Build and install Kata Containers at ${DESTDIR}"
 
 [ "$(id -u)" -ne 0 ] && die "$0 must be executed by privileged user"
 
-# Let the scripts know it is in OpenShift CI context.
+# Let the scripts know it is in CI context.
 export OPENSHIFT_CI="true"
+export CI="true"
 
 # This script is evoked within a variant of CentOS container image in the
 # OpenShift Build process. So it was implemented for running in CentOS.
-[ "$ID" != "centos" ] && die "Expect the build root to be CentOS"
-# The scripts rely on sudo which is not installed in the build environment.
-yum install -y sudo
+[[ "$ID" != "centos" || "$VERSION_ID" != "8" ]] && \
+	die "Expect the build root to be CentOS 8"
+# The scripts rely on tools which are not installed in the build
+# environment and also the setup script doesn't install them.
+yum install -y sudo git
 "${cidir}/setup_env_centos.sh" default
 
-# The build root container has already golang installed, let's remove it
-# so that it will use the version required by kata.
-yum remove -y golang
+# Install go suggested by Kata Containers.
 "${cidir}/install_go.sh" -p -f
 
 # Let's ensure scripts don't try things with Podman.
