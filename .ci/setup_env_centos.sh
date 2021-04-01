@@ -98,7 +98,15 @@ main()
 		done
 	fi
 
-	chronic sudo -E yum -y install $pkgs_to_install
+	yum_install_args=""
+	if [ "$centos_version" == "8" ]; then
+		# On centos:8 container image the installation of coreutils
+		# conflicts with coreutils-single because they mutually
+		# exclusive. Let's pass --allowerasing so that coreutils-single
+		# is replaced.
+		yum_install_args+=" --allowerasing"
+	fi
+	chronic sudo -E yum -y install $yum_install_args $pkgs_to_install
 
 	[ "$setup_type" = "minimal" ] && exit 0
 
