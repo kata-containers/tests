@@ -33,7 +33,15 @@ fi
 # Enable priority to CentOS Base repo in order to
 # avoid perl updating issues
 if [ "$centos_version" == "8" ]; then
-	sudo echo "priority=1" | sudo tee -a /etc/yum.repos.d/CentOS-Base.repo
+	repo_file=""
+	if [ -f /etc/yum.repos.d/CentOS-Base.repo ]; then
+		repo_file="/etc/yum.repos.d/CentOS-Base.repo"
+	elif [ -f /etc/yum.repos.d/CentOS-Linux-BaseOS.repo ]; then
+		repo_file="/etc/yum.repos.d/CentOS-Linux-BaseOS.repo"
+	else
+		die "Unable to find the CentOS base repository file"
+	fi
+	sudo echo "priority=1" | sudo tee -a "$repo_file"
 	sudo -E yum -y clean all
 fi
 
