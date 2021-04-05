@@ -157,7 +157,7 @@ main() {
 		"ppc64le"|"s390x")
 			packaged_qemu_version=$(get_packaged_qemu_version)
 			short_current_qemu_version=${CURRENT_QEMU_VERSION#*-}
-			if [ "$packaged_qemu_version" == "$short_current_qemu_version" ] && [ -z "${CURRENT_QEMU_TAG}" ] || [ "${QEMU_ARCH}" == "s390x" ]; then
+			if [ "$packaged_qemu_version" == "$short_current_qemu_version" ] && [ -z "${CURRENT_QEMU_TAG}" ]; then
 				install_packaged_qemu || build_and_install_qemu
 			else
 				build_and_install_qemu

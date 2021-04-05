@@ -31,35 +31,3 @@ get_packaged_qemu_version() {
 install_packaged_qemu() {
 	sudo apt install -y "$PACKAGED_QEMU"
 }
-
-build_and_install_qemu() {
-	QEMU_REPO=$(get_version "assets.hypervisor.qemu.url")
-	# Remove 'https://' from the repo url to be able to clone the repo using 'go get'
-	QEMU_REPO_PATH=${QEMU_REPO/https:\/\//}
-
-	PACKAGING_DIR="${kata_repo_dir}/tools/packaging"
-	QEMU_CONFIG_SCRIPT="${PACKAGING_DIR}/scripts/configure-hypervisor.sh"
-
-	if [ ! -d "${GOPATH}/src/${QEMU_REPO_PATH}" ]; then
-		mkdir -p "${GOPATH}/src/${QEMU_REPO_PATH}"
-		pushd "${GOPATH}/src/${QEMU_REPO_PATH}"
-		chronic git clone "${QEMU_REPO}" "."
-		popd
-	fi
-
-	clone_kata_repo
-
-	pushd "${GOPATH}/src/${QEMU_REPO_PATH}"
-	git fetch
-	git checkout "$CURRENT_QEMU_VERSION"
-	[ -d "capstone" ] || git clone https://github.com/qemu/capstone.git capstone
-	[ -d "ui/keycodemapdb" ] || git clone  https://github.com/qemu/keycodemapdb.git ui/keycodemapdb
-
-	echo "Build Qemu"
-	"${QEMU_CONFIG_SCRIPT}" "qemu" | xargs ./configure
-	make -j $(nproc)
-
-	echo "Install Qemu"
-	sudo -E make install
-	popd
-}
