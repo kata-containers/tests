@@ -22,7 +22,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-liveness.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Check liveness probe returns a success code
 	kubectl describe pod "$pod_name" | grep -E "Liveness|#success=1"
@@ -39,7 +39,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-http-liveness.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Check liveness probe returns a success code
 	kubectl describe pod "$pod_name" | grep -E "Liveness|#success=1"
@@ -57,7 +57,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-tcp-liveness.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Check liveness probe returns a success code
 	kubectl describe pod "$pod_name" | grep -E "Liveness|#success=1"
