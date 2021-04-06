@@ -43,7 +43,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/test_within_memory.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	rm -f "${pod_config_dir}/test_within_memory.yaml"
 	kubectl delete pod "$pod_name"
