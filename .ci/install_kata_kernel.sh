@@ -41,11 +41,7 @@ get_current_kernel_version() {
 		kernel_version=$(get_version "assets.kernel-experimental.tag")
 		echo "${kernel_version}"
 	else
-		case "$(uname -m)" in
-			aarch64) kernel_version_query="assets.kernel.architecture.aarch64.version";;
-			*) kernel_version_query="assets.kernel.version";;
-		esac
-		kernel_version=$(get_version "${kernel_version_query}")
+		kernel_version=$(get_version "assets.kernel.version")
 		echo "${kernel_version/v/}"
 	fi
 }
