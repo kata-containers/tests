@@ -31,6 +31,8 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
 		# echo "INFO: Running pmem integration test"
 		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make pmem"
+		echo "INFO: Running ksm test"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make ksm"
 		;;
 	"CRI_CONTAINERD_K8S_COMPLETE")
 		echo "INFO: Running e2e kubernetes tests"

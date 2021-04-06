@@ -123,6 +123,9 @@ docker-stability:
 podman:
 	bash -f integration/podman/run_podman_tests.sh
 
+ksm:
+	bash -f integration/ksm/ksm_test.sh
+
 kubernetes:
 	bash -f .ci/install_bats.sh
 	bash -f integration/kubernetes/run_kubernetes_tests.sh
