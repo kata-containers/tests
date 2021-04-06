@@ -19,7 +19,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-empty-dir.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Check volume mounts
 	cmd="mount | grep cache"
