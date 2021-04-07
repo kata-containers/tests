@@ -33,7 +33,15 @@ fi
 # Enable priority to CentOS Base repo in order to
 # avoid perl updating issues
 if [ "$centos_version" == "8" ]; then
-	sudo echo "priority=1" | sudo tee -a /etc/yum.repos.d/CentOS-Base.repo
+	repo_file=""
+	if [ -f /etc/yum.repos.d/CentOS-Base.repo ]; then
+		repo_file="/etc/yum.repos.d/CentOS-Base.repo"
+	elif [ -f /etc/yum.repos.d/CentOS-Linux-BaseOS.repo ]; then
+		repo_file="/etc/yum.repos.d/CentOS-Linux-BaseOS.repo"
+	else
+		die "Unable to find the CentOS base repository file"
+	fi
+	sudo echo "priority=1" | sudo tee -a "$repo_file"
 	sudo -E yum -y clean all
 fi
 
@@ -98,7 +106,15 @@ main()
 		done
 	fi
 
-	chronic sudo -E yum -y install $pkgs_to_install
+	yum_install_args=""
+	if [ "$centos_version" == "8" ]; then
+		# On centos:8 container image the installation of coreutils
+		# conflicts with coreutils-single because they mutually
+		# exclusive. Let's pass --allowerasing so that coreutils-single
+		# is replaced.
+		yum_install_args+=" --allowerasing"
+	fi
+	chronic sudo -E yum -y install $yum_install_args $pkgs_to_install
 
 	[ "$setup_type" = "minimal" ] && exit 0
 
