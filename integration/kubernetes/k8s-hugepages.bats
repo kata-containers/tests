@@ -10,7 +10,7 @@ issue="https://github.com/kata-containers/runtime/issues/2172"
 
 setup() {
 	skip "test not working see: ${issue}"
-	export KUBECONFIG="$HOME/.kube/config"
+	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	extract_kata_env
 
 	# Enable hugepages

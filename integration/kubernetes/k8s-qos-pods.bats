@@ -13,7 +13,7 @@ memory_issue="https://github.com/kata-containers/runtime/issues/1249"
 
 setup() {
 	skip "test not working see: ${issue}, ${memory_issue}"
-	export KUBECONFIG="$HOME/.kube/config"
+	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	get_pod_config_dir
 }
 
