@@ -20,7 +20,7 @@ setup() {
 	kubectl apply -f "${pod_config_dir}/pod-sysctl.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod $pod_name
 
 	# Check sysctl configuration
 	cmd="cat /proc/sys/kernel/shm_rmid_forced"

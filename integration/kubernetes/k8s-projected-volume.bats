@@ -33,7 +33,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-projected-volume.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Check that the projected sources exists
 	cmd="ls /projected-volume | grep username"
