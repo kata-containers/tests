@@ -45,6 +45,7 @@ declare -A packages=(
 	[haveged]="haveged" \
         [libsystemd]="systemd-devel" \
 	[redis]="redis" \
+	[agent_shutdown_test]="tmux" \
 )
 
 if [ "$(uname -m)" == "x86_64" ] ; then

@@ -35,6 +35,7 @@ declare -A packages=( \
 	[libsystemd]="systemd-devel" \
 	[redis]="redis" \
 	[versionlock]="python3-dnf-plugin-versionlock" \
+	[agent_shutdown_test]="tmux" \
 )
 
 if [ "$(uname -m)" == "x86_64" ] || ([ "$(uname -m)" == "ppc64le" ] && [ "${VERSION_ID}" -ge "32" ]); then

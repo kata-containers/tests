@@ -75,6 +75,7 @@ declare -A packages=( \
 	[libsystemd]="systemd-devel" \
 	[redis]="redis" \
 	[make]="make" \
+	[agent_shutdown_test]="tmux" \
 )
 
 main()
