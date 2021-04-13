@@ -154,10 +154,6 @@ cri-containerd:
 log-parser:
 	make -C cmd/log-parser
 
-openshift:
-	bash -f .ci/install_bats.sh
-	bash -f integration/openshift/run_openshift_tests.sh
-
 pentest:
 	bash -f pentest/all.sh
 
@@ -210,7 +206,6 @@ help:
 	kubernetes \
 	list-install-targets \
 	log-parser \
-	openshift \
 	pentest \
 	sandbox-cgroup \
 	test \

@@ -22,7 +22,6 @@ CRIO="${CRIO:-yes}"
 CRI_CONTAINERD="${CRI_CONTAINERD:-no}"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 KUBERNETES="${KUBERNETES:-yes}"
-OPENSHIFT="${OPENSHIFT:-yes}"
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
 
 setup_distro_env() {
@@ -115,11 +114,6 @@ install_extra_tools() {
 		echo "Install Kubernetes" &&
 		bash -f "${cidir}/install_kubernetes.sh" ||
 		echo "Kubernetes not installed"
-
-	[ "${OPENSHIFT}" = "yes" ] &&
-		echo "Install Openshift" &&
-		bash -f "${cidir}/install_openshift.sh" ||
-		echo "Openshift not installed"
 }
 
 main() {
