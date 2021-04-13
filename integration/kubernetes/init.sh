@@ -55,9 +55,11 @@ fi
 case "${cri_runtime}" in
 containerd)
 	cri_runtime_socket="/run/containerd/containerd.sock"
+	cgroup_driver="cgroupfs"
 	;;
 crio)
 	cri_runtime_socket="/var/run/crio/crio.sock"
+	cgroup_driver="systemd"
 	;;
 *)
 	echo "Runtime ${cri_runtime} not supported"
@@ -100,6 +102,7 @@ kubeadm_config_file="$(mktemp --tmpdir kubeadm_config.XXXXXX.yaml)"
 
 sed -e "s|CRI_RUNTIME_SOCKET|${cri_runtime_socket}|" "${kubeadm_config_template}" > "${kubeadm_config_file}"
 sed -i "s|KUBERNETES_VERSION|v${kubernetes_version/-*}|" "${kubeadm_config_file}"
+sed -i "s|CGROUP_DRIVER|${cgroup_driver}|" "${kubeadm_config_file}"
 
 trap 'sudo -E sh -c "rm -r "${kubeadm_config_file}""' EXIT
 

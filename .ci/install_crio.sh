@@ -126,7 +126,7 @@ make clean
 make BUILDTAGS='seccomp selinux exclude_graphdriver_btrfs exclude_graphdriver_devicemapper libdm_no_deferred_remove'
 make test-binaries
 sudo -E PATH=$PATH sh -c "make install"
-sudo -E PATH=$PATH sh -c 'crio -d "" config > crio.conf'
+sudo -E PATH=$PATH sh -c 'crio -d "" --cgroup-manager "systemd" config > crio.conf'
 sudo -E PATH=$PATH sh -c "make install.config"
 
 containers_config_path="/etc/containers"
@@ -139,9 +139,6 @@ popd
 echo "Installing CRI Tools"
 crictl_url="${crictl_repo}/releases/download/v${crictl_version}/crictl-${crictl_tag_prefix}${crictl_version}-linux-$(${cidir}/kata-arch.sh -g).tar.gz"
 curl -Ls "$crictl_url" | sudo tar xfz - -C /usr/local/bin
-
-# Change CRI-O configuration options
-crio_config_file="/etc/crio/crio.conf"
 
 echo "Install runc for CRI-O"
 runc_version=$(get_version "externals.runc.version")
@@ -159,9 +156,6 @@ done
 make BUILDTAGS="$(IFS=" "; echo "${build_union[*]}")"
 sudo -E install -D -m0755 runc "/usr/local/bin/crio-runc"
 popd
-
-echo "Set cgroup manager to cgroupfs"
-sudo sed -i 's/\(^cgroup_manager =\) \"systemd\"/\1 \"cgroupfs\"/' "$crio_config_file"
 
 service_path="/etc/systemd/system"
 crio_service_file="${cidir}/data/crio.service"
