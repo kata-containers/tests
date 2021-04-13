@@ -104,13 +104,6 @@ crio_repo=$(get_version "externals.crio.url")
 # remove https:// from the url
 crio_repo="${crio_repo#*//}"
 
-# Remove CRI-O repository if already exists on Fedora
-if [ "$ID" == "fedora" ]; then
-	if [ -d "${GOPATH}/src/${crio_repo}" ]; then
-		sudo rm -r "${GOPATH}/src/${crio_repo}"
-	fi
-fi
-
 crio_version=$(get_version "externals.crio.version")
 crictl_repo=$(get_version "externals.critools.url")
 crictl_version=$(get_version "externals.critools.version")
@@ -120,21 +113,6 @@ go get -d "$crio_repo" || true
 
 if [ "$ghprbGhRepository" != "${crio_repo/github.com\/}" ]
 then
-	# For Fedora, we use CRI-O version that is compatible with the
-	# Openshift version that we support (usually the latest stable).
-	# For other distros, we use the CRI-O version that is compatible with
-	# the kubernetes version that we support (usually latest stable).
-	# Sometimes these versions differ.
-	if [ "$ID" == "fedora" ]; then
-		if [ "$KUBERNETES" == "yes" ]; then
-			crio_version=$(get_version "externals.crio.version")
-		else
-			crio_version=$(get_version "externals.crio.meta.openshift")
-		fi
-		crictl_version=$(get_version "externals.crio.meta.crictl")
-		crictl_tag_prefix=""
-	fi
-
 	# Only fetch and checkout if we are not testing changes in the cri-o repo. 
 	pushd "${GOPATH}/src/${crio_repo}"
 	git fetch
@@ -148,6 +126,7 @@ make clean
 make BUILDTAGS='seccomp selinux exclude_graphdriver_btrfs exclude_graphdriver_devicemapper libdm_no_deferred_remove'
 make test-binaries
 sudo -E PATH=$PATH sh -c "make install"
+sudo -E PATH=$PATH sh -c 'crio -d "" config > crio.conf'
 sudo -E PATH=$PATH sh -c "make install.config"
 
 containers_config_path="/etc/containers"
@@ -163,13 +142,6 @@ curl -Ls "$crictl_url" | sudo tar xfz - -C /usr/local/bin
 
 # Change CRI-O configuration options
 crio_config_file="/etc/crio/crio.conf"
-
-# Change socket format and pause image used for infra containers
-# Needed for cri-o 1.10
-if crio --version | grep '1.10'; then
-	sudo sed -i 's|/var|unix:///var|' /etc/crictl.yaml
-	sudo sed -i 's|kubernetes/pause|k8s.gcr.io/pause|' "$crio_config_file"
-fi
 
 echo "Install runc for CRI-O"
 runc_version=$(get_version "externals.runc.version")
