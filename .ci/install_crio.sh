@@ -126,7 +126,7 @@ make clean
 make BUILDTAGS='seccomp selinux exclude_graphdriver_btrfs exclude_graphdriver_devicemapper libdm_no_deferred_remove'
 make test-binaries
 sudo -E PATH=$PATH sh -c "make install"
-sudo -E PATH=$PATH sh -c 'crio -d "" --cgroup-manager "systemd" config > crio.conf'
+sudo -E PATH=$PATH sh -c 'crio -d "" --cgroup-manager "systemd" --storage-driver "overlay" --storage-opt "overlay.override_kernel_check=1" config > crio.conf'
 sudo -E PATH=$PATH sh -c "make install.config"
 
 containers_config_path="/etc/containers"
