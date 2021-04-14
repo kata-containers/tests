@@ -18,48 +18,44 @@ else
   centos_version=$(grep VERSION_ID /usr/lib/os-release | cut -d '"' -f2)
 fi
 
+[ "$centos_version" == 8 ] || die "This script is for CentOS 8 only"
+
 # Send error when a package is not available in the repositories
 echo "skip_missing_names_on_install=0" | sudo tee -a /etc/yum.conf
 
 # Check EPEL repository is enabled on CentOS
-if [ -z "$(yum repolist | grep 'Extra Packages')" ]; then
+if [ -z "$(dnf repolist | grep 'Extra Packages')" ]; then
 	echo >&2 "ERROR: EPEL repository is not enabled on CentOS."
 	# Enable EPEL repository on CentOS
-	sudo -E yum install -y wget rpm
+	sudo -E dnf install -y wget rpm
 	wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-${centos_version}.noarch.rpm
 	sudo -E rpm -ivh epel-release-latest-${centos_version}.noarch.rpm
 fi
 
 # Enable priority to CentOS Base repo in order to
 # avoid perl updating issues
-if [ "$centos_version" == "8" ]; then
-	repo_file=""
-	if [ -f /etc/yum.repos.d/CentOS-Base.repo ]; then
-		repo_file="/etc/yum.repos.d/CentOS-Base.repo"
-	elif [ -f /etc/yum.repos.d/CentOS-Linux-BaseOS.repo ]; then
-		repo_file="/etc/yum.repos.d/CentOS-Linux-BaseOS.repo"
-	else
-		die "Unable to find the CentOS base repository file"
-	fi
-	sudo echo "priority=1" | sudo tee -a "$repo_file"
-	sudo -E yum -y clean all
+repo_file=""
+if [ -f /etc/yum.repos.d/CentOS-Base.repo ]; then
+	repo_file="/etc/yum.repos.d/CentOS-Base.repo"
+elif [ -f /etc/yum.repos.d/CentOS-Linux-BaseOS.repo ]; then
+	repo_file="/etc/yum.repos.d/CentOS-Linux-BaseOS.repo"
+else
+	die "Unable to find the CentOS base repository file"
 fi
+echo "priority=1" | sudo tee -a "$repo_file"
+sudo -E dnf -y clean all
 
 echo "Update repositories"
-sudo -E yum -y update
+sudo -E dnf -y update
 
-if [ "$centos_version" == "8" ]; then
-	echo "Enable PowerTools repository"
-	sudo -E yum install -y yum-utils
-	sudo yum-config-manager --enable powertools
-fi
+echo "Enable PowerTools repository"
+sudo -E dnf install -y 'dnf-command(config-manager)'
+sudo dnf config-manager --enable powertools
 
 echo "Install chronic"
-sudo -E yum -y install moreutils
+sudo -E dnf -y install moreutils
 
-if [ "$centos_version" == "8" ]; then
-	chronic sudo -E yum install -y pkgconf-pkg-config
-fi 
+chronic sudo -E dnf install -y pkgconf-pkg-config
 
 declare -A minimal_packages=( \
 	[spell-check]="hunspell hunspell-en-GB hunspell-en-US pandoc" \
@@ -106,21 +102,17 @@ main()
 		done
 	fi
 
-	yum_install_args=""
-	if [ "$centos_version" == "8" ]; then
-		# On centos:8 container image the installation of coreutils
-		# conflicts with coreutils-single because they mutually
-		# exclusive. Let's pass --allowerasing so that coreutils-single
-		# is replaced.
-		yum_install_args+=" --allowerasing"
-	fi
-	chronic sudo -E yum -y install $yum_install_args $pkgs_to_install
+	# On centos:8 container image the installation of coreutils
+	# conflicts with coreutils-single because they mutually
+	# exclusive. Let's pass --allowerasing so that coreutils-single
+	# is replaced.
+	chronic sudo -E dnf -y install --allowerasing $pkgs_to_install
 
 	[ "$setup_type" = "minimal" ] && exit 0
 
 	if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
 		echo "Install ${KATA_KSM_THROTTLER_JOB}"
-		chronic sudo -E yum install ${KATA_KSM_THROTTLER_JOB}
+		chronic sudo -E dnf install ${KATA_KSM_THROTTLER_JOB}
 	fi
 }
 
