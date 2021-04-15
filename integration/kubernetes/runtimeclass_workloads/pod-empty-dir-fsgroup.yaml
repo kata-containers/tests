@@ -25,6 +25,20 @@ spec:
     volumeMounts:
       - name: emptydir-volume
         mountPath: /test-volume
+  - name: mounttest-container-2
+    image: "k8s.gcr.io/e2e-test-images/agnhost:2.21"
+    args:
+      - mounttest
+      - --fs_type=/test-volume-2
+      - --new_file_0660=/test-volume-2/test-file
+      - --file_perm=/test-volume-2/test-file
+      - --file_owner=/test-volume-2/test-file
+    volumeMounts:
+      - name: mem-emptydir-volume
+        mountPath: /test-volume-2
   volumes:
   - name: emptydir-volume
     emptyDir: {}
+  - name: mem-emptydir-volume
+    emptyDir:
+      medium: Memory

@@ -47,13 +47,15 @@ setup() {
 	waitForProcess "${wait_time}" "${sleep_time}" "${cmd}"
 
 	pod_logs_file="$(mktemp)"
-	kubectl logs "$pod_name" > "$pod_logs_file"
-	# Check owner UID of file
-	uid=$(cat $pod_logs_file | grep 'owner UID of' | sed 's/.*:\s//')
-	assert_equal "1001" "$uid"
-	# Check owner GID of file
-	gid=$(cat $pod_logs_file | grep 'owner GID of' | sed 's/.*:\s//')
-	assert_equal "123" "$gid"
+	for container in mounttest-container mounttest-container-2; do
+		kubectl logs "$pod_name" "$container" > "$pod_logs_file"
+		# Check owner UID of file
+		uid=$(cat $pod_logs_file | grep 'owner UID of' | sed 's/.*:\s//')
+		assert_equal "1001" "$uid"
+		# Check owner GID of file
+		gid=$(cat $pod_logs_file | grep 'owner GID of' | sed 's/.*:\s//')
+		assert_equal "123" "$gid"
+	done
 }
 
 teardown() {
