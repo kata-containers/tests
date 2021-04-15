@@ -21,6 +21,13 @@ import (
 	mutatingwh "github.com/slok/kubewebhook/pkg/webhook/mutating"
 )
 
+func getRuntimeClass(runtimeClassKey, defaultRuntimeClass string) string {
+	if runtimeClass, ok := os.LookupEnv(runtimeClassKey); ok {
+		return runtimeClass
+	}
+	return defaultRuntimeClass
+}
+
 func annotatePodMutator(ctx context.Context, obj metav1.Object) (bool, error) {
 	pod, ok := obj.(*corev1.Pod)
 	if !ok {
@@ -70,7 +77,8 @@ func annotatePodMutator(ctx context.Context, obj metav1.Object) (bool, error) {
 	// Mutate the pod
 	fmt.Println("setting runtime to kata: ", pod.GetNamespace(), pod.GetName())
 
-	kataRuntimeClassName := "kata"
+	runtimeClassEnvKey := "RUNTIME_CLASS"
+	kataRuntimeClassName := getRuntimeClass(runtimeClassEnvKey, "kata")
 	pod.Spec.RuntimeClassName = &kataRuntimeClassName
 
 	return false, nil

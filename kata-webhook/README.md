@@ -5,13 +5,16 @@ Kata runtime class.
 
 ## How to build the admission controller
 
+> **Note:**
+> Only run this step if you are modifying the current webhook or don't
+> want to use the webhook available in docker hub.
+
 First build the admission controller image and the associated
 Kubernetes YAML files required to instantiate the admission
 controller.
 
 ```bash
 $ docker build -t katadocker/kata-webhook-example:latest .
-$ ./create_certs.sh
 ```
 
 > **Note:**
@@ -25,9 +28,18 @@ Today in `crio.conf` `runc` is the default runtime when a user does not specify
 `runtimeClass` in the pod spec. If you want to run a cluster where Kata is used
 by default, except for workloads we know for sure will not work with Kata, use
 the [admission webhook](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#admission-webhooks)
-and sample admission controller we created by running
+and sample admission controller we created by running the commands below:
+
+> **Note:**
+> By default, the `runtimeClass` name used in this webhook is `kata`. If your
+> cluster is configured with another `runtimeClass`, you'll need to change the
+> value of the `RUNTIME_CLASS` environment variable defined in the
+> [webhook file](deploy/webhook.yaml). You can manually edit the file or use
+> the `yq` tool. E.g:
+> `~/go/bin/yq w -i webhook.yaml spec.template.spec.containers[0].env[0].value "kata-clh"`
 
 ```bash
+$ ./create_certs.sh
 $ kubectl apply -f deploy/
 ```
 
