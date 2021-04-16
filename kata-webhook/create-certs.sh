@@ -9,6 +9,7 @@ WEBHOOK_NAME=${2:-"pod-annotate"}
 WEBHOOK_SVC="${WEBHOOK_NAME}-webhook"
 
 # Create certs for our webhook
+touch $HOME/.rnd
 openssl genrsa -out webhookCA.key 2048
 openssl req -new -key ./webhookCA.key -subj "/CN=${WEBHOOK_SVC}.${WEBHOOK_NS}.svc" -out ./webhookCA.csr 
 openssl x509 -req -days 365 -in webhookCA.csr -signkey webhookCA.key -out webhook.crt

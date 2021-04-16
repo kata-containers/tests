@@ -20,8 +20,11 @@ spec:
     spec:
       containers:
         - name: pod-annotate-webhook
-          image: fuentess/kata-webhook:20200707
+          image: katadocker/kata-webhook-example:latest
           imagePullPolicy: Always
+          env:
+            - name: RUNTIME_CLASS
+              value: kata
           args:
             - -tls-cert-file=/etc/webhook/certs/cert.pem
             - -tls-key-file=/etc/webhook/certs/key.pem
