@@ -300,7 +300,7 @@ check_collect_script()
 
 	info "Checking $msg"
 
-	sudo -E PATH="$PATH" chronic $cmd
+	sudo -E PATH="$PATH" $cmd
 }
 
 main()

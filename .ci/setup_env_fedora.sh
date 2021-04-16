@@ -12,9 +12,6 @@ source /etc/os-release || source /usr/lib/os-release
 source "${cidir}/lib.sh"
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
 
-echo "Install chronic"
-sudo -E dnf -y install moreutils
-
 if [ "${TEST_CGROUPSV2}" == "true" ]; then
 	echo "Install podman"
 	version=$(get_test_version "externals.podman.version")
@@ -65,16 +62,16 @@ main()
 		done
 	fi
 
-	chronic sudo -E dnf -y install $pkgs_to_install
+	sudo -E dnf -y install $pkgs_to_install
 
 	[ "$setup_type" = "minimal" ] && exit 0
 
 	echo "Install kata containers dependencies"
-	chronic sudo -E dnf -y groupinstall "Development tools"
+	sudo -E dnf -y groupinstall "Development tools"
 
 	if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
 		echo "Install ${KATA_KSM_THROTTLER_JOB}"
-		chronic sudo -E dnf -y install ${KATA_KSM_THROTTLER_JOB}
+		sudo -E dnf -y install ${KATA_KSM_THROTTLER_JOB}
 	fi
 }
 

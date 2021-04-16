@@ -18,9 +18,6 @@ sudo -E yum install -y "$epel_url"
 echo "Update repositories"
 sudo -E yum -y update
 
-echo "Install chronic"
-sudo -E yum install -y moreutils
-
 declare -A minimal_packages=( \
 	[spell-check]="hunspell hunspell-en-GB hunspell-en-US pandoc" \
 	[xml_validator]="libxml2" \
@@ -64,7 +61,7 @@ main()
 		done
 	fi
 
-	chronic sudo -E yum -y install $pkgs_to_install
+	sudo -E yum -y install $pkgs_to_install
 
 	[ "$setup_type" = "minimal" ] && exit 0
 

@@ -17,9 +17,6 @@ sudo -E apt update
 echo "Try to preemptively fix broken dependencies, if any"
 sudo -E apt --fix-broken install -y
 
-echo "Install chronic"
-sudo -E apt install -y moreutils
-
 declare -A minimal_packages=( \
 	[spell-check]="hunspell hunspell-en-gb hunspell-en-us pandoc" \
 	[xml_validator]="libxml2-utils" \
@@ -95,21 +92,21 @@ main()
 		pkgs_to_install+=" ${rust_agent_pkgs[@]}"
 	fi
 
-	chronic sudo -E apt -y install $pkgs_to_install
+	sudo -E apt -y install $pkgs_to_install
 
 	[ "$setup_type" = "minimal" ] && exit 0
 
 	if [ "$VERSION_ID" == "16.04" ] && [ "$(arch)" != "ppc64le" ]; then
-		chronic sudo -E add-apt-repository ppa:alexlarsson/flatpak -y
-		chronic sudo -E apt update
+		sudo -E add-apt-repository ppa:alexlarsson/flatpak -y
+		sudo -E apt update
 	fi
 
 	echo "Install os-tree"
-	chronic sudo -E apt install -y libostree-dev
+	sudo -E apt install -y libostree-dev
 
 	if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
 		echo "Install ${KATA_KSM_THROTTLER_JOB}"
-		chronic sudo -E apt install -y ${KATA_KSM_THROTTLER_JOB}
+		sudo -E apt install -y ${KATA_KSM_THROTTLER_JOB}
 	fi
 }
 

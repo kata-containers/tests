@@ -34,9 +34,6 @@ sudo -E zypper refresh
 echo "Add repo for hunspell and pandoc packages"
 sudo -E SUSEConnect -p PackageHub/${VERSION_ID}/${arch}
 
-echo "Install chronic"
-sudo -E zypper -n install moreutils
-
 declare -A minimal_packages=( \
 	[spell-check]="hunspell myspell-en_GB myspell-en_US pandoc" \
 	[xml_validator]="libxml2-tools" \
@@ -78,26 +75,26 @@ main()
 		done
 	fi
 
-	chronic sudo -E zypper -n install $pkgs_to_install
+	sudo -E zypper -n install $pkgs_to_install
 
 	echo "Install YAML validator"
-	chronic sudo -E easy_install pip
-	chronic sudo -E pip install yamllint
+	sudo -E easy_install pip
+	sudo -E pip install yamllint
 
 	echo "Add redis repo and install redis"
 	redis_repo="https://download.opensuse.org/repositories/server:database/SLE_${VERSION//-/_}/server:database.repo"
-	chronic sudo -E zypper addrepo --no-gpgcheck ${redis_repo}
-	chronic sudo -E zypper refresh
-	chronic sudo -E zypper -n install redis
+	sudo -E zypper addrepo --no-gpgcheck ${redis_repo}
+	sudo -E zypper refresh
+	sudo -E zypper -n install redis
 
 	[ "$setup_type" = "minimal" ] && exit 0
 
 	echo "Add crudini repo"
 	VERSIONID="12_SP1"
 	crudini_repo="https://download.opensuse.org/repositories/Cloud:OpenStack:Liberty/SLE_${VERSIONID}/Cloud:OpenStack:Liberty.repo"
-	chronic sudo -E zypper addrepo --no-gpgcheck ${crudini_repo}
-	chronic sudo -E zypper refresh
-	chronic sudo -E zypper -n install crudini
+	sudo -E zypper addrepo --no-gpgcheck ${crudini_repo}
+	sudo -E zypper refresh
+	sudo -E zypper -n install crudini
 }
 
 main "$@"

@@ -25,10 +25,10 @@ if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
 	deb http://apt.kubernetes.io/ kubernetes-xenial-unstable main
 EOF"
 
-	chronic sudo -E sed -i 's/^[ \t]*//' /etc/apt/sources.list.d/kubernetes.list
+	sudo -E sed -i 's/^[ \t]*//' /etc/apt/sources.list.d/kubernetes.list
 	curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-	chronic sudo -E apt update
-	chronic sudo -E apt install --allow-downgrades -y kubelet="$kubernetes_version" kubeadm="$kubernetes_version" kubectl="$kubernetes_version"
+	sudo -E apt update
+	sudo -E apt install --allow-downgrades -y kubelet="$kubernetes_version" kubeadm="$kubernetes_version" kubectl="$kubernetes_version"
 elif [ "$ID" == "centos" ] || [ "$ID" == "fedora" ]; then
 	url="https://packages.cloud.google.com/yum/repos/kubernetes-el7-${ARCH}"
 	echo "Install ${url} for ${ARCH}"
@@ -42,14 +42,14 @@ elif [ "$ID" == "centos" ] || [ "$ID" == "fedora" ]; then
 	gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 EOF"
 
-	chronic sudo -E sed -i 's/^[ \t]*//' /etc/yum.repos.d/kubernetes.repo
+	sudo -E sed -i 's/^[ \t]*//' /etc/yum.repos.d/kubernetes.repo
 	install_kubernetes_version=$(echo $kubernetes_version | cut -d'-' -f1)
-	chronic sudo -E yum install -y kubelet-"$install_kubernetes_version" kubeadm-"$install_kubernetes_version" kubectl-"$install_kubernetes_version" --disableexcludes=kubernetes
+	sudo -E yum install -y kubelet-"$install_kubernetes_version" kubeadm-"$install_kubernetes_version" kubectl-"$install_kubernetes_version" --disableexcludes=kubernetes
 
 	# Disable selinux
 	if  [ "$(getenforce)" != "Disabled" ]; then
-		chronic sudo -E setenforce 0
-		chronic sudo -E sed -i 's/^SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
+		sudo -E setenforce 0
+		sudo -E sed -i 's/^SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
 	fi
 
 	# Packets traversing the bridge should be sent to iptables for processing

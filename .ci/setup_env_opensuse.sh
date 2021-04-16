@@ -15,9 +15,6 @@ source "${cidir}/lib.sh"
 echo "Remove openSUSE cloud repo"
 sudo zypper rr openSUSE-Leap-Cloud-Tools
 
-echo "Install chronic"
-sudo -E zypper -n install moreutils
-
 declare -A minimal_packages=( \
 	[spell-check]="hunspell myspell-en_GB myspell-en_US pandoc" \
 	[xml_validator]="libxml2-tools" \
@@ -62,11 +59,11 @@ main()
 		done
 	fi
 
-	chronic sudo -E zypper -n install $pkgs_to_install
+	sudo -E zypper -n install $pkgs_to_install
 
 	echo "Install YAML validator"
-	chronic sudo -E easy_install pip
-	chronic sudo -E pip install yamllint
+	sudo -E easy_install pip
+	sudo -E pip install yamllint
 }
 
 main "$@"

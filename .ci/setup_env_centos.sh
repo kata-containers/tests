@@ -54,11 +54,8 @@ if [ "$centos_version" == "8" ]; then
 	sudo yum-config-manager --enable powertools
 fi
 
-echo "Install chronic"
-sudo -E yum -y install moreutils
-
 if [ "$centos_version" == "8" ]; then
-	chronic sudo -E yum install -y pkgconf-pkg-config
+	sudo -E yum install pkgconf-pkg-config
 fi 
 
 declare -A minimal_packages=( \
@@ -114,13 +111,13 @@ main()
 		# is replaced.
 		yum_install_args+=" --allowerasing"
 	fi
-	chronic sudo -E yum -y install $yum_install_args $pkgs_to_install
+	sudo -E yum -y install $yum_install_args $pkgs_to_install
 
 	[ "$setup_type" = "minimal" ] && exit 0
 
 	if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
 		echo "Install ${KATA_KSM_THROTTLER_JOB}"
-		chronic sudo -E yum install ${KATA_KSM_THROTTLER_JOB}
+		sudo -E yum install ${KATA_KSM_THROTTLER_JOB}
 	fi
 }
 

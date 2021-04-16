@@ -12,9 +12,6 @@ source "/etc/os-release" || source "/usr/lib/os-release"
 source "${cidir}/lib.sh"
 export DEBIAN_FRONTEND=noninteractive
 
-echo "Install chronic"
-sudo -E apt -y install moreutils
-
 declare -A minimal_packages=( \
 	[spell-check]="hunspell hunspell-en-gb hunspell-en-us pandoc" \
 	[xml_validator]="libxml2-utils" \
@@ -61,13 +58,13 @@ main()
 		done
 	fi
 
-	chronic sudo -E apt -y install $pkgs_to_install
+	sudo -E apt -y install $pkgs_to_install
 
 	[ "$setup_type" = "minimal" ] && exit 0
 
 	if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
 		echo "Install ${KATA_KSM_THROTTLER_JOB}"
-		chronic sudo -E apt install -y ${KATA_KSM_THROTTLER_JOB}
+		sudo -E apt install -y ${KATA_KSM_THROTTLER_JOB}
 	fi
 }
 
