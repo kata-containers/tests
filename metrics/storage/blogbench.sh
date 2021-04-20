@@ -32,10 +32,6 @@ CMD="mkdir -p ${TESTDIR}; blogbench -i ${ITERATIONS} -d ${TESTDIR}"
 CI_JOB=${CI_JOB:-""}
 configuration_file="/usr/share/defaults/kata-containers/configuration.toml"
 
-if [ "${CI_JOB}" == "VIRTIOFS-METRICS-BAREMETAL" ]; then
-	echo "Disable dax for virtiofs"
-	sudo sed -i 's/virtio_fs_cache_size.*/virtio_fs_cache_size = 0/g' "${configuration_file}"
-fi
 
 function main() {
 	# Check tools/commands dependencies
@@ -130,10 +126,6 @@ EOF
 	metrics_json_end_array "Results"
 	metrics_json_save
 	clean_env
-
-	if [ "${CI_JOB}" == "VIRTIOFS-METRICS-BAREMETAL" ]; then
-        	sudo sed -i 's/virtio_fs_cache_size.*/virtio_fs_cache_size = 1024/g' "${configuration_file}"
-	fi
 }
 
 main "$@"
