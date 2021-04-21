@@ -11,37 +11,48 @@ set -o pipefail
 set -o errtrace
 
 cidir=$(dirname "$0")
+source "${cidir}/lib.sh"
 rust_agent_repo="github.com/kata-containers/kata-containers"
 arch=$("${cidir}"/kata-arch.sh -d)
-image_path="${image_path:-/usr/share/kata-containers}"
+PREFIX="${PREFIX:-/usr}"
+DESTDIR="${DESTDIR:-/}"
+image_path="${DESTDIR}${image_path:-${PREFIX}/share/kata-containers}"
 image_name="${image_name:-kata-containers.img}"
 initrd_name="${initrd_name:-kata-containers-initrd.img}"
 AGENT_INIT="${AGENT_INIT:-no}"
 TEST_INITRD="${TEST_INITRD:-no}"
+build_method="${BUILD_METHOD:-distro}"
 
 build_rust_image() {
 	export RUST_AGENT="yes"
 	osbuilder_path="${GOPATH}/src/${rust_agent_repo}/tools/osbuilder"
-	distro="ubuntu"
 
 	sudo mkdir -p "${image_path}"
 
 	pushd "${osbuilder_path}"
-
-	if [ "${TEST_INITRD}" == "no" ]; then
-		echo "Building image with AGENT_INIT=${AGENT_INIT}"
-		sudo -E USE_DOCKER=1 DISTRO="${distro}" make -e image
-
-		echo "Install image to ${image_path}"
-		sudo install -D "${osbuilder_path}/${image_name}" "${image_path}"
-	else
-		echo "Building initrd with AGENT_INIT=${AGENT_INIT}"
-		sudo -E USE_DOCKER=1 DISTRO="${distro}" make -e initrd
-
-		echo "Install initrd to ${image_path}"
-		sudo install -D "${osbuilder_path}/${initrd_name}" "${image_path}"
+	target_image="image"
+	file_to_install="${osbuilder_path}/${image_name}"
+	if [ "${TEST_INITRD}" == "yes" ]; then
+		target_image="initrd"
+		file_to_install="${osbuilder_path}/${initrd_name}"
 	fi
-
+	info "Building ${target_image} with AGENT_INIT=${AGENT_INIT}"
+	case "$build_method" in
+		"distro")
+			distro="${osbuilder_distro:-ubuntu}"
+			use_docker="${osbuild_docker:-1}"
+			sudo -E USE_DOCKER="${use_docker}" DISTRO="${distro}" \
+				make -e "${target_image}"
+			;;
+		"dracut")
+			sudo -E BUILD_METHOD="dracut" make -e "${target_image}"
+			;;
+		*)
+			die "Unknown build method ${build_method}"
+			;;
+	esac
+	info "Install ${target_image} to ${image_path}"
+	sudo install -D "${file_to_install}" "${image_path}"
 	popd
 }
 
