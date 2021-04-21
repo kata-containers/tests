@@ -87,6 +87,16 @@ main()
 		sudo -E PATH=$PATH make install
 		popd
 	fi
+
+
+	if [ "$VERSION_ID" -le "32" ]; then
+		if selinuxenabled; then
+			echo "Setting SELinux to permissive, as Fedora older than 33 does not have all the needed bits in place to support kata-containers with SELinux enabled"
+			sudo setenforce 0
+		else
+			echo "SELINUX is disabled in the system"
+		fi
+	fi
 }
 
 main "$@"
