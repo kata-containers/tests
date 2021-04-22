@@ -33,8 +33,6 @@ jaeger_server=${jaeger_server:-localhost}
 jaeger_ui_port=${jaeger_ui_port:-16686}
 jaeger_docker_container_name="jaeger"
 
-logdir=""
-
 # Cleanup will remove Jaeger container and
 # disable tracing.
 cleanup()
@@ -131,6 +129,8 @@ get_span_count()
 	# summary is useful in debug mode as the summary is displayed.
 	local trace_summary=$(get_trace_summary "$status" || true)
 
+	[ -z "$trace_summary" ] && die "failed to get trace summary"
+
 	local count=$(echo "${trace_summary}" | wc -l)
 
 	[ -z "$count" ] && count=0
@@ -147,59 +147,21 @@ get_jaeger_status()
 	[ -z "$service" ] && die "need jaeger service name"
 	[ -z "$logdir" ] && die "need logdir"
 
-	local max_attempts=10
-
 	local status=""
 	local span_count=0
 
-	# Loop until we find some spans
-	for _ in $(seq $max_attempts)
-	do
-		status=$(get_jaeger_traces "$service" || true)
-		if [ -n "$status" ]; then
-			echo "$status" > "$logdir/${service}-status.json"
-			span_count=$(get_span_count "$status")
-			[ "$span_count" -gt 0 ] && break
-		fi
-		sleep 1
-	done
+	# Find spans
+	status=$(get_jaeger_traces "$service" || true)
+	if [ -n "$status" ]; then
+		echo "$status" | tee "$logdir/${service}-status.json"
+		span_count=$(get_span_count "$status")
+	fi
 
 	[ -z "$status" ] && die "failed to query Jaeger for status"
 	[ "$span_count" -eq 0 ] && die "failed to find any trace spans"
+	[ "$span_count" -le 0 ] && die "invalid span count"
 
-	# Now that we have a valid status, poll until it settles.
-	# Yes, it's horrid but we need to poll to give the Jaeger
-	# web service time to think it seems ;)
-	for _ in $(seq $max_attempts)
-	do
-		local new_status=$(get_jaeger_traces "$service" || true)
-
-		# We have already queried the services status, so it should
-		# still be there!
-		[ -z "$new_status" ] && die "Jaeger trace status disappeared"
-
-		local new_span_count=$(get_span_count "$new_status")
-		[ -z "$new_span_count" ] && die "no span count"
-		[ "$new_span_count" -le 0 ] && die "invalid span count"
-		[ "$new_span_count" -lt "$span_count" ] && die "span count dropped ($span_count to $new_span_count)"
-
-		# Span count didn't change, so the service
-		# has "stabilised"
-		if [ "$new_span_count" -eq "$span_count" ]; then
-			get_trace_summary "$status" \
-				> "$logdir/span-summary.txt"
-			return
-		fi
-
-		# The span count increased, so reset
-		status="$new_status"
-		span_count="$new_span_count"
-
-		sleep 1
-	done
-
-	die "span count failed to stabilize after $max_attempts seconds"
-
+	get_trace_summary "$status" > "$logdir/span-summary.txt"
 }
 
 # Check Jaeger spans for the specified service.
@@ -216,74 +178,63 @@ check_jaeger_status()
 	local status
 	local errors=0
 
-	local attempt=0
-	local attempts=3
-
 	info "Checking Jaeger status"
 
-	while [ "$attempt" -lt "$attempts" ]
-	do
-		status=$(get_jaeger_status "$service" "$logdir")
+	status=$(get_jaeger_status "$service" "$logdir")
 
-		#------------------------------
-		# Basic sanity checks
-		[ -z "$status" ] && die "failed to query status via HTTP"
+	#------------------------------
+	# Basic sanity checks
+	[ -z "$status" ] && die "failed to query status via HTTP"
 
-		local span_lines=$(echo "$status"|jq -S '.data[].spans | length')
-		[ -z "$span_lines" ] && die "no span status"
+	local span_lines=$(echo "$status"|jq -S '.data[].spans | length')
+	[ -z "$span_lines" ] && die "no span status"
 
-		# Log the spans to allow for analysis in case the test fails
-		echo "$status"|jq -S . > "$logdir/${service}-traces-formatted.json"
+	# Log the spans to allow for analysis in case the test fails
+	echo "$status"|jq -S . > "$logdir/${service}-traces-formatted.json"
 
-		local span_lines_count=$(echo "$span_lines"|wc -l)
+	local span_lines_count=$(echo "$span_lines"|wc -l)
 
-		# Total up all span counts
-		local spans=$(echo "$span_lines"|paste -sd+ -|bc)
-		[ -z "$spans" ] && die "no spans"
+	# Total up all span counts
+	local spans=$(echo "$span_lines"|paste -sd+ -|bc)
+	[ -z "$spans" ] && die "no spans"
 
-		# Ensure total span count is numeric
-		echo "$spans"|grep -q "^[0-9][0-9]*$" || die "invalid span count: '$spans'"
+	# Ensure total span count is numeric
+	echo "$spans"|grep -q "^[0-9][0-9]*$" || die "invalid span count: '$spans'"
 
-		info "found $spans spans (across $span_lines_count traces)"
+	info "found $spans spans (across $span_lines_count traces)"
 
-		# Validate
-		[ "$spans" -lt "$min_spans" ] && die "expected >= $min_spans spans, got $spans"
+	# Validate
+	[ "$spans" -lt "$min_spans" ] && die "expected >= $min_spans spans, got $spans"
 
-		# Look for common errors in span data
-		local error_msg=$(echo "$status"|jq -S . 2>/dev/null|grep "invalid parent span" || true)
+	# Look for common errors in span data
+	local error_msg=$(echo "$status"|jq -S . 2>/dev/null|grep "invalid parent span" || true)
 
-		if [ -n "$error_msg" ]; then
-			errors=$((errors+1))
-			warn "Found invalid parent span errors (attempt $attempt): $error_msg"
-			attempt=$((attempt+1))
-			continue
-		else
-			errors=$((errors-1))
-			[ "$errors" -lt 0 ] && errors=0
-		fi
+	if [ -n "$error_msg" ]; then
+		errors=$((errors+1))
+		warn "Found invalid parent span errors: $error_msg"
+	else
+		errors=$((errors-1))
+		[ "$errors" -lt 0 ] && errors=0
+	fi
 
-		# Crude but it works
-		error_or_warning_msgs=$(echo "$status" |\
-			jq -S . 2>/dev/null |\
-			grep -E "\"(warnings|errors)\"" |\
-			grep -E -v "\<null\>" || true)
+	# Crude but it works
+	error_or_warning_msgs=$(echo "$status" |\
+		jq -S . 2>/dev/null |\
+		jq '.data[].spans[].warnings' |\
+		grep -E -v "\<null\>" |\
+		grep -E -v "\[" |\
+		grep -E -v "\]" |\
+		grep -E -v "clock skew" || true) # ignore clock skew error
 
-		if [ -n "$error_or_warning_msgs" ]; then
-			errors=$((errors+1))
-			warn "Found errors/warnings (attempt $attempt): $error_or_warning_msgs"
-			attempt=$((attempt+1))
-			continue
-		else
-			errors=$((errors-1))
-			[ "$errors" -lt 0 ] && errors=0
-		fi
+	if [ -n "$error_or_warning_msgs" ]; then
+		errors=$((errors+1))
+		warn "Found errors/warnings: $error_or_warning_msgs"
+	else
+		errors=$((errors-1))
+		[ "$errors" -lt 0 ] && errors=0
+	fi
 
-		attempt=$((attempt+1))
-
-		[ "$errors" -eq 0 ] && break
-	done
-
-	[ "$errors" -eq 0 ] || die "errors still detected after $attempts attempts"
+	[ "$errors" -eq 0 ] || die "errors detected"
 }
 
 setup()
@@ -335,7 +286,7 @@ run_tests()
 	#   when create_traces() is called a single time.
 	local -a services
 
-	services+=("kata:4")
+	services+=("kata:50")
 
 	create_traces
 
