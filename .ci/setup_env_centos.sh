@@ -28,15 +28,16 @@ sudo -E dnf -y install epel-release
 
 # Enable priority to CentOS Base repo in order to
 # avoid perl updating issues
-repo_file=""
-if [ -f /etc/yum.repos.d/CentOS-Base.repo ]; then
-	repo_file="/etc/yum.repos.d/CentOS-Base.repo"
-elif [ -f /etc/yum.repos.d/CentOS-Linux-BaseOS.repo ]; then
-	repo_file="/etc/yum.repos.d/CentOS-Linux-BaseOS.repo"
-else
-	die "Unable to find the CentOS base repository file"
-fi
+for repo_file_path in /etc/yum.repos.d/CentOS-Base.repo \
+	/etc/yum.repos.d/CentOS-Linux-BaseOS.repo; do
+	if [ -f "$repo_file_path" ]; then
+		repo_file="$repo_file_path"
+		break
+	fi
+done
+[ -n "${repo_file:-}" ] || die "Unable to find the CentOS base repository file"
 echo "priority=1" | sudo tee -a "$repo_file"
+
 sudo -E dnf -y clean all
 
 echo "Update repositories"
