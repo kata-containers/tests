@@ -19,6 +19,12 @@ KATA_KSM_THROTTLER="${KATA_KSM_THROTTLER:-yes}"
 PAYLOAD_ARGS="${PAYLOAD_ARGS:-tail -f /dev/null}"
 IMAGE="${IMAGE:-quay.io/prometheus/busybox:latest}"
 WAIT_TIME="60"
+arch=$("${dir_path}"/../../.ci/kata-arch.sh -d)
+
+if [ "$arch" == "aarch64" ]; then
+	echo "Skip KSM test: $arch does not support it"
+	exit 0
+fi
 
 function setup() {
 	sudo systemctl restart containerd
