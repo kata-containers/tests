@@ -25,7 +25,7 @@ function install_yq() {
 
 	# Stick to a specific version. Same used in
 	# runtime and osbuilder repos.
-	local yq_version=3.1.0
+	local yq_version=3.4.1
 
 	## NOTE: ${var,,} => gives lowercase value of var
 	local yq_url="https://${yq_pkg}/releases/download/${yq_version}/yq_${goos,,}_${goarch}"
