@@ -1,0 +1,7 @@
+[global]
+name=randread-libaio
+filename=fio-file
+rw=randread
+ioengine=libaio
+
+[randread-libaio]

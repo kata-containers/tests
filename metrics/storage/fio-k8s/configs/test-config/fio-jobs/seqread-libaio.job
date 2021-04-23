@@ -1,0 +1,7 @@
+[global]
+name=seqread-libaio
+filename=fio-file
+rw=read
+ioengine=libaio
+
+[seqread-libaio]

@@ -1,0 +1,7 @@
+[global]
+name=randwrite-mmap
+rw=randwrite
+ioengine=mmap
+
+[randwrite-mmap]
+filename=fio-file

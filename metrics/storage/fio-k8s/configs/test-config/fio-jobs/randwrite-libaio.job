@@ -1,0 +1,7 @@
+[global]
+name=randwrite-libaio
+filename=fio-file
+rw=randwrite
+ioengine=libaio
+
+[randwrite-libaio]

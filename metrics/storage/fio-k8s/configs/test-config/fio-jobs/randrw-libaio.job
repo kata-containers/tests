@@ -1,0 +1,8 @@
+[global]
+name=randrw-libaio
+filename=fio-file
+rw=randrw
+rwmixread=75
+ioengine=libaio
+
+[randrw-libaio]

@@ -1,0 +1,7 @@
+[global]
+name=randread-mmap
+rw=randread
+ioengine=mmap
+
+[randread-mmap]
+filename=fio-file

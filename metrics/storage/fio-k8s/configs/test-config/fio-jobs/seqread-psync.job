@@ -1,0 +1,6 @@
+[global]
+name=seqread-psync
+filename=fio-file
+rw=read
+
+[seqread-psync]
