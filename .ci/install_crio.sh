@@ -89,7 +89,7 @@ fi
 pushd "${GOPATH}/src/${crio_repo}"
 echo "Installing CRI-O"
 make clean
-make BUILDTAGS='exclude_graphdriver_devicemapper libdm_no_deferred_remove'
+make BUILDTAGS='exclude_graphdriver_btrfs exclude_graphdriver_devicemapper libdm_no_deferred_remove'
 make test-binaries
 sudo -E PATH=$PATH sh -c "make install"
 sudo -E PATH=$PATH sh -c "crio config --default > crio.conf"
