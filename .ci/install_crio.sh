@@ -104,7 +104,7 @@ crio_repo=$(get_version "externals.crio.url")
 # remove https:// from the url
 crio_repo="${crio_repo#*//}"
 
-crio_version=$(get_version "externals.crio.version")
+crio_branch=$(get_version "externals.crio.branch")
 crictl_repo=$(get_version "externals.critools.url")
 crictl_version=$(get_version "externals.critools.version")
 crictl_tag_prefix="v"
@@ -116,7 +116,7 @@ then
 	# Only fetch and checkout if we are not testing changes in the cri-o repo. 
 	pushd "${GOPATH}/src/${crio_repo}"
 	git fetch
-	git checkout "${crio_version}"
+	git checkout "${crio_branch}"
 	popd
 fi
 
