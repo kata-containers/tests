@@ -28,7 +28,7 @@ ifeq (${CI}, true)
 endif
 
 # union for 'make test'
-UNION := kubernetes
+#UNION := kubernetes
 
 # filter scheme script for docker integration test suites
 FILTER_FILE = .ci/filter/filter_docker_test.sh
