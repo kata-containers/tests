@@ -41,6 +41,8 @@ case "${CI_JOB}" in
 	"CRI_CONTAINERD_K8S_MINIMAL")
 		echo "INFO: Running e2e kubernetes tests"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes-e2e"
+		echo "INFO: Running tracing test"
+		sudo -E PATH="$PATH" bash -c "make tracing"
 		;;
 	"CRIO_K8S")
 		echo "INFO: Running kubernetes tests"
