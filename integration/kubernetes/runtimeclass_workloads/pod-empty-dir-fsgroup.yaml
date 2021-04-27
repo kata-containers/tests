@@ -15,7 +15,7 @@ spec:
     fsGroup: 123
   containers:
   - name: mounttest-container
-    image: "k8s.gcr.io/e2e-test-images/agnhost:2.21"
+    image: k8s.gcr.io/e2e-test-images/agnhost:2.21
     args:
       - mounttest
       - --fs_type=/test-volume
@@ -26,7 +26,7 @@ spec:
       - name: emptydir-volume
         mountPath: /test-volume
   - name: mounttest-container-2
-    image: "k8s.gcr.io/e2e-test-images/agnhost:2.21"
+    image: k8s.gcr.io/e2e-test-images/agnhost:2.21
     args:
       - mounttest
       - --fs_type=/test-volume-2
