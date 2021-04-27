@@ -15,8 +15,8 @@ setup() {
 	deployment="nginx-deployment"
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	# Pull the images before launching workload.
-	sudo -E crictl pull "$busybox_image"
-	sudo -E crictl pull "$nginx_image"
+	crictl_pull "$busybox_image"
+	crictl_pull "$nginx_image"
 
 	get_pod_config_dir
 }
