@@ -35,6 +35,15 @@ docker_images:
     url: "https://hub.docker.com/_/nginx/"
     version: "1.15-alpine"
 
+container_images:
+  description: "Images used for testing but not hosted on Docker hub"
+
+  agnhost:
+    description: "Kubernetes host OS agnostic test image"
+    name: "k8s.gcr.io/e2e-test-images/agnhost"
+    # Keep this updated with the Kubernetes version used for testing.
+    version: "2.21"
+
 externals:
   description: "Third-party projects used specifically for testing"
 

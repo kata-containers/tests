@@ -11,6 +11,8 @@ load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
 setup() {
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	sleep_liveness=20
+	agnhost_name=$(get_test_version "container_images.agnhost.name")
+	agnhost_version=$(get_test_version "container_images.agnhost.version")
 
 	get_pod_config_dir
 }
@@ -36,7 +38,9 @@ setup() {
 	pod_name="liveness-http"
 
 	# Create pod
-	kubectl create -f "${pod_config_dir}/pod-http-liveness.yaml"
+	sed -e "s#\${agnhost_image}#${agnhost_name}:${agnhost_version}#" \
+		"${pod_config_dir}/pod-http-liveness.yaml" |\
+		kubectl create -f -
 
 	# Check pod creation
 	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
@@ -54,7 +58,9 @@ setup() {
 	pod_name="tcptest"
 
 	# Create pod
-	kubectl create -f "${pod_config_dir}/pod-tcp-liveness.yaml"
+	sed -e "s#\${agnhost_image}#${agnhost_name}:${agnhost_version}#" \
+		"${pod_config_dir}/pod-tcp-liveness.yaml" |\
+		kubectl create -f -
 
 	# Check pod creation
 	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
