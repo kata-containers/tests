@@ -41,6 +41,10 @@ setup() {
 @test "Empty dir volume when FSGroup is specified with non-root container" {
 	# This is a reproducer of k8s e2e "[sig-storage] EmptyDir volumes when FSGroup is specified [LinuxOnly] [NodeFeature:FSGroup] new files should be created with FSGroup ownership when container is non-root" test
 	pod_file="${pod_config_dir}/pod-empty-dir-fsgroup.yaml"
+	image=$(grep 'image:' ${pod_file} | head -1 | sed 's/.*\s//')
+
+	# Try to avoid timeout by prefetching the image.
+	crictl_pull "$image"
 	kubectl create -f "$pod_file"
 
 	cmd="kubectl get pods ${pod_name} | grep Completed"

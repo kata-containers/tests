@@ -14,7 +14,7 @@ setup() {
 	replicas="3"
 	deployment="nginx-deployment"
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
-	sudo -E crictl pull "$nginx_image"
+	crictl_pull "$nginx_image"
 	get_pod_config_dir
 }
 
