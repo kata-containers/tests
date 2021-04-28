@@ -7,8 +7,11 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+issue="https://github.com/kata-containers/tests/issues/3453"
+arch=$("${BATS_TEST_DIRNAME}"/../../.ci/kata-arch.sh -d)
 
 setup() {
+	[ "${arch}" == "aarch64" ] && skip "test not working see: ${issue}"
 	nginx_version=$(get_test_version "docker_images.nginx.version")
 	nginx_image="nginx:$nginx_version"
 
@@ -19,6 +22,7 @@ setup() {
 }
 
 @test "Running with postStart and preStop handlers" {
+	[ "${arch}" == "aarch64" ] && skip "test not working see: ${issue}"
 	# Create yaml
 	sed -e "s/\${nginx_version}/${nginx_image}/" \
 		"${pod_config_dir}/lifecycle-events.yaml" > "${pod_config_dir}/test-lifecycle-events.yaml"
@@ -35,6 +39,7 @@ setup() {
 }
 
 teardown(){
+	[ "${arch}" == "aarch64" ] && skip "test not working see: ${issue}"
 	# Debugging information
 	kubectl describe "pod/$pod_name"
 

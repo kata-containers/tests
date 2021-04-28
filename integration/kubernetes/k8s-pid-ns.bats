@@ -7,8 +7,11 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+source /etc/os-release || source /usr/lib/os-release
+issue="https://github.com/kata-containers/tests/issues/3464"
 
 setup() {
+	[ "${ID}" == "centos" ] && skip "test not working see ${issue}"
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	pod_name="busybox"
 	first_container_name="first-test-container"
@@ -18,6 +21,7 @@ setup() {
 }
 
 @test "Check PID namespaces" {
+	[ "${ID}" == "centos" ] && skip "test not working see ${issue}"
 	# Create the pod
 	kubectl create -f "${pod_config_dir}/busybox-pod.yaml"
 
@@ -42,6 +46,7 @@ setup() {
 }
 
 teardown() {
+	[ "${ID}" == "centos" ] && skip "test not working see ${issue}"
 	# Debugging information
 	kubectl describe "pod/$pod_name"
 

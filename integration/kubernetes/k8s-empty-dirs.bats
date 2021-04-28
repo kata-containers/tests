@@ -7,8 +7,11 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+source /etc/os-release || source /usr/lib/os-release
+issue="https://github.com/kata-containers/tests/issues/3464"
 
 assert_equal() {
+	[ "${ID}" == "centos" ] && skip "test not working see ${issue}"
 	local expected=$1
 	local actual=$2
 	if [[ "$expected" != "$actual" ]]; then
@@ -18,6 +21,7 @@ assert_equal() {
 }
 
 setup() {
+	[ "${ID}" == "centos" ] && skip "test not working see ${issue}"
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	pod_name="sharevol-kata"
 	get_pod_config_dir
@@ -27,6 +31,7 @@ setup() {
 }
 
 @test "Empty dir volumes" {
+	[ "${ID}" == "centos" ] && skip "test not working see ${issue}"
 	# Create the pod
 	kubectl create -f "${pod_config_dir}/pod-empty-dir.yaml"
 
@@ -39,6 +44,7 @@ setup() {
 }
 
 @test "Empty dir volume when FSGroup is specified with non-root container" {
+	[ "${ID}" == "centos" ] && skip "test not working see ${issue}"
 	# This is a reproducer of k8s e2e "[sig-storage] EmptyDir volumes when FSGroup is specified [LinuxOnly] [NodeFeature:FSGroup] new files should be created with FSGroup ownership when container is non-root" test
 	pod_file="${pod_config_dir}/pod-empty-dir-fsgroup.yaml"
 	agnhost_name=$(get_test_version "container_images.agnhost.name")
@@ -65,6 +71,7 @@ setup() {
 }
 
 teardown() {
+	[ "${ID}" == "centos" ] && skip "test not working see ${issue}"
 	# Debugging information
 	kubectl describe "pod/$pod_name"
 

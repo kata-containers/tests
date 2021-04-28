@@ -8,8 +8,11 @@
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
 fc_limitations="https://github.com/kata-containers/documentation/issues/351"
+source /etc/os-release || source /usr/lib/os-release
+issue="https://github.com/kata-containers/tests/issues/3463"
 
 setup() {
+	[ "${ID}" == "fedora" ] && skip "test not working see ${issue}"
 	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
 
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
@@ -17,6 +20,7 @@ setup() {
 }
 
 @test "Projected volume" {
+	[ "${ID}" == "fedora" ] && skip "test not working see ${issue}"
 	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
 
 	password="1f2d1e2e67df"
@@ -54,6 +58,7 @@ setup() {
 }
 
 teardown() {
+	[ "${ID}" == "fedora" ] && skip "test not working see ${issue}"
 	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
 
 	# Debugging information
