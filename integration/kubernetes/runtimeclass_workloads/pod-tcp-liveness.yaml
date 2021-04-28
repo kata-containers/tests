@@ -14,7 +14,7 @@ spec:
   runtimeClassName: kata
   containers:
   - name: tcp-liveness
-    image: gcr.io/kubernetes-e2e-test-images/agnhost:2.2
+    image: ${agnhost_image}
     args:
     - liveness
     ports:

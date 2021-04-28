@@ -18,6 +18,9 @@ setup() {
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	deployment="hello-world"
 	service="my-service"
+	agnhost_name=$(get_test_version "container_images.agnhost.name")
+	agnhost_version=$(get_test_version "container_images.agnhost.version")
+
 	get_pod_config_dir
 }
 
@@ -26,7 +29,9 @@ setup() {
 	sleep_time=2
 
 	# Create deployment
-	kubectl create -f "${pod_config_dir}/deployment-expose-ip.yaml"
+	sed -e "s#\${agnhost_image}#${agnhost_name}:${agnhost_version}#" \
+		"${pod_config_dir}/deployment-expose-ip.yaml" |\
+		kubectl create -f -
 
 	# Check deployment creation
 	cmd="kubectl wait --for=condition=Available deployment/${deployment}"
