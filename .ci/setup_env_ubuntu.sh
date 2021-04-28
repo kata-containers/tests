@@ -44,6 +44,10 @@ declare -A packages=( \
 	[redis]="redis-server" \
 )
 
+if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 20.04" | bc -q)" == "1" ]; then
+	packages[cri_containerd_dependencies]+=" libbtrfs-dev"
+fi
+
 if [ "$(uname -m)" == "x86_64" ] && [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 18.04" | bc -q)" == "1" ]; then
 	packages[qemu_dependencies]+=" libpmem-dev"
 fi
