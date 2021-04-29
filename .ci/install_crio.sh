@@ -35,6 +35,68 @@ make
 sudo -E make install
 popd
 
+echo "Configure registries"
+sudo mkdir -p /etc/containers/registries.conf.d/
+cat <<EOF| sudo tee "/etc/containers/registries.conf.d/ciregistries.conf"
+unqualified-search-registries = ["registry.fedoraproject.org", "registry.access.redhat.com", "registry.centos.org", "docker.io", "registry-proxy.engineering.redhat.com"]
+
+[aliases]
+  # centos
+  "centos" = "quay.io/centos/centos"
+  # containers
+  "skopeo" = "quay.io/skopeo/stable"
+  "buildah" = "quay.io/buildah/stable"
+  "podman" = "quay.io/podman/stable"
+  # docker
+  "alpine" = "docker.io/library/alpine"
+  "docker" = "docker.io/library/docker"
+  "registry" = "docker.io/library/registry"
+  "hello-world" = "docker.io/library/hello-world"
+  "swarm" = "docker.io/library/swarm"
+  # Fedora
+  "fedora-minimal" = "registry.fedoraproject.org/fedora-minimal"
+  "fedora" = "registry.fedoraproject.org/fedora"
+  # openSUSE
+  "opensuse/tumbleweed" = "registry.opensuse.org/opensuse/tumbleweed"
+  "opensuse/tumbleweed-dnf" = "registry.opensuse.org/opensuse/tumbleweed-dnf"
+  "opensuse/tumbleweed-microdnf" = "registry.opensuse.org/opensuse/tumbleweed-microdnf"
+  "opensuse/leap" = "registry.opensuse.org/opensuse/leap"
+  "opensuse/busybox" = "registry.opensuse.org/opensuse/busybox"
+  "tumbleweed" = "registry.opensuse.org/opensuse/tumbleweed"
+  "tumbleweed-dnf" = "registry.opensuse.org/opensuse/tumbleweed-dnf"
+  "tumbleweed-microdnf" = "registry.opensuse.org/opensuse/tumbleweed-microdnf"
+  "leap" = "registry.opensuse.org/opensuse/leap"
+  "tw-busybox" = "registry.opensuse.org/opensuse/busybox"
+  # SUSE
+  "suse/sle15" = "registry.suse.com/suse/sle15"
+  "suse/sles12sp5" = "registry.suse.com/suse/sles12sp5"
+  "suse/sles12sp4" = "registry.suse.com/suse/sles12sp4"
+  "suse/sles12sp3" = "registry.suse.com/suse/sles12sp3"
+  "sle15" = "registry.suse.com/suse/sle15"
+  "sles12sp5" = "registry.suse.com/suse/sles12sp5"
+  "sles12sp4" = "registry.suse.com/suse/sles12sp4"
+  "sles12sp3" = "registry.suse.com/suse/sles12sp3"
+  # Red Hat Enterprise Linux
+  "rhel" = "registry.access.redhat.com/rhel"
+  "rhel6" = "registry.access.redhat.com/rhel6"
+  "rhel7" = "registry.access.redhat.com/rhel7"
+  "ubi7" = "registry.access.redhat.com/ubi7"
+  "ubi7-init" = "registry.access.redhat.com/ubi7-init"
+  "ubi7-minimal" = "registry.access.redhat.com/ubi7-minimal"
+  "ubi8" = "registry.access.redhat.com/ubi8"
+  "ubi8-minimal" = "registry.access.redhat.com/ubi8-minimal"
+  "ubi8-init" = "registry.access.redhat.com/ubi8-init"
+  "ubi8-micro" = "registry.access.redhat.com/ubi8-micro"
+  "ubi8/ubi" = "registry.access.redhat.com/ubi8/ubi"
+  "ubi8/ubi-minimal" = "registry.access.redhat.com/ubi8-minimal"
+  "ubi8/ubi-init" = "registry.access.redhat.com/ubi8-init"
+  "ubi8/ubi-micro" = "registry.access.redhat.com/ubi8-micro"
+  # Debian
+  "debian" = "docker.io/library/debian"
+  # Oracle Linux
+  "oraclelinux" = "container-registry.oracle.com/os/oraclelinux"
+EOF
+
 echo "Get CRI-O sources"
 kubernetes_sigs_org="github.com/kubernetes-sigs"
 ghprbGhRepository="${ghprbGhRepository:-}"
@@ -125,12 +187,6 @@ done
 make BUILDTAGS="$(IFS=" "; echo "${build_union[*]}")"
 sudo -E install -D -m0755 runc "/usr/local/bin/crio-runc"
 popd
-
-echo "Add docker.io registry to pull images"
-# Matches cri-o 1.10 file format
-sudo sed -i 's/^registries = \[/registries = \[ "docker.io"/' "$crio_config_file"
-# Matches cri-o 1.12 file format
-sudo sed -i 's/^#registries = \[/registries = \[ "docker.io" \] /' "$crio_config_file"
 
 echo "Set cgroup manager to cgroupfs"
 sudo sed -i 's/\(^cgroup_manager =\) \"systemd\"/\1 \"cgroupfs\"/' "$crio_config_file"
