@@ -204,13 +204,8 @@ kill_stale_process()
 
 delete_stale_docker_resource()
 {
-	local docker_status=false
-	# check if docker service is running
-	systemctl is-active --quiet docker
-	if [ $? -eq 0 ]; then
-		docker_status=true
-		sudo systemctl stop docker
-	fi
+	sudo systemctl stop docker.service docker.socket
+
 	# before removing stale docker dir, you should umount related resource
 	for stale_docker_mount_point in "${stale_docker_mount_point_union[@]}"; do
 		local mount_point_union=$(mount | grep "${stale_docker_mount_point}" | awk '{print $3}')
@@ -226,7 +221,9 @@ delete_stale_docker_resource()
 			sudo rm -rf "${stale_docker_dir}"
 		fi
 	done
-	[ "${docker_status}" = true ] && sudo systemctl restart docker
+
+	sudo systemctl disable docker.service docker.socket
+	sudo rm -f /etc/systemd/system/{docker.service,docker.socket}
 }
 
 delete_stale_kata_resource()
@@ -310,6 +307,7 @@ delete_containerd_cri_stale_resource() {
 	# remove configuration files
 	sudo rm -f /etc/containerd/config.toml
 	sudo rm -f /etc/crictl.yaml
+	sudo rm -f /etc/systemd/system/containerd.service
 }
 
 gen_clean_arch() {
@@ -336,7 +334,8 @@ gen_clean_arch() {
 	info "Remove installed kubernetes packages and configuration"
 	if [ "$ID" == ubuntu ]; then
 		sudo rm -rf /etc/systemd/system/kubelet.service.d
-		sudo apt-get purge kubeadm kubelet kubectl -y
+		sudo apt-get remove kubeadm kubelet kubectl docker.io docker-ce containerd.io docker-ce-cli -y
+		sudo apt autoremove -y
 	fi
 	# Remove existing CNI configurations and binaries.
 	sudo sh -c 'rm -rf /opt/cni/bin/*'
