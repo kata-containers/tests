@@ -67,6 +67,17 @@ esac
 # Check no there are no kata processes from previous tests.
 check_processes
 
+# Verify that there are not previous kubernetes installations
+kubernetes_file_path="/etc/kubernetes"
+if [ -d "${kubernetes_file_path}/manifests" ]; then
+	sudo rmdir "${kubernetes_file_path}/manifests"
+fi
+
+if [ -d "${kubernetes_file_path}/pki" ]; then
+	sudo rmdir "${kubernetes_file_path}/pki"
+fi
+
+
 # Remove existing CNI configurations:
 cni_config_dir="/etc/cni/net.d"
 cni_interface="cni0"
