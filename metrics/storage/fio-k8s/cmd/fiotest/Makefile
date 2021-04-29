@@ -1,7 +1,7 @@
 #
-## Copyright (c) 2021 Intel Corporation
+# Copyright (c) 2021 Intel Corporation
 #
-## SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: Apache-2.0
 #
 
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))

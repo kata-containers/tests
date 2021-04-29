@@ -144,7 +144,7 @@ func (c fioTestConfig) run() (result fioResult, err error) {
 	}
 
 	testDir := path.Join(c.outputDir, filepath.Base(c.jobFile))
-	err = os.MkdirAll(testDir, 0744)
+	err = os.MkdirAll(testDir, 0775)
 	if err != nil {
 		return result, errors.Wrapf(err, "failed to create test directory for :%s", c.jobFile)
 	}
@@ -215,7 +215,7 @@ func runFioJobs(testDirPath string, cfg fioTestConfig) (results []fioResult, err
 		log.Infof("IOPS_w:%f", r.Jobs[0].Write.IOPS)
 
 		waitTime := 5
-		log.Debugf("Sleep %d seconds(if not wait sometimes create another pod timesout)")
+		log.Debugf("Sleep %d seconds(if not wait sometimes create another pod timesout)", waitTime)
 		time.Sleep(time.Duration(waitTime) * time.Second)
 	}
 	return results, err
@@ -344,7 +344,7 @@ func main() {
 
 			log.Infof("Results will be created in %s", cfg.outputDir)
 
-			err = os.MkdirAll(cfg.outputDir, 0744)
+			err = os.MkdirAll(cfg.outputDir, 0775)
 			if err != nil {
 				return err
 			}

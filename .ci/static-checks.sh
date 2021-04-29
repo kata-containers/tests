@@ -455,6 +455,7 @@ static_check_license_headers()
 			--exclude=".gitignore" \
 			--exclude="Gopkg.lock" \
 			--exclude="*.gpl.c" \
+			--exclude="*.ipynb" \
 			--exclude="*.jpg" \
 			--exclude="*.json" \
 			--exclude="LICENSE" \
