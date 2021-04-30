@@ -96,10 +96,6 @@ else ifeq ($(ARCH),$(filter $(ARCH), aarch64 s390x ppc64le))
 else ifneq (${FOCUS},)
 	./ginkgo -failFast -v -focus "${FOCUS}" -skip "${SKIP}" \
 		./integration/docker/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT}
-else ifeq (centos7,$(ID)$(VERSION_ID))
-# Run tests sequentially, parallel tests fail randomly in Centos 7
-	./ginkgo -failFast -v -skip "${SKIP}" \
-		./integration/docker/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT}
 else
 # Run tests in parallel, skip tests that need to be run serialized
 	./ginkgo -failFast -p -stream -v -skip "${SKIP}" -skip "\[Serial Test\]" \
