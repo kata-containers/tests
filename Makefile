@@ -110,10 +110,6 @@ else
 	bash sanity/check_sanity.sh
 endif
 
-crio:
-	bash .ci/install_bats.sh
-	RUNTIME=${RUNTIME} ./integration/cri-o/cri-o.sh
-
 docker-stability:
 	systemctl is-active --quiet docker || sudo systemctl start docker
 	cd integration/stability && \
@@ -153,10 +149,6 @@ cri-containerd:
 
 log-parser:
 	make -C cmd/log-parser
-
-openshift:
-	bash -f .ci/install_bats.sh
-	bash -f integration/openshift/run_openshift_tests.sh
 
 pentest:
 	bash -f pentest/all.sh
@@ -200,7 +192,6 @@ help:
 .PHONY: \
 	check \
 	checkcommits \
-	crio \
 	docker \
 	docker-stability \
 	filesystem \
@@ -210,7 +201,6 @@ help:
 	kubernetes \
 	list-install-targets \
 	log-parser \
-	openshift \
 	pentest \
 	sandbox-cgroup \
 	test \

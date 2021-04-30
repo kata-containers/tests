@@ -7,15 +7,23 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
-issue="https://github.com/kata-containers/tests/issues/2574"
+issue="https://github.com/kata-containers/tests/issues/3472"
 
 setup() {
+        if [ "$CI_JOB" == "CRIO_K8S" ]; then
+                skip "test not working on CRI-O, see: ${issue}"
+        fi
+
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	pod_name="sysctl-test"
 	get_pod_config_dir
 }
 
 @test "Setting sysctl" {
+        if [ "$CI_JOB" == "CRIO_K8S" ]; then
+                skip "test not working on CRI-O, see: ${issue}"
+        fi
+
 	# Create pod
 	kubectl apply -f "${pod_config_dir}/pod-sysctl.yaml"
 
@@ -29,6 +37,10 @@ setup() {
 }
 
 teardown() {
+        if [ "$CI_JOB" == "CRIO_K8S" ]; then
+                skip "test not working on CRI-O, see: ${issue}"
+        fi
+
 	# Debugging information
 	kubectl describe "pod/$pod_name"
 

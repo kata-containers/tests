@@ -35,6 +35,68 @@ make
 sudo -E make install
 popd
 
+echo "Configure registries"
+sudo mkdir -p /etc/containers/registries.conf.d/
+cat <<EOF| sudo tee "/etc/containers/registries.conf.d/ciregistries.conf"
+unqualified-search-registries = ["registry.fedoraproject.org", "registry.access.redhat.com", "registry.centos.org", "docker.io", "registry-proxy.engineering.redhat.com"]
+
+[aliases]
+  # centos
+  "centos" = "quay.io/centos/centos"
+  # containers
+  "skopeo" = "quay.io/skopeo/stable"
+  "buildah" = "quay.io/buildah/stable"
+  "podman" = "quay.io/podman/stable"
+  # docker
+  "alpine" = "docker.io/library/alpine"
+  "docker" = "docker.io/library/docker"
+  "registry" = "docker.io/library/registry"
+  "hello-world" = "docker.io/library/hello-world"
+  "swarm" = "docker.io/library/swarm"
+  # Fedora
+  "fedora-minimal" = "registry.fedoraproject.org/fedora-minimal"
+  "fedora" = "registry.fedoraproject.org/fedora"
+  # openSUSE
+  "opensuse/tumbleweed" = "registry.opensuse.org/opensuse/tumbleweed"
+  "opensuse/tumbleweed-dnf" = "registry.opensuse.org/opensuse/tumbleweed-dnf"
+  "opensuse/tumbleweed-microdnf" = "registry.opensuse.org/opensuse/tumbleweed-microdnf"
+  "opensuse/leap" = "registry.opensuse.org/opensuse/leap"
+  "opensuse/busybox" = "registry.opensuse.org/opensuse/busybox"
+  "tumbleweed" = "registry.opensuse.org/opensuse/tumbleweed"
+  "tumbleweed-dnf" = "registry.opensuse.org/opensuse/tumbleweed-dnf"
+  "tumbleweed-microdnf" = "registry.opensuse.org/opensuse/tumbleweed-microdnf"
+  "leap" = "registry.opensuse.org/opensuse/leap"
+  "tw-busybox" = "registry.opensuse.org/opensuse/busybox"
+  # SUSE
+  "suse/sle15" = "registry.suse.com/suse/sle15"
+  "suse/sles12sp5" = "registry.suse.com/suse/sles12sp5"
+  "suse/sles12sp4" = "registry.suse.com/suse/sles12sp4"
+  "suse/sles12sp3" = "registry.suse.com/suse/sles12sp3"
+  "sle15" = "registry.suse.com/suse/sle15"
+  "sles12sp5" = "registry.suse.com/suse/sles12sp5"
+  "sles12sp4" = "registry.suse.com/suse/sles12sp4"
+  "sles12sp3" = "registry.suse.com/suse/sles12sp3"
+  # Red Hat Enterprise Linux
+  "rhel" = "registry.access.redhat.com/rhel"
+  "rhel6" = "registry.access.redhat.com/rhel6"
+  "rhel7" = "registry.access.redhat.com/rhel7"
+  "ubi7" = "registry.access.redhat.com/ubi7"
+  "ubi7-init" = "registry.access.redhat.com/ubi7-init"
+  "ubi7-minimal" = "registry.access.redhat.com/ubi7-minimal"
+  "ubi8" = "registry.access.redhat.com/ubi8"
+  "ubi8-minimal" = "registry.access.redhat.com/ubi8-minimal"
+  "ubi8-init" = "registry.access.redhat.com/ubi8-init"
+  "ubi8-micro" = "registry.access.redhat.com/ubi8-micro"
+  "ubi8/ubi" = "registry.access.redhat.com/ubi8/ubi"
+  "ubi8/ubi-minimal" = "registry.access.redhat.com/ubi8-minimal"
+  "ubi8/ubi-init" = "registry.access.redhat.com/ubi8-init"
+  "ubi8/ubi-micro" = "registry.access.redhat.com/ubi8-micro"
+  # Debian
+  "debian" = "docker.io/library/debian"
+  # Oracle Linux
+  "oraclelinux" = "container-registry.oracle.com/os/oraclelinux"
+EOF
+
 echo "Get CRI-O sources"
 kubernetes_sigs_org="github.com/kubernetes-sigs"
 ghprbGhRepository="${ghprbGhRepository:-}"
@@ -42,14 +104,7 @@ crio_repo=$(get_version "externals.crio.url")
 # remove https:// from the url
 crio_repo="${crio_repo#*//}"
 
-# Remove CRI-O repository if already exists on Fedora
-if [ "$ID" == "fedora" ]; then
-	if [ -d "${GOPATH}/src/${crio_repo}" ]; then
-		sudo rm -r "${GOPATH}/src/${crio_repo}"
-	fi
-fi
-
-crio_version=$(get_version "externals.crio.version")
+crio_branch=$(get_version "externals.crio.branch")
 crictl_repo=$(get_version "externals.critools.url")
 crictl_version=$(get_version "externals.critools.version")
 crictl_tag_prefix="v"
@@ -58,34 +113,20 @@ go get -d "$crio_repo" || true
 
 if [ "$ghprbGhRepository" != "${crio_repo/github.com\/}" ]
 then
-	# For Fedora, we use CRI-O version that is compatible with the
-	# Openshift version that we support (usually the latest stable).
-	# For other distros, we use the CRI-O version that is compatible with
-	# the kubernetes version that we support (usually latest stable).
-	# Sometimes these versions differ.
-	if [ "$ID" == "fedora" ]; then
-		if [ "$KUBERNETES" == "yes" ]; then
-			crio_version=$(get_version "externals.crio.version")
-		else
-			crio_version=$(get_version "externals.crio.meta.openshift")
-		fi
-		crictl_version=$(get_version "externals.crio.meta.crictl")
-		crictl_tag_prefix=""
-	fi
-
 	# Only fetch and checkout if we are not testing changes in the cri-o repo. 
 	pushd "${GOPATH}/src/${crio_repo}"
 	git fetch
-	git checkout "${crio_version}"
+	git checkout "${crio_branch}"
 	popd
 fi
 
 pushd "${GOPATH}/src/${crio_repo}"
 echo "Installing CRI-O"
 make clean
-make BUILDTAGS='exclude_graphdriver_btrfs exclude_graphdriver_devicemapper libdm_no_deferred_remove'
+make BUILDTAGS='seccomp selinux exclude_graphdriver_btrfs exclude_graphdriver_devicemapper libdm_no_deferred_remove'
 make test-binaries
 sudo -E PATH=$PATH sh -c "make install"
+sudo -E PATH=$PATH sh -c 'crio -d "" --cgroup-manager "systemd" --storage-driver "overlay" --storage-opt "overlay.override_kernel_check=1" config > crio.conf'
 sudo -E PATH=$PATH sh -c "make install.config"
 
 containers_config_path="/etc/containers"
@@ -98,16 +139,6 @@ popd
 echo "Installing CRI Tools"
 crictl_url="${crictl_repo}/releases/download/v${crictl_version}/crictl-${crictl_tag_prefix}${crictl_version}-linux-$(${cidir}/kata-arch.sh -g).tar.gz"
 curl -Ls "$crictl_url" | sudo tar xfz - -C /usr/local/bin
-
-# Change CRI-O configuration options
-crio_config_file="/etc/crio/crio.conf"
-
-# Change socket format and pause image used for infra containers
-# Needed for cri-o 1.10
-if crio --version | grep '1.10'; then
-	sudo sed -i 's|/var|unix:///var|' /etc/crictl.yaml
-	sudo sed -i 's|kubernetes/pause|k8s.gcr.io/pause|' "$crio_config_file"
-fi
 
 echo "Install runc for CRI-O"
 runc_version=$(get_version "externals.runc.version")
@@ -125,15 +156,6 @@ done
 make BUILDTAGS="$(IFS=" "; echo "${build_union[*]}")"
 sudo -E install -D -m0755 runc "/usr/local/bin/crio-runc"
 popd
-
-echo "Add docker.io registry to pull images"
-# Matches cri-o 1.10 file format
-sudo sed -i 's/^registries = \[/registries = \[ "docker.io"/' "$crio_config_file"
-# Matches cri-o 1.12 file format
-sudo sed -i 's/^#registries = \[/registries = \[ "docker.io" \] /' "$crio_config_file"
-
-echo "Set cgroup manager to cgroupfs"
-sudo sed -i 's/\(^cgroup_manager =\) \"systemd\"/\1 \"cgroupfs\"/' "$crio_config_file"
 
 service_path="/etc/systemd/system"
 crio_service_file="${cidir}/data/crio.service"

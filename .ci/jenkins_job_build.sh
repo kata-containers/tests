@@ -46,8 +46,6 @@ init_ci_flags() {
 	export KATA_HYPERVISOR=""
 	# Install k8s
 	export KUBERNETES="no"
-        # install openshift
-	export OPENSHIFT="no"
 	# Run a subset of k8s e2e test
 	# Will run quick to ensure e2e setup is OK
 	# - Use false for PRs
@@ -228,25 +226,21 @@ case "${CI_JOB}" in
 	export CRI_CONTAINERD="yes"
 	export KUBERNETES="yes"
 	export CRIO="no"
-	export OPENSHIFT="no"
 	;;
 "CRI_CONTAINERD_K8S_COMPLETE")
 	export CRI_CONTAINERD="yes"
 	export KUBERNETES="yes"
 	export CRIO="no"
-	export OPENSHIFT="no"
 	;;
 "CRI_CONTAINERD_K8S_MINIMAL")
 	export MINIMAL_CONTAINERD_K8S_E2E="true"
 	export CRI_CONTAINERD="yes"
 	export KUBERNETES="yes"
 	export CRIO="no"
-	export OPENSHIFT="no"
 	;;
 "CRIO_K8S")
 	export KUBERNETES="yes"
 	export CRIO="yes"
-	export OPENSHIFT="no"
 	export CRI_CONTAINERD="no"
 	# test images in cri-o repo are mostly x86_64 specific, so ignore cri-o intergration tests on aarch64, etc.
 	if [ "$arch" == "x86_64" ]; then
@@ -258,7 +252,6 @@ case "${CI_JOB}" in
 	export CRI_CONTAINERD="no"
 	export KUBERNETES="yes"
 	export CRIO="yes"
-	export OPENSHIFT="no"
 	;;
 "CLOUD-HYPERVISOR-K8S-CRIO")
 	init_ci_flags
@@ -296,7 +289,6 @@ case "${CI_JOB}" in
 	export CRIO="no"
 	export KATA_HYPERVISOR="firecracker"
 	export KUBERNETES="yes"
-	export OPENSHIFT="no"
 ;;
 "VFIO")
 	init_ci_flags
@@ -305,7 +297,6 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
 	export KUBERNETES="no"
-	export OPENSHIFT="no"
 	;;
 "VIRTIOFS_EXPERIMENTAL")
 	init_ci_flags
@@ -322,7 +313,6 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
 	export KUBERNETES="yes"
-	export OPENSHIFT="no"
 	export METRICS_CI=1
 ;;
 esac
