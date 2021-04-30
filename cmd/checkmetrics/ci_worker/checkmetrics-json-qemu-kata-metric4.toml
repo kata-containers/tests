@@ -71,16 +71,3 @@ checktype = "mean"
 midval = 48055.25
 minpercent = 10.0
 maxpercent = 10.0
-
-[[metric]]
-name = "network-iperf3-bandwidth"
-type = "json"
-description = "measure container bandwidth using iperf3"
-# Min and Max values to set a 'range' that
-# the median of the CSV Results data must fall
-# within (inclusive)
-checkvar = ".\"network-iperf3-bandwidth\".Results | .[] | .bandwidth.Result"
-checktype = "mean"
-midval = 30811123135.60
-minpercent = 10.0
-maxpercent = 10.0
