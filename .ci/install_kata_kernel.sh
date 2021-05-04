@@ -17,7 +17,7 @@ source "${cidir}/lib.sh"
 source "/etc/os-release" || source "/usr/lib/os-release"
 
 latest_build_url="${jenkins_url}/job/kata-containers-2.0-kernel-vanilla-$(uname -m)-nightly/${cached_artifacts_path}"
-experimental_latest_build_url="${jenkins_url}/job/kernel-experimental-nightly-$(uname -m)/${cached_artifacts_path}"
+experimental_latest_build_url="${jenkins_url}/job/kata-containers-2.0-kernel-experimental-$(uname -m)-nightly/${cached_artifacts_path}"
 PREFIX="${PREFIX:-/usr}"
 kernel_dir="${DESTDIR:-}${PREFIX}/share/kata-containers"
 
@@ -39,11 +39,10 @@ trap exit_handler EXIT
 get_current_kernel_version() {
 	if [ "$experimental_kernel" == "true" ]; then
 		kernel_version=$(get_version "assets.kernel-experimental.tag")
-		echo "${kernel_version}"
 	else
 		kernel_version=$(get_version "assets.kernel.version")
-		echo "${kernel_version/v/}"
 	fi
+	echo "${kernel_version/v/}"
 }
 
 get_kata_config_version() {
@@ -130,6 +129,7 @@ main() {
 	if [ "${experimental_kernel}" == "false" ]; then
 		cached_kernel_version=$(curl -sfL "${latest_build_url}/latest") || cached_kernel_version="none"
 	else
+		current_kernel_version+="-experimental"
 		cached_kernel_version=$(curl -sfL "${experimental_latest_build_url}/latest") || cached_kernel_version="none"
 	fi
 	info "current kernel : ${current_kernel_version}"
