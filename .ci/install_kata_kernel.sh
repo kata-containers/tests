@@ -21,9 +21,7 @@ experimental_latest_build_url="${jenkins_url}/job/kata-containers-2.0-kernel-exp
 PREFIX="${PREFIX:-/usr}"
 kernel_dir="${DESTDIR:-}${PREFIX}/share/kata-containers"
 
-kata_repo="github.com/kata-containers/kata-containers"
-export GOPATH=${GOPATH:-${HOME}/go}
-kernel_repo_dir="${GOPATH}/src/${kata_repo}/tools/packaging"
+kernel_repo_dir="${kata_repo_dir}/tools/packaging"
 kernel_arch="$(arch)"
 readonly tmp_dir="$(mktemp -d -t install-kata-XXXXXXXXXXX)"
 packaged_kernel="kata-linux-container"
