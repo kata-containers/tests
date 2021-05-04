@@ -55,7 +55,7 @@ run() {
 		bash density/memory_usage_inside_container.sh
 
 		# Run the time tests
-		bash time/launch_times.sh -i registry.fedoraproject.org/fedora:latest -n 20
+		bash time/launch_times.sh -i mirror.gcr.io/library/ubuntu:latest -n 20
 	fi
 
 	# Run storage tests
