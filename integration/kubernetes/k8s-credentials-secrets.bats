@@ -33,7 +33,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-secret.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# List the files
 	cmd="ls /tmp/secret-volume"
@@ -44,7 +44,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-secret-env.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$second_pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$second_pod_name"
 
 	# Display environment variables
 	second_cmd="printenv"

@@ -54,7 +54,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pv-pod.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	cmd="cat /mnt/index.html"
 	kubectl exec $pod_name -- sh -c "$cmd" | grep "$msg"
