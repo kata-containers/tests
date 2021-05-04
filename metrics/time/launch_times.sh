@@ -80,7 +80,7 @@ run_workload() {
 
 	# Run the image and command and capture the results into an array...
 	declare workload_result
-	readarray -n 0 workload_result < <(ctr run --rm --runtime=${CTR_RUNTIME} ${IMAGE} test /bin/bash -c "$DATECMD $DMESGCMD")
+	readarray -n 0 workload_result < <(ctr run --rm --runtime=${CTR_RUNTIME} ${IMAGE} test bash -c "$DATECMD $DMESGCMD")
 
 	end_time=$($DATECMD)
 
@@ -166,7 +166,7 @@ EOF
 	# between each of our 'test' containers. The aim being to see if our launch times
 	# are linear with the number of running containers or not
 	if [ -n "$SCALING" ]; then
-		ctr run --runtime=${CTR_RUNTIME} -d ${IMAGE} test /bin/bash -c "tail -f /dev/null"
+		ctr run --runtime=${CTR_RUNTIME} -d ${IMAGE} test bash -c "tail -f /dev/null"
 	fi
 }
 
