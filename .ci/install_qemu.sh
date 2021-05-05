@@ -26,7 +26,7 @@ QEMU_ARCH=$(${cidir}/kata-arch.sh -d)
 PACKAGING_DIR="${kata_repo_dir}/tools/packaging"
 ARCH=$("${cidir}"/kata-arch.sh -d)
 QEMU_TAR="kata-static-qemu.tar.gz"
-qemu_latest_build_url="${jenkins_url}/job/qemu-nightly-$(uname -m)/${cached_artifacts_path}"
+qemu_latest_build_url="${jenkins_url}/job/kata-containers-2.0-qemu-$(uname -m)/${cached_artifacts_path}"
 
 # option "--shallow-submodules" was introduced in git v2.9.0
 GIT_SHADOW_VERSION="2.9.0"
@@ -149,12 +149,27 @@ fi
 main() {
 	case "$QEMU_ARCH" in
 		"x86_64")
-			cached_qemu_version=$(curl -sfL "${qemu_latest_build_url}/latest") || cached_qemu_version="none"
+			# latest is "version sha256sum"
+			latest=$(curl -sfL "${qemu_latest_build_url}/latest") || latest="none"
+			cached_qemu_version=$(echo $latest | awk '{print $1}')
 			info "current QEMU version: $CURRENT_QEMU_VERSION"
 			info "cached QEMU version: $cached_qemu_version"
 
 			if [ -n "${FORCE_BUILD_QEMU:-}" ]; then
 				build_and_install_qemu
+			elif [ "$CURRENT_QEMU_VERSION" == "$cached_qemu_version" ]; then
+				# Let's check if the current sha256sum matches
+				# with the cached, otherwise build QEMU locally
+				current_sha256sum="$(calc_qemu_files_sha256sum)"
+				[ -n "$current_sha256sum" ] || \
+					die "Failed to calculate SHA-256 for QEMU"
+				cached_sha256sum="$(echo $latest | awk '{print $2}')"
+				if [ "$current_sha256sum" == "$cached_sha256sum" ]; then
+					install_cached_qemu
+				else
+					warn "Mismatch of cached ($cached_sha256sum) and expected ($current_sha256sum) versions"
+					build_and_install_static_qemu
+				fi
 			else
 				build_and_install_static_qemu
 			fi

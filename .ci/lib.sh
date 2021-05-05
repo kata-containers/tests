@@ -417,3 +417,52 @@ get_pr_changed_file_details()
 {
 	get_pr_changed_file_details_full | grep -v "vendor/"
 }
+
+
+# Gets a list of files and/or directories to build a SHA-256 from their contents.
+# Returns the SHA-256 hash if succeeded, otherwise an empty string.
+sha256sum_from_files() {
+	local files_in=${1:-}
+	local files=""
+	local shasum=""
+
+	# Process the input files:
+	#  - discard the files/directories that don't exist.
+	#  - find the files if it is a directory
+	for f in $files_in; do
+		if [ -d "$f" ]; then
+			files+=" $(find $f -type f)"
+		elif [ -f "$f" ]; then
+			files+=" $f"
+		fi
+	done
+	# Return in case there is none input files.
+	[ -n "$files" ] || return 0
+
+	# Alphabetically sorting the files.
+	files="$(echo $files | tr ' ' '\n' | LC_ALL=C sort -u)"
+	# Concate the files and calculate a hash.
+	shasum="$(cat $files | sha256sum -b)" || true
+	if [ -n "$shasum" ];then
+		# Return only the SHA field.
+		echo $(awk '{ print $1 }' <<< $shasum)
+	fi
+}
+
+# Calculate a SHA-256 from all the files used to build QEMU.
+# Use this function to detect changes on build scripts which should force a
+# local build of QEMU.
+#
+# Note: bear in mind it is not used a comprehensive list of files but only
+# those that seems sufficient to detect changes. For example, this script is
+# sourced by many others but it is not considered.
+calc_qemu_files_sha256sum() {
+	local pkg_dir="${kata_repo_dir}/tools/packaging"
+	local files="${pkg_dir}/qemu \
+		${pkg_dir}/static-build/qemu \
+		${pkg_dir}/static-build/qemu.blacklist \
+		${pkg_dir}/static-build/scripts \
+		${pkg_dir}/scripts"
+
+	sha256sum_from_files $files
+}
