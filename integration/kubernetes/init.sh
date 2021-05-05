@@ -70,7 +70,7 @@ esac
 check_processes
 
 # Remove existing CNI configurations:
-cni_config_dir="/etc/cni/net.d"
+cni_config_dir="/etc/cni"
 cni_interface="cni0"
 sudo rm -rf /var/lib/cni/networks/*
 sudo rm -rf "${cni_config_dir}"/*
@@ -109,6 +109,13 @@ trap 'sudo -E sh -c "rm -r "${kubeadm_config_file}""' EXIT
 if [ "${BAREMETAL}" == true ] && [[ $(wc -l /proc/swaps | awk '{print $1}') -gt 1 ]]; then
 	sudo swapoff -a || true
 fi
+
+#reinstall kubelet to do deep cleanup
+if [ "$(command -v kubelet)" != "" ]; then
+	info "reinstall kubeadm, kubelet before initialize k8s"
+	bash -f "${SCRIPT_PATH}/../../.ci/install_kubernetes.sh"
+fi
+
 sudo -E kubeadm init --config "${kubeadm_config_file}"
 
 mkdir -p "$HOME/.kube"
