@@ -31,8 +31,6 @@ setup() {
 	[ "${TEST_INITRD}" == "yes" ] && skip "test not working see: ${issue}"
 	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
 
-	wait_time=90
-	sleep_time=3
 	volume_name="pv-volume"
 	volume_claim="pv-claim"
 
