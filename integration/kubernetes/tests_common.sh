@@ -14,6 +14,10 @@
 wait_time=90
 sleep_time=3
 
+# Timeout for use with `kubectl wait`, unless it needs to wait longer.
+# Note: try to keep timeout and wait_time equal.
+timeout=90s
+
 get_pod_config_dir() {
 	pod_config_dir="${BATS_TEST_DIRNAME}/runtimeclass_workloads"
 	info "k8s configured to use runtimeclass"
