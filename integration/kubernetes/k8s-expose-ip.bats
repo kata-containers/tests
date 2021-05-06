@@ -12,7 +12,7 @@
 # See detailed info in PR#2157(https://github.com/kata-containers/tests/pull/2157)
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
-load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 setup() {
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"

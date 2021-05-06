@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
-load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+load "${BATS_TEST_DIRNAME}/tests_common.sh"
 source "/etc/os-release" || source "/usr/lib/os-release"
 
 issue="https://github.com/kata-containers/runtime/issues/1834"
