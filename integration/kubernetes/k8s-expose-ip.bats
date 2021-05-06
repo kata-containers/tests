@@ -25,8 +25,8 @@ setup() {
 }
 
 @test "Expose IP Address" {
-	wait_time=20
-	sleep_time=2
+	wait_time=90
+	sleep_time=3
 
 	# Create deployment
 	sed -e "s#\${agnhost_image}#${agnhost_name}:${agnhost_version}#" \
@@ -34,7 +34,7 @@ setup() {
 		kubectl create -f -
 
 	# Check deployment creation
-	cmd="kubectl wait --for=condition=Available deployment/${deployment}"
+	cmd="kubectl wait --timeout=$timeout --for=condition=Available deployment/${deployment}"
 	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 
 	# Check pods are running

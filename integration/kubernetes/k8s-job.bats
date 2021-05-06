@@ -18,8 +18,8 @@ setup() {
 @test "Run a job to completion" {
 	skip "test not working see: ${issue}"
 	job_name="job-pi-test"
-	wait_time=60
-	sleep_time=2
+	wait_time=90
+	sleep_time=3
 
 	# Create job
 	kubectl apply -f "${pod_config_dir}/job.yaml"

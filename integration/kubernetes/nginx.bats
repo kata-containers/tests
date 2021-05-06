@@ -22,7 +22,7 @@ setup() {
 }
 
 @test "Verify nginx connectivity between pods" {
-	wait_time=30
+	wait_time=90
 	sleep_time=3
 
 	# Create test .yaml
@@ -30,7 +30,7 @@ setup() {
 		"${pod_config_dir}/${deployment}.yaml" > "${pod_config_dir}/test-${deployment}.yaml"
 
 	kubectl create -f "${pod_config_dir}/test-${deployment}.yaml"
-	kubectl wait --for=condition=Available --timeout=60s deployment/${deployment}
+	kubectl wait --for=condition=Available --timeout=$timeout deployment/${deployment}
 	kubectl expose deployment/${deployment}
 
 	busybox_pod="test-nginx"

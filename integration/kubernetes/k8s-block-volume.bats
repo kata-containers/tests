@@ -15,8 +15,8 @@ setup() {
 	pod_name="pod-block-pv"
 	volume_name="block-loop-pv"
 	volume_claim="block-loop-pvc"
-	wait_time=10
-	sleep_time=2
+	wait_time=90
+	sleep_time=3
 	ctr_dev_path="/dev/xda"
 	vol_capacity="500M"
 
@@ -49,7 +49,7 @@ setup() {
 	tmp_pod_yaml=$(mktemp --tmpdir pod-pv.XXXXX.yaml)
 	sed -e "s|DEVICE_PATH|${ctr_dev_path}|" "${pod_config_dir}/${pod_name}.yaml" > "$tmp_pod_yaml"
 	kubectl create -f "$tmp_pod_yaml"
-	kubectl wait --for condition=ready "pod/${pod_name}"
+	kubectl wait --timeout=$timeout --for condition=ready "pod/${pod_name}"
 
 	# Verify persistent volume claim is bound
 	kubectl get "pvc/${volume_claim}" | grep "Bound"
