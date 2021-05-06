@@ -9,6 +9,11 @@
 #
 # This contains variables and functions common to all e2e tests.
 
+# Timeout options, mainly for use with waitForProcess(). Use them unless the
+# operation needs to wait longer.
+wait_time=90
+sleep_time=3
+
 get_pod_config_dir() {
 	pod_config_dir="${BATS_TEST_DIRNAME}/runtimeclass_workloads"
 	info "k8s configured to use runtimeclass"

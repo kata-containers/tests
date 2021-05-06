@@ -25,8 +25,6 @@ setup() {
 }
 
 @test "Expose IP Address" {
-	wait_time=90
-	sleep_time=3
 
 	# Create deployment
 	sed -e "s#\${agnhost_image}#${agnhost_name}:${agnhost_version}#" \

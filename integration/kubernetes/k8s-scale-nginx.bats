@@ -19,8 +19,6 @@ setup() {
 }
 
 @test "Scale nginx deployment" {
-	wait_time=90
-	sleep_time=3
 
 	sed -e "s/\${nginx_version}/${nginx_image}/" \
 		"${pod_config_dir}/${deployment}.yaml" > "${pod_config_dir}/test-${deployment}.yaml"

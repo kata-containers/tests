@@ -22,8 +22,6 @@ setup() {
 }
 
 @test "Verify nginx connectivity between pods" {
-	wait_time=90
-	sleep_time=3
 
 	# Create test .yaml
 	sed -e "s/\${nginx_version}/${nginx_image}/" \

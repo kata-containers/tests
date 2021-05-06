@@ -15,8 +15,6 @@ setup() {
 	pod_name="pod-block-pv"
 	volume_name="block-loop-pv"
 	volume_claim="block-loop-pvc"
-	wait_time=90
-	sleep_time=3
 	ctr_dev_path="/dev/xda"
 	vol_capacity="500M"
 

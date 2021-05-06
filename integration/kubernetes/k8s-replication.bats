@@ -19,8 +19,6 @@ setup() {
 @test "Replication controller" {
 	replication_name="replicationtest"
 	number_of_replicas="1"
-	wait_time=90
-	sleep_time=3
 
 	# Create yaml
 	sed -e "s/\${nginx_version}/${nginx_image}/" \

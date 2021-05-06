@@ -15,8 +15,6 @@ setup() {
 }
 
 @test "Test OOM events for pods" {
-	wait_time=90
-	sleep_time=3
 
 	# Create pod
 	kubectl create -f "${pod_config_dir}/pod-oom.yaml"
