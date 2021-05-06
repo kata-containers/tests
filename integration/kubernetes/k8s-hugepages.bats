@@ -5,7 +5,7 @@
 #
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
-load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+load "${BATS_TEST_DIRNAME}/tests_common.sh"
 issue="https://github.com/kata-containers/runtime/issues/2172"
 
 setup() {
