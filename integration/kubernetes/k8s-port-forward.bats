@@ -24,12 +24,12 @@ setup() {
 	kubectl apply -f "${pod_config_dir}/redis-master-deployment.yaml"
 
 	# Check deployment
-	kubectl wait --for=condition=Available deployment/"$deployment_name"
+	kubectl wait --timeout=$timeout --for=condition=Available deployment/"$deployment_name"
 	kubectl expose deployment/"$deployment_name"
 
 	# Get pod name
 	pod_name=$(kubectl get pods --output=jsonpath={.items..metadata.name})
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --timeout=$timeout --for=condition=Ready pod "$pod_name"
 
 	# View replicaset
 	kubectl get rs

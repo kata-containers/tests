@@ -22,8 +22,8 @@ setup() {
 	pod_name="sharevol-kata"
 	get_pod_config_dir
 	pod_logs_file=""
-	wait_time=20
-	sleep_time=2
+	wait_time=90
+	sleep_time=3
 }
 
 @test "Empty dir volumes" {

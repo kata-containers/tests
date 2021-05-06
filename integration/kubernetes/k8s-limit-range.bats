@@ -26,7 +26,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-cpu-defaults.yaml" --namespace=${namespace_name}
 
 	# Get pod specification
-	kubectl wait --for=condition=Ready pod "$pod_name" --namespace="$namespace_name"
+	kubectl wait --timeout=$timeout --for=condition=Ready pod "$pod_name" --namespace="$namespace_name"
 
 	# Check limits
 	# Find the 500 millicpus specified at the yaml
