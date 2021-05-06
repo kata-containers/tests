@@ -22,7 +22,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-oom.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Check if OOMKilled
 	cmd="kubectl get pods "$pod_name" -o yaml | yq r - 'status.containerStatuses[0].state.terminated.reason' | grep OOMKilled"
