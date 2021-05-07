@@ -35,7 +35,7 @@ typeset -r arch_func_regex="_arch_specific$"
 repo=""
 specific_branch="false"
 force="false"
-branch=${branch:-main}
+branch=${branch:-stable-2.1}
 
 # Which static check functions to consider.
 handle_funcs="all"
@@ -232,7 +232,7 @@ static_check_commits()
 	# for master branch
 	# (cd "${tests_repo_dir}" && make checkcommits)
 	# for main branch
-	(cd "${tests_repo_dir}" && make checkcommits && git remote set-branches origin 'main' && git fetch -v)
+	(cd "${tests_repo_dir}" && make checkcommits && git remote set-branches origin 'stable-2.1' && git fetch -v)
 
 	# Check the commits in the branch
 	{
@@ -242,7 +242,7 @@ static_check_commits()
 			--ignore-fixes-for-subsystem "release" \
 			--verbose \
 			HEAD \
-			main; \
+			stable-2.1; \
 			rc="$?";
 	} || true
 
@@ -1202,7 +1202,7 @@ main()
 	for func in $all_check_funcs
 	do
 		if [ "$func" = "static_check_commits" ]; then
-			if [ -n "$TRAVIS_BRANCH" ] && [ "$TRAVIS_BRANCH" != "main" ]
+			if [ -n "$TRAVIS_BRANCH" ] && [ "$TRAVIS_BRANCH" != "stable-2.1" ]
 			then
 				echo "Skipping checkcommits"
 				echo "See issue: https://github.com/kata-containers/tests/issues/632"
