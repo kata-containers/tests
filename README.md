@@ -33,9 +33,9 @@ We provide several tests to ensure Kata-Containers run on different scenarios
 and with different container managers.
 
 1. Integration tests to ensure compatibility with:
-   - [Kubernetes](https://github.com/kata-containers/tests/tree/2.0-dev/integration/kubernetes)
-   - [Containerd](https://github.com/kata-containers/tests/tree/2.0-dev/integration/containerd)
-2. [Stability tests](https://github.com/kata-containers/tests/tree/2.0-dev/integration/stability)
+   - [Kubernetes](https://github.com/kata-containers/tests/tree/stable-2.0/integration/kubernetes)
+   - [Containerd](https://github.com/kata-containers/tests/tree/stable-2.0/integration/containerd)
+2. [Stability tests](https://github.com/kata-containers/tests/tree/stable-2.0/integration/stability)
 
 ## CI Content
 
