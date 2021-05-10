@@ -21,7 +21,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-number-cpu.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	retries="10"
 	max_number_cpus="3"

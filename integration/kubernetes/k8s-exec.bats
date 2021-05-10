@@ -21,7 +21,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/busybox-pod.yaml"
 
 	# Get pod specification
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Run commands in Pod
 	## Cases for -it options
