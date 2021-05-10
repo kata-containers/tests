@@ -122,15 +122,6 @@ else
 	bash sanity/check_sanity.sh
 endif
 
-crio:
-	bash .ci/install_bats.sh
-	RUNTIME=${RUNTIME} ./integration/cri-o/cri-o.sh
-
-docker-compose:
-	bash .ci/install_bats.sh
-	cd integration/docker-compose && \
-	bats docker-compose.bats
-
 docker-stability:
 	systemctl is-active --quiet docker || sudo systemctl start docker
 	cd integration/stability && \
@@ -250,8 +241,6 @@ help:
 	compatibility \
 	check \
 	checkcommits \
-	crio \
-	debug-console \
 	docker \
 	docker-compose \
 	docker-stability \

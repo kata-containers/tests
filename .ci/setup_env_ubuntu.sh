@@ -34,9 +34,9 @@ declare -A packages=( \
 	[bison_binary]="bison" \
 	[libudev-dev]="libudev-dev" \
 	[build_tools]="build-essential python pkg-config zlib1g-dev" \
-	[crio_dependencies_for_ubuntu]="libdevmapper-dev btrfs-tools util-linux" \
+	[crio_dependencies_for_ubuntu]="libdevmapper-dev util-linux" \
 	[metrics_dependencies]="smem jq" \
-	[cri-containerd_dependencies]="libseccomp-dev libapparmor-dev btrfs-tools  make gcc pkg-config" \
+	[cri-containerd_dependencies]="btrfs-progs libseccomp-dev libapparmor-dev make gcc pkg-config" \
 	[crudini]="crudini" \
 	[procenv]="procenv" \
 	[haveged]="haveged" \
@@ -44,8 +44,16 @@ declare -A packages=( \
 	[redis]="redis-server" \
 )
 
+if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 20.04" | bc -q)" == "1" ]; then
+	packages[cri_containerd_dependencies]+=" libbtrfs-dev"
+fi
+
 if [ "$(uname -m)" == "x86_64" ] && [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 18.04" | bc -q)" == "1" ]; then
 	packages[qemu_dependencies]+=" libpmem-dev"
+fi
+
+if [ "$(echo "${VERSION_ID} <= 18.04" | bc -q)" == "1" ]; then
+	packages[crio_dependencies_for_ubuntu]+=" btrfs-tools"
 fi
 
 rust_agent_pkgs=()
