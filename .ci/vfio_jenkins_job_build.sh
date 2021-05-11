@@ -24,7 +24,7 @@ https_proxy=${https_proxy:-}
 vm_ip="127.0.15.1"
 vm_port="10022"
 # Don't save data in /tmp, we need it after rebooting the system
-data_dir="${HOME}/k8s-vfio-test"
+data_dir="${HOME}/functional-vfio-test"
 ssh_key_file="${data_dir}/key"
 arch=$(uname -m)
 artifacts_dir="${WORKSPACE}/artifacts"
@@ -62,7 +62,7 @@ create_user_data() {
 	ssh_pub_key="$(cat "${ssh_pub_key_file}")"
 	dnf_proxy=""
 	service_proxy=""
-	docker_user_proxy=""
+	docker_user_proxy="{}"
 	environment=$(env | egrep "ghprb|WORKSPACE|KATA|GIT|JENKINS|_PROXY|_proxy" | \
 	                    sed -e "s/'/'\"'\"'/g" \
 	                        -e "s/\(^[[:alnum:]_]\+\)=/\1='/" \
@@ -105,9 +105,6 @@ ${environment}
   path: /etc/systemd/system/docker.service.d/http-proxy.conf
 - content: |
     ${service_proxy}
-  path: /etc/systemd/system/kubelet.service.d/http-proxy.conf
-- content: |
-    ${service_proxy}
   path: /etc/systemd/system/containerd.service.d/http-proxy.conf
 - content: |
     ${docker_user_proxy}
@@ -138,19 +135,35 @@ ${environment}
     export GOPATH=\${WORKSPACE}/go
     export PATH=\${GOPATH}/bin:/usr/local/go/bin:/usr/sbin:\${PATH}
     export GOROOT="/usr/local/go"
+    export KUBERNETES="no"
+    export ghprbPullId
+    export ghprbTargetBranch
 
     # Make sure the packages were installed
     # Sometimes cloud-init is unable to install them
     sudo dnf makecache
     sudo dnf install -y git make pciutils
 
-    tests_repo_dir="\${GOPATH}/src/github.com/kata-containers/tests"
+    git config --global user.email "foo@bar"
+    git config --global user.name "Foo Bar"
+
+    tests_repo="github.com/kata-containers/tests"
+    tests_repo_dir="\${GOPATH}/src/\${tests_repo}"
     mkdir -p "\${tests_repo_dir}"
+    git clone https://\${tests_repo} "\${tests_repo_dir}"
+    cd "\${tests_repo_dir}"
 
-    trap "cd \${tests_repo_dir} && sudo -E PATH=\$PATH .ci/teardown.sh ${artifacts_dir} || true; sudo chown -R \${USER} ${artifacts_dir}" EXIT
+    trap "cd \${tests_repo_dir}; sudo -E PATH=\$PATH .ci/teardown.sh ${artifacts_dir} || true; sudo chown -R \${USER} ${artifacts_dir}" EXIT
 
-    curl -sLO https://raw.githubusercontent.com/kata-containers/tests/master/.ci/ci_entry_point.sh
-    bash -f ci_entry_point.sh "\${GIT_URL}"
+    if echo \${GIT_URL} | grep -q tests; then
+        pr_number="\${ghprbPullId}"
+        pr_branch="PR_\${pr_number}"
+        git fetch origin "pull/\${pr_number}/head:\${pr_branch}"
+        git checkout "\${pr_branch}"
+        git rebase "origin/\${ghprbTargetBranch}"
+    fi
+
+    sudo -E PATH=\$PATH .ci/jenkins_job_build.sh "\$(echo \${GIT_URL} | sed -e 's|https://||' -e 's|.git||')"
 
   path: /home/${USER}/run.sh
   permissions: '0755'
@@ -214,7 +227,7 @@ run_vm() {
 	disable_modern="off"
 	hostname="$(hostname)"
 	memory="16384M"
-	cpus=4
+	cpus=$(nproc)
 	machine_type="q35"
 
 	/usr/bin/qemu-system-${arch} -m "${memory}" -smp cpus="${cpus}" \
@@ -237,7 +250,7 @@ install_dependencies() {
 			deps=(xorriso curl qemu-utils openssh-client)
 
 			# QEMU dependencies
-			deps+=(libcap-dev libattr1-dev libcap-ng-dev librbd-dev gcc pkg-config libglib2.0-dev libpixman-1-dev psmisc)
+			deps+=(libcap-dev libattr1-dev libcap-ng-dev librbd-dev gcc pkg-config libglib2.0-dev libpixman-1-dev psmisc ninja-build)
 
 			sudo apt-get update
 			sudo apt-get install -y ${deps[@]}
@@ -247,7 +260,7 @@ install_dependencies() {
 			deps=(xorriso curl qemu-img openssh)
 
 			# QEMU dependencies
-			deps+=(libcap-devel libattr-devel libcap-ng-devel librbd-devel gcc glib2-devel pixman-devel psmisc)
+			deps+=(libcap-devel libattr-devel libcap-ng-devel librbd-devel gcc glib2-devel pixman-devel psmisc ninja-build)
 
 			sudo dnf install -y ${deps[@]}
 			;;
@@ -258,7 +271,7 @@ install_dependencies() {
 	esac
 
 	# Build and Install QEMU
-	qemu_version=$(get_version "assets.hypervisor.qemu.version")
+	qemu_version=$(get_version "assets.hypervisor.qemu.version" | tr -d v)
 	qemu_dir="${data_dir}/qemu-${qemu_version}"
 	qemu_tar_file="${data_dir}/qemu-${qemu_version}.tar.xz"
 
@@ -268,8 +281,10 @@ install_dependencies() {
 	pushd "${qemu_dir}"
 	[ ! -f "${qemu_tar_file}" ] && curl -sL https://download.qemu.org/qemu-${qemu_version}.tar.xz -o "${qemu_tar_file}"
 	tar --strip-components=1 -xf "${qemu_tar_file}"
-	curl -sLO https://raw.githubusercontent.com/kata-containers/packaging/master/scripts/configure-hypervisor.sh
-	bash configure-hypervisor.sh qemu | sed -e 's|--disable-slirp||' -e 's|--enable-libpmem||' | xargs ./configure
+	local pkg_dir="${kata_repo_dir}/tools/packaging"
+	local patches_dir="${pkg_dir}/qemu/patches/$(echo ${qemu_version} | sed -e 's/^v//' -e 's/.\d*$/x/')"
+	bash ${pkg_dir}/scripts/apply_patches.sh ${patches_dir}
+	bash ${pkg_dir}/scripts/configure-hypervisor.sh qemu | sed -e 's|--disable-slirp||' -e 's|--enable-libpmem||' | xargs ./configure
 	make -j$(($(nproc)-1))
 	sudo make install
 	popd
