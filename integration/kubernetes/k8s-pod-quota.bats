@@ -5,7 +5,7 @@
 #
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
-load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 setup() {
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
@@ -26,7 +26,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-quota-deployment.yaml"
 
 	# View deployment
-	kubectl wait --for=condition=Available --timeout=60s deployment/${deployment_name}
+	kubectl wait --for=condition=Available --timeout=$timeout deployment/${deployment_name}
 }
 
 teardown() {

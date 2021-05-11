@@ -6,7 +6,7 @@
 #
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
-load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 setup() {
 	nginx_version=$(get_test_version "docker_images.nginx.version")
@@ -19,8 +19,6 @@ setup() {
 @test "Replication controller" {
 	replication_name="replicationtest"
 	number_of_replicas="1"
-	wait_time=20
-	sleep_time=2
 
 	# Create yaml
 	sed -e "s/\${nginx_version}/${nginx_image}/" \
@@ -34,7 +32,7 @@ setup() {
 
 	# Check pod creation
 	pod_name=$(kubectl get pods --output=jsonpath={.items..metadata.name})
-	cmd="kubectl wait --for=condition=Ready pod $pod_name"
+	cmd="kubectl wait --for=condition=Ready --timeout=$timeout pod $pod_name"
 	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 
 	# Check number of pods created for the

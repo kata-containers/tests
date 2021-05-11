@@ -6,7 +6,7 @@
 #
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
-load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+load "${BATS_TEST_DIRNAME}/tests_common.sh"
 TEST_INITRD="${TEST_INITRD:-no}"
 issue="https://github.com/kata-containers/runtime/issues/1127"
 fc_limitations="https://github.com/kata-containers/documentation/issues/351"
@@ -31,8 +31,6 @@ setup() {
 	[ "${TEST_INITRD}" == "yes" ] && skip "test not working see: ${issue}"
 	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
 
-	wait_time=10
-	sleep_time=2
 	volume_name="pv-volume"
 	volume_claim="pv-claim"
 

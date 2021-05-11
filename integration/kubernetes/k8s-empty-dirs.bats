@@ -6,7 +6,7 @@
 #
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
-load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 assert_equal() {
 	local expected=$1
@@ -22,8 +22,6 @@ setup() {
 	pod_name="sharevol-kata"
 	get_pod_config_dir
 	pod_logs_file=""
-	wait_time=20
-	sleep_time=2
 }
 
 @test "Empty dir volumes" {

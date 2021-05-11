@@ -6,7 +6,7 @@
 #
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
-load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 setup() {
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
@@ -27,7 +27,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-configmap.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Check env
 	cmd="env"

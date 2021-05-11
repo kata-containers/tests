@@ -6,7 +6,7 @@
 #
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
-load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+load "${BATS_TEST_DIRNAME}/tests_common.sh"
 issue="https://github.com/kata-containers/tests/issues/1746"
 
 setup() {
@@ -18,8 +18,6 @@ setup() {
 @test "Run a job to completion" {
 	skip "test not working see: ${issue}"
 	job_name="job-pi-test"
-	wait_time=60
-	sleep_time=2
 
 	# Create job
 	kubectl apply -f "${pod_config_dir}/job.yaml"

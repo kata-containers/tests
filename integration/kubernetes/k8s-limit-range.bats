@@ -6,7 +6,7 @@
 #
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
-load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 setup() {
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
@@ -26,7 +26,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-cpu-defaults.yaml" --namespace=${namespace_name}
 
 	# Get pod specification
-	kubectl wait --for=condition=Ready pod "$pod_name" --namespace="$namespace_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name" --namespace="$namespace_name"
 
 	# Check limits
 	# Find the 500 millicpus specified at the yaml

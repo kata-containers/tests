@@ -6,7 +6,7 @@
 #
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
-load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 setup() {
 	nginx_version=$(get_test_version "docker_images.nginx.version")
@@ -19,14 +19,12 @@ setup() {
 }
 
 @test "Scale nginx deployment" {
-	wait_time=30
-	sleep_time=3
 
 	sed -e "s/\${nginx_version}/${nginx_image}/" \
 		"${pod_config_dir}/${deployment}.yaml" > "${pod_config_dir}/test-${deployment}.yaml"
 
 	kubectl create -f "${pod_config_dir}/test-${deployment}.yaml"
-	kubectl wait --for=condition=Available --timeout=60s deployment/${deployment}
+	kubectl wait --for=condition=Available --timeout=$timeout deployment/${deployment}
 	kubectl expose deployment/${deployment}
 	kubectl scale deployment/${deployment} --replicas=${replicas}
 	cmd="kubectl get deployment/${deployment} -o yaml | grep 'availableReplicas: ${replicas}'"
