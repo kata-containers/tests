@@ -17,7 +17,7 @@ source /etc/os-release || source /usr/lib/os-release
 
 KATA_DEV_MODE="${KATA_DEV_MODE:-}"
 
-CURRENT_QEMU_TAG=$(get_version "assets.hypervisor.qemu-experimental.tag")
+CURRENT_QEMU_TAG=$(get_version "assets.hypervisor.qemu-experimental.version")
 PACKAGING_DIR="${kata_repo_dir}/tools/packaging"
 QEMU_TAR="kata-static-qemu-experimental.tar.gz"
 arch=$("${cidir}"/kata-arch.sh -d)
