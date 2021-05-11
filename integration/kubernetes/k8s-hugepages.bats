@@ -26,7 +26,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-env.yaml"
 
 	# Check pod creation
-	kubectl wait --timeout=$timeout --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Print environment variables
 	cmd="printenv"
@@ -43,7 +43,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-env.yaml"
 
 	# Check pod creation
-	kubectl wait --timeout=$timeout --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Print environment variables
 	cmd="printenv"

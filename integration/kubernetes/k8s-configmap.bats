@@ -27,7 +27,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-configmap.yaml"
 
 	# Check pod creation
-	kubectl wait --timeout=$timeout --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Check env
 	cmd="env"

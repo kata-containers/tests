@@ -47,7 +47,7 @@ setup() {
 	tmp_pod_yaml=$(mktemp --tmpdir pod-pv.XXXXX.yaml)
 	sed -e "s|DEVICE_PATH|${ctr_dev_path}|" "${pod_config_dir}/${pod_name}.yaml" > "$tmp_pod_yaml"
 	kubectl create -f "$tmp_pod_yaml"
-	kubectl wait --timeout=$timeout --for condition=ready "pod/${pod_name}"
+	kubectl wait --for condition=ready --timeout=$timeout "pod/${pod_name}"
 
 	# Verify persistent volume claim is bound
 	kubectl get "pvc/${volume_claim}" | grep "Bound"
