@@ -111,7 +111,7 @@ if [ "${BAREMETAL}" == true ] && [[ $(wc -l /proc/swaps | awk '{print $1}') -gt 
 fi
 
 #reinstall kubelet to do deep cleanup
-if [ "$(command -v kubelet)" != "" ]; then
+if [ "${BAREMETAL}" == true -a "$(command -v kubelet)" != "" ]; then
 	info "reinstall kubeadm, kubelet before initialize k8s"
 	bash -f "${SCRIPT_PATH}/../../.ci/install_kubernetes.sh"
 fi
