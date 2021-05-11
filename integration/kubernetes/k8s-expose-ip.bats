@@ -32,7 +32,7 @@ setup() {
 		kubectl create -f -
 
 	# Check deployment creation
-	cmd="kubectl wait --timeout=$timeout --for=condition=Available deployment/${deployment}"
+	cmd="kubectl wait --for=condition=Available --timeout=$timeout deployment/${deployment}"
 	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 
 	# Check pods are running

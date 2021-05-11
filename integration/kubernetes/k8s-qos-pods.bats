@@ -26,7 +26,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-guaranteed.yaml"
 
 	# Check pod creation
-	kubectl wait --timeout=$timeout --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Check pod class
 	kubectl get pod "$pod_name" --output=yaml | grep "qosClass: Guaranteed"
@@ -41,7 +41,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-burstable.yam"l
 
 	# Check pod creation
-	kubectl wait --timeout=$timeout --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Check pod class
 	kubectl get pod "$pod_name" --output=yaml | grep "qosClass: Burstable"
@@ -55,7 +55,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-besteffort.yam"l
 
 	# Check pod creation
-	kubectl wait --timeout=$timeout --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Check pod class
 	kubectl get pod "$pod_name" --output=yaml | grep "qosClass: BestEffort"

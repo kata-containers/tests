@@ -43,7 +43,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-footloose.yaml"
 
 	# Check pod creation
-	kubectl wait --timeout=$timeout --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Get pod ip
 	pod_ip=$(kubectl get pod $pod_name --template={{.status.podIP}})

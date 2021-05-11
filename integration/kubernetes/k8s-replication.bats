@@ -32,7 +32,7 @@ setup() {
 
 	# Check pod creation
 	pod_name=$(kubectl get pods --output=jsonpath={.items..metadata.name})
-	cmd="kubectl wait --timeout=$timeout --for=condition=Ready pod $pod_name"
+	cmd="kubectl wait --for=condition=Ready --timeout=$timeout pod $pod_name"
 	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 
 	# Check number of pods created for the
