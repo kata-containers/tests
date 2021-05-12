@@ -152,9 +152,37 @@ err_report() {
 
 trap err_report ERR
 
+restart_docker() {
+	info "restart docker service"
+
+	back_file=$(mktemp)
+
+	#avoid the "Start request repeated too quickly" error
+        if [ -f "/lib/systemd/system/docker.service" ]; then
+		cp /lib/systemd/system/docker.service ${back_file}
+                sed -i 's/StartLimitBurst.*$/StartLimitBurst=0/g' /lib/systemd/system/docker.service
+        elif [ -f "/usr/lib/systemd/system/docker.service" ]; then
+		cp /usr/lib/systemd/system/docker.service ${back_file}
+                sed -i 's/StartLimitBurst.*$/StartLimitBurst=0/g' /usr/lib/systemd/system/docker.service
+        fi
+        sudo systemctl daemon-reload
+        sudo systemctl restart docker
+
+	#recover docker service file
+	if [ -f "/lib/systemd/system/docker.service" ]; then
+		mv ${back_file} /lib/systemd/system/docker.service
+	elif [ -f "/usr/lib/systemd/system/docker.service" ]; then
+		mv ${back_file} /usr/lib/systemd/system/docker.service
+	fi
+        sudo systemctl daemon-reload
+}
+
 check_daemon_setup() {
 	info "containerd(cri): Check daemon works with runc"
 	create_containerd_config "runc"
+
+	#restart docker service as TestImageLoad depends on it
+	restart_docker
 
 	sudo -E PATH="${PATH}:/usr/local/bin" \
 		REPORT_DIR="${REPORT_DIR}" \
