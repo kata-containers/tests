@@ -12,7 +12,7 @@
 # See detailed info in PR#2157(https://github.com/kata-containers/tests/pull/2157)
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
-load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 setup() {
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
@@ -25,8 +25,6 @@ setup() {
 }
 
 @test "Expose IP Address" {
-	wait_time=20
-	sleep_time=2
 
 	# Create deployment
 	sed -e "s#\${agnhost_image}#${agnhost_name}:${agnhost_version}#" \
@@ -34,7 +32,7 @@ setup() {
 		kubectl create -f -
 
 	# Check deployment creation
-	cmd="kubectl wait --for=condition=Available deployment/${deployment}"
+	cmd="kubectl wait --for=condition=Available --timeout=$timeout deployment/${deployment}"
 	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 
 	# Check pods are running

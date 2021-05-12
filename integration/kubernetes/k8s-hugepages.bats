@@ -5,7 +5,7 @@
 #
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
-load "${BATS_TEST_DIRNAME}/../../lib/common.bash"
+load "${BATS_TEST_DIRNAME}/tests_common.sh"
 issue="https://github.com/kata-containers/runtime/issues/2172"
 
 setup() {
@@ -26,7 +26,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-env.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Print environment variables
 	cmd="printenv"
@@ -43,7 +43,7 @@ setup() {
 	kubectl create -f "${pod_config_dir}/pod-env.yaml"
 
 	# Check pod creation
-	kubectl wait --for=condition=Ready pod "$pod_name"
+	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
 	# Print environment variables
 	cmd="printenv"
