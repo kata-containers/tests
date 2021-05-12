@@ -80,7 +80,7 @@ if ip a show "$cni_interface"; then
 fi
 
 echo "Start ${cri_runtime} service"
-sudo systemctl start ${cri_runtime}
+sudo systemctl enable --now ${cri_runtime}
 max_cri_socket_check=5
 wait_time_cri_socket_check=5
 
