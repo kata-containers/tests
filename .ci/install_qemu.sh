@@ -31,6 +31,14 @@ qemu_latest_build_url="${jenkins_url}/job/qemu-nightly-$(uname -m)/${cached_arti
 # option "--shallow-submodules" was introduced in git v2.9.0
 GIT_SHADOW_VERSION="2.9.0"
 
+# We need to move the tar file to a specific location so we
+# can know where it is and then we can perform the build cache
+# operations
+update_cache() {
+	sudo mkdir -p "${KATA_TESTS_CACHEDIR}"
+	sudo mv ${QEMU_TAR} ${KATA_TESTS_CACHEDIR}
+}
+
 build_static_qemu() {
 	info "building static QEMU"
 	# only x86_64 is supported for building static QEMU
@@ -40,11 +48,7 @@ build_static_qemu() {
 	cd "${PACKAGING_DIR}/static-build/qemu"
 	prefix="${KATA_QEMU_DESTDIR}" make
 
-	# We need to move the tar file to a specific location so we
-	# can know where it is and then we can perform the build cache
-	# operations
-	sudo mkdir -p "${KATA_TESTS_CACHEDIR}"
-	sudo mv ${QEMU_TAR} ${KATA_TESTS_CACHEDIR}
+	update_cache
 	)
 }
 
@@ -69,6 +73,7 @@ install_cached_qemu() {
 
 	sha256sum -c "sha256sum-${QEMU_TAR}" || return 1
 	uncompress_static_qemu "${QEMU_TAR}"
+	update_cache
 }
 
 clone_qemu_repo() {
