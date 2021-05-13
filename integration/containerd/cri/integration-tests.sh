@@ -263,16 +263,13 @@ TestKilledVmmCleanup() {
 }
 
 TestContainerMemoryUpdate() {
-	if [[ "${KATA_HYPERVISOR}" != "qemu" ]]; then
+	if [[ "${KATA_HYPERVISOR}" != "qemu" ]] || [[ "$ARCH" != "x86_64" ]]; then
 		return
 	fi
 
 	test_virtio_mem=$1
 
 	if [ $test_virtio_mem -eq 1 ]; then
-		if [[ "$ARCH" != "x86_64" ]]; then
-			return
-		fi
 		info "Test container memory update with virtio-mem"
 
 		sudo sed -i -e 's/^#enable_virtio_mem.*$/enable_virtio_mem = true/g' "${kata_config}"
