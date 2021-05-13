@@ -19,6 +19,7 @@ SHIMV2_TEST=${SHIMV2_TEST:-""}
 FACTORY_TEST=${FACTORY_TEST:-""}
 KILL_VMM_TEST=${KILL_VMM_TEST:-""}
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
+ARCH=$(uname -m)
 
 default_runtime_type="io.containerd.runtime.v1.linux"
 # Type of containerd runtime to be tested
@@ -199,13 +200,7 @@ check_daemon_setup() {
 		make -e test-integration
 }
 
-TestKilledVmmCleanup() {
-	if [ -z "${SHIMV2_TEST}" ] || [ -z "${KILL_VMM_TEST}" ]; then
-		return
-	fi
-
-	info "test killed vmm cleanup"
-
+testContainerStart() {
 	local pod_yaml=${REPORT_DIR}/pod.yaml
 	local container_yaml=${REPORT_DIR}/container.yaml
 	local image="busybox:latest"
@@ -225,7 +220,7 @@ command:
 EOF
 
 	sudo cp "$default_containerd_config" "$default_containerd_config_backup"
-	sudo cp $CONTAINERD_CONFIG_FILE /etc/containerd/config.toml
+	sudo cp $CONTAINERD_CONFIG_FILE "$default_containerd_config"
 
 	sudo systemctl restart containerd
 
@@ -233,6 +228,26 @@ EOF
 	podid=$(sudo crictl runp $pod_yaml)
 	cid=$(sudo crictl create $podid $container_yaml $pod_yaml)
 	sudo crictl start $cid
+}
+
+testContainerStop() {
+	info "stop pod $podid"
+	sudo crictl stopp $podid
+	info "remove pod $podid"
+	sudo crictl rmp $podid
+
+	sudo cp "$default_containerd_config_backup" "$default_containerd_config"
+	sudo systemctl restart containerd
+}
+
+TestKilledVmmCleanup() {
+	if [ -z "${SHIMV2_TEST}" ] || [ -z "${KILL_VMM_TEST}" ]; then
+		return
+	fi
+
+	info "test killed vmm cleanup"
+
+	testContainerStart
 
 	qemu_pid=$(ps aux|grep qemu|grep -v grep|awk '{print $2}')
 	info "kill qemu $qemu_pid"
@@ -241,11 +256,58 @@ EOF
 	sleep 1
 	remained=$(ps aux|grep shimv2|grep -v grep || true)
 	[ -z $remained ] || die "found remaining shimv2 process $remained"
-	info "stop pod $podid"
-	sudo crictl stopp $podid
-	info "remove pod $podid"
-	sudo crictl rmp $podid
+
+	testContainerStop
+
 	info "stop containerd"
+}
+
+TestContainerMemoryUpdate() {
+	if [[ "${KATA_HYPERVISOR}" != "qemu" ]] || [[ "$ARCH" != "x86_64" ]]; then
+		return
+	fi
+
+	test_virtio_mem=$1
+
+	if [ $test_virtio_mem -eq 1 ]; then
+		info "Test container memory update with virtio-mem"
+
+		sudo sed -i -e 's/^#enable_virtio_mem.*$/enable_virtio_mem = true/g' "${kata_config}"
+	else
+		info "Test container memory update without virtio-mem"
+
+		sudo sed -i -e 's/^enable_virtio_mem.*$/#enable_virtio_mem = true/g' "${kata_config}"
+	fi
+
+	testContainerStart
+
+	vm_size=$(($(crictl exec $cid cat /proc/meminfo | grep "MemTotal:" | awk '{print $2}')*1024))
+	if [ $vm_size -gt $((2*1024*1024*1024)) ] || [ $vm_size -lt $((2*1024*1024*1024-128*1024*1024)) ]; then
+		testContainerStop
+		die "The VM memory size $vm_size before update is not right"
+	fi
+
+	sudo crictl update --memory $((2*1024*1024*1024)) $cid
+	sleep 1
+
+	vm_size=$(($(crictl exec $cid cat /proc/meminfo | grep "MemTotal:" | awk '{print $2}')*1024))
+	if [ $vm_size -gt $((4*1024*1024*1024)) ] || [ $vm_size -lt $((4*1024*1024*1024-128*1024*1024)) ]; then
+		testContainerStop
+		die "The VM memory size $vm_size after increase is not right"
+	fi
+
+	if [ $test_virtio_mem -eq 1 ]; then
+		sudo crictl update --memory $((1*1024*1024*1024)) $cid
+		sleep 1
+
+		vm_size=$(($(crictl exec $cid cat /proc/meminfo | grep "MemTotal:" | awk '{print $2}')*1024))
+		if [ $vm_size -gt $((3*1024*1024*1024)) ] || [ $vm_size -lt $((3*1024*1024*1024-128*1024*1024)) ]; then
+			testContainerStop
+			die "The VM memory size $vm_size after decrease is not right"
+		fi
+	fi
+
+	testContainerStop
 }
 
 main() {
@@ -314,6 +376,9 @@ main() {
 			CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE" \
 			make -e test-integration
 	done
+
+	TestContainerMemoryUpdate 1
+	TestContainerMemoryUpdate 0
 
 	TestKilledVmmCleanup
 
