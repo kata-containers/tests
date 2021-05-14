@@ -119,6 +119,13 @@ create_cache_asset() {
 		path=$(readlink -f "${image_path}")
 		echo $(basename "${path}") > "latest-${image_name}"
 		sudo cp "${path}" "${kata_dir}/osbuilder-${image_name}.yaml"  .
+	elif [ ! -z "${check_qemu}" ]; then
+		# The latest file is compounded of the QEMU version and SHA-256
+		# calculated from all files and scripts used to its build.
+		qemu_sha=$(calc_qemu_files_sha256sum)
+		[ -n "$qemu_sha" ] || \
+			die "Failed to calculate a SHA-256 for QEMU"
+		echo "${component_version} ${qemu_sha}" > "latest"
 	else
 		echo "${component_version}" >  "latest"
 	fi
