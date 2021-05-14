@@ -34,9 +34,9 @@ function setup() {
 
 function test_stability() {
 	pushd "${GOPATH}/src/${tests_repo}"
-	".ci/toggle_sandbox_cgroup_only.sh" true
+	".ci/set_kata_config.sh" sandbox_cgroup_only true
 	sudo -E PATH="$PATH" bash -c "make stability"
-	".ci/toggle_sandbox_cgroup_only.sh" false
+	".ci/set_kata_config.sh" sandbox_cgroup_only false
 	popd
 }
 
