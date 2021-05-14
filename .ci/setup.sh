@@ -84,6 +84,9 @@ enable_nested_virtualization() {
 
 install_kata() {
 	if [ "${INSTALL_KATA}" == "yes" ]; then
+		echo "Ensure rust is installed"
+		command -v rustup || bash -f ${cidir}/install_rust.sh
+
 		echo "Install Kata sources"
 		bash -f ${cidir}/install_kata.sh
 	fi
