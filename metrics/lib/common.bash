@@ -286,6 +286,13 @@ wait_ksm_settle(){
 
 	oldscan=$(cat /sys/kernel/mm/ksm/full_scans)
 
+	# Wait some time for KSM to kick in to avoid early dismissal
+	for ((t=0; t<5; t++)); do
+		pages=$(cat "${KSM_PAGES_SHARED}")
+		[[ "$pages" -ne 0 ]] && echo "Discovered KSM activity" && break
+		sleep 1
+	done
+
 	# Go around the loop until either we see a small % change
 	# between two full_scans, or we timeout
 	for ((t=0; t<$1; t++)); do
