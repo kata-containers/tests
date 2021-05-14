@@ -227,6 +227,17 @@ set_ksm_aggressive(){
 	sudo bash -c "echo ${KSM_AGGRESIVE_PAGES} > ${KSM_PAGES_FILE}"
 	sudo bash -c "echo ${KSM_AGGRESIVE_SLEEP} > ${KSM_SLEEP_FILE}"
 	sudo bash -c "echo 1 > ${KSM_ENABLE_FILE}"
+
+	# Disable virtio-fs and save whether it was enabled previously
+	set_virtio_out=$(sudo -E "${LIB_DIR}/../../.ci/set_kata_config.sh" shared_fs virtio-9p)
+	echo "${set_virtio_out}"
+	grep -q "already" <<< "${set_virtio_out}" || was_virtio_fs=true;
+}
+
+restore_virtio_fs(){
+	# Re-enable virtio-fs if it was enabled previously
+	[ -n "${was_virtio_fs}" ] && sudo -E "${LIB_DIR}/../../.ci/set_kata_config.sh" shared_fs virtio-fs || \
+		info "Not restoring virtio-fs since it wasn't enabled previously"
 }
 
 restore_ksm_settings(){
@@ -237,11 +248,13 @@ restore_ksm_settings(){
 	sudo bash -c "echo ${ksm_stored_pages} > ${KSM_PAGES_FILE}"
 	sudo bash -c "echo ${ksm_stored_sleep} > ${KSM_SLEEP_FILE}"
 	sudo bash -c "echo ${ksm_stored_run} > ${KSM_ENABLE_FILE}"
+	restore_virtio_fs
 }
 
 disable_ksm(){
 	echo "disabling KSM"
 	sudo bash -c "echo 0 > ${KSM_ENABLE_FILE}"
+	restore_virtio_fs
 }
 
 # See if KSM is enabled.

@@ -21,9 +21,9 @@ declare -A sections
 declare -A valid_requests
 declare -A json_keys
 
-readonly sections=([sandbox_cgroup_only]=runtime)
-readonly valid_requests=([sandbox_cgroup_only]="true false")
-readonly json_keys=([sandbox_cgroup_only]=.Runtime.SandboxCgroupOnly)
+readonly sections=([sandbox_cgroup_only]=runtime [shared_fs]=hypervisor.qemu)
+readonly valid_requests=([sandbox_cgroup_only]="true false" [shared_fs]="virtio-fs virtio-9p")
+readonly json_keys=([sandbox_cgroup_only]=.Runtime.SandboxCgroupOnly [shared_fs]=.Hypervisor.SharedFS)
 
 option=${1:-}
 request=${2:-}
