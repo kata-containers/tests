@@ -55,8 +55,6 @@ init_ci_flags() {
 	export TEST_CGROUPSV2="false"
 	# Run crio functional test
 	export TEST_CRIO="false"
-	# Run docker functional test
-	export TEST_DOCKER="no"
 	# Use experimental kernel
 	# Values: true|false
 	export experimental_kernel="false"

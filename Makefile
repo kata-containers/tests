@@ -13,13 +13,6 @@ endif
 # The time limit in seconds for each test
 TIMEOUT := 120
 
-DOCKER_DEPENDENCY = docker
-ifeq (${CI}, true)
-	ifneq (${TEST_DOCKER}, true)
-		DOCKER_DEPENDENCY =
-	endif
-endif
-
 PODMAN_DEPENDENCY = podman
 ifeq (${CI}, true)
         ifneq (${TEST_CGROUPSV2}, true)
