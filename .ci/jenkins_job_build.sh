@@ -231,7 +231,7 @@ case "${CI_JOB}" in
 	export CRIO="no"
 	;;
 "CRI_CONTAINERD_K8S_MINIMAL")
-	export MINIMAL_CONTAINERD_K8S_E2E="true"
+	export MINIMAL_K8S_E2E="true"
 	export CRI_CONTAINERD="yes"
 	export KUBERNETES="yes"
 	export CRIO="no"
@@ -246,7 +246,7 @@ case "${CI_JOB}" in
 	fi
 	;;
 "CRIO_K8S_MINIMAL")
-	export MINIMAL_CONTAINERD_K8S_E2E="true"
+	export MINIMAL_K8S_E2E="true"
 	export CRI_CONTAINERD="no"
 	export KUBERNETES="yes"
 	export CRIO="yes"
@@ -266,7 +266,7 @@ case "${CI_JOB}" in
 	;;
 "CLOUD-HYPERVISOR-K8S-CONTAINERD-MINIMAL")
 	init_ci_flags
-	export MINIMAL_CONTAINERD_K8S_E2E="true"
+	export MINIMAL_K8S_E2E="true"
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="cloud-hypervisor"
@@ -274,7 +274,7 @@ case "${CI_JOB}" in
 	;;
 "CLOUD-HYPERVISOR-K8S-CONTAINERD-FULL")
 	init_ci_flags
-	export MINIMAL_CONTAINERD_K8S_E2E="false"
+	export MINIMAL_K8S_E2E="false"
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="cloud-hypervisor"

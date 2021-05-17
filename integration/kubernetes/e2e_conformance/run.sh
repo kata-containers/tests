@@ -25,7 +25,7 @@ source "${SCRIPT_PATH}/../../../.ci/lib.sh"
 CI=${CI:-false}
 RUNTIME="${RUNTIME:-containerd-shim-kata-v2}"
 CRI_RUNTIME="${CRI_RUNTIME:-containerd}"
-MINIMAL_CONTAINERD_K8S_E2E="${MINIMAL_CONTAINERD_K8S_E2E:-false}"
+MINIMAL_K8S_E2E="${MINIMAL_K8S_E2E:-false}"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-}"
 
 # Overall Sonobuoy timeout in minutes.
@@ -94,7 +94,7 @@ run_sonobuoy() {
 	cmd+=" run"
 	cmd+=" --wait=${WAIT_TIME}"
 
-	if [ "${MINIMAL_CONTAINERD_K8S_E2E}" == "true" ]; then
+	if [ "${MINIMAL_K8S_E2E}" == "true" ]; then
 		minimal_focus=$(yaml_list_to_str_regex "jobs.minimal.focus" "${JOBS_FILE}")
 		# Not required to skip as only what is defined in toml should be executed.
 		if [ "${minimal_focus}" != "" ]; then
