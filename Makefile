@@ -112,9 +112,6 @@ docker-stability:
 	export ITERATIONS=2 && export MAX_CONTAINERS=20 && ./soak_parallel_rm.sh
 	cd integration/stability && ./hypervisor_stability_kill_test.sh
 
-podman:
-	bash -f integration/podman/run_podman_tests.sh
-
 ksm:
 	bash -f integration/ksm/ksm_test.sh
 
@@ -193,7 +190,6 @@ help:
 	filesystem \
 	ginkgo \
 	$(INSTALL_TARGETS) \
-	podman \
 	kubernetes \
 	list-install-targets \
 	log-parser \
