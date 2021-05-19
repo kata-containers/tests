@@ -12,7 +12,7 @@ set -e
 
 [ -n "$DEBUG" ] && set -x
 
-cidir=$(dirname "$0")
+cidir=$(realpath $(dirname "$0"))
 source "${cidir}/lib.sh"
 
 export tests_repo="${tests_repo:-github.com/kata-containers/tests}"
@@ -337,8 +337,11 @@ static_check_go_arch_specific()
 	echo
 	info "Package paths:\n"
 	echo "$dirs" | sed 's/^ *//g' | tr ' ' '\n'
+	for d in ${dirs};do
+		info "Running $linter on $d"
+		(cd $d && GO111MODULE=auto eval "$linter" "${linter_args}" ".")
+	done
 
-	eval "$linter" "${linter_args}" "$dirs"
 }
 
 static_check_rust_arch_specific()
@@ -455,6 +458,7 @@ static_check_license_headers()
 			--exclude=".gitignore" \
 			--exclude="Gopkg.lock" \
 			--exclude="*.gpl.c" \
+			--exclude="*.ipynb" \
 			--exclude="*.jpg" \
 			--exclude="*.json" \
 			--exclude="LICENSE" \

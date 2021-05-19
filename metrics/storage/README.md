@@ -12,6 +12,10 @@ environment variables to change or over-ride the test defaults.
 Please consult the [source](fio.sh) for more details on the
 which variables are available.
 
+## DAX `virtio-fs` `fio` Kubernetes tests
+
+[Test](fio-k8s/README.md) to compare the use of DAX option in `virtio-fs`
+
 ## `blogbench` test
 
 The `blogbench` script is based on the blogbench program

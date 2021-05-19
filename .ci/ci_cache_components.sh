@@ -36,9 +36,9 @@ cache_qemu_artifacts() {
 # This builds qemu experimental
 cache_qemu_experimental_artifacts() {
 	pushd "${tests_repo_dir}"
-	local current_qemu_experimental_tag=$(get_version "assets.hypervisor.qemu-experimental.tag")
+	local current_qemu_experimental_tag=$(get_version "assets.hypervisor.qemu-experimental.version")
 	popd
-	local qemu_experimental_tar="kata-static-qemu-virtiofsd.tar.gz"
+	local qemu_experimental_tar="kata-static-qemu-experimental.tar.gz"
 	create_cache_asset "$qemu_experimental_tar" "${current_qemu_experimental_tag}"
 }
 

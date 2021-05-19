@@ -312,6 +312,17 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="qemu"
 	export KUBERNETES="yes"
 	export METRICS_CI=1
+	;;
+"METRICS_EXPERIMENTAL")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export DEFVIRTIOFSCACHESIZE="1024"
+	export KATA_HYPERVISOR="qemu"
+	export KUBERNETES="yes"
+	export METRICS_CI=1
+	export experimental_kernel="true"
+	export experimental_qemu="true"
 ;;
 esac
 "${ci_dir_name}/setup.sh"

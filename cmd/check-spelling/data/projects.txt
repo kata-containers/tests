@@ -32,6 +32,7 @@ IPerf/B
 Istio/B
 Jaeger/B
 Jenkins/B
+Jupyter/B
 journald/B
 Kata/B
 Kibana/B
