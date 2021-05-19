@@ -77,3 +77,13 @@ unset VERSION
 "${cidir}/install_kata_image.sh"
 
 "${cidir}/install_runtime.sh"
+
+# The resulting kata installation will be merged in rhcos filesystem, and
+# symlinks are troublesome. So instead let's convert them to in-place files.
+for ltarget in $(find ${DESTDIR} -type l); do
+	lsource=$(readlink -f "${ltarget}")
+	if [ -e "${lsource}" ]; then
+		unlink "${ltarget}"
+		cp -fr "${lsource}" "${ltarget}"
+	fi
+done
