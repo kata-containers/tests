@@ -221,41 +221,57 @@ fi
 case "${CI_JOB}" in
 "CRI_CONTAINERD_K8S")
 	# This job only tests containerd + k8s
+	init_ci_flags
 	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="qemu"
 	export KUBERNETES="yes"
-	export CRIO="no"
 	;;
 "CRI_CONTAINERD_K8S_COMPLETE")
+	init_ci_flags
 	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="qemu"
 	export KUBERNETES="yes"
-	export CRIO="no"
 	;;
 "CRI_CONTAINERD_K8S_MINIMAL")
-	export MINIMAL_K8S_E2E="true"
+	init_ci_flags
 	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="qemu"
 	export KUBERNETES="yes"
-	export CRIO="no"
+	export MINIMAL_K8S_E2E="true"
 	;;
 "CRIO_K8S")
-	export KUBERNETES="yes"
+	init_ci_flags
+	export CRI_RUNTIME="crio"
 	export CRIO="yes"
-	export CRI_CONTAINERD="no"
+	export KATA_HYPERVISOR="qemu"
+	export KUBERNETES="yes"
 	# test images in cri-o repo are mostly x86_64 specific, so ignore cri-o intergration tests on aarch64, etc.
 	if [ "$arch" == "x86_64" ]; then
 		export TEST_CRIO="true"
 	fi
 	;;
-"CRIO_K8S_MINIMAL")
-	export MINIMAL_K8S_E2E="true"
-	export CRI_CONTAINERD="no"
-	export KUBERNETES="yes"
+"CRIO_K8S_COMPLETE")
+	init_ci_flags
+	export CRI_RUNTIME="crio"
 	export CRIO="yes"
+	export KUBERNETES="yes"
+	;;
+"CRIO_K8S_MINIMAL")
+	init_ci_flags
+	export CRI_RUNTIME="crio"
+	export CRIO="yes"
+	export KUBERNETES="yes"
+	export MINIMAL_K8S_E2E="true"
 	;;
 "CLOUD-HYPERVISOR-K8S-CRIO")
 	init_ci_flags
-	export KUBERNETES=yes
-	export CRIO=yes
+	export CRI_RUNTIME="crio"
+	export CRIO="yes"
 	export KATA_HYPERVISOR="cloud-hypervisor"
+	export KUBERNETES="yes"
 	;;
 "CLOUD-HYPERVISOR-K8S-CONTAINERD")
 	init_ci_flags
@@ -266,31 +282,30 @@ case "${CI_JOB}" in
 	;;
 "CLOUD-HYPERVISOR-K8S-CONTAINERD-MINIMAL")
 	init_ci_flags
-	export MINIMAL_K8S_E2E="true"
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
+	export MINIMAL_K8S_E2E="true"
+	export experimental_kernel="true"
 	;;
 "CLOUD-HYPERVISOR-K8S-CONTAINERD-FULL")
 	init_ci_flags
-	export MINIMAL_K8S_E2E="false"
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
+	export experimental_kernel="true"
 	;;
 "FIRECRACKER")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
-	export CRIO="no"
 	export KATA_HYPERVISOR="firecracker"
 	export KUBERNETES="yes"
 ;;
 "VFIO")
 	init_ci_flags
-	export CRIO="no"
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
@@ -299,14 +314,14 @@ case "${CI_JOB}" in
 "VIRTIOFS_EXPERIMENTAL")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
-	export KUBERNETES="yes"
+	export CRI_RUNTIME="containerd"
 	export DEFVIRTIOFSCACHESIZE="1024"
-	export experimental_qemu="true"
+	export KUBERNETES="yes"
 	export experimental_kernel="true"
+	export experimental_qemu="true"
 	;;
 "METRICS")
 	init_ci_flags
-	export CRIO="no"
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
