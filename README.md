@@ -227,8 +227,7 @@ $ make help
 Individual tests or subsets of tests can be selected to be run. The method of
 test selection depends on which type of test framework the test is written
 with. Most of the Kata Containers test suites are written
-using either [Bats](https://github.com/sstephenson/bats) files or with
-[Ginkgo](https://github.com/onsi/ginkgo).
+using [Bats](https://github.com/sstephenson/bats) files.
 
 #### Running Bats based tests
 
