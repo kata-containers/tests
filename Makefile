@@ -13,13 +13,6 @@ endif
 # The time limit in seconds for each test
 TIMEOUT := 120
 
-DOCKER_DEPENDENCY = docker
-ifeq (${CI}, true)
-	ifneq (${TEST_DOCKER}, true)
-		DOCKER_DEPENDENCY =
-	endif
-endif
-
 PODMAN_DEPENDENCY = podman
 ifeq (${CI}, true)
         ifneq (${TEST_CGROUPSV2}, true)
@@ -112,9 +105,6 @@ docker-stability:
 	export ITERATIONS=2 && export MAX_CONTAINERS=20 && ./soak_parallel_rm.sh
 	cd integration/stability && ./hypervisor_stability_kill_test.sh
 
-podman:
-	bash -f integration/podman/run_podman_tests.sh
-
 ksm:
 	bash -f integration/ksm/ksm_test.sh
 
@@ -193,7 +183,6 @@ help:
 	filesystem \
 	ginkgo \
 	$(INSTALL_TARGETS) \
-	podman \
 	kubernetes \
 	list-install-targets \
 	log-parser \
