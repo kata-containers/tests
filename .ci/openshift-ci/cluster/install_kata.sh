@@ -66,6 +66,17 @@ wait_for_reboot() {
 	done
 }
 
+# Print useful information for debugging.
+#
+# Params:
+#   $1 - the pod name
+debug_pod() {
+	local pod="$1"
+	info "Debug pod: ${pod}"
+	oc describe pods "$pod"
+        oc logs "$pod"
+}
+
 oc project default
 
 worker_nodes=$(oc get nodes |  awk '{if ($3 == "worker") { print $1 } }')
@@ -93,17 +104,23 @@ envsubst < ${deployments_dir}/daemonset_kata-installer.yaml.in | oc apply -f -
 oc get pods
 oc get ds
 ds_pods=($(oc get pods | awk -v ds=$DAEMONSET_NAME '{if ($1 ~ ds) { print $1 } }'))
+broken=0
+broken_ds_pods=()
 cnt=5
 while [[ ${#ds_pods[@]} -gt 0 && $cnt -ne 0 ]]; do
 	sleep 120
 	for i in ${!ds_pods[@]}; do
 		info "Check daemonset ${ds_pods[i]} is running"
 		rc=$(oc exec ${ds_pods[i]} -- cat /tmp/kata_install_status 2> \
-			/dev/null)
-		if [ -n "$rc" ]; then
+			/dev/null) || broken=1
+		if [ $broken -eq 1 ]; then
+			info "Daemonset seems broken"
+			broken_ds_pods+=(${ds_pods[i]})
+			unset ds_pods[i]
+			broken=0
+		elif [ -n "$rc" ]; then
 			info "Finished with status: $rc"
-			oc describe pods ${ds_pods[i]}
-			oc logs ${ds_pods[i]}
+			debug_pod "${ds_pods[i]}"
 			unset ds_pods[i]
 		else
 			info "Running"
@@ -112,11 +129,10 @@ while [[ ${#ds_pods[@]} -gt 0 && $cnt -ne 0 ]]; do
 	cnt=$((cnt-1))
 done
 
-if [ $cnt -eq 0 ]; then
-	for p in ${ds_pods[@]}; do
-		info "daemonset $p did not finish"
-		oc describe pods $p
-		oc logs $p
+if [[ $cnt -eq 0 || ${#broken_ds_pods[@]} -gt 0 ]]; then
+	for p in $ds_pods $broken_ds_pods; do
+		info "daemonset $p did not finish or is broken"
+		debug_pod "$p"
 	done
 	die "Kata Containers seems not installed on some nodes"
 fi
