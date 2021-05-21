@@ -94,7 +94,7 @@ install_extra_tools() {
 	bash -f "${cidir}/install_cni_plugins.sh"
 
 	# Remove K8s + CRIO conf that may remain from a previous run
-	rm -f /etc/systemd/system/kubelet.service.d/0-crio.conf
+	sudo rm -f /etc/systemd/system/kubelet.service.d/0-crio.conf
 
 	[ "${CRIO}" = "yes" ] &&
 		echo "Install CRI-O" &&
