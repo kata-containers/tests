@@ -38,6 +38,7 @@ and with different container managers.
    - [Containerd](https://github.com/kata-containers/tests/tree/stable-2.1/integration/containerd)
 2. [Stability tests](https://github.com/kata-containers/tests/tree/stable-2.1/integration/stability)
 3. [Metrics](https://github.com/kata-containers/tests/tree/stable-2.1/metrics)
+4. [VFIO](https://github.com/kata-containers/tests/tree/stable-2.1/functional/vfio)
 
 ## CI Content
 
