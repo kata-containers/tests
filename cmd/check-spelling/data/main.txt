@@ -22,6 +22,7 @@ crypto		# Cryptography
 DaemonSet/AB
 deliverable/AB
 devicemapper/B
+deploy
 dialer
 dialog/A
 distro/AB
@@ -43,6 +44,7 @@ hypervisor/A
 implementer/A
 implementor/A
 iptables
+kata
 Kat/AB		# "Kat Herding Team" :)
 keypair/A
 lifecycle/A
