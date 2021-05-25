@@ -15,7 +15,7 @@ crio_config_dir="/etc/crio/crio.conf.d"
 
 echo "Configure runtimes map for RuntimeClass feature with drop-in configs"
 
-sudo tee -a "$crio_config_dir/99-runtimes" > /dev/null <<EOF
+sudo tee "$crio_config_dir/99-runtimes" > /dev/null <<EOF
 [crio.runtime.runtimes.kata]
 runtime_path = "/usr/local/bin/containerd-shim-kata-v2"
 runtime_root = "/run/vc"
