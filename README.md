@@ -93,6 +93,11 @@ Jenkins is setup to trigger a CI run on all the slaves/nodes when a `/test` comm
 there are some specific comments that are defined for specific CI slaves/nodes which are defined in the Jenkins
 `config.xml` files in the `<triggerPhase>` XML element in the [CI repository](https://github.com/kata-containers/ci).
 
+#### Specific Jenkins job triggers
+
+Some jobs like a particular distro, feature or architecture can be triggered individually, the specific job triggers information
+can be found in the [Community repository](https://github.com/kata-containers/community/wiki/Controlling-the-CI).
+
 ### Detecting a CI system
 
 The strategy to check if the tests are running under a CI system is to see
