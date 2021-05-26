@@ -126,7 +126,7 @@ make clean
 make BUILDTAGS='seccomp selinux exclude_graphdriver_btrfs exclude_graphdriver_devicemapper libdm_no_deferred_remove'
 make test-binaries
 sudo -E PATH=$PATH sh -c "make install"
-sudo -E PATH=$PATH sh -c 'crio -d "" --cgroup-manager "systemd" --storage-driver "overlay" --storage-opt "overlay.override_kernel_check=1" config > crio.conf'
+sudo -E PATH=$PATH sh -c 'crio -d "" --log-level "debug" --cgroup-manager "systemd" --storage-driver "overlay" --storage-opt "overlay.override_kernel_check=1" config > crio.conf'
 sudo -E PATH=$PATH sh -c "make install.config"
 
 containers_config_path="/etc/containers"
@@ -158,11 +158,6 @@ sudo -E install -D -m0755 runc "/usr/local/bin/crio-runc"
 popd
 
 service_path="/etc/systemd/system"
-crio_service_file="${cidir}/data/crio.service"
-
-echo "Install crio service (${crio_service_file})"
-sudo install -m0444 "${crio_service_file}" "${service_path}"
-
 kubelet_service_dir="${service_path}/kubelet.service.d/"
 
 sudo mkdir -p "${kubelet_service_dir}"
