@@ -39,6 +39,7 @@ K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-liveness-probes.bats" \
 	"k8s-memory.bats" \
 	"k8s-number-cpus.bats" \
+	"k8s-oom.bats" \
 	"k8s-parallel.bats" \
 	"k8s-pid-ns.bats" \
 	"k8s-pod-quota.bats" \
@@ -47,25 +48,12 @@ K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-qos-pods.bats" \
 	"k8s-replication.bats" \
 	"k8s-scale-nginx.bats" \
+	"k8s-sysctls.bats" \
 	"k8s-security-context.bats" \
 	"k8s-shared-volume.bats" \
 	"k8s-volume.bats" \
 	"nginx.bats" \
 	"k8s-hugepages.bats")
-
-if [ "${KATA_HYPERVISOR:-}" == "cloud-hypervisor" ]; then
-	sysctl_issue="https://github.com/kata-containers/tests/issues/2324"
-	info "$KATA_HYPERVISOR sysctl is failing:"
-	info "sysctls: ${sysctl_issue}"
-
-	oom_issue="https://github.com/kata-containers/tests/issues/2864"
-	info "$KATA_HYPERVISOR is failing on:"
-	info "pod oom: ${oom_issue}"
-else
-	K8S_TEST_UNION+=("k8s-sysctls.bats")
-	# filter_k8s_test.sh requires a space at the end of the last component
-	K8S_TEST_UNION+=("k8s-oom.bats ")
-fi
 
 # we may need to skip a few test cases when running on non-x86_64 arch
 if [ -f "${cidir}/${arch}/configuration_${arch}.yaml" ]; then
