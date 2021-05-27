@@ -16,6 +16,7 @@
         * [Requirements to run Kata Containers tests](#requirements-to-run-kata-containers-tests)
         * [Prepare an environment](#prepare-an-environment)
         * [Run the tests](#run-the-tests)
+        * [Running subsets of tests](#running-subsets-of-tests)
     * [Metrics tests](#metrics-tests)
     * [Kata Admission controller webhook](#kata-admission-controller-webhook)
 
