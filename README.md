@@ -6,6 +6,7 @@
     * [CI Content](#ci-content)
         * [Centralised scripts](#centralised-scripts)
         * [CI setup](#ci-setup)
+        * [Controlling the CI](#controlling-the-ci)
         * [Detecting a CI system](#detecting-a-ci-system)
         * [Breaking Compatibility](#breaking-compatibility)
     * [CLI tools](#cli-tools)
@@ -38,6 +39,7 @@ and with different container managers.
    - [Containerd](https://github.com/kata-containers/tests/tree/stable-2.1/integration/containerd)
 2. [Stability tests](https://github.com/kata-containers/tests/tree/stable-2.1/integration/stability)
 3. [Metrics](https://github.com/kata-containers/tests/tree/stable-2.1/metrics)
+4. [VFIO](https://github.com/kata-containers/tests/tree/stable-2.1/functional/vfio)
 
 ## CI Content
 
@@ -75,6 +77,21 @@ Use `make list-install-targets` to retrieve all the available install targets.
 > The CI scripts perform a lot of setup before running content under a
 > CI. Some of this setup runs as the `root` user and **could break your developer's
 > system**. See [Developer Mode](#developer-mode).
+
+### Controlling the CI
+
+#### GitHub Actions
+
+Kata Containers uses GitHub Actions in the [Kata Containers](https://github.com/kata-containers/kata-containers) repos.
+All those actions, apart from the one to test `kata-deploy`, are automatically triggered when
+a pull request is submitted. The trigger phrase for testing kata-deploy is `/test_kata_deploy`.
+
+#### Jenkins
+
+The Jenkins configuration and most documentation is kept in the [CI repository](https://github.com/kata-containers/ci).
+Jenkins is setup to trigger a CI run on all the slaves/nodes when a `/test` comment is added to a pull request. However,
+there are some specific comments that are defined for specific CI slaves/nodes which are defined in the Jenkins
+`config.xml` files in the `<triggerPhase>` XML element in the [CI repository](https://github.com/kata-containers/ci).
 
 ### Detecting a CI system
 
@@ -227,8 +244,7 @@ $ make help
 Individual tests or subsets of tests can be selected to be run. The method of
 test selection depends on which type of test framework the test is written
 with. Most of the Kata Containers test suites are written
-using either [Bats](https://github.com/sstephenson/bats) files or with
-[Ginkgo](https://github.com/onsi/ginkgo).
+using [Bats](https://github.com/sstephenson/bats) files.
 
 #### Running Bats based tests
 
