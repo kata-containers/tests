@@ -99,6 +99,10 @@ else
 	bash sanity/check_sanity.sh
 endif
 
+crio:
+	bash .ci/install_bats.sh
+	RUNTIME=${RUNTIME} ./integration/cri-o/cri-o.sh
+
 docker-stability:
 	systemctl is-active --quiet docker || sudo systemctl start docker
 	cd integration/stability && \
@@ -178,6 +182,7 @@ help:
 .PHONY: \
 	check \
 	checkcommits \
+	crio \
 	docker \
 	docker-stability \
 	filesystem \
