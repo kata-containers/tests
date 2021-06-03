@@ -8,18 +8,27 @@
 # Currently these are the CRI-O tests that are not working
 
 declare -a skipCRIOTests=(
+'test "ctr lifecycle"'
+'test "ctr logging"'
+'test "ctr journald logging"'
+'test "ctr log max"'
+'test "ctr log max with minimum value"'
+'test "ctr partial line logging"'
+'test "ctr execsync"'
+'test "ctr execsync should not overwrite initial spec args"'
+'test "privileged ctr device add"'
+'test "ctr execsync std{out,err}"'
 'test "ctr oom"'
-'test "ctr stats output"'
-'test "ctr with run_as_username set to redis should get 101 as the gid for redis:alpine"'
-'test "ctr with run_as_user set to 100 should get 101 as the gid for redis:alpine"'
-'test "additional devices permissions"'
+'test "ctr \/etc\/resolv.conf rw\/ro mode"'
+'test "ctr create with non-existent command"'
+'test "ctr create with non-existent command \[tty\]"'
+'test "ctr update resources"'
+'test "ctr resources"'
+'test "ctr with non-root user has no effective capabilities"'
+'test "ctr with low memory configured should not be created"'
+'test "privileged ctr -- check for rw mounts"'
+'test "annotations passed through"'
+'test "ctr with default_env set in configuration"'
+'test "ctr with absent mount that should be rejected"'
 );
 
-if [ "${KATA_HYPERVISOR}" == "firecracker" ]; then
-	# This is a limitation in firecracker, the maximum number
-	# of block devices supported is 8, but this test tries to attach
-	# more than 10
-	skipCRIOTests+=(
-		'test "privileged ctr device add"'
-	)
-fi
