@@ -50,11 +50,7 @@ fi
 # then checkout to the version from versions.yaml in the runtime repository.
 if [ "$ghprbGhRepository" != "${crio_repository/github.com\/}" ];then
 	pushd "${crio_repository_path}"
-	if [ "$ID" == "fedora" ]; then
-		crio_version=$(get_version "externals.crio.meta.openshift")
-	else
-		crio_version=$(get_version "externals.crio.version")
-	fi
+	crio_version=$(get_version "externals.crio.branch")
 	git fetch
 	git checkout "${crio_version}"
 	popd
