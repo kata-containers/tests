@@ -14,7 +14,10 @@ source "${SCRIPT_PATH}/../../metrics/lib/common.bash"
 source /etc/os-release || source /usr/lib/os-release
 
 export JOBS="${JOBS:-$(nproc)}"
-export CONTAINER_RUNTIME="${CONTAINER_RUNTIME:-$RUNTIME}"
+export CONTAINER_RUNTIME="${CONTAINER_RUNTIME:-containerd-shim-kata-v2}"
+export CONTAINER_DEFAULT_RUNTIME="${CONTAINER_DEFAULT_RUNTIME:-$CONTAINER_RUNTIME}"
+export RUNTIME_ROOT="${RUNTIME_ROOT:-/run/vc}"
+export RUNTIME_TYPE="${RUNTIME_TYPE:-vm}"
 
 # Skip the cri-o tests if TEST_CRIO is not true
 # and we are on a CI job.
