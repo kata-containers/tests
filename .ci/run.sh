@@ -17,6 +17,10 @@ export RUNTIME="containerd-shim-kata-v2"
 export CI_JOB="${CI_JOB:-default}"
 
 case "${CI_JOB}" in
+	"BAREMETAL-PMEM")
+		echo "INFO: Running pmem integration test"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make pmem"
+		;;
 	"CRI_CONTAINERD_K8S")
 		echo "INFO: Running stability test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
