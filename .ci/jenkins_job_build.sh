@@ -287,7 +287,7 @@ case "${CI_JOB}" in
 	export CRIO="no"
 	export KATA_HYPERVISOR="firecracker"
 	export KUBERNETES="yes"
-;;
+	;;
 "VFIO")
 	init_ci_flags
 	export CRIO="no"
