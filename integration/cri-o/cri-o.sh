@@ -18,6 +18,7 @@ export CONTAINER_RUNTIME="${CONTAINER_RUNTIME:-containerd-shim-kata-v2}"
 export CONTAINER_DEFAULT_RUNTIME="${CONTAINER_DEFAULT_RUNTIME:-$CONTAINER_RUNTIME}"
 export RUNTIME_ROOT="${RUNTIME_ROOT:-/run/vc}"
 export RUNTIME_TYPE="${RUNTIME_TYPE:-vm}"
+export STORAGE_OPTIONS="--storage-driver overlay"
 
 # Skip the cri-o tests if TEST_CRIO is not true
 # and we are on a CI job.
@@ -40,9 +41,6 @@ cleanup() {
 
 # Check no processes are left behind
 check_processes
-
-# overlay storage options
-OVERLAY_STORAGE_OPTIONS="--storage-driver overlay"
 
 # Clone CRI-O repo if it is not already present.
 if [ ! -d "${crio_repository_path}" ]; then
@@ -76,11 +74,6 @@ do
 done
 
 IFS=$OLD_IFS
-
-# On other distros or on ZUUL, use overlay.
-# This will allow us to run tests with at least 2 different
-# storage drivers.
-export STORAGE_OPTIONS="$OVERLAY_STORAGE_OPTIONS"
 
 echo "Ensure crio service is stopped before running the tests"
 if systemctl is-active --quiet crio; then
