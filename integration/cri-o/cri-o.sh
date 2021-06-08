@@ -59,6 +59,12 @@ if [ "$ghprbGhRepository" != "${crio_repository/github.com\/}" ];then
 	popd
 fi
 
+# Ensure the correct version of the CRI-O binary is built and ready
+pushd "${crio_repository_path}"
+CONTAINER_DEFAULT_RUNTIME="" make
+make test-binaries
+popd
+
 OLD_IFS=$IFS
 IFS=''
 
