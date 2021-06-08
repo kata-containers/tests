@@ -8,46 +8,11 @@ set -e
 
 CURRENT_QEMU_TAG=$(get_version "assets.hypervisor.qemu.tag")
 stable_branch=$(echo $CURRENT_QEMU_TAG | tr -d 'v' | awk 'BEGIN { FS = "." } {print $1 "." $2 ".x"}')
-PACKAGED_QEMU="qemu-system-ppc"
 BUILT_QEMU="qemu-system-ppc64"
 export source_repo="${source_repo:-github.com/kata-containers/kata-containers}"
 export packaging_dir="$GOPATH/src/${source_repo}/tools/packaging"
 
 source "${cidir}/lib.sh"
-
-get_packaged_qemu_version() {
-        if [ "$ID" == "ubuntu" ]; then
-		#output redirected to /dev/null
-		sudo apt-get update > /dev/null
-                qemu_version=$(apt-cache madison $PACKAGED_QEMU \
-                        | awk '{print $3}' | cut -d':' -f2 | cut -d'+' -f1 | head -n 1 )
-        elif [ "$ID" == "fedora" ]; then
-                qemu_version=$(sudo dnf --showduplicate list ${PACKAGED_QEMU}.${QEMU_ARCH} \
-                        | awk '/'$PACKAGED_QEMU'/ {print $2}' | cut -d':' -f2 | cut -d'-' -f1 | head -n 1)
-		qemu_version=${qemu_version%.*}
-	elif [ "$ID" == "centos" ]; then
-                qemu_version=$(sudo dnf --showduplicate list ${PACKAGED_QEMU}.${QEMU_ARCH} \
-                        | awk '/'$PACKAGED_QEMU'/ {print $2}' | cut -d':' -f2 | cut -d'-' -f1 | head -n 1)
-        fi
-
-        if [ -z "$qemu_version" ]; then
-                die "unknown qemu version"
-        else
-                echo "${qemu_version}"
-        fi
-}
-
-install_packaged_qemu() {
-        if [ "$ID"  == "ubuntu" ]; then
-                sudo apt install -y "$PACKAGED_QEMU"
-        elif [ "$ID"  == "fedora" ]; then
-                sudo dnf install -y "$PACKAGED_QEMU"
-	elif [ "$ID" == "centos" ]; then
-		sudo yum install -y "$PACKAGED_QEMU"
-        else
-                die "Unrecognized distro"
-        fi
-}
 
 build_and_install_qemu() {
         QEMU_REPO_URL=$(get_version "assets.hypervisor.qemu.url")
