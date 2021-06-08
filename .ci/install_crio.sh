@@ -162,6 +162,7 @@ kubelet_service_dir="${service_path}/kubelet.service.d/"
 
 sudo mkdir -p "${kubelet_service_dir}"
 
+sudo rm -f "${kubelet_service_dir}/0-containerd.conf"
 cat <<EOF| sudo tee "${kubelet_service_dir}/0-crio.conf"
 [Service]
 Environment="KUBELET_EXTRA_ARGS=--container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///var/run/crio/crio.sock"
