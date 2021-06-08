@@ -52,6 +52,14 @@ install_docker() {
 		return
 	fi
 
+	if ([ "$arch" == "ppc64le" ] || [ "$arch" == "s390x" ]) && ([ "$ID" == "fedora" ] || [[ "${ID_LIKE:-}" =~ "fedora" ]]); then
+		# download.docker.com does not package for ppc64le and s390x and on
+		# Fedora-likes, it's not packaged by the distro either. Use Podman.
+		sudo dnf install -y podman runc
+		export USE_PODMAN=1
+		return
+	fi
+
 	if ! command -v docker >/dev/null; then
 		"${cidir}/../cmd/container-manager/manage_ctr_mgr.sh" docker install
 	fi
