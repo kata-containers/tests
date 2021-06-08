@@ -144,7 +144,8 @@ if [ "${BAREMETAL}" == true ]; then
 		echo "Running baremetal cleanup script for arch ${arch}"
 		tests_repo="${tests_repo}" "${clean_up_script}"
 	else
-		echo "No baremetal cleanup script for arch ${arch}"
+		echo "Running common baremetal cleanup script"
+		tests_repo="${tests_repo}" "${tests_repo_dir}/.ci/clean_up.sh"
 	fi
 fi
 
