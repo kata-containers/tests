@@ -29,3 +29,8 @@ docker:
   Context:
     - run container exceeding memory constraints
   It:
+
+kubernetes:
+  - k8s-block-volume
+  - k8s-oom
+  - k8s-memory
