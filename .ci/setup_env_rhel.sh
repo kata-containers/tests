@@ -18,7 +18,7 @@ epel_url="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${rhel_versi
 sudo -E yum install -y "$epel_url"
 
 echo "Update repositories"
-sudo -E yum -y update
+sudo -E yum -y --nobest update
 
 echo "Install chronic"
 sudo -E yum install -y moreutils
