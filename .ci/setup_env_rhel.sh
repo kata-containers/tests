@@ -11,8 +11,10 @@ cidir=$(dirname "$0")
 source "/etc/os-release" || "source /usr/lib/os-release"
 source "${cidir}/lib.sh"
 
+rhel_version=$(sed -E "s/.*:el(.+)/\1/" <<< "${PLATFORM_ID}")
+
 echo "Add epel repository"
-epel_url="https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
+epel_url="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${rhel_version}.noarch.rpm"
 sudo -E yum install -y "$epel_url"
 
 echo "Update repositories"
@@ -33,7 +35,7 @@ declare -A packages=(
 	[kernel_dependencies]="elfutils-libelf-devel flex" \
 	[crio_dependencies]="glibc-static libseccomp-devel libassuan-devel libgpg-error-devel device-mapper-libs btrfs-progs-devel util-linux gpgme-devel glib2-devel glibc-devel libselinux-devel pkgconfig" \
 	[bison_binary]="bison" \
-	[build_tools]="python pkgconfig zlib-devel" \
+	[build_tools]="python3 pkgconfig zlib-devel" \
 	[os_tree]="ostree-devel" \
 	[libudev-dev]="libgudev1-devel" \
 	[metrics_dependencies]="jq" \
