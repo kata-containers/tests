@@ -34,9 +34,9 @@ cri_containerd_version_url="https://raw.githubusercontent.com/containerd/contain
 cri_containerd_version=$(curl -sL $cri_containerd_version_url | grep "github.com/containerd/cri" | awk '{print $2}')
 
 echo "Set up environment"
-if [ "$ID" == centos ]; then
-	# Centos: remove seccomp  from runc build
-	export BUILDTAGS=${BUILDTAGS:-apparmor}
+if [ "$ID" == centos ] || [ "$ID" == rhel ]; then
+	# CentOS/RHEL: remove seccomp from runc build, no btrfs
+	export BUILDTAGS=${BUILDTAGS:-apparmor no_btrfs}
 fi
 
 install_from_source() {
@@ -45,7 +45,7 @@ install_from_source() {
 		cd "${GOPATH}/src/${cri_repository}" >>/dev/null
 		git fetch
 		git checkout "${cri_containerd_version}"
-		make release
+		make BUILDTAGS="${BUILD_TAGS:-}" release
 		local commit
 		commit=$(git rev-parse --short HEAD)
 		tarball_name="cri-containerd-${commit}.${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
