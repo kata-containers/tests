@@ -303,7 +303,7 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="firecracker"
 	export KUBERNETES="yes"
-;;
+	;;
 "VFIO")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
