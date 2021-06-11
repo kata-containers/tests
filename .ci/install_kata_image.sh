@@ -19,7 +19,7 @@ DESTDIR="${DESTDIR:-/}"
 image_path="${DESTDIR}${image_path:-${PREFIX}/share/kata-containers}"
 image_name="${image_name:-kata-containers.img}"
 initrd_name="${initrd_name:-kata-containers-initrd.img}"
-AGENT_INIT="${AGENT_INIT:-no}"
+AGENT_INIT="${AGENT_INIT:-${TEST_INITRD:-no}}"
 TEST_INITRD="${TEST_INITRD:-no}"
 build_method="${BUILD_METHOD:-distro}"
 
@@ -33,6 +33,9 @@ build_rust_image() {
 	target_image="image"
 	file_to_install="${osbuilder_path}/${image_name}"
 	if [ "${TEST_INITRD}" == "yes" ]; then
+		if [ "${AGENT_INIT}" != "yes" ]; then
+			die "TEST_INITRD=yes without AGENT_INIT=yes is unsupported"
+		fi
 		target_image="initrd"
 		file_to_install="${osbuilder_path}/${initrd_name}"
 	fi
