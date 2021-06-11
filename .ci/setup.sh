@@ -130,6 +130,8 @@ install_extra_tools() {
 	if [ "${KUBERNETES}" == "yes" ]; then
 		echo "Install Kubernetes" &&
 		bash -f "${cidir}/install_kubernetes.sh" &&
+		[ "${CRI_CONTAINERD}" = "yes" ] &&
+		bash -f "${cidir}/configure_containerd_for_kubernetes.sh" ||
 		echo "Kubernetes installed" ||
 		die "Kubernetes not installed"
 	fi
