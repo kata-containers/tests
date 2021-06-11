@@ -9,44 +9,10 @@ set -e
 source "${cidir}/lib.sh"
 
 CURRENT_QEMU_VERSION=$(get_version "assets.hypervisor.qemu.architecture.aarch64.version")
-PACKAGED_QEMU="qemu"
 CURRENT_QEMU_TAG=$(get_version "assets.hypervisor.qemu.architecture.aarch64.tag")
 QEMU_REPO_URL=$(get_version "assets.hypervisor.qemu.url")
 # Remove 'https://' from the repo url to be able to git clone the repo
 QEMU_REPO=${QEMU_REPO_URL/https:\/\//}
-
-get_packaged_qemu_version() {
-        if [ "$ID" == "ubuntu" ]; then
-		#output redirected to /dev/null
-		sudo apt-get update > /dev/null
-                qemu_version=$(apt-cache madison $PACKAGED_QEMU \
-                        | awk '{print $3}' | cut -d':' -f2 | cut -d'+' -f1 | head -n 1 )
-        elif [ "$ID" == "fedora" ]; then
-                qemu_version=$(sudo dnf --showduplicate list ${PACKAGED_QEMU}.${QEMU_ARCH} \
-                        | awk '/'$PACKAGED_QEMU'/ {print $2}' | cut -d':' -f2 | cut -d'-' -f1 | head -n 1)
-		qemu_version=${qemu_version%.*}
-	elif [ "$ID" == "centos" ]; then
-		qemu_version=""
-        fi
-
-        if [ -z "$qemu_version" ]; then
-                die "unknown qemu version"
-        else
-                echo "${qemu_version}"
-        fi
-}
-
-install_packaged_qemu() {
-        if [ "$ID"  == "ubuntu" ]; then
-                sudo apt install -y "$PACKAGED_QEMU"
-        elif [ "$ID"  == "fedora" ]; then
-                sudo dnf install -y "$PACKAGED_QEMU"
-	elif [ "$ID" == "centos" ]; then
-		info "packaged qemu unsupported on centos"
-        else
-                die "Unrecognized distro"
-        fi
-}
 
 build_and_install_qemu() {
         PACKAGING_DIR="${kata_repo_dir}/tools/packaging"

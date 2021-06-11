@@ -96,30 +96,7 @@ if command -v go; then
 	fi
 fi
 
-if [ "$(uname -s)" == "Darwin" ]; then
-	goarch=amd64
-fi
-
-case "$(arch)" in
-	"aarch64")
-		goarch=arm64
-		;;
-
-	"x86_64")
-		goarch=amd64
-		;;
-
-	"ppc64le")
-		goarch=ppc64le
-		;;
-
-	"s390x")
-		goarch=s390x
-		;;
-	"*")
-		die "Arch $(arch) not supported"
-		;;
-esac
+goarch=$("${script_dir}/kata-arch.sh" --golang)
 
 info "Download go version ${go_version}"
 kernel_name=$(uname -s)

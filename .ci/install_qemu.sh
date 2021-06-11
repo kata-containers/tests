@@ -174,17 +174,7 @@ main() {
 				build_and_install_static_qemu
 			fi
 			;;
-		"ppc64le"|"s390x")
-			packaged_qemu_version=$(get_packaged_qemu_version)
-			short_current_qemu_version=${CURRENT_QEMU_VERSION#*-}
-			if [ "$packaged_qemu_version" == "$short_current_qemu_version" ] && [ -z "${CURRENT_QEMU_TAG}" ]; then
-				install_packaged_qemu || build_and_install_qemu
-			else
-				build_and_install_qemu
-			fi
-			;;
-		"aarch64")
-			# For now, we don't follow stable version on aarch64, but one specific tag version, so we need to build from scratch.
+		"aarch64"|"ppc64le"|"s390x")
 			build_and_install_qemu
 			;;
 		*)
