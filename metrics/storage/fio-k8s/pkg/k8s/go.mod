@@ -1,6 +1,6 @@
 module github.com/kata-containers/tests/metrics/k8s
 
-go 1.16
+go 1.15
 
 replace github.com/kata-containers/tests/metrics/exec => ../exec
 
