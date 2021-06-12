@@ -52,6 +52,7 @@ K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-security-context.bats" \
 	"k8s-shared-volume.bats" \
 	"k8s-volume.bats" \
+	"k8s-ro-volume.bats" \
 	"nginx.bats" \
 	"k8s-hugepages.bats")
 
