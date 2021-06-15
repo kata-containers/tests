@@ -152,6 +152,11 @@ main() {
 
 	[ "$setup_type" = "minimal" ] && info "finished minimal setup" && exit 0
 
+	if [ "$arch" == "s390x" ] && ([ "$ID" == "fedora" ] || [[ "${ID_LIKE:-}" =~ "fedora" ]]); then
+		# see https://github.com/kata-containers/osbuilder/issues/217
+		export CC=gcc
+	fi
+
 	install_docker
 	enable_nested_virtualization
 	install_kata
@@ -164,10 +169,6 @@ main() {
 	echo "Drop caches"
 	sync
 	sudo -E PATH=$PATH bash -c "echo 3 > /proc/sys/vm/drop_caches"
-
-	if [ "$ID" == rhel ]; then
-		sudo -E PATH=$PATH bash -c "echo 1 > /proc/sys/fs/may_detach_mounts"
-	fi
 }
 
 main $*

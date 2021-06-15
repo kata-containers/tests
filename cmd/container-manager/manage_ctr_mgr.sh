@@ -94,7 +94,10 @@ install_docker(){
 		remove_docker
 	fi
 
-	if [ -z "$tag" ] || [ "$tag" == "latest" ] ; then
+	if [ "$arch" == "s390x" ]; then
+		# download.docker.com does not build for s390x, need to install through other means
+		install_docker_s390x
+	elif [ -z "$tag" ] || [ "$tag" == "latest" ] ; then
 		# If no tag is recevied, install latest compatible version
 		log_message "Installing docker"
 		pkg_name="docker-ce"
@@ -177,6 +180,14 @@ install_docker(){
 	sudo systemctl restart docker
 	sudo gpasswd -a ${USER} docker
 	sudo chmod g+rw /var/run/docker.sock
+}
+
+install_docker_s390x(){
+	log_message "Installing docker"
+	case "$ID" in
+		ubuntu) sudo apt-get install -y docker.io ;;
+		*) die "Unsupported distribution: $ID" ;;
+	esac
 }
 
 # This function removes the installed docker package.

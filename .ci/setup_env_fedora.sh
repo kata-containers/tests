@@ -20,9 +20,9 @@ declare -A minimal_packages=( \
 )
 
 declare -A packages=( \
-	[general_dependencies]="dnf-plugins-core python pkgconfig util-linux libgpg-error-devel" \
+	[general_dependencies]="dnf-plugins-core python pkgconfig util-linux libgpg-error-devel which" \
 	[kata_containers_dependencies]="libtool automake autoconf bc pixman numactl-libs" \
-	[qemu_dependencies]="libcap-devel libattr-devel libcap-ng-devel zlib-devel pixman-devel librbd-devel libpmem-devel" \
+	[qemu_dependencies]="libcap-devel libattr-devel libcap-ng-devel zlib-devel pixman-devel librbd-devel ninja-build" \
 	[kernel_dependencies]="elfutils-libelf-devel flex" \
 	[crio_dependencies]="btrfs-progs-devel device-mapper-devel glib2-devel glibc-devel glibc-static gpgme-devel libassuan-devel libseccomp-devel libselinux-devel" \
 	[bison_binary]="bison" \
@@ -36,6 +36,18 @@ declare -A packages=( \
 	[redis]="redis" \
 	[versionlock]="python3-dnf-plugin-versionlock" \
 )
+
+if [ "$(uname -m)" == "x86_64" ] || ([ "$(uname -m)" == "ppc64le" ] && [ "${VERSION_ID}" -ge "32" ]); then
+	packages[qemu_dependencies]+=" libpmem-devel"
+fi
+
+if [ "$(uname -m)" == "ppc64le" ] || [ "$(uname -m)" == "s390x" ]; then
+	packages[kata_containers_dependencies]+=" protobuf-compiler"
+fi
+
+if [ "$(uname -m)" == "s390x" ]; then
+	packages[kernel_dependencies]+=" openssl-devel"
+fi
 
 main()
 {

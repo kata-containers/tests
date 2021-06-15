@@ -52,6 +52,10 @@ if [ "$(uname -m)" == "x86_64" ] && [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VE
 	packages[qemu_dependencies]+=" libpmem-dev"
 fi
 
+if [ "$(uname -m)" == "s390x" ]; then
+	packages[kernel_depencencies]+=" libssl-dev"
+fi
+
 rust_agent_pkgs=()
 rust_agent_pkgs+=("build-essential")
 rust_agent_pkgs+=("g++")
@@ -65,10 +69,12 @@ rust_agent_pkgs+=("coreutils")
 rust_agent_pkgs+=("binutils")
 rust_agent_pkgs+=("debianutils")
 rust_agent_pkgs+=("gcc")
-rust_agent_pkgs+=("musl")
-rust_agent_pkgs+=("musl-dev")
-rust_agent_pkgs+=("musl-tools")
 rust_agent_pkgs+=("git")
+
+# ppc64le and s390x have no musl targets in Rust, hence, do not install musl there
+[ "$(arch)" != "ppc64le" ] && [ "$(arch)" != "s390x" ] && rust_agent_pkgs+=("musl" "musl-dev" "musl-tools")
+# ppc64le and s390x require a system installation of protobuf-compiler
+[ "$(arch)" == "ppc64le" ] || [ "$(arch)" == "s390x" ] && rust_agent_pkgs+=("protobuf-compiler")
 
 main()
 {

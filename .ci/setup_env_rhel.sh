@@ -11,12 +11,14 @@ cidir=$(dirname "$0")
 source "/etc/os-release" || "source /usr/lib/os-release"
 source "${cidir}/lib.sh"
 
+rhel_version=$(sed -E "s/.*:el(.+)/\1/" <<< "${PLATFORM_ID}")
+
 echo "Add epel repository"
-epel_url="https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
+epel_url="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${rhel_version}.noarch.rpm"
 sudo -E yum install -y "$epel_url"
 
 echo "Update repositories"
-sudo -E yum -y update
+sudo -E yum -y --nobest update
 
 echo "Install chronic"
 sudo -E yum install -y moreutils
@@ -28,22 +30,34 @@ declare -A minimal_packages=( \
 )
 
 declare -A packages=(
-	[kata_containers_dependencies]="libtool libtool-ltdl-devel device-mapper-persistent-data lvm2 device-mapper-devel libtool-ltdl bzip2 m4 patch gettext-devel automake autoconf bc pixman-devel coreutils" \
-	[qemu_dependencies]="libcap-devel libcap-ng-devel libattr-devel libcap-ng-devel librbd1-devel flex libfdt-devel libpmem-devel" \
+	[kata_containers_dependencies]="libtool libtool-ltdl-devel device-mapper-persistent-data lvm2 device-mapper-devel libtool-ltdl bzip2 m4 patch gettext-devel automake autoconf bc pixman-devel coreutils make" \
+	[qemu_dependencies]="libcap-devel libcap-ng-devel libattr-devel libcap-ng-devel librbd1-devel flex libfdt-devel ninja-build" \
 	[kernel_dependencies]="elfutils-libelf-devel flex" \
-	[crio_dependencies]="glibc-static libseccomp-devel libassuan-devel libgpg-error-devel device-mapper-libs btrfs-progs-devel util-linux gpgme-devel glib2-devel glibc-devel libselinux-devel pkgconfig" \
+	[crio_dependencies]="glibc-static libseccomp-devel libassuan-devel libgpg-error-devel device-mapper-libs util-linux gpgme-devel glib2-devel glibc-devel libselinux-devel pkgconfig" \
 	[bison_binary]="bison" \
-	[build_tools]="python pkgconfig zlib-devel" \
+	[build_tools]="python3 pkgconfig zlib-devel" \
 	[os_tree]="ostree-devel" \
 	[libudev-dev]="libgudev1-devel" \
 	[metrics_dependencies]="jq" \
-	[cri-containerd_dependencies]="libseccomp-devel btrfs-progs-devel" \
+	[cri-containerd_dependencies]="libseccomp-devel" \
 	[crudini]="crudini" \
 	[procenv]="procenv" \
 	[haveged]="haveged" \
         [libsystemd]="systemd-devel" \
 	[redis]="redis" \
 )
+
+if [ "$(uname -m)" == "x86_64" ] ; then
+	packages[qemu_dependencies]+=" libpmem-devel"
+fi
+
+if [ "$(uname -m)" == "ppc64le" ] || [ "$(uname -m)" == "s390x" ]; then
+	packages[kata_containers_dependencies]+=" protobuf-compiler"
+fi
+
+if [ "$(uname -m)" == "s390x" ]; then
+	packages[kernel_dependencies]+=" openssl-devel"
+fi
 
 main()
 {
