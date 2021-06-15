@@ -3,20 +3,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-test:
-  - functional
-  - docker
-  - network
-  - ramdisk
-  - docker-stability
-  - entropy
-
-docker:
-  Describe:
-    - CPUs and CPU set
-    - Hotplug memory
-    - memory constraints
-  Context:
-    - remove bind-mount source before container exits
-    - run container exceeding memory constraints
-  It:
+kubernetes:
+  - k8s-oom
+  - k8s-memory
