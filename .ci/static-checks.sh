@@ -559,7 +559,7 @@ check_url()
 
 		if ! echo "$status" | grep -qE "^(1[0-9][0-9]|2[0-9][0-9]|3[0-9][0-9]|405)"; then
 			echo "$url" >> "$invalid_file"
-			die "found HTTP error status codes for URL $url"
+			die "found HTTP error status codes for URL $url ($status)"
 		fi
 	done
 }
