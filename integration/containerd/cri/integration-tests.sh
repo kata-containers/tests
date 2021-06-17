@@ -21,7 +21,7 @@ KILL_VMM_TEST=${KILL_VMM_TEST:-""}
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 ARCH=$(uname -m)
 
-default_runtime_type="io.containerd.runtime.v1.linux"
+default_runtime_type="io.containerd.runc.v2"
 # Type of containerd runtime to be tested
 containerd_runtime_type="${default_runtime_type}"
 # Runtime to be use for the test in containerd
@@ -40,7 +40,8 @@ SNAP_CI=${SNAP_CI:-""}
 CI=${CI:-""}
 
 containerd_shim_path="$(command -v containerd-shim)"
-readonly cri_containerd_repo="github.com/containerd/cri"
+readonly cri_containerd_repo="github.com/containerd/containerd"
+readonly cri_repo="github.com/containerd/cri"
 
 #containerd config file
 readonly tmp_dir=$(mktemp -t -d test-cri-containerd.XXXX)
@@ -81,6 +82,10 @@ ci_config() {
 		${SCRIPT_PATH}/../../../.ci/configure_cni.sh
 		)
 	fi
+
+	echo "enable debug for kata-runtime"
+	sudo sed -i 's/^#enable_debug =/enable_debug =/g' ${kata_config} 
+	sudo sed -i 's/^#enable_debug =/enable_debug =/g' ${default_kata_config}
 }
 
 ci_cleanup() {
@@ -114,7 +119,7 @@ create_containerd_config() {
 
 	local runtime_type="${containerd_runtime_type}"
 	if [ "${runtime}" == "runc" ]; then
-		runtime_type="io.containerd.runtime.v1.linux"
+		runtime_type="io.containerd.runc.v2"
 	fi
 	local containerd_runtime="${runtime}"
 	if [ "${runtime_type}" == "${default_runtime_type}" ];then
@@ -327,8 +332,17 @@ main() {
 	# make sure cri-containerd test install the proper critest version its testing
 	rm -f "${CRITEST}"
 
-	pushd "${GOPATH}/src/${cri_containerd_repo}"
+	go get ${cri_repo}
+	pushd "${GOPATH}/src/${cri_repo}"
+
+	git reset HEAD
+	git checkout master
+	# switch to the default pause image set by containerd:1.5.x
+	sed -i 's#k8s.gcr.io/pause:3.[0-9]#k8s.gcr.io/pause:3.5#' integration/main_test.go
 	cp "${SCRIPT_PATH}/container_restart_test.go.patch" ./integration/container_restart_test.go
+
+	#test cri using the built/installed containerd instead of containerd built in cri
+	sed -i 's#${ROOT}/_output/containerd#/usr/local/bin/containerd#' hack/test-utils.sh
 
 	# Make sure the right artifacts are going to be built
 	make clean
@@ -369,6 +383,8 @@ main() {
 	else
 		passing_test+=("TestContainerListStatsWithSandboxIdFilter")
 	fi
+
+	create_containerd_config "${containerd_runtime_test}"
 
 	for t in "${passing_test[@]}"
 	do
