@@ -68,10 +68,10 @@ IFS=''
 
 # Skip CRI-O tests that currently are not working
 pushd "${crio_repository_path}/test/"
-cp $GOPATH/src/${crio_repository}/test/ctr.bats $GOPATH/src/${crio_repository}/test/ctr_kata_integration_tests.bats
+cp ctr.bats ctr_kata_integration_tests.bats
 for i in "${skipCRIOTests[@]}"
 do
-	sed -i '/'${i}'/a skip \"This is not working\"' "$GOPATH/src/${crio_repository}/test/ctr_kata_integration_tests.bats"
+	sed -i '/'${i}'/a skip \"This is not working\"' "ctr_kata_integration_tests.bats"
 done
 
 IFS=$OLD_IFS
