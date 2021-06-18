@@ -10,7 +10,9 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 
+cidir=$(dirname "$0")
 source "/etc/os-release" || source "/usr/lib/os-release"
+source "${cidir}/lib.sh"
 
 CI_JOB=${CI_JOB:-}
 ghprbPullId=${ghprbPullId:-}

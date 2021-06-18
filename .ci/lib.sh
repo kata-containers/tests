@@ -49,6 +49,7 @@ if [ "$(uname -m)" == "s390x" ] && grep -Eq "\<(fedora|suse)\>" /etc/os-release 
 	export CC=gcc
 fi
 
+grep -Eq "\<fedora\>" /etc/os-release 2> /dev/null && export USE_PODMAN=true
 
 tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 lib_script="${GOPATH}/src/${tests_repo}/lib/common.bash"
@@ -303,8 +304,10 @@ gen_clean_arch() {
 
 	info "kill stale process"
 	kill_stale_process
-	info "delete stale docker resource under ${stale_docker_dir_union[@]}"
-	delete_stale_docker_resource
+	if [ -z "${USE_PODMAN}" ]; then
+		info "delete stale docker resource under ${stale_docker_dir_union[@]}"
+		delete_stale_docker_resource
+	fi
 	info "delete stale kata resource under ${stale_kata_dir_union[@]}"
 	delete_stale_kata_resource
 	info "Remove installed kata packages"
