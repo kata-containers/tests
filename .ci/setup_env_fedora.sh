@@ -46,7 +46,7 @@ if [ "$(uname -m)" == "ppc64le" ] || [ "$(uname -m)" == "s390x" ]; then
 fi
 
 if [ "$(uname -m)" == "s390x" ]; then
-	packages[kernel_dependencies]+=" openssl-devel"
+	packages[kernel_dependencies]+=" openssl openssl-devel"
 fi
 
 main()

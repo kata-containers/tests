@@ -45,7 +45,7 @@ install_from_source() {
 		cd "${GOPATH}/src/${cri_repository}" >>/dev/null
 		git fetch
 		git checkout "${cri_containerd_version}"
-		make BUILDTAGS="${BUILD_TAGS:-}" release
+		make BUILD_TAGS="${BUILDTAGS:-}" release
 		local commit
 		commit=$(git rev-parse --short HEAD)
 		tarball_name="cri-containerd-${commit}.${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"

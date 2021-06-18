@@ -27,7 +27,7 @@ declare -A minimal_packages=( \
 )
 
 declare -A packages=( \
-	[kata_containers_dependencies]="libtool automake autotools-dev autoconf bc libpixman-1-dev coreutils" \
+	[kata_containers_dependencies]="libtool automake autotools-dev autoconf bc libpixman-1-dev coreutils curl" \
 	[qemu_dependencies]="libcap-dev libattr1-dev libcap-ng-dev librbd-dev ninja-build" \
 	[kernel_dependencies]="libelf-dev flex" \
 	[crio_dependencies]="libglib2.0-dev libseccomp-dev libapparmor-dev libgpgme11-dev thin-provisioning-tools" \
@@ -45,7 +45,7 @@ declare -A packages=( \
 )
 
 if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 20.04" | bc -q)" == "1" ]; then
-	packages[cri_containerd_dependencies]+=" libbtrfs-dev"
+	packages[cri-containerd_dependencies]+=" libbtrfs-dev"
 fi
 
 if [ "$(uname -m)" == "x86_64" ] && [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 18.04" | bc -q)" == "1" ]; then
@@ -53,7 +53,7 @@ if [ "$(uname -m)" == "x86_64" ] && [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VE
 fi
 
 if [ "$(uname -m)" == "s390x" ]; then
-	packages[kernel_depencencies]+=" libssl-dev"
+	packages[kernel_dependencies]+=" libssl-dev"
 fi
 
 rust_agent_pkgs=()
