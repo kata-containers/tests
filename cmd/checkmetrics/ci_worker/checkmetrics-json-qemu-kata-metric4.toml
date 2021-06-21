@@ -16,7 +16,7 @@ description = "measure container lifecycle timings"
 # within (inclusive)
 checkvar = ".\"boot-times\".Results | .[] | .\"to-workload\".Result"
 checktype = "mean"
-midval = 0.62
+midval = 0.57
 minpercent = 5.0
 maxpercent = 5.0
 
@@ -55,7 +55,7 @@ description = "measure container average of blogbench write"
 # within (inclusive)
 checkvar = ".\"blogbench\".Results | .[] | .write.Result"
 checktype = "mean"
-midval = 842.25
+midval = 975.0
 minpercent = 10.0
 maxpercent = 10.0
 
@@ -68,6 +68,6 @@ description = "measure container average of blogbench read"
 # within (inclusive)
 checkvar = ".\"blogbench\".Results | .[] | .read.Result"
 checktype = "mean"
-midval = 48055.25
+midval = 55808.66
 minpercent = 10.0
 maxpercent = 10.0
