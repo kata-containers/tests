@@ -47,6 +47,7 @@ K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-qos-pods.bats" \
 	"k8s-replication.bats" \
 	"k8s-scale-nginx.bats" \
+	"k8s-seccomp.bats" \
 	"k8s-sysctls.bats" \
 	"k8s-security-context.bats" \
 	"k8s-shared-volume.bats" \
