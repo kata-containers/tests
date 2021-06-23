@@ -68,9 +68,10 @@ IFS=''
 
 # Skip CRI-O tests that currently are not working
 pushd "${crio_repository_path}/test/"
+cp ctr.bats ctr_kata_integration_tests.bats
 for i in "${skipCRIOTests[@]}"
 do
-	sed -i '/'${i}'/a skip \"This is not working\"' "$GOPATH/src/${crio_repository}/test/ctr.bats"
+	sed -i '/'${i}'/a skip \"This is not working\"' "ctr_kata_integration_tests.bats"
 done
 
 IFS=$OLD_IFS
@@ -86,6 +87,7 @@ if systemctl is-active --quiet docker; then
 fi
 
 echo "Running cri-o tests with runtime: $CONTAINER_RUNTIME"
-./test_runner.sh ctr.bats
+./test_runner.sh ctr_kata_integration_tests.bats
+rm ctr_kata_integration_tests.bats
 
 popd
