@@ -40,6 +40,9 @@ create_kata_webhook() {
 
 	# Apply kata-webhook deployment
 	kubectl apply -f deploy/
+
+	# Ensure the kata-webhook is working
+	./webhook-check.sh
 	popd
 }
 
