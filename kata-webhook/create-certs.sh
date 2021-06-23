@@ -8,9 +8,11 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 
-WEBHOOK_NS=${1:-"default"}
-WEBHOOK_NAME=${2:-"pod-annotate"}
-WEBHOOK_SVC="${WEBHOOK_NAME}-webhook"
+webhook_dir=$(dirname $0)
+source "${webhook_dir}/common.bash"
+
+[ -n "${1:-}" ] && WEBHOOK_NS="$1"
+[ -n "${2:-}" ] && WEBHOOK_NAME="$2"
 
 if ! command -v openssl &>/dev/null; then
 	echo "ERROR: command 'openssl' not found."

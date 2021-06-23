@@ -12,11 +12,10 @@ set -o pipefail
 
 webhook_dir=$(dirname $0)
 source "${webhook_dir}/../lib/common.bash"
+source "${webhook_dir}/common.bash"
 
-WEBHOOK_NS=${1:-"default"}
-WEBHOOK_NAME=${2:-"pod-annotate"}
-WEBHOOK_SVC="${WEBHOOK_NAME}-webhook"
 readonly hello_pod="hello-kata-webhook"
+# The Pod RuntimeClassName for Kata Containers.
 RUNTIME_CLASS="${RUNTIME_CLASS:-"kata"}"
 
 cleanup() {
