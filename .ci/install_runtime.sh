@@ -17,7 +17,7 @@ source /etc/os-release || source /usr/lib/os-release
 KATA_REPO="github.com/kata-containers/kata-containers"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 KATA_EXPERIMENTAL_FEATURES="${KATA_EXPERIMENTAL_FEATURES:-}"
-MACHINETYPE="${MACHINETYPE:-pc}"
+MACHINETYPE="${MACHINETYPE:-q35}"
 METRICS_CI="${METRICS_CI:-}"
 PREFIX="${PREFIX:-/usr}"
 DESTDIR="${DESTDIR:-/}"
