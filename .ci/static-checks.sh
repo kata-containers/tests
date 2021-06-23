@@ -15,6 +15,11 @@ set -e
 cidir=$(realpath $(dirname "$0"))
 source "${cidir}/lib.sh"
 
+# By default in Golang >= 1.16 GO111MODULE is set to "on",
+# some subprojects in this repo may not support "go modules",
+# set GO111MODULE to "auto" to enable module-aware mode only when
+# a go.mod file is present in the current directory.
+export GO111MODULE="auto"
 export tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 export tests_repo_dir="${GOPATH}/src/${tests_repo}"
 
