@@ -14,7 +14,7 @@ cidir=$(dirname "$0")
 
 source "${cidir}/lib.sh"
 source /etc/os-release || source /usr/lib/os-release
-KATA_REPO="github.com/kata-containers/kata-containers"
+KATA_REPO=${katacontainers_repo:="github.com/kata-containers/kata-containers"}
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 KATA_EXPERIMENTAL_FEATURES="${KATA_EXPERIMENTAL_FEATURES:-}"
 MACHINETYPE="${MACHINETYPE:-q35}"

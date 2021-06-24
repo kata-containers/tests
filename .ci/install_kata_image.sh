@@ -12,7 +12,7 @@ set -o errtrace
 
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
-rust_agent_repo="github.com/kata-containers/kata-containers"
+rust_agent_repo=${katacontainers_repo:="github.com/kata-containers/kata-containers"}
 arch=$("${cidir}"/kata-arch.sh -d)
 PREFIX="${PREFIX:-/usr}"
 DESTDIR="${DESTDIR:-/}"
