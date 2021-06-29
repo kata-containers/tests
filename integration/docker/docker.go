@@ -524,6 +524,7 @@ func dockerUnpause(args ...string) (string, string, int) {
 }
 
 // dockerTop displays the running processes of a container
+//nolint:unused
 func dockerTop(args ...string) (string, string, int) {
 	return runDockerCommand("top", args...)
 }
