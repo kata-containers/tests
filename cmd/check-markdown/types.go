@@ -130,8 +130,7 @@ type Link struct {
 
 // Doc represents a markdown document.
 type Doc struct {
-	// Filename
-	Name string
+	Logger *logrus.Entry
 
 	// Key: heading name
 	// Value: Heading
@@ -142,6 +141,9 @@ type Doc struct {
 	// the same _address_, but of a different type.
 	Links map[string][]Link
 
+	// Filename
+	Name string
+
 	// true when this document has been fully parsed
 	Parsed bool
 
@@ -149,6 +151,4 @@ type Doc struct {
 	ShowTOC bool
 
 	ListMode bool
-
-	Logger *logrus.Entry
 }
