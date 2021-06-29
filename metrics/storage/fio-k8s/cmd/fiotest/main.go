@@ -160,9 +160,12 @@ func (c fioTestConfig) run() (result fioResult, err error) {
 }
 
 type fioTestConfig struct {
+	//test options
+	k8sYaml          string
+	containerRuntime string
+	outputDir        string
 
 	//fio options
-	direct    bool
 	blocksize string
 	directory string
 	iodepth   string
@@ -171,10 +174,7 @@ type fioTestConfig struct {
 	runtime   string
 	size      string
 
-	//test options
-	k8sYaml          string
-	containerRuntime string
-	outputDir        string
+	direct bool
 }
 
 func runFioJobs(testDirPath string, cfg fioTestConfig) (results []fioResult, err error) {
