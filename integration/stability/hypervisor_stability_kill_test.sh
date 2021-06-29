@@ -17,6 +17,8 @@ source "${cidir}/../../metrics/lib/common.bash"
 IMAGE="${IMAGE:-quay.io/prometheus/busybox:latest}"
 CONTAINER_NAME="${CONTAINER_NAME:-test}"
 PAYLOAD_ARGS="${PAYLOAD_ARGS:-tail -f /dev/null}"
+# The based pidof command-line.
+pidof_cmd="pidof"
 
 setup()  {
 	sudo systemctl restart containerd
@@ -27,18 +29,22 @@ setup()  {
 	sudo ctr image pull $IMAGE
 	[ $? != 0 ] && die "Unable to get image $IMAGE"
 
+	# Build the base pidof command-line so that PID of running hypervisors
+	# are omitted.
+	for omit_pid in $(pidof ${HYPERVISOR_NAME}); do
+		pidof_cmd+=" -o $omit_pid"
+	done
+	# Start the container.
 	sudo ctr run --runtime=$CONTAINERD_RUNTIME -d $IMAGE $CONTAINER_NAME sh -c $PAYLOAD_ARGS
-	num=$(pidof ${HYPERVISOR_NAME} | wc -w)
-	[ ${num} -eq 1 ] || die "hypervisor count:${num} expected:1"
 }
 
 kill_hypervisor()  {
-	pid=$(pidof ${HYPERVISOR_NAME})
+	pid=$(${pidof_cmd} ${HYPERVISOR_NAME})
 	[ -n ${pid} ] || die "failed to find hypervisor pid"
 	sudo kill -KILL ${pid} || die "failed to kill hypervisor (pid ${pid})"
 	# signal is async and we've seen failures hypervisor not being killed immediately.
 	sleep 1
-	num=$(pidof ${HYPERVISOR_NAME} | wc -w)
+	num=$(${pidof_cmd} ${HYPERVISOR_NAME} | wc -w)
 	[ ${num} -eq 0 ] || die "hypervisor count:${num} expected:0"
 	sudo ctr tasks rm -f $(sudo ctr task list -q)
 	sudo ctr c rm $(sudo ctr c list -q)
