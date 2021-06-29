@@ -251,8 +251,8 @@ func TestParseTime(t *testing.T) {
 	assert := assert.New(t)
 
 	type testData struct {
-		timeString  string
 		t           time.Time
+		timeString  string
 		expectError bool
 	}
 
@@ -270,18 +270,18 @@ func TestParseTime(t *testing.T) {
 	time8 := "2018-02-28T03:42:17.007948-01:01"
 
 	data := []testData{
-		{"", time.Time{}, true},
+		{time.Time{}, "", true},
 
-		{nano, now, false},
+		{now, nano, false},
 
-		{time1, time.Time{}, false},
-		{time2, time.Time{}, false},
-		{time3, time.Time{}, false},
-		{time4, time.Time{}, false},
-		{time5, time.Time{}, false},
-		{time6, time.Time{}, false},
-		{time7, time.Time{}, false},
-		{time8, time.Time{}, false},
+		{time.Time{}, time1, false},
+		{time.Time{}, time2, false},
+		{time.Time{}, time3, false},
+		{time.Time{}, time4, false},
+		{time.Time{}, time5, false},
+		{time.Time{}, time6, false},
+		{time.Time{}, time7, false},
+		{time.Time{}, time8, false},
 	}
 
 	for i, d := range data {
@@ -407,9 +407,9 @@ func TestCreateLogEntry(t *testing.T) {
 
 	type testData struct {
 		file        string
-		line        uint64
 		pairs       kvPairs
 		expectError bool
+		line        uint64
 	}
 
 	kernelMsg := regexp.QuoteMeta(`[    1.122452] sd 0:0:0:0: [sda] 20971520 512-byte logical blocks: (10.7 GB/10.0 GiB)`)
@@ -440,29 +440,29 @@ func TestCreateLogEntry(t *testing.T) {
 	logger.Logger.SetLevel(logrus.ErrorLevel)
 
 	strictData := []testData{
-		{"", 0, kvPairs{}, true},
-		{"foo", 0, kvPairs{}, true},
-		{"", 1, kvPairs{}, true},
-		{"foo", 1, kvPairs{}, true},
-		{"foo", 1, kvPairs{{"key", "\x11"}}, true},
-		{"foo", 1, kvPairs{{"\x00", "value"}}, true},
-		{"foo", 1, kvPairs{{" ", "value"}}, true},
-		{"foo", 1, kvPairs{{"\t", "value"}}, true},
-		{"foo", 1, kvPairs{{"\n", "value"}}, true},
-		{"foo", 0, kvPairs{{"key", "value"}}, true},
-		{"", 1, kvPairs{{"key", "value"}}, true},
-		{"/some/where", 1, corruptTestDataPairs, true},
+		{"", kvPairs{}, true, 0},
+		{"foo", kvPairs{}, true, 0},
+		{"", kvPairs{}, true, 1},
+		{"foo", kvPairs{}, true, 1},
+		{"foo", kvPairs{{"key", "\x11"}}, true, 1},
+		{"foo", kvPairs{{"\x00", "value"}}, true, 1},
+		{"foo", kvPairs{{" ", "value"}}, true, 1},
+		{"foo", kvPairs{{"\t", "value"}}, true, 1},
+		{"foo", kvPairs{{"\n", "value"}}, true, 1},
+		{"foo", kvPairs{{"key", "value"}}, true, 0},
+		{"", kvPairs{{"key", "value"}}, true, 1},
+		{"/some/where", corruptTestDataPairs, true, 1},
 
 		// valid
-		{"foo", 1, kvPairs{{"key", "value"}}, false},
+		{"foo", kvPairs{{"key", "value"}}, false, 1},
 
-		{"foo", 1, kvPairs{{"key", ""}}, false},
-		{"foo", 1, kvPairs{{"key", " "}}, false},
-		{"foo", 1, kvPairs{{"key", "\t"}}, false},
-		{"foo", 1, kvPairs{{"key", "\n"}}, false},
-		{"foo", 1, kvPairs{{"key", `\t`}}, false},
-		{"foo", 1, kvPairs{{"key", `\n`}}, false},
-		{"foo", 1, kvPairs{{"key", "foo bar"}}, false},
+		{"foo", kvPairs{{"key", ""}}, false, 1},
+		{"foo", kvPairs{{"key", " "}}, false, 1},
+		{"foo", kvPairs{{"key", "\t"}}, false, 1},
+		{"foo", kvPairs{{"key", "\n"}}, false, 1},
+		{"foo", kvPairs{{"key", `\t`}}, false, 1},
+		{"foo", kvPairs{{"key", `\n`}}, false, 1},
+		{"foo", kvPairs{{"key", "foo bar"}}, false, 1},
 	}
 
 	for i, d := range strictData {
@@ -478,7 +478,7 @@ func TestCreateLogEntry(t *testing.T) {
 	strict = false
 
 	nonStrictData := []testData{
-		{"/some/where", 1, corruptTestDataPairs, false},
+		{"/some/where", corruptTestDataPairs, false, 1},
 	}
 
 	for i, d := range nonStrictData {

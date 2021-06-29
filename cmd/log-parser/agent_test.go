@@ -178,7 +178,7 @@ func TestUnpackAgentLogEntryWithContainerID(t *testing.T) {
 	execID := "51f062b90853e22c0817392395bc0c43cd6a0bb9e456b1bd0e28433f805475d6"
 
 	// agent log fields added when agent debug is enabled
-	msg := fmt.Sprintf(`"new request"`)
+	msg := `"new request"`
 
 	grpcTrace := fmt.Sprintf(`container_id:"%s" exec_id:"%s"`, containerID, execID)
 	grpcRequest := "/grpc.AgentService/CreateContainer"
