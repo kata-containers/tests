@@ -19,7 +19,7 @@ TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
 
 echo "Install Kata Containers Image"
 echo "rust image is default for Kata 2.0"
-"${cidir}/install_kata_image.sh" "${tag}"
+osbuilder_distro="$ID" "${cidir}/install_kata_image.sh" "${tag}"
 
 echo "Install Kata Containers Kernel"
 "${cidir}/install_kata_kernel.sh" "${tag}"
