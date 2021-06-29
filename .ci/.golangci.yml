@@ -20,7 +20,6 @@ linters:
     - gosimple
     - govet
     - ineffassign
-    - maligned
     - misspell
     - staticcheck
     - structcheck
@@ -32,3 +31,8 @@ linters:
 linters-settings:
   gocyclo:
     min_complexity: 15
+  unused:
+    check-exported: true
+  govet:
+    enable:
+      - fieldalignment

@@ -65,7 +65,7 @@ externals:
   golangci-lint:
     description: "utility to run various golang linters"
     url: "github.com/golangci/golangci-lint"
-    version: "v1.19.0"
+    version: "v1.41.1"
 
   sonobuoy:
     description: "Tool to run kubernetes e2e conformance tests"
