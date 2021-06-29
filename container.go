@@ -32,12 +32,12 @@ type Container struct {
 	// if nil then try to run the container without --log option
 	LogFile *string
 
-	// Detach allows to run the process detached from the shell
-	Detach bool
-
 	// ID of the container
 	// if nil then try to run the container without container ID
 	ID *string
+
+	// Detach allows to run the process detached from the shell
+	Detach bool
 }
 
 // Process describes a process to be executed on a running container.
@@ -45,8 +45,8 @@ type Process struct {
 	ContainerID *string
 	Console     *string
 	Tty         *string
-	Detach      bool
 	Workload    []string
+	Detach      bool
 }
 
 // NewContainer returns a new Container
