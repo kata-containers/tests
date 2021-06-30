@@ -9,6 +9,8 @@
 containerd:
   - \[sig-api-machinery\] Aggregator Should be able to support the 1.17 Sample API Server using the current Aggregator \[Conformance\]
   - Daemon set \[Serial\] should rollback without unnecessary restarts
+  - \[sig-scheduling\] SchedulerPreemption \[Serial\] \[It\] validates lower priority pod preemption by critical pod \[Conformance\]
+  - \[sig-scheduling\] SchedulerPreemption \[Serial\] \[It\] validates basic preemption works \[Conformance\]
 
 crio:
   - Daemon set \[Serial\] should rollback without unnecessary restarts
@@ -17,4 +19,6 @@ hypervisor:
   cloud-hypervisor:
     - \[sig-apps]\ Daemon set \[Serial\] should rollback without unnecessary restarts \[Conformance\]
     - \[sig-api-machinery\] Aggregator Should be able to support the 1.17 Sample API Server using the current Aggregator \[Conformance\]
+    - \[sig-scheduling\] SchedulerPreemption \[Serial\] \[It\] validates lower priority pod preemption by critical pod \[Conformance\]
+    - \[sig-scheduling\] SchedulerPreemption \[Serial\] \[It\] validates basic preemption works \[Conformance\]  
     - \[k8s.io\] Security Context When creating a pod with privileged should run the container as unprivileged when false \[LinuxOnly\] \[NodeConformance\]
