@@ -26,9 +26,9 @@ cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 source /etc/os-release || source /usr/lib/os-release
 
-# If no branch specified, compare against the master.
+# If no branch specified, compare against the main branch.
 # The 'branch' var is required by the get_pr() lib functions.
-branch=${branch:-master}
+branch=${branch:-main}
 
 # The YAML file containing our filename match patterns.
 yqfile_rootname="ci-fast-return.yaml"
