@@ -208,7 +208,7 @@ collect_logs()
 		if [ "${have_collect_script}" = "yes" ]
 		then
 			echo "Kata Collect Data script output"
-			sudo -E PATH="$PATH" $collect_script
+			sudo -E PATH="$PATH" $collect_script || true
 		fi
 
 		if [ "${have_procenv}" = "yes" ]
