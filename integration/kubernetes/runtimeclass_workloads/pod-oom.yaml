@@ -13,8 +13,8 @@ spec:
   runtimeClassName: kata
   restartPolicy: Never
   containers:
-    - image: containerstack/alpine-stress:latest
-      imagePullPolicy: Always
+    - image: ${stress_image}
+      imagePullPolicy: ${stress_image_pull_policy}
       name: oom-test
       command: ["/bin/sh"]
       args: ["-c", "sleep 2; stress --vm 2 --vm-bytes 400M --timeout 30s"]

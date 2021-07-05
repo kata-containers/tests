@@ -7,6 +7,7 @@
 # This script is used to reset the kubernetes cluster
 
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
+source "${SCRIPT_PATH}/../../.ci/lib.sh"
 source "${SCRIPT_PATH}/../../lib/common.bash"
 
 cri_runtime="${CRI_RUNTIME:-crio}"
@@ -38,6 +39,8 @@ BAREMETAL="${BAREMETAL:-false}"
 if [ "${BAREMETAL}" == true ] && [ -f "${SCRIPT_PATH}/cleanup_bare_metal_env.sh" ]; then
 	bash -f "${SCRIPT_PATH}/cleanup_bare_metal_env.sh"
 fi
+
+sudo -E "${container_engine}" rm -f "${registry_name}" || true
 
 # Check no kata processes are left behind after reseting kubernetes
 check_processes

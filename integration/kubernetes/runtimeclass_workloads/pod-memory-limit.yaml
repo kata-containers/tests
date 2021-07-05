@@ -12,7 +12,8 @@ spec:
   runtimeClassName: kata
   containers:
   - name: memory-test-ctr
-    image: containerstack/alpine-stress:latest
+    image: ${stress_image}
+    imagePullPolicy: ${stress_image_pull_policy}
     resources:
       limits:
         memory: "${memory_size}"
