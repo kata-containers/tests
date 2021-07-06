@@ -75,6 +75,14 @@ collect_logs()
 	have_procenv="no"
 	[ -n "$(command -v procenv)" ] && have_procenv="yes"
 
+	local -r mounts_log_filename="mounts.log"
+	local -r mounts_log_path="${log_copy_dest}/${mounts_log_filename}"
+	local -r mounts_log_prefix="mounts_"
+
+	local -r procs_log_filename="processes.log"
+	local -r procs_log_path="${log_copy_dest}/${procs_log_filename}"
+	local -r procs_log_prefix="processes_"
+
 	# Copy log files if a destination path is provided, otherwise simply
 	# display them.
 	if [ "${log_copy_dest}" ]; then
@@ -143,6 +151,9 @@ collect_logs()
 				sudo chown ${USER}: "${procenv_root_log_path}"
 		fi
 
+		sudo mount > "${mounts_log_path}" && gzip -9 "${mounts_log_path}"
+		ps -efwww > "${procs_log_path}" && gzip -9 "${procs_log_path}"
+
 		local prefix
 
 		# Compress log files
@@ -197,7 +208,7 @@ collect_logs()
 		if [ "${have_collect_script}" = "yes" ]
 		then
 			echo "Kata Collect Data script output"
-			sudo -E PATH="$PATH" $collect_script
+			sudo -E PATH="$PATH" $collect_script || true
 		fi
 
 		if [ "${have_procenv}" = "yes" ]
@@ -208,6 +219,12 @@ collect_logs()
 			echo "Procenv output (superuser):"
 			sudo -E procenv
 		fi
+
+		echo "Mounts:"
+		sudo mount
+
+		echo "Processes:"
+		ps -efwww
 	fi
 }
 
