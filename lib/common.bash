@@ -173,10 +173,14 @@ clean_env()
 
 clean_env_ctr()
 {
-	check_containers=$(sudo ctr c list -q | wc -l)
-	if ((${check_containers})); then
+	check_tasks=$(sudo ctr task list -q | wc -l)
+	if ((${check_tasks})); then
 		sudo ctr tasks kill $(sudo ctr task list -q)
 		sudo ctr tasks rm -f $(sudo ctr task list -q)
+	fi
+
+	check_containers=$(sudo ctr c list -q | wc -l)
+	if ((${check_containers})); then
 		sudo ctr c rm $(sudo ctr c list -q)
 	fi
 }
