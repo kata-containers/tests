@@ -39,8 +39,8 @@ if [ "${BAREMETAL}" == true ] && [ -f "${SCRIPT_PATH}/cleanup_bare_metal_env.sh"
 	bash -f "${SCRIPT_PATH}/cleanup_bare_metal_env.sh"
 fi
 
-# Check no kata processes are left behind after reseting kubernetes
-check_processes
-
 # Checks that pods were not left
 check_pods
+
+# Check no kata processes are left behind after reseting kubernetes
+check_processes
