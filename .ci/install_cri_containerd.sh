@@ -13,6 +13,7 @@ set -o errtrace
 source /etc/os-release || source /usr/lib/os-release
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cri_repository="github.com/containerd/cri"
 
 # Flag to do tasks for CI
 CI=${CI:-""}
@@ -28,7 +29,9 @@ CONTAIENRD_ARCH=$(go env GOARCH)
 cri_containerd_tarball_version=$(get_version "externals.cri-containerd.version")
 cri_containerd_repo=$(get_version "externals.cri-containerd.url")
 
-cri_containerd_version=${cri_containerd_tarball_version#v}
+echo "Get cri_containerd version"
+cri_containerd_version_url="https://raw.githubusercontent.com/containerd/containerd/${cri_containerd_tarball_version}/vendor.conf"
+cri_containerd_version=$(curl -sL $cri_containerd_version_url | grep "github.com/containerd/cri" | awk '{print $2}')
 
 echo "Set up environment"
 if [ "$ID" == centos ] || [ "$ID" == rhel ]; then
@@ -39,21 +42,24 @@ fi
 install_from_source() {
 	echo "Trying to install containerd from source"
 	(
-		cd "${GOPATH}/src/${cri_containerd_repo}" >>/dev/null
+		cd "${GOPATH}/src/${cri_repository}" >>/dev/null
 		git fetch
-		git checkout "${cri_containerd_tarball_version}"
-		make BUILDTAGS="${BUILD_TAGS:-}" cri-cni-release
-		tarball_name="cri-containerd-cni-${cri_containerd_version}-${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
-		sudo tar -xvf "./releases/${tarball_name}" -C /
+		git checkout "${cri_containerd_version}"
+		make BUILD_TAGS="${BUILDTAGS:-}" release
+		local commit
+		commit=$(git rev-parse --short HEAD)
+		tarball_name="cri-containerd-${commit}.${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
+		sudo tar -xvf "./_output/${tarball_name}" -C /
 	)
 }
 
 install_from_static_tarball() {
 	echo "Trying to install containerd from static tarball"
 	local tarball_url=$(get_version "externals.cri-containerd.tarball_url")
+	cri_containerd_tarball_version="${cri_containerd_tarball_version/v/}"
 
-	local tarball_name="cri-containerd-cni-${cri_containerd_version}-${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
-	local url="${tarball_url}/${cri_containerd_tarball_version}/${tarball_name}"
+	local tarball_name="cri-containerd-${cri_containerd_tarball_version}.${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
+	local url="${tarball_url}/${tarball_name}"
 
 	echo "Download tarball from ${url}"
 	if ! curl -OL -f "${url}"; then
@@ -62,6 +68,12 @@ install_from_static_tarball() {
 	fi
 
 	sudo tar -xvf "${tarball_name}" -C /
+	echo "vendored cri version ${cri_containerd_version}"
+	(
+		cd "${GOPATH}/src/${cri_containerd_repo}" >>/dev/null
+		echo "checkout to cri version ${cri_containerd_version}"
+		git checkout "${cri_containerd_version}"
+	)
 }
 
 go get "${cri_containerd_repo}"
