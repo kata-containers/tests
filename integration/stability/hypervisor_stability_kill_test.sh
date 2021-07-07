@@ -21,7 +21,9 @@ PAYLOAD_ARGS="${PAYLOAD_ARGS:-tail -f /dev/null}"
 setup()  {
 	sudo systemctl restart containerd
 	extract_kata_env
-	clean_env_ctr
+	num=$(pidof ${HYPERVISOR_NAME} | wc -w)
+	[ ${num} -eq 0 ] || kill_hypervisor
+
 	HYPERVISOR_NAME=$(basename ${HYPERVISOR_PATH})
 	CONTAINERD_RUNTIME="io.containerd.kata.v2"
 	sudo ctr image pull $IMAGE
