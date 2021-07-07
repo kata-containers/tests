@@ -39,7 +39,7 @@ kill_hypervisor()  {
 	[ -n ${pid} ] || die "failed to find hypervisor pid"
 	sudo kill -KILL ${pid} || die "failed to kill hypervisor (pid ${pid})"
 	# signal is async and we've seen failures hypervisor not being killed immediately.
-	sleep 1
+	sleep 5
 	num=$(pidof ${HYPERVISOR_NAME} | wc -w)
 	[ ${num} -eq 0 ] || die "hypervisor count:${num} expected:0"
 	clean_env_ctr
