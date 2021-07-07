@@ -24,11 +24,11 @@ setup()  {
 	num=$(pidof ${HYPERVISOR_NAME} | wc -w)
 	[ ${num} -eq 0 ] || kill_hypervisor
 
-	HYPERVISOR_NAME=$(basename ${HYPERVISOR_PATH})
-	CONTAINERD_RUNTIME="io.containerd.kata.v2"
 	sudo ctr image pull $IMAGE
 	[ $? != 0 ] && die "Unable to get image $IMAGE"
 
+	HYPERVISOR_NAME=$(basename ${HYPERVISOR_PATH})
+	CONTAINERD_RUNTIME="io.containerd.kata.v2"
 	sudo ctr run --runtime=$CONTAINERD_RUNTIME -d $IMAGE $CONTAINER_NAME sh -c $PAYLOAD_ARGS
 	num=$(pidof ${HYPERVISOR_NAME} | wc -w)
 	[ ${num} -eq 1 ] || die "hypervisor count:${num} expected:1"
