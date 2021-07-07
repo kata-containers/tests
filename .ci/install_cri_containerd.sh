@@ -52,8 +52,8 @@ install_from_static_tarball() {
 	echo "Trying to install containerd from static tarball"
 	local tarball_url=$(get_version "externals.cri-containerd.tarball_url")
 
-	local tarball_name="cri-containerd-cni-${cri_containerd_version}-${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
-	local url="${tarball_url}/${cri_containerd_tarball_version}/${tarball_name}"
+	local tarball_name="cri-containerd-cni-${cri_containerd_version}.${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
+	local url="${tarball_url}/${tarball_name}"
 
 	echo "Download tarball from ${url}"
 	if ! curl -OL -f "${url}"; then
