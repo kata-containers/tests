@@ -40,8 +40,7 @@ kill_hypervisor()  {
 	sleep 1
 	num=$(pidof ${HYPERVISOR_NAME} | wc -w)
 	[ ${num} -eq 0 ] || die "hypervisor count:${num} expected:0"
-	sudo ctr tasks rm -f $(sudo ctr task list -q)
-	sudo ctr c rm $(sudo ctr c list -q)
+	clean_env_ctr
 	[ $? -eq 0 ] || die "failed to force removing container $CONTAINER_NAME"
 }
 
