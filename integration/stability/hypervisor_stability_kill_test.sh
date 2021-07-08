@@ -21,6 +21,7 @@ PAYLOAD_ARGS="${PAYLOAD_ARGS:-tail -f /dev/null}"
 setup()  {
 	sudo systemctl restart containerd
 	extract_kata_env
+	clean_env_ctr
 	num=$(pidof ${HYPERVISOR_NAME} | wc -w)
 	[ ${num} -eq 0 ] || kill_hypervisor
 
@@ -39,7 +40,7 @@ kill_hypervisor()  {
 	[ -n ${pid} ] || die "failed to find hypervisor pid"
 	sudo kill -KILL ${pid} || die "failed to kill hypervisor (pid ${pid})"
 	# signal is async and we've seen failures hypervisor not being killed immediately.
-	sleep 5
+	sleep 10
 	num=$(pidof ${HYPERVISOR_NAME} | wc -w)
 	[ ${num} -eq 0 ] || die "hypervisor count:${num} expected:0"
 	clean_env_ctr
