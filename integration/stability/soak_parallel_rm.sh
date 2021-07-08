@@ -51,16 +51,6 @@ check_vsock_active() {
 	fi
 }
 
-enable_netmon() {
-	echo "Enabling netmon at the configuration file"
-	sed -i 's|#enable_netmon = true|enable_netmon = true|' ${RUNTIME_CONFIG_PATH}
-}
-
-disable_netmon() {
-	echo "Disabling netmon at the configuration file"
-	sed -i 's|enable_netmon = true|#enable_netmon = true|' ${RUNTIME_CONFIG_PATH}
-}
-
 count_containers() {
 	sudo ctr c list -q | wc -l
 }
@@ -96,24 +86,8 @@ check_all_running() {
 			((goterror++))
 		fi
 
-		if [ "$KATA_HYPERVISOR" == "qemu" ]; then
-			# check we have the right number of netmon's
-			how_many_netmons=$(pgrep -a -f ${NETMON_PATH} | wc -l)
-			if (( ${how_many_running} != ${how_many_netmons} )); then
-				echo "Wrong number of netmons running (${how_many_running} != ${how_many_netmons}) - stopping"
-				((goterror++))
-			fi
-		fi
-
-		# check we have no runtimes running (they should be transient, we should not 'see them')
-		how_many_runtimes=$(ps --no-header -C ${RUNTIME} | wc -l)
-		if (( ${how_many_runtimes} )); then
-			echo "Wrong number of runtimes running (${how_many_runtimes}) - stopping"
-			((goterror++))
-		fi
-
 		# if this is kata-runtime, check how many pods virtcontainers thinks we have
-		if [[ "$RUNTIME" == "kata-runtime" ]]; then
+		if [[ "$RUNTIME" == "$KATA_RUNTIME_NAME" ]]; then
 			num_vc_pods=$(sudo ls -1 ${VC_POD_DIR} | wc -l)
 
 			if (( ${how_many_running} != ${num_vc_pods} )); then
@@ -144,8 +118,7 @@ go() {
 
 		for ((i=1; i<= ${MAX_CONTAINERS}; i++)); do
 			containers+=($(random_name))
-			containerd_runtime="io.containerd.kata.v2"
-			sudo ctr run --runtime=${containerd_runtime} -d ${nginx_image} ${containers[-1]} sh -c ${COMMAND}
+			sudo ctr run --runtime=${CONTAINERD_RUNTIME} -d ${nginx_image} ${containers[-1]} sh -c ${COMMAND}
 			((how_many++))
 		done
 
@@ -189,15 +162,12 @@ init() {
 	extract_kata_env
 	kill_all_containers
 
-	# Enable netmon
-	enable_netmon
-
 	# remember how many mount points we had before we do anything
 	# and then sanity check we end up with no new ones dangling at the end
 	initial_mount_count=$(count_mounts)
 
 	# Only check Kata items if we are using a Kata runtime
-	if [[ "$RUNTIME" == "kata-runtime" ]]; then
+	if [[ "$RUNTIME" == "$KATA_RUNTIME_NAME" ]]; then
 		echo "Checking Kata runtime $RUNTIME"
 		check_kata_components=1
 	else
@@ -234,8 +204,6 @@ spin() {
 	}
 	done
 
-	# Disable netmon
-	disable_netmon
 }
 
 init

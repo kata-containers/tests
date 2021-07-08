@@ -58,8 +58,9 @@ trap 'handle_error $LINENO' ERR
 # and recommended Kata docker runtime install names.
 is_a_kata_runtime(){
 	case "$1" in
-	"kata-runtime") ;&	# fallthrough
-	"kata-qemu") ;&		# fallthrough
+	"io.containerd.kata.v2") ;& # fallthrough
+	"kata-runtime") ;& # fallthrough
+	"kata-qemu") ;& # fallthrough
 	"kata-fc")
 		echo "1"
 		return
@@ -97,7 +98,6 @@ extract_kata_env(){
 	VIRTIOFSD_PATH=$(kata-runtime kata-env --json | jq -r .Hypervisor.VirtioFSDaemon)
 
 	INITRD_PATH=$(kata-runtime kata-env --json | jq -r .Initrd.Path)
-	NETMON_PATH=$(kata-runtime kata-env --json | jq -r .Netmon.Path)
 }
 
 # Checks that processes are not running
