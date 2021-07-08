@@ -40,6 +40,8 @@ type metrics struct {
 	CheckVar string `toml:"checkvar"` //JSON: which var to (extract and) calculate on
 	// is a 'jq' query
 
+	stats statistics // collection of our stats data, calculated from Results
+
 	// For setting 'bounds', you can either set a min/max value pair,
 	// or you can set a mid-range value and a 'percentage gap'.
 	// You should set one or the other. Setting both will likely result
@@ -59,8 +61,6 @@ type metrics struct {
 	// Vars that are not in the toml file, but are filled out later
 	// dynamically
 	Gap float64 // What is the % gap between the Min and Max vals
-
-	stats statistics // collection of our stats data, calculated from Results
 }
 
 // Calculate the statistics from the stored Results data

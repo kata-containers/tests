@@ -453,8 +453,8 @@ func TestCheckCommitBody(t *testing.T) {
 	config := createCommitConfig()
 
 	type testData struct {
-		body        []string
 		config      *CommitConfig
+		body        []string
 		expectFail  bool
 		expectFixes bool
 	}
@@ -465,125 +465,125 @@ func TestCheckCommitBody(t *testing.T) {
 
 	data := []testData{
 		// invalid body
-		{[]string{}, nil, true, false},
-		{[]string{""}, nil, true, false},
-		{[]string{" "}, nil, true, false},
-		{[]string{" ", " ", " ", " "}, nil, true, false},
-		{[]string{"\n"}, nil, true, false},
-		{[]string{"\r"}, nil, true, false},
-		{[]string{"\r\n", " "}, nil, true, false},
-		{[]string{"\r\n", "\t"}, nil, true, false},
+		{nil, []string{}, true, false},
+		{nil, []string{""}, true, false},
+		{nil, []string{" "}, true, false},
+		{nil, []string{" ", " ", " ", " "}, true, false},
+		{nil, []string{"\n"}, true, false},
+		{nil, []string{"\r"}, true, false},
+		{nil, []string{"\r\n", " "}, true, false},
+		{nil, []string{"\r\n", "\t"}, true, false},
 
-		{[]string{"foo"}, nil, true, false},
-		{[]string{"foo"}, config, true, false},
-		{[]string{"foo"}, nil, true, false},
-		{[]string{"foo"}, config, true, false},
-		{[]string{"", "Signed-off-by: me@foo.com"}, config, true, false},
-		{[]string{" ", "Signed-off-by: me@foo.com"}, config, true, false},
-		{[]string{"Signed-off-by: me@foo.com"}, config, true, false},
-		{[]string{"Signed-off-by: me@foo.com", ""}, config, true, false},
-		{[]string{"Signed-off-by: me@foo.com", " "}, config, true, false},
+		{nil, []string{"foo"}, true, false},
+		{config, []string{"foo"}, true, false},
+		{nil, []string{"foo"}, true, false},
+		{config, []string{"foo"}, true, false},
+		{config, []string{"", "Signed-off-by: me@foo.com"}, true, false},
+		{config, []string{" ", "Signed-off-by: me@foo.com"}, true, false},
+		{config, []string{"Signed-off-by: me@foo.com"}, true, false},
+		{config, []string{"Signed-off-by: me@foo.com", ""}, true, false},
+		{config, []string{"Signed-off-by: me@foo.com", " "}, true, false},
 
 		// SOB must be at the start of the line
-		{[]string{"foo", " Signed-off-by: me@foo.com"}, config, true, false},
-		{[]string{"foo", "  Signed-off-by: me@foo.com"}, config, true, false},
-		{[]string{"foo", "\tSigned-off-by: me@foo.com"}, config, true, false},
-		{[]string{"foo", " \tSigned-off-by: me@foo.com"}, config, true, false},
-		{[]string{"foo", "\t Signed-off-by: me@foo.com"}, config, true, false},
-		{[]string{"foo", " \t Signed-off-by: me@foo.com"}, config, true, false},
+		{config, []string{"foo", " Signed-off-by: me@foo.com"}, true, false},
+		{config, []string{"foo", "  Signed-off-by: me@foo.com"}, true, false},
+		{config, []string{"foo", "\tSigned-off-by: me@foo.com"}, true, false},
+		{config, []string{"foo", " \tSigned-off-by: me@foo.com"}, true, false},
+		{config, []string{"foo", "\t Signed-off-by: me@foo.com"}, true, false},
+		{config, []string{"foo", " \t Signed-off-by: me@foo.com"}, true, false},
 
 		// valid
 
 		// single-word long lines should be accepted
-		{[]string{strings.Repeat("l", (defaultMaxBodyLineLength)+1), "Signed-off-by: me@foo.com"}, config, false, false},
-		{[]string{"https://this-is-a-really-really-really-reeeeally-loooooooong-and-silly-unique-resource-locator-that-nobody-should-ever-have-to-type/27706e53e877987138d758bcfcac6af623059be7/yet-another-silly-long-file-name-foo.html", "Signed-off-by: me@foo.com"}, config, false, false},
+		{config, []string{strings.Repeat("l", (defaultMaxBodyLineLength)+1), "Signed-off-by: me@foo.com"}, false, false},
+		{config, []string{"https://this-is-a-really-really-really-reeeeally-loooooooong-and-silly-unique-resource-locator-that-nobody-should-ever-have-to-type/27706e53e877987138d758bcfcac6af623059be7/yet-another-silly-long-file-name-foo.html", "Signed-off-by: me@foo.com"}, false, false},
 		// indented URL
-		{[]string{" https://this-is-a-really-really-really-reeeeally-loooooooong-and-silly-unique-resource-locator-that-nobody-should-ever-have-to-type/27706e53e877987138d758bcfcac6af623059be7/yet-another-silly-long-file-name-foo.html", "Signed-off-by: me@foo.com"}, config, false, false},
+		{config, []string{" https://this-is-a-really-really-really-reeeeally-loooooooong-and-silly-unique-resource-locator-that-nobody-should-ever-have-to-type/27706e53e877987138d758bcfcac6af623059be7/yet-another-silly-long-file-name-foo.html", "Signed-off-by: me@foo.com"}, false, false},
 
 		// multi-word long lines should not be accepted
-		{[]string{
+		{config, []string{
 			fmt.Sprintf("%s %s",
 				strings.Repeat("l", (defaultMaxBodyLineLength/2)+1),
 				strings.Repeat("l", (defaultMaxBodyLineLength/2)+1),
 			),
-			"Signed-off-by: me@foo.com"}, config, true, false},
+			"Signed-off-by: me@foo.com"}, true, false},
 
-		{[]string{"foo", "Signed-off-by: me@foo.com"}, config, false, false},
-		{[]string{"你好", "Signed-off-by: me@foo.com"}, config, false, false},
+		{config, []string{"foo", "Signed-off-by: me@foo.com"}, false, false},
+		{config, []string{"你好", "Signed-off-by: me@foo.com"}, false, false},
 
-		{[]string{"foo", "Fixes #1", "Signed-off-by: me@foo.com"}, config, false, true},
-		{[]string{"你好", "Fixes: #1", "Signed-off-by: me@foo.com"}, config, false, true},
-		{[]string{"你好", "Fixes  # 1", "Signed-off-by: me@foo.com"}, config, false, false},
-		{[]string{"你好", "Fixes  #999", "Signed-off-by: me@foo.com"}, config, false, true},
-		{[]string{"bar1", "  Fixes  #999", "Signed-off-by: me@foo.com"}, config, false, true},
-		{[]string{"bar2", "  fixes: #999", "Signed-off-by: me@foo.com"}, config, false, true},
-		{[]string{"bar3", "	Fixes  #999", "Signed-off-by: me@foo.com"}, config, false, true},
-		{[]string{"bar4", "	fixes  #999", "Signed-off-by: me@foo.com"}, config, false, true},
-		{[]string{"bar5", "	fixes	#999", "Signed-off-by: me@foo.com"}, config, false, true},
-		{[]string{"bar6", "	Fixes:	#999", "Signed-off-by: me@foo.com"}, config, false, true},
-		{[]string{"bar7", "	Fixes:	 #999", "Signed-off-by: me@foo.com"}, config, false, true},
-		{[]string{"bar8", "	Fixes:	  #999", "Signed-off-by: me@foo.com"}, config, false, true},
-		{[]string{"bar9", "	Fixes: 	  #999", "Signed-off-by: me@foo.com"}, config, false, true},
-		{[]string{"你好", "fixes: #999", "Signed-off-by: me@foo.com"}, config, false, true},
-		{[]string{"你好", "fixes #19123", "Signed-off-by: me@foo.com"}, config, false, true},
-		{[]string{"你好", "fixes #123, #234. Fixes: #3456.", "Signed-off-by: me@foo.com"}, config, false, true},
-		{[]string{"moo", lotsOfFixes, "Signed-off-by: me@foo.com"}, config, true, true},
-		{[]string{"moo", fmt.Sprintf("  %s", lotsOfFixes), "Signed-off-by: me@foo.com"}, config, false, true},
+		{config, []string{"foo", "Fixes #1", "Signed-off-by: me@foo.com"}, false, true},
+		{config, []string{"你好", "Fixes: #1", "Signed-off-by: me@foo.com"}, false, true},
+		{config, []string{"你好", "Fixes  # 1", "Signed-off-by: me@foo.com"}, false, false},
+		{config, []string{"你好", "Fixes  #999", "Signed-off-by: me@foo.com"}, false, true},
+		{config, []string{"bar1", "  Fixes  #999", "Signed-off-by: me@foo.com"}, false, true},
+		{config, []string{"bar2", "  fixes: #999", "Signed-off-by: me@foo.com"}, false, true},
+		{config, []string{"bar3", "	Fixes  #999", "Signed-off-by: me@foo.com"}, false, true},
+		{config, []string{"bar4", "	fixes  #999", "Signed-off-by: me@foo.com"}, false, true},
+		{config, []string{"bar5", "	fixes	#999", "Signed-off-by: me@foo.com"}, false, true},
+		{config, []string{"bar6", "	Fixes:	#999", "Signed-off-by: me@foo.com"}, false, true},
+		{config, []string{"bar7", "	Fixes:	 #999", "Signed-off-by: me@foo.com"}, false, true},
+		{config, []string{"bar8", "	Fixes:	  #999", "Signed-off-by: me@foo.com"}, false, true},
+		{config, []string{"bar9", "	Fixes: 	  #999", "Signed-off-by: me@foo.com"}, false, true},
+		{config, []string{"你好", "fixes: #999", "Signed-off-by: me@foo.com"}, false, true},
+		{config, []string{"你好", "fixes #19123", "Signed-off-by: me@foo.com"}, false, true},
+		{config, []string{"你好", "fixes #123, #234. Fixes: #3456.", "Signed-off-by: me@foo.com"}, false, true},
+		{config, []string{"moo", lotsOfFixes, "Signed-off-by: me@foo.com"}, true, true},
+		{config, []string{"moo", fmt.Sprintf("  %s", lotsOfFixes), "Signed-off-by: me@foo.com"}, false, true},
 
 		// SOB can be any length
-		{[]string{"foo",
+		{config, []string{"foo",
 			fmt.Sprintf("Signed-off-by: %s@foo.com", strings.Repeat("m", defaultMaxBodyLineLength*13))},
-			config, false, false},
+			false, false},
 
 		// Non-alphabetic lines can be any length
-		{[]string{"foo",
+		{config, []string{"foo",
 			fmt.Sprintf("0%s", strings.Repeat("n", defaultMaxBodyLineLength*7)),
-			fmt.Sprintf("Signed-off-by: me@foo.com")},
-			config, false, false},
+			"Signed-off-by: me@foo.com"},
+			false, false},
 
-		{[]string{"foo",
+		{config, []string{"foo",
 			fmt.Sprintf("1%s", strings.Repeat("o", defaultMaxBodyLineLength*7)),
-			fmt.Sprintf("Signed-off-by: me@foo.com")},
-			config, false, false},
+			"Signed-off-by: me@foo.com"},
+			false, false},
 
-		{[]string{"foo",
+		{config, []string{"foo",
 			fmt.Sprintf("9%s", strings.Repeat("p", defaultMaxBodyLineLength*7)),
-			fmt.Sprintf("Signed-off-by: me@foo.com")},
-			config, false, false},
+			"Signed-off-by: me@foo.com"},
+			false, false},
 
-		{[]string{"foo",
+		{config, []string{"foo",
 			fmt.Sprintf("_%s", strings.Repeat("q", defaultMaxBodyLineLength*7)),
-			fmt.Sprintf("Signed-off-by: me@foo.com")},
-			config, false, false},
+			"Signed-off-by: me@foo.com"},
+			false, false},
 
-		{[]string{"foo",
+		{config, []string{"foo",
 			fmt.Sprintf(".%s", strings.Repeat("r", defaultMaxBodyLineLength*7)),
-			fmt.Sprintf("Signed-off-by: me@foo.com")},
-			config, false, false},
+			"Signed-off-by: me@foo.com"},
+			false, false},
 
-		{[]string{"foo",
+		{config, []string{"foo",
 			fmt.Sprintf("!%s", strings.Repeat("s", defaultMaxBodyLineLength*7)),
-			fmt.Sprintf("Signed-off-by: me@foo.com")},
-			config, false, false},
+			"Signed-off-by: me@foo.com"},
+			false, false},
 
-		{[]string{"foo",
+		{config, []string{"foo",
 			fmt.Sprintf("?%s", strings.Repeat("t", defaultMaxBodyLineLength*7)),
-			fmt.Sprintf("Signed-off-by: me@foo.com")},
-			config, false, false},
+			"Signed-off-by: me@foo.com"},
+			false, false},
 
 		// Indented data can be any length
-		{[]string{"foo",
+		{config, []string{"foo",
 			fmt.Sprintf(" %s", strings.Repeat("u", defaultMaxBodyLineLength*7)),
-			fmt.Sprintf("Signed-off-by: me@foo.com")},
-			config, false, false},
+			"Signed-off-by: me@foo.com"},
+			false, false},
 
-		{[]string{"foo",
+		{config, []string{"foo",
 			fmt.Sprintf(" %s", strings.Repeat("月", defaultMaxBodyLineLength*7)),
-			fmt.Sprintf("Signed-off-by: me@foo.com")},
-			config, false, false},
+			"Signed-off-by: me@foo.com"},
+			false, false},
 
-		{[]string{strings.Repeat("v", (defaultMaxBodyLineLength)-1), "Signed-off-by: me@foo.com"}, config, false, false},
-		{[]string{strings.Repeat("w", defaultMaxBodyLineLength), "Signed-off-by: me@foo.com"}, config, false, false},
+		{config, []string{strings.Repeat("v", (defaultMaxBodyLineLength)-1), "Signed-off-by: me@foo.com"}, false, false},
+		{config, []string{strings.Repeat("w", defaultMaxBodyLineLength), "Signed-off-by: me@foo.com"}, false, false},
 	}
 
 	for _, d := range data {
@@ -612,21 +612,21 @@ func TestIgnoreSrcBranch(t *testing.T) {
 	type testData struct {
 		commit           string
 		srcBranch        string
-		branchesToIgnore []string
 		expected         string
+		branchesToIgnore []string
 	}
 
 	data := []testData{
-		{"", "", nil, ""},
-		{"", "", []string{}, ""},
-		{"commit", "", []string{}, ""},
-		{"commit", "", []string{""}, ""},
-		{"commit", "", []string{"", ""}, ""},
-		{"commit", "branch", []string{}, ""},
-		{"commit", "branch", []string{""}, ""},
-		{"commit", "branch", []string{"branch"}, "branch"},
-		{"commit", "branch", []string{"b.*"}, "b.*"},
-		{"commit", "branch", []string{"^b.*h$"}, "^b.*h$"},
+		{"", "", "", nil},
+		{"", "", "", []string{}},
+		{"commit", "", "", []string{}},
+		{"commit", "", "", []string{""}},
+		{"commit", "", "", []string{"", ""}},
+		{"commit", "branch", "", []string{}},
+		{"commit", "branch", "", []string{""}},
+		{"commit", "branch", "branch", []string{"branch"}},
+		{"commit", "branch", "b.*", []string{"b.*"}},
+		{"commit", "branch", "^b.*h$", []string{"^b.*h$"}},
 	}
 
 	for _, d := range data {
@@ -674,21 +674,21 @@ func TestGetCommitAndBranch(t *testing.T) {
 	clearCIVariables()
 
 	type testData struct {
-		args                []string
-		srcBranchesToIgnore []string
 		expectedCommit      string
 		expectedBranch      string
+		args                []string
+		srcBranchesToIgnore []string
 		expectFail          bool
 	}
 
 	data := []testData{
-		{nil, nil, "", "", true},
-		{[]string{}, nil, "", "", true},
-		{nil, []string{}, "", "", true},
-		{[]string{}, []string{}, "HEAD", "master", false},
-		{[]string{"commit"}, []string{}, "commit", "master", false},
-		{[]string{"commit", "branch"}, []string{}, "commit", "branch", false},
-		{[]string{"too", "many", "args"}, []string{}, "commit", "branch", true},
+		{"", "", nil, nil, true},
+		{"", "", []string{}, nil, true},
+		{"", "", nil, []string{}, true},
+		{"HEAD", "master", []string{}, []string{}, false},
+		{"commit", "master", []string{"commit"}, []string{}, false},
+		{"commit", "branch", []string{"commit", "branch"}, []string{}, false},
+		{"commit", "branch", []string{"too", "many", "args"}, []string{}, true},
 	}
 
 	for _, d := range data {

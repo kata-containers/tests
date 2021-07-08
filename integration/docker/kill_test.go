@@ -53,7 +53,7 @@ func withoutSignal() TableEntry {
 	const interruptedBySignal = 128
 
 	expectedExitCode := interruptedBySignal + int(syscall.SIGKILL)
-	return Entry(fmt.Sprintf("without a signal"), syscall.Signal(0), expectedExitCode, true)
+	return Entry("without a signal", syscall.Signal(0), expectedExitCode, true)
 }
 
 func withSignalNotExitCode(signal syscall.Signal) TableEntry {

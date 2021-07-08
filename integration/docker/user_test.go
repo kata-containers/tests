@@ -23,7 +23,7 @@ func asUser(user string, groups bool, fail bool) TableEntry {
 	additionalGroups := []string{"cdrom", "floppy", "video", "audio"}
 	groupsMsg := fmt.Sprintf(" with additional groups %v", additionalGroups)
 	if !groups {
-		groupsMsg = fmt.Sprintf(" without additional groups")
+		groupsMsg = " without additional groups"
 		additionalGroups = []string{}
 	}
 

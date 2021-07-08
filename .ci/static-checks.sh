@@ -15,6 +15,11 @@ set -e
 cidir=$(realpath $(dirname "$0"))
 source "${cidir}/lib.sh"
 
+# By default in Golang >= 1.16 GO111MODULE is set to "on",
+# some subprojects in this repo may not support "go modules",
+# set GO111MODULE to "auto" to enable module-aware mode only when
+# a go.mod file is present in the current directory.
+export GO111MODULE="auto"
 export tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 export tests_repo_dir="${GOPATH}/src/${tests_repo}"
 
@@ -304,10 +309,7 @@ static_check_go_arch_specific()
 		local linter_version=$(get_test_version "externals.golangci-lint.version")
 
 		info "Forcing ${linter} version ${linter_version}"
-		build_version ${linter_url} "build" ${linter_version}
-		# golangci build only target does not install into ${GOPATH}/bin
-		# Hand install it...
-		go install -v "${linter_url}/..."
+		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin "${linter_version}"
 	fi
 
 	local linter_args="run -c ${cidir}/.golangci.yml"

@@ -52,20 +52,14 @@ const logEntryFormatVersion = "0.0.2"
 // - XXX: If you change this struct, update logEntryFormatVersion!
 //
 type LogEntry struct {
-	// Log entry number (1-indexed)
-	Count uint64
+	// Used to store additional (non-standard) fields
+	Data MapSS
 
-	// difference between this record and the previous one
-	TimeDelta TimeDelta
+	Time time.Time
 
 	// Name of the file this entry belongs to
 	Filename string
 
-	// Line number in Filename this entry refers to
-	Line uint64
-
-	Time  time.Time
-	Pid   int
 	Level string
 	Msg   string
 
@@ -94,8 +88,16 @@ type LogEntry struct {
 	//   operate on a container (or a single container).
 	Sandbox string
 
-	// Used to store additional (non-standard) fields
-	Data MapSS
+	// Line number in Filename this entry refers to
+	Line uint64
+
+	// Log entry number (1-indexed)
+	Count uint64
+
+	// difference between this record and the previous one
+	TimeDelta TimeDelta
+
+	Pid int
 }
 
 // Fields lists the names of the fields in a LogEntry.

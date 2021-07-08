@@ -42,12 +42,13 @@ type hypervisor struct {
 	MachineAccelerators   string `toml:"machine_accelerators"`
 	KernelParams          string `toml:"kernel_params"`
 	MachineType           string `toml:"machine_type"`
+	SharedFS              string `toml:"shared_fs"`
+	BlockDeviceDriver     string `toml:"block_device_driver"`
 	DefaultVCPUs          int32  `toml:"default_vcpus"`
 	DefaultMaxVCPUs       uint32 `toml:"default_maxvcpus"`
 	DefaultMemSz          uint32 `toml:"default_memory"`
 	DefaultBridges        uint32 `toml:"default_bridges"`
 	Msize9p               uint32 `toml:"msize_9p"`
-	BlockDeviceDriver     string `toml:"block_device_driver"`
 	DisableBlockDeviceUse bool   `toml:"disable_block_device_use"`
 	MemPrealloc           bool   `toml:"enable_mem_prealloc"`
 	HugePages             bool   `toml:"enable_hugepages"`
@@ -56,7 +57,6 @@ type hypervisor struct {
 	DisableNestingChecks  bool   `toml:"disable_nesting_checks"`
 	EnableIOThreads       bool   `toml:"enable_iothreads"`
 	Vsock                 bool   `toml:"use_vsock"`
-	SharedFS              string `toml:"shared_fs"`
 }
 
 type proxy struct {
@@ -65,8 +65,8 @@ type proxy struct {
 }
 
 type runtime struct {
-	Debug             bool   `toml:"enable_debug"`
 	InterNetworkModel string `toml:"internetworking_model"`
+	Debug             bool   `toml:"enable_debug"`
 }
 
 type shim struct {

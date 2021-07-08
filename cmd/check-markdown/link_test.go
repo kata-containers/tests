@@ -167,18 +167,18 @@ func TestLinkHandleImplicitREADME(t *testing.T) {
 
 	type testData struct {
 		linkAddr     string
+		expectedPath string
+		expectedType LinkType
 		isREADME     bool
 		expectError  bool
-		expectedType LinkType
-		expectedPath string
 	}
 
 	data := []testData{
-		{"", false, true, unknownLink, ""},
-		{"foo", false, true, unknownLink, ""},
-		{emptyFileName, false, false, unknownLink, ""},
-		{emptyDirName, false, false, unknownLink, ""},
-		{readmeDirName, true, false, externalLink, readmePath},
+		{"", "", unknownLink, false, true},
+		{"foo", "", unknownLink, false, true},
+		{emptyFileName, "", unknownLink, false, false},
+		{emptyDirName, "", unknownLink, false, false},
+		{readmeDirName, readmePath, externalLink, true, false},
 	}
 
 	logger := logrus.WithField("test", "true")

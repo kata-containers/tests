@@ -123,6 +123,13 @@ mkdir -p "${GOPATH}"
 export GOROOT="/usr/local/go"
 export PATH=${GOPATH}/bin:/usr/local/go/bin:/usr/sbin:/sbin:${PATH}
 
+# Support Golang 1.16.x.
+# By default in Golang >= 1.16 GO111MODULE is set to "on",
+# some subprojects in this repo may not support "go modules",
+# set GO111MODULE to "auto" to enable module-aware mode only when
+# a go.mod file is present in the current directory.
+export GO111MODULE="auto"
+
 kata_repo_dir="${GOPATH}/src/${kata_repo}"
 tests_repo_dir="${GOPATH}/src/${tests_repo}"
 

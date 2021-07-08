@@ -21,6 +21,18 @@ import (
 // CommitConfig encapsulates the user configuration options, but is also
 // used to pass some state between functions (FoundFixes).
 type CommitConfig struct {
+	FixesPattern *regexp.Regexp
+	SobPattern   *regexp.Regexp
+
+	SobString   string
+	FixesString string
+
+	// Ignore NeedFixes if the subsystem matches this value.
+	IgnoreFixesSubsystem string
+
+	MaxSubjectLineLength int
+	MaxBodyLineLength    int
+
 	// set when a "Fixes #XXX" commit is found
 	FoundFixes bool
 
@@ -29,18 +41,6 @@ type CommitConfig struct {
 
 	// At least one commit must specify a bug that it fixes.
 	NeedFixes bool
-
-	MaxSubjectLineLength int
-	MaxBodyLineLength    int
-
-	SobString   string
-	FixesString string
-
-	// Ignore NeedFixes if the subsystem matches this value.
-	IgnoreFixesSubsystem string
-
-	FixesPattern *regexp.Regexp
-	SobPattern   *regexp.Regexp
 }
 
 // Commit represents a git(1) commit
@@ -716,14 +716,14 @@ func main() {
 	app.Description = "perform checks on git commits"
 	app.Usage = app.Description
 	app.UsageText = fmt.Sprintf("%s [global options] [commit [branch]]\n", app.Name)
-	app.UsageText += fmt.Sprintf("\n")
-	app.UsageText += fmt.Sprintf("Notes:\n")
-	app.UsageText += fmt.Sprintf("   - The commit argument refers to the (normally latest) commit in the\n")
-	app.UsageText += fmt.Sprintf("     source branch that wants to be merged into the specified (destination)\n")
-	app.UsageText += fmt.Sprintf("     branch.\n\n")
-	app.UsageText += fmt.Sprintf("   - If not specified, commit and branch will be set automatically\n")
-	app.UsageText += fmt.Sprintf("     if running in a supported CI environment (Travis or Semaphore).\n\n")
-	app.UsageText += fmt.Sprintf("   - If not running under a recognised CI environment, commit will default\n")
+	app.UsageText += "\n"
+	app.UsageText += "Notes:\n"
+	app.UsageText += "   - The commit argument refers to the (normally latest) commit in the\n"
+	app.UsageText += "     source branch that wants to be merged into the specified (destination)\n"
+	app.UsageText += "     branch.\n\n"
+	app.UsageText += "   - If not specified, commit and branch will be set automatically\n"
+	app.UsageText += "     if running in a supported CI environment (Travis or Semaphore).\n\n"
+	app.UsageText += "   - If not running under a recognised CI environment, commit will default\n"
 	app.UsageText += fmt.Sprintf("     to %q and branch to %q.", defaultCommit, defaultBranch)
 
 	cli.VersionPrinter = func(c *cli.Context) {
@@ -761,7 +761,7 @@ func main() {
 
 		cli.StringFlag{
 			Name:  "ignore-fixes-for-subsystem",
-			Usage: fmt.Sprintf("Don't requires a Fixes comment if the subsystem matches the specified string"),
+			Usage: "Don't requires a Fixes comment if the subsystem matches the specified string",
 		},
 
 		cli.StringFlag{

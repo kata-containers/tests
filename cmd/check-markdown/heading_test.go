@@ -19,33 +19,33 @@ func TestNewHeading(t *testing.T) {
 	type testData struct {
 		headingName      string
 		mdName           string
+		expectedLinkName string
 		level            int
 		expectError      bool
-		expectedLinkName string
 	}
 
 	data := []testData{
-		{"", "", -1, true, ""},
-		{"a", "", -1, true, ""},
-		{"a", "a", -1, true, ""},
-		{"a", "a", 0, true, ""},
-		{"a", "", 1, true, ""},
+		{"", "", "", -1, true},
+		{"a", "", "", -1, true},
+		{"a", "a", "", -1, true},
+		{"a", "a", "", 0, true},
+		{"a", "", "", 1, true},
 
-		{"a", "a", 1, false, "a"},
-		{"a-b", "`a-b`", 1, false, "a-b"},
-		{"a_b", "`a_b`", 1, false, "a_b"},
-		{"foo (json) bar", "foo `(json)` bar", 1, false, "foo-json-bar"},
-		{"func(json)", "`func(json)`", 1, false, "funcjson"},
-		{"?", "?", 1, false, ""},
-		{"a b", "a b", 1, false, "a-b"},
-		{"a - b", "a - b", 1, false, "a---b"},
-		{"a - b?", "a - b?", 1, false, "a---b"},
-		{"a - b.", "a - b.", 1, false, "a---b"},
-		{"a:b", "a:b", 1, false, "ab"},
-		{"a;b", "a;b", 1, false, "ab"},
-		{"a@b", "a@b", 1, false, "ab"},
-		{"a+b", "a+b", 1, false, "ab"},
-		{"a,b", "a,b", 1, false, "ab"},
+		{"a", "a", "a", 1, false},
+		{"a-b", "`a-b`", "`a-b`", 1, false},
+		{"a_b", "`a_b`", "`a_b`", 1, false},
+		{"foo (json) bar", "foo `(json)` bar", "foo-json-bar", 1, false},
+		{"func(json)", "`func(json)`", "funcjson", 1, false},
+		{"?", "?", "", 1, false},
+		{"a b", "a b", "a-b", 1, false},
+		{"a - b", "a - b", "a---b", 1, false},
+		{"a - b?", "a - b?", "a---b", 1, false},
+		{"a - b.", "a - b.", "a---b", 1, false},
+		{"a:b", "a:b", "ab", 1, false},
+		{"a;b", "a;b", "ab", 1, false},
+		{"a@b", "a@b", "ab", 1, false},
+		{"a+b", "a+b", "ab", 1, false},
+		{"a,b", "a,b", "ab", 1, false},
 	}
 
 	for i, d := range data {
