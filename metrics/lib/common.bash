@@ -16,7 +16,9 @@ source /etc/os-release || source /usr/lib/os-release
 CTR_EXE="${CTR_EXE:-ctr}"
 DOCKER_EXE="${DOCKER_EXE:-docker}"
 CTR_RUNTIME="${CTR_RUNTIME:-io.containerd.run.kata.v2}"
-RUNTIME="${RUNTIME:-kata-runtime}"
+RUNTIME_BINARY="containerd-shim-kata-v2"
+RUNTIME="${RUNTIME:-containerd-shim-kata-v2}"
+CONTAINERD_RUNTIME="io.containerd.kata.v2"
 
 KSM_BASE="/sys/kernel/mm/ksm"
 KSM_ENABLE_FILE="${KSM_BASE}/run"
@@ -187,7 +189,7 @@ show_system_ctr_state() {
 	echo " --Check tasks--"
 	sudo ctr task list
 
-	local processes="containerd-shim-kata-v2 kata-runtime"
+	local processes="containerd-shim-kata-v2"
 
 	for p in ${processes}; do
 		echo " --pgrep ${p}--"

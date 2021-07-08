@@ -9,7 +9,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly kata_runtime_path=$(command -v kata-runtime)
 readonly runc_path=$(command -v runc)
 
 sudo mkdir -p /etc/containerd/
