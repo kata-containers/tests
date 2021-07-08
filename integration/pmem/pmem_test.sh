@@ -13,7 +13,6 @@ set -o errtrace
 dir_path=$(dirname "$0")
 source "${dir_path}/../../lib/common.bash"
 source "${dir_path}/../../.ci/lib.sh"
-source "${dir_path}/data/lib.sh"
 source /etc/os-release || source /usr/lib/os-release
 TEST_INITRD="${TEST_INITRD:-no}"
 experimental_qemu="${experimental_qemu:-false}"
