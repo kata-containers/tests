@@ -43,6 +43,8 @@ setup() {
 teardown() {
 	# Debugging information
 	kubectl describe "pod/$busybox_pod"
+	kubectl get "pod/$busybox_pod" -o yaml
+	kubectl get deployment/${deployment} -o yaml
 
 	rm -f "${pod_config_dir}/test-${deployment}.yaml"
 	kubectl delete deployment "$deployment"
