@@ -16,6 +16,7 @@ This directory contains scripts used by the [Kata Containers](https://github.com
 
 | Script(s) | Description |
 | -- | -- |
+| [`ci-fast-return.sh`](#ci-fast-return) | Called by the CI to handle unusual situations. |
 | [`go-test.sh`](go-test.sh) | Central interface to the `golang` `go test` facility. |
 | `install_*` | Install various parts of the system and dependencies. |
 | [`jenkins_job_build.sh`](jenkins_job_build.sh) | Called by the [Jenkins CI](https://github.com/kata-containers/ci) to trigger a CI run. |
@@ -44,3 +45,70 @@ $ ./kata-doc-to-script.sh -h
 >
 > See the warning in the [Summary](#summary) section before running any of
 > these scripts.
+
+## CI fast return
+
+The [`ci-fast-return.sh`](ci-fast-return.sh) script allows the normal
+operation of the CI to be modified to deal with unusual situations. The script
+can either force the CI to run, or force it not to run.
+
+> **Notes:**
+>
+> - The name of the script signifies that the operation of the script can make
+>   the CI pass (succeed) quickly.
+>
+> - The script was introduced to handle scenarios such as a PR that changes a
+>   single character in a document or configuration file. Normally, such PRs would
+>   result in multiple VMs being spawned to run the entire suite of tests,
+>   which ties up resources for a considerable amount of time. But for a
+>   configuration file change, this just isn't necessary.
+
+The script is called early in the CI setup. If the script returns `0`, the CI
+will immediately succeed. This means that the normal set of tests and checks
+performed by the CI will not be run.
+
+There are two ways to control the script:
+
+- by its configuration file.
+- by special GitHub labels.
+
+### Configuration file
+
+The configuration file [`ci-fast-return.yaml`](ci-fast-return.yaml) lists a
+set of regular expressions. If all the files modified by a PR are matched by
+expressions in the configuration file, the CI will not be run. For example, if
+the configuration listed the pattern `.*\.txt`, a PR that only changed a file
+called `foo.txt` would cause the script to return `0` and the CI would be
+skipped. However, if a PR modified `foo.txt` _and_ `bar.go`, the CI would be
+run (since `bar.go` was not matched by a configuration file pattern).
+
+The configuration file actually has multiple sets of regular expressions to
+handle difficult scenarios. See the comments in
+[`ci-fast-return.yaml`](ci-fast-return.yaml) for further details.
+
+### GitHub labels
+
+A more dynamic way to control the script is via labels. The script
+looks at the GitHub labels applied to a PR and changes the behaviour of the CI
+based on those labels. Possible labels are listed below:
+
+| Label | Operation |
+|-|-|
+| `force-ci` | Force the CI to run even if it would normally be skipped (due to the configuration file). |
+| `force-skip-ci` | Bypass the CI entirely in an emergency - **use with EXTREME caution!** |
+
+> **Notes:**
+>
+> - The `force-skip-ci` label is potentially dangerous: do not use unless you
+>   understand the consequences of doing so (and remember that GitHub records
+>   details of which user added which label to a PR!)
+>
+> - By adding the `force-skip-ci` to a PR, you are not only requesting the CI
+>   be skipped entirely; you are also tacitly agreeing to fix any problems
+>   resulting from forcing potentially untested code to land.
+>
+> - Some of the uses for the `force-skip-ci` label are to deal with:
+>   - Bugs in the CI scripts themselves.
+>   - CI machine issues.
+>   - Problems with third party checks.
+>   - Breaking circular dependencies between PRs.
