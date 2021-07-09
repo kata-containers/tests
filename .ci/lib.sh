@@ -12,7 +12,7 @@ export KATA_NEMU_DESTDIR=${KATA_NEMU_DESTDIR:-"/usr"}
 export KATA_QEMU_DESTDIR=${KATA_QEMU_DESTDIR:-"/usr"}
 export KATA_ETC_CONFIG_PATH="/etc/kata-containers/configuration.toml"
 
-export kata_repo="github.com/kata-containers/kata-containers"
+export kata_repo=${katacontainers_repo:="github.com/kata-containers/kata-containers"}
 export kata_repo_dir="${GOPATH}/src/${kata_repo}"
 export kata_default_branch="${kata_default_branch:-main}"
 
