@@ -23,7 +23,6 @@ setup()  {
 	extract_kata_env
 	clean_env_ctr
 	HYPERVISOR_NAME=$(basename ${HYPERVISOR_PATH})
-	CONTAINERD_RUNTIME="io.containerd.kata.v2"
 	sudo ctr image pull $IMAGE
 	[ $? != 0 ] && die "Unable to get image $IMAGE"
 

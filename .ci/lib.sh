@@ -6,7 +6,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-export KATA_RUNTIME=${KATA_RUNTIME:-kata-runtime}
 export KATA_KSM_THROTTLER=${KATA_KSM_THROTTLER:-no}
 export KATA_NEMU_DESTDIR=${KATA_NEMU_DESTDIR:-"/usr"}
 export KATA_QEMU_DESTDIR=${KATA_QEMU_DESTDIR:-"/usr"}
@@ -114,24 +113,6 @@ function build() {
 	version="${3:-"HEAD"}"
 
 	build_version "${github_project}" "${make_target}" "${version}"
-}
-
-function build_and_install() {
-	github_project="$1"
-	make_target="$2"
-	test_not_gopath_set="$3"
-	tag="$4"
-
-	build "${github_project}" "${make_target}" "${tag}"
-	pushd "${GOPATH}/src/${github_project}"
-	if [ "$test_not_gopath_set" = "true" ]; then
-		info "Installing ${github_project} in No GO command or GOPATH not set mode"
-		sudo -E PATH="$PATH" KATA_RUNTIME="${KATA_RUNTIME}" make install
-		[ $? -ne 0 ] && die "Fail to install ${github_project} in No GO command or GOPATH not set mode"
-	fi
-	info "Installing ${github_project}"
-	sudo -E PATH="$PATH" KATA_RUNTIME="${KATA_RUNTIME}" make install
-	popd
 }
 
 function get_dep_from_yaml_db(){
