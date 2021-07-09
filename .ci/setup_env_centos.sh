@@ -29,7 +29,8 @@ sudo -E dnf -y install epel-release
 # Enable priority to CentOS Base repo in order to
 # avoid perl updating issues
 for repo_file_path in /etc/yum.repos.d/CentOS-Base.repo \
-	/etc/yum.repos.d/CentOS-Linux-BaseOS.repo; do
+	/etc/yum.repos.d/CentOS-Linux-BaseOS.repo \
+	/etc/yum.repos.d/CentOS-Stream-BaseOS.repo; do
 	if [ -f "$repo_file_path" ]; then
 		repo_file="$repo_file_path"
 		break
