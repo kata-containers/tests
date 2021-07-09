@@ -268,7 +268,7 @@ TestKilledVmmCleanup() {
 }
 
 TestContainerMemoryUpdate() {
-	if [[ "${KATA_HYPERVISOR}" != "qemu" ]] || [[ "${ARCH}" == "ppc64le" ]]; then
+	if [[ "${KATA_HYPERVISOR}" != "qemu" ]] || [[ "${ARCH}" == "ppc64le" ]] || [[ "${ARCH}" == "s390x" ]]; then
 		return
 	fi
 
