@@ -31,6 +31,10 @@ setup() {
 	kubectl wait --for=condition=Available --timeout=$timeout deployment/${deployment}
 	kubectl expose deployment/${deployment}
 
+	# ensure serivce/endpoint has been created and ready.
+	cmd="kubectl get endpoints/${deployment} -o=jsonpath='{.subsets}' | grep addresses"
+	waitForProcess "$wait_time" "$sleep_time" "$cmd"
+
 	busybox_pod="test-nginx"
 	kubectl run $busybox_pod --restart=Never --image="$busybox_image" \
 		-- wget --timeout=5 "$deployment"
@@ -45,6 +49,8 @@ teardown() {
 	kubectl describe "pod/$busybox_pod"
 	kubectl get "pod/$busybox_pod" -o yaml
 	kubectl get deployment/${deployment} -o yaml
+	kubectl get service/${deployment} -o yaml
+	kubectl get endpoints/${deployment} -o yaml
 
 	rm -f "${pod_config_dir}/test-${deployment}.yaml"
 	kubectl delete deployment "$deployment"
