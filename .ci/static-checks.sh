@@ -164,6 +164,8 @@ Parameters:
 Notes:
 
 - If no options are specified, all non-skipped tests will be run.
+- Some required tools may be installed in \$GOPATH/bin, so you should ensure
+  that it is in your \$PATH.
 
 Examples:
 
@@ -239,6 +241,9 @@ static_check_commits()
 	# for main branch
 	(cd "${tests_repo_dir}" && make checkcommits && git remote set-branches origin 'main' && git fetch -v)
 
+	command -v checkcommits &>/dev/null || \
+		die 'checkcommits command not found. Ensure that "$GOPATH/bin" is in your $PATH.'
+
 	# Check the commits in the branch
 	{
 		checkcommits \
@@ -310,6 +315,8 @@ static_check_go_arch_specific()
 
 		info "Forcing ${linter} version ${linter_version}"
 		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin "${linter_version}"
+		command -v $linter &>/dev/null || \
+			die "$linter command not found. Ensure that \"\$GOPATH/bin\" is in your \$PATH."
 	fi
 
 	local linter_args="run -c ${cidir}/.golangci.yml"
@@ -583,6 +590,9 @@ static_check_docs()
 
 		# xurls is very fussy about how it's built.
 		GO111MODULE=on go get "${url}@${version}"
+
+		command -v xurls &>/dev/null ||
+			die 'xurls not found. Ensure that "$GOPATH/bin" is in your $PATH'
 	fi
 
 	info "Checking documentation"
@@ -649,6 +659,9 @@ static_check_docs()
 	md_docs_to_check="$all_docs"
 
 	(cd "${tests_repo_dir}" && make check-markdown)
+
+	command -v kata-check-markdown &>/dev/null || \
+		die 'kata-check-markdown command not found. Ensure that "$GOPATH/bin" is in your $PATH.'
 
 	for doc in $md_docs_to_check
 	do
