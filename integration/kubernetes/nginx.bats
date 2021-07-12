@@ -32,12 +32,11 @@ setup() {
 	kubectl expose deployment/${deployment}
 
 	busybox_pod="test-nginx"
-	kubectl run $busybox_pod --restart=Never --image="$busybox_image" \
-		-- wget --timeout=5 "$deployment"
-	cmd="kubectl get pods | grep $busybox_pod | grep Completed"
+	cmd='kubectl delete pod "$busybox_pod" || (kubectl run $busybox_pod --restart=Never --image="$busybox_image" -- wget --timeout=5 "$deployment"
+		&& kubectl get pods | grep $busybox_pod | grep Completed
+		&& kubectl logs "$busybox_pod" | grep "index.html"
+		&& kubectl delete pod "$busybox_pod")'
 	waitForProcess "$wait_time" "$sleep_time" "$cmd"
-	kubectl logs "$busybox_pod" | grep "index.html"
-	kubectl describe pod "$busybox_pod"
 }
 
 teardown() {
@@ -45,6 +44,8 @@ teardown() {
 	kubectl describe "pod/$busybox_pod"
 	kubectl get "pod/$busybox_pod" -o yaml
 	kubectl get deployment/${deployment} -o yaml
+	kubectl get service/${deployment} -o yaml
+	cat /var/log/pods/default_test-nginx_*/test-nginx/0.log || true
 
 	rm -f "${pod_config_dir}/test-${deployment}.yaml"
 	kubectl delete deployment "$deployment"
