@@ -1,7 +1,7 @@
 # Kata Containers density metrics tests
 
 * [Kata Containers density metrics tests](#kata-containers-density-metrics-tests)
-   * [docker_memory_usage](#docker_memory_usage)
+   * [memory_usage](#memory_usage)
    * [fast_footprint](#fast_footprint)
    * [footprint_data](#footprint_data)
    * [memory_usage_inside_container](#memory_usage_inside_container)
@@ -12,10 +12,11 @@ memory footprint. Some measures are based around the
 components, and others look at the system level (`free` and `/proc/meminfo`
 for instance) impact.
 
-## `docker_memory_usage`
+## `memory_usage`
 
 This test measures the PSS footprint of the runtime components whilst
-launching a number of small ([BusyBox](https://hub.docker.com/_/busybox/)) containers.
+launching a number of small ([BusyBox](https://hub.docker.com/_/busybox/)) containers
+using ctr.
 
 ## `fast_footprint`
 
