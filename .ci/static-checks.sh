@@ -232,6 +232,16 @@ pkg_to_path()
 	go list -f '{{.Dir}}' "$pkg"
 }
 
+# Check that chronic is installed, otherwise die.
+need_chronic() {
+	local first_word
+	[ -z "$chronic" ] && return
+	first_word="${chronic%% *}"
+	command -v chronic &>/dev/null || \
+		die "chronic command not found. You must have it installed to run this check." \
+		"Usually it is distributed with the 'moreutils' package of your Linux distribution."
+}
+
 static_check_commits()
 {
 	# Since this script is called from another repositories directory,
@@ -964,6 +974,8 @@ static_check_xml()
 	local all_xml
 	local files
 
+	need_chronic
+
 	all_xml=$(git ls-files "*.xml" | grep -Ev "/(vendor|grpc-rs|target)/" | sort || true)
 
 	if [ "$specific_branch" = "true" ]
@@ -1016,6 +1028,8 @@ static_check_shell()
 	local all_scripts
 	local scripts
 
+	need_chronic
+
 	all_scripts=$(git ls-files "*.sh" "*.bash" | grep -Ev "/(vendor|grpc-rs|target)/" | sort || true)
 
 	if [ "$specific_branch" = "true" ]
@@ -1052,6 +1066,8 @@ static_check_json()
 {
 	local all_json
 	local json_files
+
+	need_chronic
 
 	all_json=$(git ls-files "*.json" | grep -Ev "/(vendor|grpc-rs|target)/" | sort || true)
 
