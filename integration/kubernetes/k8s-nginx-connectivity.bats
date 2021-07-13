@@ -31,23 +31,21 @@ setup() {
 	kubectl wait --for=condition=Available --timeout=$timeout deployment/${deployment}
 	kubectl expose deployment/${deployment}
 
-	# ensure serivce/endpoint has been created and ready.
-	cmd="kubectl get endpoints/${deployment} -o=jsonpath='{.subsets}' | grep addresses"
-	waitForProcess "$wait_time" "$sleep_time" "$cmd"
-
 	busybox_pod="test-nginx"
-	kubectl run $busybox_pod --restart=Never --image="$busybox_image" \
-		-- wget --timeout=5 "$deployment"
-	cmd="kubectl get pods | grep $busybox_pod | grep Completed"
-	waitForProcess "$wait_time" "$sleep_time" "$cmd"
+	kubectl run $busybox_pod --restart=Never -it --image="$busybox_image" \
+		-- sh -c 'i=1; while [ $i -le '"$wait_time"' ]; do wget --timeout=5 '"$deployment"' && break; sleep 1; i=$(expr $i + 1); done'
+
+	# check pod's status, it should be Succeeded.
+	# or {.status.containerStatuses[0].state.terminated.reason} = "Completed"
+	[ $(kubectl get pods/$busybox_pod -o jsonpath="{.status.phase}") = "Succeeded" ]
 	kubectl logs "$busybox_pod" | grep "index.html"
-	kubectl describe pod "$busybox_pod"
 }
 
 teardown() {
 	# Debugging information
 	kubectl describe "pod/$busybox_pod"
 	kubectl get "pod/$busybox_pod" -o yaml
+	kubectl logs "$busybox_pod"
 	kubectl get deployment/${deployment} -o yaml
 	kubectl get service/${deployment} -o yaml
 	kubectl get endpoints/${deployment} -o yaml
