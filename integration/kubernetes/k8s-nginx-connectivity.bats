@@ -37,7 +37,8 @@ setup() {
 
 	busybox_pod="test-nginx"
 	kubectl run $busybox_pod --restart=Never --image="$busybox_image" \
-		-- wget --timeout=5 "$deployment"
+		-- sh -c 'i=1; while [ $i -le 10 ]; do wget --timeout=5 '"$deployment"' && break; sleep 1; i=$(expr $i + 1); done'
+
 	cmd="kubectl get pods | grep $busybox_pod | grep Completed"
 	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 	kubectl logs "$busybox_pod" | grep "index.html"
@@ -48,6 +49,7 @@ teardown() {
 	# Debugging information
 	kubectl describe "pod/$busybox_pod"
 	kubectl get "pod/$busybox_pod" -o yaml
+	kubectl logs "$busybox_pod"
 	kubectl get deployment/${deployment} -o yaml
 	kubectl get service/${deployment} -o yaml
 	kubectl get endpoints/${deployment} -o yaml
