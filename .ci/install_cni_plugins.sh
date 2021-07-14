@@ -26,4 +26,4 @@ sudo cp -a bin ${cni_bin_path}
 
 popd
 
-${cidir}/configure_cni.sh
+#${cidir}/configure_cni.sh
