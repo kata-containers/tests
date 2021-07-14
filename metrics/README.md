@@ -3,12 +3,10 @@
 * [Kata Containers metrics](#kata-containers-metrics)
     * [Goals](#goals)
         * [PR regression checks](#pr-regression-checks)
-        * [`master` branch trending](#master-branch-trending)
         * [Developer pre-checking](#developer-pre-checking)
     * [Stability or Performance?](#stability-or-performance)
     * [Requirements](#requirements)
         * [For PR checks](#for-pr-checks)
-        * [For master tracking](#for-master-tracking)
     * [Categories](#categories)
         * [Time (Speed)](#time-speed)
         * [Density](#density)
@@ -54,18 +52,6 @@ Having said that, accuracy is still important. If we have very noisy tests, then
 CI will either not spot regressions that are below that noise factor, or will cause
 false failures, which are very undesirable in a CI.
 
-### `master` branch trending
-
-The master branch tracking CI (which tracks and collects data for each merge into
-the master branch) collects data for:
-- future historical reference
-- longer term trend tracking
-- more complex or longer running test cases
-- more complex regression checking
-
-As the master branch does not have the same urgency to provide feedback to a pending PR,
-it can take the luxury of running tests for longer, or running more complex tests.
-
 ### Developer pre-checking
 
 The PR regression check scripts can be executed "by hand", and thus are available
@@ -98,20 +84,6 @@ feedback to the developers (and not stall the review and development process). T
 end, we relax the quality requirements of the PR CI. The quality requirements are:
 - <= 5% run to run variance
 - <= 5 minutes runtime per test
-
-### For master tracking
-
-For master branch CI tracking, we have the luxury that there is no strict time requirement,
-therefore we can use stricter requirements for the data generation, which brings us some
-benefits:
-- With finer data we can do some finer regression checks
-- With access to more historical data, we can add trend checks
-    - such as catching "death by a thousand cuts", such as a 1% drop per PR or similar
-- Allows us to run tests that would inherently take longer than a CI PR metric is allowed
-
-To that end, we set the quality requirements tighter than the PR CI, but allow more runtime:
-- <= 2% run to run variance
-- <= 20 minutes runtime per test
 
 ## Categories
 
