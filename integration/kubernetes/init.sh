@@ -80,6 +80,9 @@ if ip a show "$cni_interface"; then
 fi
 
 echo "Start ${cri_runtime} service"
+# stop containerd first and then restart it
+info "Stop containerd service"
+systemctl is-active --quiet containerd && sudo systemctl stop containerd
 sudo systemctl enable --now ${cri_runtime}
 max_cri_socket_check=5
 wait_time_cri_socket_check=5
