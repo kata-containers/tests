@@ -273,7 +273,7 @@ mod tests {
 
 ## User running the test
 
-[Unit tests are run *twice*](https://github.com/kata-containers/tests/blob/master/.ci/go-test.sh):
+[Unit tests are run *twice*](https://github.com/kata-containers/tests/blob/main/.ci/go-test.sh):
 
 - as the current user
 - as the `root` user (if different to the current user)
@@ -291,7 +291,7 @@ Some repositories already provide utility functions to skip a test:
 
 The runtime repository has the most comprehensive set of skip abilities. See:
 
-- https://github.com/kata-containers/runtime/tree/master/pkg/katatestutils
+- https://github.com/kata-containers/kata-containers/tree/main/src/runtime/pkg/katatestutils
 
 ### running rust tests as different users
 

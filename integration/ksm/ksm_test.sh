@@ -72,7 +72,7 @@ function run_with_ksm() {
 
 	# Compared the pages merged between the containers
 	echo "Comparing merged pages between containers"
-	[ "$second_pages_merged" -gt "$first_pages_merged" ] || die "The merged pages on the second container is less than the first container"
+	[ "$second_pages_merged" -ge "$first_pages_merged" ] || die "The merged pages on the second container is less than the first container"
 
 }
 
