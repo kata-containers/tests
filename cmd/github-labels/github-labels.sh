@@ -28,6 +28,14 @@ typeset -r master_labels_template="${self_dir}/${labels_template}"
 # default to a white background.
 typeset -r default_color="ffffff"
 
+need_yq() {
+	# install yq if not exist
+	${cidir}/install_yq.sh
+
+	command -v yq &>/dev/null || \
+		die 'yq command not found. Ensure "$GOPATH/bin" is in your $PATH.'
+}
+
 merge_yaml()
 {
 	local -r file1="$1"
@@ -38,9 +46,7 @@ merge_yaml()
 	[ -n "$file2" ] || die "need 2nd file"
 	[ -n "$out" ] || die "need output file"
 
-	# install yq if not exist
-	${cidir}/install_yq.sh
-
+	need_yq
 	yq merge "$file1" --append "$file2" > "$out"
 }
 
@@ -50,6 +56,7 @@ check_yaml()
 
 	[ -n "$file" ] || die "need file to check"
 
+	need_yq
 	yq read "$file" >/dev/null
 
 	[ -z "$(command -v yamllint)" ] && die "need yamllint installed"
