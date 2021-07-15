@@ -99,6 +99,11 @@ else
 	bash sanity/check_sanity.sh
 endif
 
+mounts: ginkgo
+ifeq ($(KATA_HYPERVISOR),qemu)
+	./ginkgo -failFast -v -skip "${SKIP}" ./integration/mounts/
+endif
+
 crio:
 	bash .ci/install_bats.sh
 	./integration/cri-o/cri-o.sh
