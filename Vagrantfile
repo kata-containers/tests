@@ -89,7 +89,6 @@ EOF
       cd "${GOPATH}/src/github.com/kata-containers/tests"
       # Build the osbuilder with same distro as the host.
       export osbuilder_distro="fedora"
-      sudo -E PATH=$PATH -H -u #{guest_user} bash -c '.ci/setup.sh'
     SHELL
   end
 
@@ -101,7 +100,6 @@ EOF
       apt-get install -y make
       # Build the osbuilder with same distro as the host.
       export osbuilder_distro="ubuntu"
-      sudo -E PATH=$PATH -H -u #{guest_user} bash -c '.ci/setup.sh'
     SHELL
   end
 end

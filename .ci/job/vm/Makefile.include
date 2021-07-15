@@ -1,0 +1,27 @@
+# Copyright (c) 2021 Red Hat
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Specific Make targets for the VM runner.
+#
+
+KATA_TESTS_VM_ENGINE ?= vagrant
+supported_vm_engines:=$(shell ./job/vm/vm_runner.sh -e)
+
+.PHONY: vm-help
+vm-help:
+	@echo "vm-help: Manage CI VMs with the following targets:"
+	@echo "  vm-clean                 - Destroy all VMs"
+	@echo "  vm-list                  - Print all supported VM names"
+	@echo "Environment variables"
+	@echo "  KATA_TESTS_VM_ENGINE: set the VM engine. Defaults to 'vagrant'."
+	@echo "                        Available engines: $(supported_vm_engines)"
+	@echo "  KATA_TESTS_VM_NAME:   the VM name. "
+
+.PHONY: vm-clean
+vm-clean:
+	@bash job/vm/vm_runner.sh -c
+
+.PHONY: vm-list
+vm-list:
+	@bash job/vm/vm_runner.sh -l
