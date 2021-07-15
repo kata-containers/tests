@@ -13,11 +13,11 @@ spec:
   runtimeClassName: kata
   restartPolicy: Never
   containers:
-    - image: containerstack/alpine-stress:latest
-      imagePullPolicy: Always
+    - image: localhost/stress-ng-kata:latest
+      imagePullPolicy: Never
       name: oom-test
       command: ["/bin/sh"]
-      args: ["-c", "sleep 2; stress --vm 2 --vm-bytes 400M --timeout 30s"]
+      args: ["-c", "sleep 2; stress-ng --vm 2 --vm-bytes 400M --timeout 30s"]
       resources:
         limits:
           memory: 500Mi

@@ -158,3 +158,20 @@ kubectl create -f "${runtimeclass_files_path}/kata-runtimeclass.yaml"
 
 # Enable the master node to be able to schedule pods.
 kubectl taint nodes "$(hostname)" node-role.kubernetes.io/master:NoSchedule-
+
+container_engine="${USE_PODMAN:+podman}"
+container_engine="${container_engine:-docker}"
+stress_image="stress-ng-kata"
+pushd "${runtimeclass_files_path}/stress-ng"
+# Podman is assumed when using CRI-O
+sudo "${container_engine}" build . -t "${stress_image}"
+# Import into containerd
+if [ "${cri_runtime}" == "containerd" ]; then
+	localhost_image="localhost/${stress_image}"
+	sudo "${container_engine}" tag "${stress_image}" "${localhost_image}"
+	sudo "${container_engine}" save "${localhost_image}" | sudo ctr --namespace=k8s.io image import -
+	sudo "${container_engine}" image remove "${stress_image}" "${localhost_image}"
+else
+	die "CRI-O needs Podman for image setup! Set \$USE_PODMAN"
+fi
+popd

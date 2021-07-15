@@ -12,11 +12,12 @@ spec:
   runtimeClassName: kata
   containers:
   - name: memory-test-ctr
-    image: containerstack/alpine-stress:latest
+    image: localhost/stress-ng-kata:latest
+    imagePullPolicy: Never
     resources:
       limits:
         memory: "${memory_size}"
       requests:
         memory: "500Mi"
-    command: ["stress"]
+    command: ["stress-ng"]
     args: ["--vm", "1", "--vm-bytes", "${memory_allocated}", "--vm-hang", "1"]
