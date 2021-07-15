@@ -301,8 +301,10 @@ gen_clean_arch() {
 
 	info "kill stale process"
 	kill_stale_process
-	info "delete stale docker resource under ${stale_docker_dir_union[@]}"
-	delete_stale_docker_resource
+	if [ -z "${USE_PODMAN}" ]; then
+		info "delete stale docker resource under ${stale_docker_dir_union[@]}"
+		delete_stale_docker_resource
+	fi
 	info "delete stale kata resource under ${stale_kata_dir_union[@]}"
 	delete_stale_kata_resource
 	info "Remove installed kata packages"

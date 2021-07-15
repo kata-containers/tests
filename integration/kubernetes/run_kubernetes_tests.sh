@@ -19,10 +19,6 @@ KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 # Using trap to ensure the cleanup occurs when the script exists.
 trap '${kubernetes_dir}/cleanup_env.sh' EXIT
 
-# Docker is required to initialize kubeadm, even if we are
-# using cri-o as the runtime.
-systemctl is-active --quiet docker || sudo systemctl start docker
-
 K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-block-volume.bats" \
 	"k8s-configmap.bats" \

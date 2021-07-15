@@ -195,7 +195,7 @@ check_daemon_setup() {
 	create_containerd_config "runc"
 
 	#restart docker service as TestImageLoad depends on it
-	restart_docker
+	[ -z "${USE_PODMAN:-}" ] && restart_docker
 
 	sudo -E PATH="${PATH}:/usr/local/bin" \
 		REPORT_DIR="${REPORT_DIR}" \
