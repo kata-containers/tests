@@ -19,6 +19,7 @@
         * [Running subsets of tests](#running-subsets-of-tests)
     * [Metrics tests](#metrics-tests)
     * [Kata Admission controller webhook](#kata-admission-controller-webhook)
+    * [Using Vagrant to test your code changes](#using-vagrant-to-test-your-code-changes)
 
 This repository contains various types of tests and utilities (called
 "content" from now on) for testing the [Kata Containers](https://github.com/kata-containers)
@@ -277,3 +278,72 @@ See the [metrics documentation](metrics).
 
 ## Kata Admission controller webhook
 See the [webhook documentation](kata-webhook).
+
+## Using Vagrant to test your code changes
+
+It is strongly recommended that you test your changes locally before opening
+a pull request as this can save people's time and CI resources. Because
+testing Kata Containers involve complex build and setup instructions, scripts
+on the `.ci` directory are created to ease and provide a reproducible process; but they
+are meant to run on CI environments that can be discarded after use. Therefore,
+developers have noticed dangerous side effects from running those scripts on a workstation
+or development environment.
+
+That said, we provide in this repository a `Vagrantfile` which allows developers to use
+the [vagrant](https://www.vagrantup.com) tool to create a VM with the setup as close as
+as possible to the environments where CI jobs will run the tests. Thus, allowing to
+reproduce a CI job locally.
+
+Currently it is only able to create a *Fedora 32* or *Ubuntu 20.04* VM. And your workstation
+must be capable of running VMs with:
+ * 8GB of system memory
+ * ~45GB and ~20GB of disk space for the vm images (Fedora and Ubuntu, respectively) on
+   the Libvirt's storage pool
+
+Besides having vagrant installed in your host, it is needed the [vagrant libvirt plug-in](https://github.com/vagrant-libvirt/vagrant-libvirt) (Libvirt is the provider currently used), QEMU and rsync (needed to copy files between
+the host and guest).
+
+For example, to install the required softwares on Fedora host:
+```sh
+$ sudo dnf install -y qemu-kvm libvirt vagrant vagrant-libvirt rsync
+```
+> **Note**: ensure that you don't have Kata Container's built QEMU overwritten
+> the distro's in your host, otherwise Vagrant will not work.
+
+Use the `vagrant up [fedora|ubuntu]` command to bring up the VM. Vagrant is going to
+pull (unless cached) the base VM image, provision it and then bootstrap the
+Kata Containers environment (essentially by sourcing environment variables
+and running the `.ci/setup.sh` script). For example:
+
+```sh
+$ cd ${GOPATH}/src/github.com/kata-containers/tests
+$ vagrant up fedora
+```
+
+The following repositories are automatically `rsync`-ed with the guest:
+ * `${GOPATH}/src/github.com/kata-containers/tests`
+ * `${GOPATH}/src/github.com/kata-containers/kata-containers`
+
+If you want to reproduce a specific CI job, ensure that you have the `CI_JOB`
+environment variable exported on your host environment *before* you run
+`vagrant up`. For the possible `CI_JOB` values, see the `.ci/ci_job_flags.sh`
+file. For example, the following will setup the VM to run CRI-O + Kubernetes
+job:
+```sh
+$ cd $GOPATH/src/github.com/kata-containers/tests
+$ export CI_JOB="CRIO_K8S"
+$ vagrant up fedora
+```
+
+At this point, if everything went well, you have a fully functional environment
+with Kata Containers built and installed. To connect in the VM and run the tests:
+```sh
+$ vagrant ssh fedora
+$ .ci/run.sh
+```
+
+In theory you could export `CI_JOB` with a different value and re-provision the
+same VM (`vagrant provision [fedora|ubuntu]`), however this is not recommended because
+our CI scripts are meant for a single-shot execution. So if you need to run a different
+job locally, you should destroy the VM with the `vagrant destroy [fedora|ubuntu]` command
+then start the process again.
