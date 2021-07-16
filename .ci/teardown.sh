@@ -8,6 +8,13 @@
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 
+# Support Golang 1.16.x.
+# By default in Golang >= 1.16 GO111MODULE is set to "on",
+# some subprojects in this repo may not support "go modules",
+# set GO111MODULE to "auto" to enable module-aware mode only when
+# a go.mod file is present in the current directory.
+export GO111MODULE="auto"
+
 collect_logs()
 {
 	local -r log_copy_dest="$1"
