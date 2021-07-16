@@ -155,6 +155,8 @@ fi
 done
 make BUILDTAGS="$(IFS=" "; echo "${build_union[*]}")"
 sudo -E install -D -m0755 runc "/usr/local/bin/crio-runc"
+# Allow other tests to find the binary by it's normal name
+sudo ln -s /usr/local/bin/crio-runc /usr/local/bin/runc
 popd
 
 service_path="/etc/systemd/system"

@@ -39,6 +39,7 @@ declare -A packages=( \
 	[haveged]="haveged" \
 	[libsystemd]="libsystemd-dev"\
 	[redis]="redis-server" \
+	[agent_shutdown_test]="tmux" \
 )
 
 main()

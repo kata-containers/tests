@@ -56,6 +56,7 @@ declare -A packages=( \
 	[cri-containerd_dependencies]="libseccomp-devel libapparmor-devel make pkg-config" \
 	[haveged]="haveged" \
 	[libsystemd]="systemd-devel" \
+	[agent_shutdown_test]="tmux" \
 )
 
 main()
