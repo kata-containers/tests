@@ -318,13 +318,21 @@ TestContainerMemoryUpdate() {
 	testContainerStop
 }
 
+# k8s may restart docker which will impact on containerd stop
+stop_containerd() {
+	local tmp=$(pgrep kubelet || true)
+	[ -n "$tmp" ] && sudo kubeadm reset -f
+
+	sudo systemctl stop containerd
+}
+
 main() {
 
 	info "Stop crio service"
 	systemctl is-active --quiet crio && sudo systemctl stop crio
 
 	info "Stop containerd service"
-	systemctl is-active --quiet containerd && sudo systemctl stop containerd
+	systemctl is-active --quiet containerd && stop_containerd
 
 	# Configure enviroment if running in CI
 	ci_config
