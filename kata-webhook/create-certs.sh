@@ -3,10 +3,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+webhook_dir=$(dirname $0)
+source "${webhook_dir}/common.bash"
 
-WEBHOOK_NS=${1:-"default"}
-WEBHOOK_NAME=${2:-"pod-annotate"}
-WEBHOOK_SVC="${WEBHOOK_NAME}-webhook"
+[ -n "$1" ] && WEBHOOK_NS="$1"
+[ -n "$2" ] && WEBHOOK_NAME="$2"
 
 # Create certs for our webhook
 touch $HOME/.rnd

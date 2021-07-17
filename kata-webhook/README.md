@@ -43,6 +43,13 @@ $ ./create_certs.sh
 $ kubectl apply -f deploy/
 ```
 
+Afterwards you can run the `webhook-check.sh` script to check the webhook was
+deployed correctly and is working:
+
+```bash
+$ ./webhook-check.sh
+```
+
 The webhook mutates pods to use the Kata runtime class for all pods except
 those with 
 
