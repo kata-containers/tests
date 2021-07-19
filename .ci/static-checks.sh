@@ -164,6 +164,8 @@ Parameters:
 Notes:
 
 - If no options are specified, all non-skipped tests will be run.
+- Some required tools may be installed in \$GOPATH/bin, so you should ensure
+  that it is in your \$PATH.
 
 Examples:
 
@@ -230,6 +232,16 @@ pkg_to_path()
 	go list -f '{{.Dir}}' "$pkg"
 }
 
+# Check that chronic is installed, otherwise die.
+need_chronic() {
+	local first_word
+	[ -z "$chronic" ] && return
+	first_word="${chronic%% *}"
+	command -v chronic &>/dev/null || \
+		die "chronic command not found. You must have it installed to run this check." \
+		"Usually it is distributed with the 'moreutils' package of your Linux distribution."
+}
+
 static_check_commits()
 {
 	# Since this script is called from another repositories directory,
@@ -238,6 +250,9 @@ static_check_commits()
 	# (cd "${tests_repo_dir}" && make checkcommits)
 	# for main branch
 	(cd "${tests_repo_dir}" && make checkcommits && git remote set-branches origin 'main' && git fetch -v)
+
+	command -v checkcommits &>/dev/null || \
+		die 'checkcommits command not found. Ensure that "$GOPATH/bin" is in your $PATH.'
 
 	# Check the commits in the branch
 	{
@@ -310,6 +325,8 @@ static_check_go_arch_specific()
 
 		info "Forcing ${linter} version ${linter_version}"
 		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin "${linter_version}"
+		command -v $linter &>/dev/null || \
+			die "$linter command not found. Ensure that \"\$GOPATH/bin\" is in your \$PATH."
 	fi
 
 	local linter_args="run -c ${cidir}/.golangci.yml"
@@ -583,6 +600,9 @@ static_check_docs()
 
 		# xurls is very fussy about how it's built.
 		GO111MODULE=on go get "${url}@${version}"
+
+		command -v xurls &>/dev/null ||
+			die 'xurls not found. Ensure that "$GOPATH/bin" is in your $PATH'
 	fi
 
 	info "Checking documentation"
@@ -649,6 +669,9 @@ static_check_docs()
 	md_docs_to_check="$all_docs"
 
 	(cd "${tests_repo_dir}" && make check-markdown)
+
+	command -v kata-check-markdown &>/dev/null || \
+		die 'kata-check-markdown command not found. Ensure that "$GOPATH/bin" is in your $PATH.'
 
 	for doc in $md_docs_to_check
 	do
@@ -951,6 +974,8 @@ static_check_xml()
 	local all_xml
 	local files
 
+	need_chronic
+
 	all_xml=$(git ls-files "*.xml" | grep -Ev "/(vendor|grpc-rs|target)/" | sort || true)
 
 	if [ "$specific_branch" = "true" ]
@@ -1003,6 +1028,8 @@ static_check_shell()
 	local all_scripts
 	local scripts
 
+	need_chronic
+
 	all_scripts=$(git ls-files "*.sh" "*.bash" | grep -Ev "/(vendor|grpc-rs|target)/" | sort || true)
 
 	if [ "$specific_branch" = "true" ]
@@ -1039,6 +1066,8 @@ static_check_json()
 {
 	local all_json
 	local json_files
+
+	need_chronic
 
 	all_json=$(git ls-files "*.json" | grep -Ev "/(vendor|grpc-rs|target)/" | sort || true)
 
