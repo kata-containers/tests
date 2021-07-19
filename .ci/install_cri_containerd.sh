@@ -31,8 +31,8 @@ cri_containerd_repo=$(get_version "externals.cri-containerd.url")
 cri_containerd_version=${cri_containerd_tarball_version#v}
 
 echo "Set up environment"
-if [ "$ID" == centos ] || [ "$ID" == rhel ]; then
-	# CentOS/RHEL: remove seccomp from runc build, no btrfs
+if [ "$ID" == centos ] || [ "$ID" == rhel ] || [ "$ID" == sles ]; then
+	# CentOS/RHEL/SLES: remove seccomp from runc build, no btrfs
 	export BUILDTAGS=${BUILDTAGS:-apparmor no_btrfs}
 fi
 
@@ -42,7 +42,7 @@ install_from_source() {
 		cd "${GOPATH}/src/${cri_containerd_repo}" >>/dev/null
 		git fetch
 		git checkout "${cri_containerd_tarball_version}"
-		make BUILDTAGS="${BUILD_TAGS:-}" cri-cni-release
+		make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
 		tarball_name="cri-containerd-cni-${cri_containerd_version}-${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
 		sudo tar -xvf "./releases/${tarball_name}" -C /
 	)

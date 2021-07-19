@@ -234,13 +234,13 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="qemu"
 	export KUBERNETES="yes"
 	;;
-"CRI_CONTAINERD_K8S")
+"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S")
 	# This job only tests containerd + k8s
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
-	export KUBERNETES="yes"
+	[ "${CI_JOB}" == "CRI_CONTAINERD_K8S" ] && export KUBERNETES="yes"
 	;;
 "CRI_CONTAINERD_K8S_INITRD")
 	# This job tests initrd image + containerd + k8s
