@@ -19,7 +19,7 @@ echo "Install chronic"
 sudo -E zypper -n install moreutils
 
 declare -A minimal_packages=( \
-	[spell-check]="hunspell myspell-en_GB myspell-en_US pandoc" \
+	[spell-check]="hunspell myspell-en_GB myspell-en_US" \
 	[xml_validator]="libxml2-tools" \
 	[yaml_validator_dependencies]="python-setuptools" \
 )
@@ -27,7 +27,7 @@ declare -A minimal_packages=( \
 declare -A packages=( \
 	[general_dependencies]="curl git libcontainers-common libdevmapper1_03 util-linux" \
 	[kata_containers_dependencies]="libtool automake autoconf bc perl-Alien-SDL libpixman-1-0-devel coreutils python2-pkgconfig" \
-	[qemu_dependencies]="libcap-devel libattr1 libcap-ng-devel librbd-devel libpmem-devel" \
+	[qemu_dependencies]="libcap-devel libattr1 libcap-ng-devel librbd-devel ninja" \
 	[kernel_dependencies]="libelf-devel flex glibc-devel-static thin-provisioning-tools" \
 	[crio_dependencies]="libglib-2_0-0 libseccomp-devel libapparmor-devel libgpg-error-devel go-md2man libgpgme-devel libassuan-devel glib2-devel glibc-devel" \
 	[bison_binary]="bison" \
@@ -41,6 +41,18 @@ declare -A packages=( \
 	[libsystemd]="systemd-devel" \
 	[redis]="redis" \
 )
+
+if [ "${arch}" == "x86_64" ] || [ "${arch}" == "ppc64le" ]; then
+	packages[qemu_dependencies]+=" libpmem-devel"
+fi
+
+if [ "$(uname -m)" == "ppc64le" ] || [ "$(uname -m)" == "s390x" ]; then
+	packages[kata_containers_dependencies]+=" protobuf-devel"
+fi
+
+if [ "$(uname -m)" == "s390x" ]; then
+	packages[kernel_dependencies]+=" libopenssl-devel"
+fi
 
 main()
 {
@@ -63,6 +75,11 @@ main()
 	fi
 
 	chronic sudo -E zypper -n install $pkgs_to_install
+
+	# Pandoc currently unavailable in openSUSE s390x repos
+	# Allow install failure, is not required for mainstream CI workflow
+	echo "Try to install pandoc"
+	sudo -E zypper -n install pandoc || true
 
 	echo "Install YAML validator"
 	chronic sudo -E easy_install pip
