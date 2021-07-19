@@ -44,7 +44,7 @@ declare -A packages=(
 	[crudini]="crudini" \
 	[procenv]="procenv" \
 	[haveged]="haveged" \
-        [libsystemd]="systemd-devel" \
+	[libsystemd]="systemd-devel" \
 	[redis]="redis" \
 )
 
