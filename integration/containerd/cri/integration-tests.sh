@@ -62,12 +62,13 @@ die() {
 }
 
 ci_config() {
+	sudo mkdir -p $(dirname "${kata_config}")
+	sudo cp "${default_kata_config}" "${kata_config}"
+
 	source /etc/os-release || source /usr/lib/os-release
 	ID=${ID:-""}
 	if [ "$ID" == ubuntu ] &&  [ -n "${CI}" ] ;then
 		# https://github.com/kata-containers/tests/issues/352
-		sudo mkdir -p $(dirname "${kata_config}")
-		sudo cp "${default_kata_config}" "${kata_config}"
 		if [ -n "${FACTORY_TEST}" ]; then
 			sudo sed -i -e 's/^#enable_template.*$/enable_template = true/g' "${kata_config}"
 			echo "init vm template"
@@ -84,7 +85,7 @@ ci_config() {
 	fi
 
 	echo "enable debug for kata-runtime"
-	sudo sed -i 's/^#enable_debug =/enable_debug =/g' ${kata_config} 
+	sudo sed -i 's/^#enable_debug =/enable_debug =/g' ${kata_config}
 	sudo sed -i 's/^#enable_debug =/enable_debug =/g' ${default_kata_config}
 }
 
