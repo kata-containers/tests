@@ -8,7 +8,7 @@
 # This test runs the 'web tooling benchmark'
 # https://github.com/v8/web-tooling-benchmark
 
-set -e
+set -o pipefail
 
 # General env
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
@@ -76,7 +76,7 @@ function main() {
 
 	containers=()
 	# Check tools/commands dependencies
-	cmds=()
+	local cmds=()
 	cmds+=("docker")
 
 	sudo systemctl restart containerd
@@ -100,26 +100,25 @@ function main() {
 		echo "Verify that the containers are running"
 		containers_launched=$(sudo ctr c list -q | wc -l)
 		[ "$containers_launched" -eq "$NUM_CONTAINERS" ] && break
- 		sleep 1
- 		[ "$i" == "$timeout" ] && return 1
+		sleep 1
+		[ "$i" == "$timeout" ] && return 1
 	done
 
 	# Launch webtooling benchmark
- 	CONTAINERS_ID=($(sudo ctr c list -q))
- 	for i in "${CONTAINERS_ID[@]}"; do
-		sudo ctr t exec -d --exec-id "$(random_name)" "$i" sh -c "$CMD"
- 	done
-
-	# Verify that webtooling benchmark finished
 	CONTAINERS_ID=($(sudo ctr c list -q))
-	for i in $(seq 1 "$timeout"); do
- 		FILE_CMD="cat $file_path/$file_name | grep Geometric"
- 		check_file_content=$(sudo ctr t exec --exec-id "$(random_name)" "$i" sh -c "$FILE_CMD")
-		[ ! -z "$check_file_content" ] && break
- 		sleep 1
+	for i in "${CONTAINERS_ID[@]}"; do
+		sudo ctr t exec -d --exec-id "$(random_name)" "$i" sh -c "$CMD"
 	done
 
-	# Copy the results from the container
+	CONTAINERS_ID=($(sudo ctr c list -q))
+	for j in $(seq 1 "$timeout"); do
+		FILE_CMD="cat $file_path/$file_name | grep Geometric"
+		# Here we are using i to iterate with the proper container id and perform an exec
+		check_file_content=$(sudo ctr t exec --exec-id "$(random_name)" "$i" sh -c "$FILE_CMD")
+		[ ! -z "$check_file_content" ] && break
+		sleep 1
+	done
+
 	RESULTS_CMD="cat $file_path/$file_name"
 	CONTAINERS_ID=($(sudo ctr c list -q))
 	for i in "${CONTAINERS_ID[@]}"; do
@@ -129,8 +128,8 @@ function main() {
 	# Save configuration
 	metrics_json_start_array
 
- 	local output=$(cat "$TMP_DIR/results")
- 	local cut_results="cut -d':' -f2 | sed -e 's/^[ \t]*//'| cut -d ' ' -f1 | tr '\n' ',' | sed 's/.$//'"
+	local output=$(cat "$TMP_DIR/results")
+	local cut_results="cut -d':' -f2 | sed -e 's/^[ \t]*//'| cut -d ' ' -f1 | tr '\n' ',' | sed 's/.$//'"
 
 	local acorn=$(echo "$output" | grep -w "acorn" | eval "${cut_results}")
 	local babel=$(echo "$output" | grep -w "babel" | sed '/babel-minify/d' | eval "${cut_results}")
@@ -154,8 +153,8 @@ function main() {
 	local tps=$(echo "$geometric_mean" | sed "s/,/+/g;s/.*/(&)\/$NUM_CONTAINERS/g" | bc -l)
 	local total_tps=$(echo "$tps*$NUM_CONTAINERS" | bc -l)
 
-  	local json="$(cat << EOF
-  	{
+	local json="$(cat << EOF
+	{
 		"Acorn" : "$acorn",
 		"Babel" : "$babel",
 		"Babel minify" : "$babel_minify",
@@ -177,7 +176,7 @@ function main() {
 		"Geometric mean" : "$geometric_mean",
 		"TPS" : "$tps",
 		"Total TPS" : "$total_tps"
-       	}
+	}
 EOF
 )"
 	metrics_json_add_array_element "$json"
