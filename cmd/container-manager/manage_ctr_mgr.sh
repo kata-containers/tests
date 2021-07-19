@@ -186,6 +186,7 @@ install_docker_s390x(){
 	log_message "Installing docker"
 	case "$ID" in
 		ubuntu) sudo apt-get install -y docker.io ;;
+		sles|opensuse*) sudo zypper install -y docker ;;
 		*) die "Unsupported distribution: $ID" ;;
 	esac
 }
