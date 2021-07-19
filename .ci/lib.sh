@@ -37,6 +37,12 @@ else
 	export GOPATH="${GOPATH:-$HOME/go}"
 fi
 
+if [ "$(uname -m)" == "s390x" ] && grep -Eq "\<(fedora|suse)\>" /etc/os-release 2> /dev/null; then
+	# see https://github.com/kata-containers/osbuilder/issues/217
+	export CC=gcc
+fi
+
+
 tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 lib_script="${GOPATH}/src/${tests_repo}/lib/common.bash"
 source "${lib_script}"

@@ -31,8 +31,8 @@ cri_containerd_repo=$(get_version "externals.cri-containerd.url")
 cri_containerd_version=${cri_containerd_tarball_version#v}
 
 echo "Set up environment"
-if [ "$ID" == centos ] || [ "$ID" == rhel ]; then
-	# CentOS/RHEL: remove seccomp from runc build, no btrfs
+if [ "$ID" == centos ] || [ "$ID" == rhel ] || [ "$ID" == sles ]; then
+	# CentOS/RHEL/SLES: remove seccomp from runc build, no btrfs
 	export BUILDTAGS=${BUILDTAGS:-apparmor no_btrfs}
 fi
 
