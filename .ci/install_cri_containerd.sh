@@ -42,7 +42,7 @@ install_from_source() {
 		cd "${GOPATH}/src/${cri_containerd_repo}" >>/dev/null
 		git fetch
 		git checkout "${cri_containerd_tarball_version}"
-		make BUILDTAGS="${BUILD_TAGS:-}" cri-cni-release
+		make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
 		tarball_name="cri-containerd-cni-${cri_containerd_version}-${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
 		sudo tar -xvf "./releases/${tarball_name}" -C /
 	)
