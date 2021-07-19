@@ -21,12 +21,13 @@ case "${CI_JOB}" in
 		echo "INFO: Running pmem integration test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make pmem"
 		;;
-	"CRI_CONTAINERD_K8S"|"CRI_CONTAINERD_K8S_INITRD")
+	"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S"|"CRI_CONTAINERD_K8S_INITRD")
 		echo "INFO: Running stability test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
 		echo "INFO: Containerd checks"
 		sudo -E PATH="$PATH" bash -c "make cri-containerd"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
+		[ "${CI_JOB}" != "CRI_CONTAINERD" ] && \
+			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
 		echo "INFO: Running vcpus test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make vcpus"
 		echo "INFO: Skipping pmem test: Issue: https://github.com/kata-containers/tests/issues/3223"
