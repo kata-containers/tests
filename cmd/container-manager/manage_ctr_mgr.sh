@@ -97,6 +97,8 @@ install_docker(){
 	if [ "$arch" == "s390x" ]; then
 		# download.docker.com does not build for s390x, need to install through other means
 		install_docker_s390x
+	elif [ "$arch" == "ppc64le" ]; then
+		install_docker_ppc64le
 	elif [ -z "$tag" ] || [ "$tag" == "latest" ] ; then
 		# If no tag is recevied, install latest compatible version
 		log_message "Installing docker"
@@ -187,6 +189,14 @@ install_docker_s390x(){
 	case "$ID" in
 		ubuntu) sudo apt-get install -y docker.io ;;
 		sles|opensuse*) sudo zypper install -y docker ;;
+		*) die "Unsupported distribution: $ID" ;;
+	esac
+}
+
+install_docker_ppc64le(){
+	log_message "Installing Docker"
+	case "$ID" in
+		ubuntu) sudo apt-get install -y docker.io ;;
 		*) die "Unsupported distribution: $ID" ;;
 	esac
 }
