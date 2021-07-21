@@ -332,8 +332,8 @@ gen_clean_arch() {
 	info "Remove installed kubernetes packages and configuration"
 	if [ "$ID" == ubuntu ]; then
 		sudo rm -rf /etc/systemd/system/kubelet.service.d
-		sudo apt-get remove kubeadm kubelet kubectl docker.io docker-ce containerd.io docker-ce-cli -y
-		sudo apt autoremove -y
+		sudo apt-get autoremove -y kubeadm kubelet kubectl \
+			$(dpkg -l | awk '{print $2}' | grep -E '^(containerd(.\io)?|docker(\.io|-ce(-cli)?))$')
 	fi
 	# Remove existing CNI configurations and binaries.
 	sudo sh -c 'rm -rf /opt/cni/bin/*'
