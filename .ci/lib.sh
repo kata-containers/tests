@@ -178,7 +178,7 @@ kill_stale_process()
 {
 	clean_env
 	extract_kata_env
-	stale_process_union=( "${stale_process_union[@]}" "${PROXY_PATH}" "${HYPERVISOR_PATH}" "${SHIM_PATH}" )
+	stale_process_union=( "${stale_process_union[@]}" "${HYPERVISOR_PATH}" "${SHIM_PATH}" )
 	for stale_process in "${stale_process_union[@]}"; do
 		[ -z "${stale_process}" ] && continue
 		local pids=$(pgrep -d ' ' -f "${stale_process}")
