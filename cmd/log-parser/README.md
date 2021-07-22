@@ -35,7 +35,7 @@ The tool requires that the following fields are defined for each log record:
   that generates the log record.
 
 - Source field (`source`): a single word that specifies the name of a unique
-  part of the system (e.g. `proxy`, `runtime`, `shim`).
+  part of the system (e.g. `runtime`).
 
 - Timestamp field (`time`): in [RFC3339](https://tools.ietf.org/html/rfc3339)
   format and including a nanosecond value.
@@ -49,25 +49,16 @@ Additional to the fields above, the tool also expects the following field:
 
 The primary logfiles the tool reads are:
 
-- The [proxy](https://github.com/kata-containers/proxy) log.
-
-  This log also includes embedded log entries from the
-  [agent](https://github.com/kata-containers/agent). `kata-log-parser`
-  automatically unpacks and displays the entries. During this process, the
-  encapsulating proxy log messages are discarded.
-
-- The [runtime](https://github.com/kata-containers/runtime) log.
+- The [runtime](https://github.com/kata-containers/kata-containers/tree/main/src/runtime) log.
 
   This log also includes
   [virtcontainers](https://github.com/containers/virtcontainers) log entries.
-
-- The [shim](https://github.com/kata-containers/shim) log.
 
 ## Usage
 
 To merge all logs:
 
-1. [Enable full debug](https://github.com/kata-containers/documentation/blob/master/Developer-Guide.md#enable-full-debug).
+1. [Enable full debug](https://github.com/kata-containers/kata-containers/blob/main/docs/Developer-Guide.md#enable-full-debug).
 1. Clear the systemd journal (optional):
    ```
    $ sudo systemctl stop systemd-journald
@@ -76,17 +67,9 @@ To merge all logs:
    ```
 1. Create a container.
 1. Collect the logs.
-    1. Save the proxy log, which includes agent log details:
-       ```
-       $ sudo journalctl -q -o cat -a -t kata-proxy > ./proxy.log
-       ```
     1. Save the runtime log:
        ```
        $ sudo journalctl -q -o cat -a -t kata-runtime > ./runtime.log
-       ```
-    1. Save the shim log:
-       ```
-       $ sudo journalctl -q -o cat -a -t kata-shim > ./shim.log
        ```
     1. Save the throttler logs:
        ```
@@ -104,5 +87,5 @@ To merge all logs:
    ```
 1. To run the program:
    ```
-   $ kata-log-parser proxy.log runtime.log shim.log vc-throttler.log ksm-throttler.log
+   $ kata-log-parser runtime.log vc-throttler.log ksm-throttler.log
    ```
