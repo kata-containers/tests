@@ -52,8 +52,6 @@ EOF
 		"RuntimeConfig": "$RUNTIME_CONFIG_PATH",
 		"Hypervisor": "$HYPERVISOR_PATH",
 		"HypervisorVersion": "$HYPERVISOR_VERSION",
-		"Proxy": "$PROXY_PATH",
-		"ProxyVersion": "$PROXY_VERSION",
 		"Shim": "$SHIM_PATH",
 		"ShimVersion": "$SHIM_VERSION",
 		"machinename": "$(uname -n)"
