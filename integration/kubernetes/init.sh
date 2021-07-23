@@ -109,7 +109,7 @@ sed -i "s|CGROUP_DRIVER|${cgroup_driver}|" "${kubeadm_config_file}"
 
 trap 'sudo -E sh -c "rm -r "${kubeadm_config_file}""' EXIT
 
-if [ "${BAREMETAL}" == true ] && [[ $(wc -l /proc/swaps | awk '{print $1}') -gt 1 ]]; then
+if [ "${CI}" == true ] && [[ $(wc -l /proc/swaps | awk '{print $1}') -gt 1 ]]; then
 	sudo swapoff -a || true
 fi
 
