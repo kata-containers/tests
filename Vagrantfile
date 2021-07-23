@@ -10,6 +10,7 @@
 
 # Read the Kata Containers CI job from the CI_JOB environment variable.
 job = ENV['CI_JOB'] || ""
+guest_user = 'vagrant'
 guest_home_dir = '/home/vagrant'
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
@@ -42,9 +43,13 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", env: {"CI_JOB" => job}, inline: <<-SHELL
 
     export GOPATH="#{guest_home_dir}/go"
+    # The repositories were copied to the vagrant user's home by the root
+    # user. So let's fix the files ownership.
+    chown -R #{guest_user}:#{guest_user} "${GOPATH}"
     kata_tests_repo_dir="${GOPATH}/src/github.com/kata-containers/tests"
 
     env_file="#{guest_home_dir}/ci_job_env"
+    sudo -E PATH=$PATH -H -u #{guest_user} \
     cat <<-EOF > ${env_file}
 export GOPATH="$GOPATH"
 export PATH="/usr/local/go/bin:\$GOPATH/bin:\$PATH"
@@ -59,7 +64,9 @@ EOF
 
     # Customize the .bashrc so that it will have the variables exported
     # after log-in.
+    sudo -E PATH=$PATH -u #{guest_user} \
     echo "cd $kata_tests_repo_dir" >> #{guest_home_dir}/.bashrc
+    sudo -E PATH=$PATH -u #{guest_user} \
     echo "source $env_file" >> #{guest_home_dir}/.bashrc
 
     distro=$(source /etc/os-release; echo $ID)
@@ -84,7 +91,7 @@ EOF
     export osbuilder_distro="$distro"
 
     cd ${kata_tests_repo_dir}
-    .ci/setup.sh
+    sudo -E PATH=$PATH -H -u #{guest_user} bash -c '.ci/setup.sh'
   SHELL
 
   config.vm.define "fedora", autostart: false do |fedora|
