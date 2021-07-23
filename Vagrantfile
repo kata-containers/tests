@@ -81,6 +81,7 @@ EOF
       sudo dnf install -y grubby
       # Set the kernel parameter to use cgroups v1.
       sudo grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
+      dnf install -y make
     SHELL
 
     fedora.vm.provision "shell", inline: <<-SHELL
@@ -97,6 +98,7 @@ EOF
     ubuntu.vm.provision "shell", inline: <<-SHELL
       source "#{guest_env_file}"
       cd "${GOPATH}/src/github.com/kata-containers/tests"
+      apt-get install -y make
       # Build the osbuilder with same distro as the host.
       export osbuilder_distro="ubuntu"
       sudo -E PATH=$PATH -H -u #{guest_user} bash -c '.ci/setup.sh'
