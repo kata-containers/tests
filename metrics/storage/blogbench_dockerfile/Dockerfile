@@ -5,7 +5,7 @@
 # Set up an Ubuntu image with 'blogbench' installed
 
 # Usage: FROM [image name]
-FROM ubuntu
+FROM public.ecr.aws/lts/ubuntu
 
 # Version of the Dockerfile
 LABEL DOCKERFILE_VERSION="1.0"
@@ -20,7 +20,8 @@ RUN apt-get update && \
 	curl -OkL ${BLOGBENCH_URL}/blogbench-${BLOGBENCH_VERSION}.tar.gz && \
 	tar xzf blogbench-${BLOGBENCH_VERSION}.tar.gz && \
 	cd blogbench-${BLOGBENCH_VERSION} && \
-	./configure && \
+	export arch=$(uname -m) && \
+	./configure --build=${arch} && \	
 	make && \
 	make install-strip
 
