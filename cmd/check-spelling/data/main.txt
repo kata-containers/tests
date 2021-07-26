@@ -89,6 +89,7 @@ signoff/A
 stalebot/B
 startup
 subdirectory/A
+swappiness
 sysctl/AB
 teardown
 templating
