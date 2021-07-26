@@ -250,8 +250,6 @@ get_docker_memory_usage(){
 	hypervisor_mem=0
 	virtiofsd_mem=0
 	shim_mem=0
-	proxy_mem=0
-	proxy_mem=0
 	memory_usage=0
 
 	containers=()
@@ -319,18 +317,7 @@ EOF
 			die "Failed to find PSS for $SHIM_PATH"
 		fi
 
-		# Some runtimes do not have a proxy, so just set it to 0 space...
-		if [ "$PROXY_PATH" != "" ]; then
-			proxy_mem="$(get_pss_memory "$PROXY_PATH")"
-			if [ "$proxy_mem" == "0" ]; then
-				die "Failed to find PSS for $PROXY_PATH"
-			fi
-		else
-			proxy_mem=0
-		fi
-
-		proxy_mem="$(bc -l <<< "scale=2; $proxy_mem / $NUM_CONTAINERS")"
-		mem_usage="$(bc -l <<< "scale=2; $hypervisor_mem +$virtiofsd_mem + $shim_mem + $proxy_mem")"
+		mem_usage="$(bc -l <<< "scale=2; $hypervisor_mem +$virtiofsd_mem + $shim_mem")"
 		memory_usage="$mem_usage"
 
 	local json="$(cat << EOF
@@ -349,10 +336,6 @@ EOF
 		},
 		"shims": {
 			"Result": $shim_mem,
-			"Units" : "KB"
-		},
-		"proxys": {
-			"Result": $proxy_mem,
 			"Units" : "KB"
 		}
 	}
