@@ -385,8 +385,6 @@ main() {
 		passing_test+=("TestContainerListStatsWithSandboxIdFilter")
 	fi
 
-	create_containerd_config "${containerd_runtime_test}"
-
 	for t in "${passing_test[@]}"
 	do
 		sudo -E PATH="${PATH}:/usr/local/bin" \
