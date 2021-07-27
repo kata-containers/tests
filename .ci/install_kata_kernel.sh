@@ -19,7 +19,7 @@ latest_build_url="${jenkins_url}/job/kata-containers-2.0-kernel-vanilla-$(arch)-
 PREFIX="${PREFIX:-/usr}"
 kernel_dir="${DESTDIR:-}${PREFIX}/share/kata-containers"
 
-kernel_repo_dir="${kata_repo_dir}/tools/packaging"
+kernel_packaging_dir="${kata_repo_dir}/tools/packaging/kernel"
 readonly tmp_dir="$(mktemp -d -t install-kata-XXXXXXXXXXX)"
 
 exit_handler() {
@@ -32,9 +32,9 @@ build_and_install_kernel() {
 	# Always build and install the kernel version found locally
 	info "Install kernel from sources"
 	pushd "${tmp_dir}" >> /dev/null
-	"${kernel_repo_dir}/kernel/build-kernel.sh" -v "${kernel_version}" "setup"
-	"${kernel_repo_dir}/kernel/build-kernel.sh" -v "${kernel_version}" "build"
-	sudo -E PATH="$PATH" "${kernel_repo_dir}/kernel/build-kernel.sh" -v "${kernel_version}" "install"
+	"${kernel_packaging_dir}/build-kernel.sh" -v "${kernel_version}" "setup"
+	"${kernel_packaging_dir}/build-kernel.sh" -v "${kernel_version}" "build"
+	sudo -E PATH="$PATH" "${kernel_packaging_dir}/build-kernel.sh" -v "${kernel_version}" "install"
 	popd >> /dev/null
 }
 
@@ -72,7 +72,7 @@ main() {
 	clone_kata_repo
 	kernel_version=$(get_version "assets.kernel.version")
 	kernel_version=${kernel_version#v}
-	kata_config_version=$(cat "${kernel_repo_dir}/kernel/kata_config_version")
+	kata_config_version=$(cat "${kernel_packaging_dir}/kata_config_version")
 	current_kernel_version="${kernel_version}-${kata_config_version}"
 	cached_kernel_version=$(curl -sfL "${latest_build_url}/latest") || cached_kernel_version="none"
 	info "current kernel : ${current_kernel_version}"
