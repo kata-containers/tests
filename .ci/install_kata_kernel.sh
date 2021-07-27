@@ -28,16 +28,6 @@ exit_handler() {
 
 trap exit_handler EXIT
 
-get_current_kernel_version() {
-	kernel_version=$(get_version "assets.kernel.version")
-	echo "${kernel_version/v/}"
-}
-
-get_kata_config_version() {
-	kata_config_version=$(cat "${kernel_repo_dir}/kernel/kata_config_version")
-	echo "${kata_config_version}"
-}
-
 build_and_install_kernel() {
 	# Always build and install the kernel version found locally
 	info "Install kernel from sources"
@@ -78,8 +68,9 @@ install_prebuilt_kernel() {
 
 main() {
 	clone_kata_repo
-	kernel_version="$(get_current_kernel_version)"
-	kata_config_version="$(get_kata_config_version)"
+	kernel_version=$(get_version "assets.kernel.version")
+	kernel_version=${kernel_version#v}
+	kata_config_version=$(cat "${kernel_repo_dir}/kernel/kata_config_version")
 	current_kernel_version="${kernel_version}-${kata_config_version}"
 	cached_kernel_version=$(curl -sfL "${latest_build_url}/latest") || cached_kernel_version="none"
 	info "current kernel : ${current_kernel_version}"
