@@ -15,12 +15,11 @@ set -o errtrace
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 
-latest_build_url="${jenkins_url}/job/kata-containers-2.0-kernel-vanilla-$(uname -m)-nightly/${cached_artifacts_path}"
+latest_build_url="${jenkins_url}/job/kata-containers-2.0-kernel-vanilla-$(arch)-nightly/${cached_artifacts_path}"
 PREFIX="${PREFIX:-/usr}"
 kernel_dir="${DESTDIR:-}${PREFIX}/share/kata-containers"
 
 kernel_repo_dir="${kata_repo_dir}/tools/packaging"
-kernel_arch="$(arch)"
 readonly tmp_dir="$(mktemp -d -t install-kata-XXXXXXXXXXX)"
 
 exit_handler() {
@@ -85,7 +84,7 @@ main() {
 	cached_kernel_version=$(curl -sfL "${latest_build_url}/latest") || cached_kernel_version="none"
 	info "current kernel : ${current_kernel_version}"
 	info "cached kernel  : ${cached_kernel_version}"
-	if [ "$cached_kernel_version" == "$current_kernel_version" ] && [ "$kernel_arch" == "x86_64" ]; then
+	if [ "$cached_kernel_version" == "$current_kernel_version" ] && [ "$(arch)" == "x86_64" ]; then
 		# If installing kernel fails,
 		# then build and install it from sources.
 		if ! install_prebuilt_kernel; then
