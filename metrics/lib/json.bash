@@ -82,7 +82,7 @@ EOF
 	# Now add a runtime specific environment section if we can
 	local iskata=$(is_a_kata_runtime "$RUNTIME")
 	if [ "$iskata" == "1" ]; then
-		local rpath="$(command -v $RUNTIME)"
+		local rpath="$(command -v kata-runtime)"
 		local json="$(cat << EOF
 	"kata-env" :
 	$($rpath kata-env --json)
