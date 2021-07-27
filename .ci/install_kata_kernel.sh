@@ -14,7 +14,6 @@ set -o errtrace
 
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
-source "/etc/os-release" || source "/usr/lib/os-release"
 
 latest_build_url="${jenkins_url}/job/kata-containers-2.0-kernel-vanilla-$(uname -m)-nightly/${cached_artifacts_path}"
 PREFIX="${PREFIX:-/usr}"
