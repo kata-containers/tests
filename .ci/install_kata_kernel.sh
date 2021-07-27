@@ -115,10 +115,6 @@ install_prebuilt_kernel() {
 	popd >/dev/null
 }
 
-cleanup() {
-	rm -rf "${tmp_dir}"
-}
-
 main() {
 	clone_kata_repo
 	kernel_version="$(get_current_kernel_version)"
