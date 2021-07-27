@@ -17,7 +17,6 @@ source "${cidir}/lib.sh"
 source "/etc/os-release" || source "/usr/lib/os-release"
 
 latest_build_url="${jenkins_url}/job/kata-containers-2.0-kernel-vanilla-$(uname -m)-nightly/${cached_artifacts_path}"
-experimental_latest_build_url="${jenkins_url}/job/kata-containers-2.0-kernel-experimental-$(uname -m)-nightly/${cached_artifacts_path}"
 PREFIX="${PREFIX:-/usr}"
 kernel_dir="${DESTDIR:-}${PREFIX}/share/kata-containers"
 
@@ -25,8 +24,6 @@ kernel_repo_dir="${kata_repo_dir}/tools/packaging"
 kernel_arch="$(arch)"
 readonly tmp_dir="$(mktemp -d -t install-kata-XXXXXXXXXXX)"
 packaged_kernel="kata-linux-container"
-#Experimental kernel support. Pull from virtio-fs GitLab instead of kernel.org
-experimental_kernel="${experimental_kernel:-false}"
 
 exit_handler() {
 	rm -rf "${tmp_dir}"
@@ -35,11 +32,7 @@ exit_handler() {
 trap exit_handler EXIT
 
 get_current_kernel_version() {
-	if [ "$experimental_kernel" == "true" ]; then
-		kernel_version=$(get_version "assets.kernel-experimental.tag")
-	else
-		kernel_version=$(get_version "assets.kernel.version")
-	fi
+	kernel_version=$(get_version "assets.kernel.version")
 	echo "${kernel_version/v/}"
 }
 
@@ -49,34 +42,13 @@ get_kata_config_version() {
 }
 
 build_and_install_kernel() {
-	if [ "${experimental_kernel}" == "true" ]; then
-		info "Install experimental kernel"
-		pushd "${tmp_dir}" >> /dev/null
-		"${kernel_repo_dir}/kernel/build-kernel.sh" -e setup
-		"${kernel_repo_dir}/kernel/build-kernel.sh" -e build
-		sudo -E PATH="$PATH" "${kernel_repo_dir}/kernel/build-kernel.sh" -e install
-
-		local vmlinux_symlink="${kernel_dir}/vmlinux.container"
-		local vmlinux_experimental_path=$(readlink -f "${kernel_dir}/vmlinux-experimental.container")
-		[ -e "$vmlinux_experimental_path" ] || die "Not found experimental kernel installed '${vmlinux_experimental_path}'"
-		info "Installing ${vmlinux_experimental_path} and symlink ${vmlinux_symlink}"
-		sudo -E ln -sf "${vmlinux_experimental_path}" "${vmlinux_symlink}"
-
-		local vmlinuz_symlink="${kernel_dir}/vmlinuz.container"
-		local vmlinuz_experimental_path=$(readlink -f "${kernel_dir}/vmlinuz-experimental.container")
-		[ -e "$vmlinuz_experimental_path" ] || die "Not found experimental kernel installed '${vmlinuz_experimental_path}'"
-		info "Installing ${vmlinuz_experimental_path} and symlink ${vmlinuz_symlink}"
-		sudo -E ln -sf "${vmlinuz_experimental_path}" "${vmlinuz_symlink}"
-		popd >> /dev/null
-	else
-		# Always build and install the kernel version found locally
-		info "Install kernel from sources"
-		pushd "${tmp_dir}" >> /dev/null
-		"${kernel_repo_dir}/kernel/build-kernel.sh" -v "${kernel_version}" "setup"
-		"${kernel_repo_dir}/kernel/build-kernel.sh" -v "${kernel_version}" "build"
-		sudo -E PATH="$PATH" "${kernel_repo_dir}/kernel/build-kernel.sh" -v "${kernel_version}" "install"
-		popd >> /dev/null
-	fi
+	# Always build and install the kernel version found locally
+	info "Install kernel from sources"
+	pushd "${tmp_dir}" >> /dev/null
+	"${kernel_repo_dir}/kernel/build-kernel.sh" -v "${kernel_version}" "setup"
+	"${kernel_repo_dir}/kernel/build-kernel.sh" -v "${kernel_version}" "build"
+	sudo -E PATH="$PATH" "${kernel_repo_dir}/kernel/build-kernel.sh" -v "${kernel_version}" "install"
+	popd >> /dev/null
 }
 
 # $1 kernel_binary: binary to install could be vmlinux or vmlinuz
@@ -87,11 +59,7 @@ install_cached_kernel(){
 	sudo mkdir -p "${kernel_dir}"
 	local kernel_binary_name="${kernel_binary}-${cached_kernel_version}"
 	local kernel_binary_path="${kernel_dir}/${kernel_binary_name}"
-	if [ "${experimental_kernel}" == "true" ]; then
-		sudo -E curl -fL --progress-bar "${experimental_latest_build_url}/${kernel_binary_name}" -o "${kernel_binary_path}" || return 1
-	else
-		sudo -E curl -fL --progress-bar "${latest_build_url}/${kernel_binary_name}" -o "${kernel_binary_path}" || return 1
-	fi
+	sudo -E curl -fL --progress-bar "${latest_build_url}/${kernel_binary_name}" -o "${kernel_binary_path}" || return 1
 	kernel_symlink="${kernel_dir}/${kernel_binary}.container"
 	info "Installing ${kernel_binary_path} and symlink ${kernel_symlink}"
 	sudo -E ln -sf "${kernel_binary_path}" "${kernel_symlink}"
@@ -106,11 +74,7 @@ install_prebuilt_kernel() {
 
 	pushd "${kernel_dir}" >/dev/null
 	info "Verify download checksum"
-	if [ "${experimental_kernel}" == "true" ]; then
-		sudo -E curl -fsOL "${experimental_latest_build_url}/sha256sum-kernel" || return 1
-	else
-		sudo -E curl -fsOL "${latest_build_url}/sha256sum-kernel" || return 1
-        fi
+	sudo -E curl -fsOL "${latest_build_url}/sha256sum-kernel" || return 1
 	sudo sha256sum -c "sha256sum-kernel" || return 1
 	popd >/dev/null
 }
@@ -120,12 +84,7 @@ main() {
 	kernel_version="$(get_current_kernel_version)"
 	kata_config_version="$(get_kata_config_version)"
 	current_kernel_version="${kernel_version}-${kata_config_version}"
-	if [ "${experimental_kernel}" == "false" ]; then
-		cached_kernel_version=$(curl -sfL "${latest_build_url}/latest") || cached_kernel_version="none"
-	else
-		current_kernel_version+="-experimental"
-		cached_kernel_version=$(curl -sfL "${experimental_latest_build_url}/latest") || cached_kernel_version="none"
-	fi
+	cached_kernel_version=$(curl -sfL "${latest_build_url}/latest") || cached_kernel_version="none"
 	info "current kernel : ${current_kernel_version}"
 	info "cached kernel  : ${cached_kernel_version}"
 	if [ "$cached_kernel_version" == "$current_kernel_version" ] && [ "$kernel_arch" == "x86_64" ]; then
