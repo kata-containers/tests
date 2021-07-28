@@ -139,7 +139,7 @@ For example:
 ```
 
 In this example, we tell the CI to fetch the pull request 999 from the `kata-containers`
-repository and use that rather than the `master` branch when testing the changes
+repository and use that rather than the `main` branch when testing the changes
 contained in this pull request.
 
 ## CLI tools
