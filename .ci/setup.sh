@@ -141,11 +141,7 @@ main() {
 
 	[ "$setup_type" = "minimal" ] && info "finished minimal setup" && exit 0
 
-	if [ "$arch" == "s390x" ] && ([ "$ID" == "fedora" ] || [[ "${ID_LIKE:-}" =~ "fedora" ]]); then
-		# see https://github.com/kata-containers/osbuilder/issues/217
-		export CC=gcc
-	fi
-
+	print_environment
 	install_docker
 	enable_nested_virtualization
 	install_kata
