@@ -459,3 +459,13 @@ calc_qemu_files_sha256sum() {
 
 	sha256sum_from_files $files
 }
+
+# Outputs to stdout the environment variables of the current script.
+print_environment() {
+	if [ -n "$(command -v env)" ]
+	then
+		echo environment variables for $(basename "$0"):
+		env
+		echo "#########################################"
+	fi
+}
