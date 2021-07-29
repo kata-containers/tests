@@ -16,6 +16,18 @@ export RUNTIME="containerd-shim-kata-v2"
 
 export CI_JOB="${CI_JOB:-default}"
 
+# Kata *MUST BE* able to run using a read-only rootfs image
+if [ "$(uname -m)" == "x86_64" ]; then
+	rootfs_img="$(grep "^image = " \
+	/usr/share/defaults/kata-containers/configuration.toml \
+	/etc/kata-containers/configuration.toml 2> /dev/null \
+	| cut -d= -f2 | tr -d '"' | tr -d ' ' || true)"
+	if [ -n "${rootfs_img}" ]; then
+		echo "INFO: making rootfs image read-only"
+		sudo mount --bind -r "${rootfs_img}" "${rootfs_img}"
+	fi
+fi
+
 case "${CI_JOB}" in
 	"BAREMETAL-PMEM")
 		echo "INFO: Running pmem integration test"
