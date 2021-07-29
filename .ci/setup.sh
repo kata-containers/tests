@@ -152,6 +152,7 @@ main() {
 
 	[ "$setup_type" = "minimal" ] && info "finished minimal setup" && exit 0
 
+	print_environment
 	install_docker
 	enable_nested_virtualization
 	install_kata
