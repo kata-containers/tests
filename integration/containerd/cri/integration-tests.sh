@@ -109,6 +109,9 @@ ci_cleanup() {
 
 create_containerd_config() {
 	local runtime="$1"
+	# kata_annotations is set to 1 if caller want containerd setup with
+	# kata annotations support.
+	local kata_annotations=${2-0}
 	[ -n "${runtime}" ] || die "need runtime to create config"
 
 	local runtime_type="${containerd_runtime_type}"
@@ -122,13 +125,17 @@ create_containerd_config() {
 	# Remove dots.  Dots are used by toml syntax as atribute separator
 	runtime="${runtime//./-}"
 
-	cat << EOT | sudo tee "${CONTAINERD_CONFIG_FILE}"
+cat << EOT | sudo tee "${CONTAINERD_CONFIG_FILE}"
 [plugins]
   [plugins.cri]
     [plugins.cri.containerd]
-	default_runtime_name = "$runtime"
+        default_runtime_name = "$runtime"
       [plugins.cri.containerd.runtimes.${runtime}]
         runtime_type = "${runtime_type}"
+        $( [ $kata_annotations -eq 1 ] && \
+        echo 'pod_annotations = ["io.katacontainers.*"]' && \
+        echo '        container_annotations = ["io.katacontainers.*"]'
+        )
         [plugins.cri.containerd.runtimes.${runtime}.options]
           Runtime = "${containerd_runtime}"
 [plugins.linux]
@@ -178,6 +185,10 @@ check_daemon_setup() {
 }
 
 testContainerStart() {
+	# no_container_yaml set to 1 will not create container_yaml
+	# because caller has created its own container_yaml.
+	no_container_yaml=${1-0}
+
 	local pod_yaml=${REPORT_DIR}/pod.yaml
 	local container_yaml=${REPORT_DIR}/container.yaml
 	local image="busybox:latest"
@@ -187,7 +198,9 @@ metadata:
   name: busybox-sandbox1
 EOF
 
-	cat << EOF > "${container_yaml}"
+	#TestContainerSwap has created its own container_yaml.
+	if [ $no_container_yaml -ne 1 ]; then
+		cat << EOF > "${container_yaml}"
 metadata:
   name: busybox-killed-vmm
 image:
@@ -195,6 +208,7 @@ image:
 command:
 - top
 EOF
+	fi
 
 	sudo cp "$default_containerd_config" "$default_containerd_config_backup"
 	sudo cp $CONTAINERD_CONFIG_FILE "$default_containerd_config"
@@ -288,6 +302,135 @@ TestContainerMemoryUpdate() {
 	fi
 
 	testContainerStop
+}
+
+getContainerSwapInfo() {
+	swap_size=$(($(crictl exec $cid cat /proc/meminfo | grep "SwapTotal:" | awk '{print $2}')*1024))
+	swappiness=$(crictl exec $cid cat /proc/sys/vm/swappiness)
+	swap_in_bytes=$(crictl exec $cid cat /sys/fs/cgroup/memory/memory.memsw.limit_in_bytes)
+}
+
+TestContainerSwap() {
+	if [[ "${KATA_HYPERVISOR}" != "qemu" ]] || [[ "${ARCH}" != "x86_64" ]]; then
+		return
+	fi
+
+	local container_yaml=${REPORT_DIR}/container.yaml
+
+	info "Test container with guest swap"
+
+	create_containerd_config "${containerd_runtime_test}" 1
+	sudo sed -i -e 's/^#enable_guest_swap.*$/enable_guest_swap = true/g' "${kata_config}"
+
+	# Test without swap device
+	testContainerStart
+	getContainerSwapInfo
+	# Current default swappiness is 60
+	if [ $swappiness -ne 60 ]; then
+		testContainerStop
+		die "The VM swappiness $swappiness without swap device is not right"
+	fi
+	if [ $swap_in_bytes -lt 1125899906842624 ]; then
+		testContainerStop
+		die "The VM swap_in_bytes $swap_in_bytes without swap device is not right"
+	fi
+	if [ $swap_size -ne 0 ]; then
+		testContainerStop
+		die "The VM swap size $swap_size without swap device is not right"
+	fi
+	testContainerStop
+
+	# Test with swap device
+	cat << EOF > "${container_yaml}"
+metadata:
+  name: busybox-killed-vmm
+annotations:
+  io.katacontainers.container.resource.swappiness: "100"
+  io.katacontainers.container.resource.swap_in_bytes: "1610612736"
+linux:
+  resources:
+    memory_limit_in_bytes: 1073741824
+image:
+  image: "$image"
+command:
+- top
+EOF
+	testContainerStart 1
+	getContainerSwapInfo
+	if [ $swappiness -ne 100 ]; then
+		testContainerStop
+		die "The VM swappiness $swappiness with swap device is not right"
+	fi
+	if [ $swap_in_bytes -ne 1610612736 ]; then
+		testContainerStop
+		die "The VM swap_in_bytes $swap_in_bytes with swap device is not right"
+	fi
+	if [ $swap_size -ne 536870912 ]; then
+		testContainerStop
+		die "The VM swap size $swap_size with swap device is not right"
+	fi
+	testContainerStop
+
+	# Test without swap_in_bytes
+	cat << EOF > "${container_yaml}"
+metadata:
+  name: busybox-killed-vmm
+annotations:
+  io.katacontainers.container.resource.swappiness: "100"
+linux:
+  resources:
+    memory_limit_in_bytes: 1073741824
+image:
+  image: "$image"
+command:
+- top
+EOF
+	testContainerStart 1
+	getContainerSwapInfo
+	if [ $swappiness -ne 100 ]; then
+		testContainerStop
+		die "The VM swappiness $swappiness without swap_in_bytes is not right"
+	fi
+	# swap_in_bytes is not set, it should be a value that bigger than 1125899906842624
+	if [ $swap_in_bytes -lt 1125899906842624 ]; then
+		testContainerStop
+		die "The VM swap_in_bytes $swap_in_bytes without swap_in_bytes is not right"
+	fi
+	if [ $swap_size -ne 1073741824 ]; then
+		testContainerStop
+		die "The VM swap size $swap_size without swap_in_bytes is not right"
+	fi
+	testContainerStop
+
+	# Test without memory_limit_in_bytes
+	cat << EOF > "${container_yaml}"
+metadata:
+  name: busybox-killed-vmm
+annotations:
+  io.katacontainers.container.resource.swappiness: "100"
+image:
+  image: "$image"
+command:
+- top
+EOF
+	testContainerStart 1
+	getContainerSwapInfo
+	if [ $swappiness -ne 100 ]; then
+		testContainerStop
+		die "The VM swappiness $swappiness without memory_limit_in_bytes is not right"
+	fi
+	# swap_in_bytes is not set, it should be a value that bigger than 1125899906842624
+	if [ $swap_in_bytes -lt 1125899906842624 ]; then
+		testContainerStop
+		die "The VM swap_in_bytes $swap_in_bytes without memory_limit_in_bytes is not right"
+	fi
+	if [ $swap_size -ne 2147483648 ]; then
+		testContainerStop
+		die "The VM swap size $swap_size without memory_limit_in_bytes is not right"
+	fi
+	testContainerStop
+
+	create_containerd_config "${containerd_runtime_test}"
 }
 
 # k8s may restart docker which will impact on containerd stop
