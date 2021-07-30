@@ -48,3 +48,8 @@ setup() {
 	rm -f "${pod_config_dir}/test_within_memory.yaml"
 	kubectl delete pod "$pod_name"
 }
+
+teardown() {
+	# Debugging information
+	kubectl describe "pod/$pod_name" || true
+}
