@@ -14,7 +14,7 @@ Kubernetes YAML files required to instantiate the admission
 controller.
 
 ```bash
-$ docker build -t quay.io/kata-containers/kata-webhook-example:latest -f Dockerfile ..
+$ docker build -t quay.io/kata-containers/kata-webhook-example:latest -f Dockerfile .
 ```
 
 > **Note:**
