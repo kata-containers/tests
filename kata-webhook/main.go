@@ -15,10 +15,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	whhttp "github.com/slok/kubewebhook/pkg/http"
-	"github.com/slok/kubewebhook/pkg/log"
-	mctx "github.com/slok/kubewebhook/pkg/webhook/context"
-	mutatingwh "github.com/slok/kubewebhook/pkg/webhook/mutating"
+	"github.com/sirupsen/logrus"
+	kwhhttp "github.com/slok/kubewebhook/v2/pkg/http"
+	kwhlogrus "github.com/slok/kubewebhook/v2/pkg/log/logrus"
+	kwhmodel "github.com/slok/kubewebhook/v2/pkg/model"
+	kwhmutating "github.com/slok/kubewebhook/v2/pkg/webhook/mutating"
 )
 
 func getRuntimeClass(runtimeClassKey, defaultRuntimeClass string) string {
@@ -28,32 +29,27 @@ func getRuntimeClass(runtimeClassKey, defaultRuntimeClass string) string {
 	return defaultRuntimeClass
 }
 
-func annotatePodMutator(ctx context.Context, obj metav1.Object) (bool, error) {
+func annotatePodMutator(_ context.Context, ar *kwhmodel.AdmissionReview, obj metav1.Object) (*kwhmutating.MutatorResult, error) {
 	pod, ok := obj.(*corev1.Pod)
 	if !ok {
 		// If not a pod just continue the mutation chain (if there is one) and don't do anything
-		return false, nil
-	}
-
-	request := mctx.GetAdmissionRequest(ctx)
-	if request == nil {
-		return false, nil
+		return &kwhmutating.MutatorResult{}, nil
 	}
 
 	// The Namespace is not always available in the pod Spec
 	// specially when operators create the pods. Hence access
 	// the Namespace in the actual request (vs the object)
 	// https://godoc.org/k8s.io/api/admission/v1beta1#AdmissionRequest
-	if whPolicy.nsBlacklist[request.Namespace] {
-		fmt.Println("blacklisted namespace: ", request.Namespace)
-		return false, nil
+	if whPolicy.nsBlacklist[ar.Namespace] {
+		fmt.Println("blacklisted namespace: ", ar.Namespace)
+		return &kwhmutating.MutatorResult{}, nil
 	}
 
 	// We cannot support --net=host in Kata
 	// https://github.com/kata-containers/documentation/blob/master/Limitations.md#docker---nethost
 	if pod.Spec.HostNetwork {
 		fmt.Println("host network: ", pod.GetNamespace(), pod.GetName())
-		return false, nil
+		return &kwhmutating.MutatorResult{}, nil
 	}
 
 	if pod.GetNamespace() == "sonobuoy" {
@@ -64,14 +60,14 @@ func annotatePodMutator(ctx context.Context, obj metav1.Object) (bool, error) {
 		if pod.Spec.Containers[i].SecurityContext != nil && pod.Spec.Containers[i].SecurityContext.Privileged != nil {
 			if *pod.Spec.Containers[i].SecurityContext.Privileged {
 				fmt.Println("privileged container: ", pod.GetNamespace(), pod.GetName())
-				return false, nil
+				return &kwhmutating.MutatorResult{}, nil
 			}
 		}
 	}
 
 	if pod.Spec.RuntimeClassName != nil {
 		fmt.Println("explicit runtime: ", pod.GetNamespace(), pod.GetName(), pod.Spec.RuntimeClassName)
-		return false, nil
+		return &kwhmutating.MutatorResult{}, nil
 	}
 
 	// Mutate the pod
@@ -81,7 +77,9 @@ func annotatePodMutator(ctx context.Context, obj metav1.Object) (bool, error) {
 	kataRuntimeClassName := getRuntimeClass(runtimeClassEnvKey, "kata")
 	pod.Spec.RuntimeClassName = &kataRuntimeClassName
 
-	return false, nil
+	return &kwhmutating.MutatorResult{
+		MutatedObject: pod,
+	}, nil
 }
 
 type config struct {
@@ -109,7 +107,9 @@ func initFlags() *config {
 }
 
 func main() {
-	logger := &log.Std{Debug: true}
+	logrusLogEntry := logrus.NewEntry(logrus.New())
+	logrusLogEntry.Logger.SetLevel(logrus.DebugLevel)
+	logger := kwhlogrus.NewLogrus(logrusLogEntry)
 
 	cfg := initFlags()
 
@@ -122,20 +122,22 @@ func main() {
 	}
 
 	// Create our mutator
-	mt := mutatingwh.MutatorFunc(annotatePodMutator)
+	mt := kwhmutating.MutatorFunc(annotatePodMutator)
 
-	mcfg := mutatingwh.WebhookConfig{
-		Name: "podAnnotate",
-		Obj:  &corev1.Pod{},
+	mcfg := kwhmutating.WebhookConfig{
+		ID:      "podAnnotate",
+		Obj:     &corev1.Pod{},
+		Mutator: mt,
+		Logger:  logger,
 	}
-	wh, err := mutatingwh.NewWebhook(mcfg, mt, nil, nil, logger)
+	wh, err := kwhmutating.NewWebhook(mcfg)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error creating webhook: %s", err)
 		os.Exit(1)
 	}
 
 	// Get the handler for our webhook.
-	whHandler, err := whhttp.HandlerFor(wh)
+	whHandler, err := kwhhttp.HandlerFor(kwhhttp.HandlerConfig{Webhook: wh, Logger: logger})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error creating webhook handler: %s", err)
 		os.Exit(1)
