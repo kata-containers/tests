@@ -91,7 +91,7 @@ function main() {
 	for ((i=1; i<= "$NUM_CONTAINERS"; i++)); do
 		containers+=($(random_name))
 		# Web tool benchmark needs 2 cpus to run completely in its cpu utilization
-		sudo -E ctr run -d --runtime io.containerd.run.kata.v2 --cpu-quota "${cpu_quota}" --cpu-period "${cpu_period}" "$IMAGE" "${containers[-1]}" sh -c "$PAYLOAD_ARGS"
+		sudo -E ctr run -d --runtime "${CTR_RUNTIME}" --cpu-quota "${cpu_quota}" --cpu-period "${cpu_period}" "$IMAGE" "${containers[-1]}" sh -c "$PAYLOAD_ARGS"
 	done
 
 	# We verify that number of containers that we selected
