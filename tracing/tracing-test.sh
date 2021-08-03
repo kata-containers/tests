@@ -240,7 +240,7 @@ check_jaeger_status()
 setup()
 {
 	# containerd must be running in order to use ctr to generate traces
-	sudo systemctl restart containerd
+	restart_containerd_service
 
 	start_jaeger
 

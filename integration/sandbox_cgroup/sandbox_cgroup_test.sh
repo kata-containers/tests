@@ -26,8 +26,7 @@ if [ -z "${TEST_SANDBOX_CGROUP_ONLY}" ]; then
 fi
 
 function setup() {
-	sudo systemctl restart containerd
-	clean_env_ctr
+	restart_containerd_service
 	CONTAINERD_RUNTIME="io.containerd.kata.v2"
 	check_processes
 }

@@ -21,8 +21,7 @@ IMAGE="${IMAGE:-quay.io/prometheus/busybox:latest}"
 WAIT_TIME="60"
 
 function setup() {
-	sudo systemctl restart containerd
-	clean_env_ctr
+	restart_containerd_service
 	check_processes
 	save_ksm_settings
 	set_ksm_aggressive

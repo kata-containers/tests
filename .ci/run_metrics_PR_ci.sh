@@ -59,7 +59,7 @@ run() {
 	fi
 
 	# Run storage tests
-	sudo systemctl restart docker
+	restart_docker_service
 	bash storage/blogbench.sh
 
 	# Skip: Issue: https://github.com/kata-containers/tests/issues/3203

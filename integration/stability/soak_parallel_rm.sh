@@ -158,7 +158,7 @@ check_mounts() {
 }
 
 init() {
-	sudo systemctl restart containerd
+	restart_containerd_service
 	extract_kata_env
 	kill_all_containers
 
