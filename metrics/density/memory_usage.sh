@@ -393,7 +393,7 @@ main(){
 
 	if [ "$RUNTIME" == "runc" ]; then
 		get_runc_individual_memory
-	elif [ "$RUNTIME" == "cor" ] || [ "$RUNTIME" == "cc-runtime" ] || [ "$RUNTIME" == "kata-runtime" ]; then
+	elif [ "$RUNTIME" == "kata-runtime" ]; then
 		get_individual_memory
 	fi
 
