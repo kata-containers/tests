@@ -127,7 +127,8 @@ metrics_onetime_init()
 	fi
 
 	# Restart services
-	sudo systemctl restart docker containerd
+	restart_docker_service
+	restart_containerd_service
 
 	# We want this to be seen in sub shells as well...
 	# otherwise init_env() cannot check us

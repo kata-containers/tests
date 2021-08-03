@@ -207,7 +207,7 @@ main() {
 
 	setup_configuration_file
 
-	sudo systemctl restart containerd
+	restart_containerd_service
 	sudo modprobe vfio
 	sudo modprobe vfio-pci
 

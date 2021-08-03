@@ -27,8 +27,7 @@ if [ "$arch" == "aarch64" ]; then
 fi
 
 function setup() {
-	sudo systemctl restart containerd
-	clean_env_ctr
+	restart_containerd_service
 	check_processes
 	save_ksm_settings
 	set_ksm_aggressive

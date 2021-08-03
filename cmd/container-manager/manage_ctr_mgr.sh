@@ -174,7 +174,7 @@ install_docker(){
 		# If tag received is invalid, then return an error message
 		die "Unrecognized tag. Tag supported is: swarm"
 	fi
-	sudo systemctl restart docker
+	restart_docker_service
 	sudo gpasswd -a ${USER} docker
 	sudo chmod g+rw /var/run/docker.sock
 }
@@ -261,7 +261,7 @@ ExecStart=/usr/bin/dockerd ${docker_options}
 EOF
 	echo "Reloading unit files and starting docker service"
 	sudo systemctl daemon-reload
-	sudo systemctl restart docker
+	restart_docker_service
 }
 
 # This function configures docker to work by default with the

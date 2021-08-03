@@ -29,6 +29,7 @@ end_time=$((start_time+timeout))
 
 function setup {
 	sudo systemctl restart containerd
+	restart_containerd_service
 	clean_env_ctr
 	CONTAINERD_RUNTIME="io.containerd.kata.v2"
 	sudo ctr image pull $IMAGE

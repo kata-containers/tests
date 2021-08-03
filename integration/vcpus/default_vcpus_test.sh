@@ -30,8 +30,7 @@ if [ "$TEST_INITRD" == "yes" ]; then
 fi
 
 function setup() {
-	sudo systemctl restart containerd
-	clean_env_ctr
+	restart_containerd_service
 	check_processes
 	extract_kata_env
 	sudo sed -i "s/${name} = 1/${name} = 4/g" "${RUNTIME_CONFIG_PATH}"
