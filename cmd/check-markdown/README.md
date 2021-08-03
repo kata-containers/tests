@@ -15,7 +15,7 @@ All these repositories contain documents written in
 [GitHub-Flavoured Markdown](https://github.github.com/gfm)
 format.
 
-[Linking in documents is strongly encouraged](https://github.com/kata-containers/documentation/blob/master/Documentation-Requirements.md)
+[Linking in documents is strongly encouraged](https://github.com/kata-containers/kata-containers/blob/main/docs/Documentation-Requirements.md)
 but due to the number of internal and external document links, it is easy for
 mistakes to be made. Also, links can become stale when one document is updated
 but the documents it depends on are not.
