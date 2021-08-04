@@ -58,9 +58,9 @@ build_rust_image() {
 			;;
 	esac
 	info "Install ${target_image} to ${image_path}"
-	if [ -f "${image_path}" ]; then
+	local file="$(realpath ${image_path}/$(basename ${file_to_install}))"
+	if [ -f "${file}" ]; then
 		# try to umount it first, it can be mounted as a read-only file
-		file="$(realpath ${image_path}/$(basename ${file_to_install}))"
 		sudo umount "${file}" || true
 		sudo rm -f "${file}"
 	fi
