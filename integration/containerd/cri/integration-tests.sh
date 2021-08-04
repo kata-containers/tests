@@ -52,15 +52,6 @@ readonly default_containerd_config_backup="$CONTAINERD_CONFIG_FILE.backup"
 readonly kata_config="/etc/kata-containers/configuration.toml"
 readonly default_kata_config="/usr/share/defaults/kata-containers/configuration.toml"
 
-info() {
-	echo -e "INFO: $*"
-}
-
-die() {
-	echo >&2 "ERROR: $*"
-	exit 1
-}
-
 ci_config() {
 	source /etc/os-release || source /usr/lib/os-release
 	ID=${ID:-""}

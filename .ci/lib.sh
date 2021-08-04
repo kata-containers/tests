@@ -56,17 +56,6 @@ jenkins_url="http://jenkins.katacontainers.io"
 # Path where cached artifacts are found.
 cached_artifacts_path="lastSuccessfulBuild/artifact/artifacts"
 
-# If we fail for any reason a message will be displayed
-die() {
-	msg="$*"
-	echo "ERROR: $msg" >&2
-	exit 1
-}
-
-info() {
-	echo -e "INFO: $*"
-}
-
 # Clone repo only if $kata_repo_dir is empty
 # Otherwise, we assume $kata_repo is cloned and in correct branch, e.g. a PR or local change
 clone_kata_repo() {
