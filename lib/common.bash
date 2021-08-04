@@ -30,24 +30,24 @@ experimental_qemu="${experimental_qemu:-false}"
 
 die() {
 	local msg="$*"
-	echo "ERROR: $msg" >&2
+	echo -e "[$(basename $0):${BASH_LINENO[0]}] ERROR: $msg" >&2
 	exit 1
 }
 
 warn() {
 	local msg="$*"
-	echo "WARNING: $msg"
+	echo -e "[$(basename $0):${BASH_LINENO[0]}] WARNING: $msg"
 }
 
 info() {
 	local msg="$*"
-	echo "INFO: $msg"
+	echo -e "[$(basename $0):${BASH_LINENO[0]}] INFO: $msg"
 }
 
 handle_error() {
 	local exit_code="${?}"
 	local line_number="${1:-}"
-	echo "Failed at $line_number: ${BASH_COMMAND}"
+	echo -e "[$(basename $0):$line_number] ERROR: $(eval echo "$BASH_COMMAND")"
 	exit "${exit_code}"
 }
 trap 'handle_error $LINENO' ERR
