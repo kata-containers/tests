@@ -29,7 +29,7 @@ This directory contains the metrics tests for Kata Containers.
 
 The tests within this directory have a number of potential use cases:
 - CI checks for regressions on PRs
-- CI data gathering for master branch merges
+- CI data gathering for main branch merges
 - Developer use for pre-checking code changes before raising a PR
 - As part of report generation
 
