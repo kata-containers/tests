@@ -38,6 +38,6 @@ if [ "${rustarch}" == "powerpc64le" ] || [ "${rustarch}" == "s390x" ] ; then
 	rustup target add ${rustarch}-unknown-linux-gnu
 else
 	rustup target add ${rustarch}-unknown-linux-musl
-	sudo ln -sf /usr/bin/g++ /bin/musl-g++
+	$([ "$(whoami)" != "root" ] && echo sudo) ln -sf /usr/bin/g++ /bin/musl-g++
 fi
 rustup component add rustfmt
