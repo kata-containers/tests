@@ -151,8 +151,8 @@ fi
 }
 
 cleanup() {
-	[ -d "$tmp_dir" ] && rm -rf "${tmp_dir}"
 	ci_cleanup
+	[ -d "$tmp_dir" ] && rm -rf "${tmp_dir}"
 }
 
 trap cleanup EXIT
