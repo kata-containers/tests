@@ -79,7 +79,7 @@ function main() {
 	local cmds=()
 	cmds+=("docker")
 
-	sudo systemctl restart containerd
+	restart_containerd_service
 	init_env
 	check_cmds "${cmds[@]}"
 	check_ctr_images "$IMAGE" "$DOCKERFILE"

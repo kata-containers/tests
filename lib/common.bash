@@ -30,24 +30,24 @@ experimental_qemu="${experimental_qemu:-false}"
 
 die() {
 	local msg="$*"
-	echo "ERROR: $msg" >&2
+	echo -e "[$(basename $0):${BASH_LINENO[0]}] ERROR: $msg" >&2
 	exit 1
 }
 
 warn() {
 	local msg="$*"
-	echo "WARNING: $msg"
+	echo -e "[$(basename $0):${BASH_LINENO[0]}] WARNING: $msg"
 }
 
 info() {
 	local msg="$*"
-	echo "INFO: $msg"
+	echo -e "[$(basename $0):${BASH_LINENO[0]}] INFO: $msg"
 }
 
 handle_error() {
 	local exit_code="${?}"
 	local line_number="${1:-}"
-	echo "Failed at $line_number: ${BASH_COMMAND}"
+	echo -e "[$(basename $0):$line_number] ERROR: $(eval echo "$BASH_COMMAND")"
 	exit "${exit_code}"
 }
 trap 'handle_error $LINENO' ERR
@@ -173,4 +173,77 @@ clean_env_ctr()
 		sudo ctr tasks rm -f $(sudo ctr task list -q)
 		sudo ctr c rm $(sudo ctr c list -q)
 	fi
+}
+
+# Restarts a systemd service while ensuring the start-limit-burst is set to 0.
+# Outputs warnings to stdio if something has gone wrong.
+#
+# Returns 0 on success, 1 otherwise
+restart_systemd_service_with_no_burst_limit() {
+	local service=$1
+	info "restart $service service"
+
+	local active=$(systemctl show "$service.service" -p ActiveState | cut -d'=' -f2)
+	[ "$active" == "active" ] || warn "Service $service is not active"
+
+	local start_burst=$(systemctl show "$service".service -p StartLimitBurst | cut -d'=' -f2)
+	if [ "$start_burst" -ne 0 ]
+	then
+		local unit_file=$(systemctl show "$service.service" -p FragmentPath | cut -d'=' -f2)
+		[ -f "$unit_file" ] || { warn "Can't find $service's unit file: $unit_file"; return 1; }
+
+		local start_burst_set=$(sudo grep StartLimitBurst $unit_file | wc -l)
+		if [ "$start_burst_set" -eq 0 ]
+		then
+			sudo sed -i '/\[Service\]/a StartLimitBurst=0' "$unit_file"
+		else
+			sudo sed -i 's/StartLimitBurst.*$/StartLimitBurst=0/g' "$unit_file"
+		fi
+
+		sudo systemctl daemon-reload
+	fi
+
+	sudo systemctl restart "$service"
+
+	local state=$(systemctl show "$service.service" -p SubState | cut -d'=' -f2)
+	[ "$state" == "running" ] || { warn "Can't restart the $service service"; return 1; }
+
+	start_burst=$(systemctl show "$service.service" -p StartLimitBurst | cut -d'=' -f2)
+	[ "$start_burst" -eq 0 ] || { warn "Can't set start burst limit for $service service"; return 1; }
+
+	return 0
+}
+
+restart_containerd_service() {
+	restart_systemd_service_with_no_burst_limit containerd || return 1
+
+	local retries=5
+	local counter=0
+	until [ "$counter" -ge "$retries" ] || sudo ctr --connect-timeout 1s version > /dev/null 2>&1
+	do
+		info "Waiting for containerd socket..."
+		((counter++))
+	done
+
+	[ "$counter" -ge "$retries" ] && { warn "Can't connect to containerd socket"; return 1; }
+
+	clean_env_ctr
+	return 0
+}
+
+restart_docker_service() {
+	restart_systemd_service_with_no_burst_limit docker || return 1
+
+	local retries=5
+	local counter=0
+	until [ "$counter" -ge "$retries" ] || sudo docker version > /dev/null 2>&1
+	do
+		info "Waiting for docker socket..."
+		sleep 1
+		((counter++))
+	done
+
+	[ "$counter" -ge "$retries" ] && { warn "Can't connect to docker socket"; return 1; }
+
+	return 0
 }

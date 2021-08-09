@@ -9,6 +9,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+cidir=$(dirname "$0")
+source "${cidir}/../lib/common.bash"
+
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 
 containerd_config_dir="/etc/containerd"
@@ -76,4 +79,4 @@ else
 EOT
 fi
 
-sudo systemctl restart containerd
+restart_containerd_service

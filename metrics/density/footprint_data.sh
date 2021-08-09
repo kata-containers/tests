@@ -63,8 +63,7 @@ function dump_caches() {
 }
 
 function init() {
-	sudo systemctl restart containerd
-	clean_env_ctr
+	restart_containerd_service
 
 	CONTAINERD_RUNTIME="io.containerd.kata.v2"
 	check_cmds $REQUIRED_COMMANDS

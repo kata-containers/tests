@@ -64,7 +64,7 @@ install_docker() {
 		"${cidir}/../cmd/container-manager/manage_ctr_mgr.sh" docker install
 	fi
 
-	sudo systemctl restart docker
+	restart_docker_service
 }
 
 enable_nested_virtualization() {

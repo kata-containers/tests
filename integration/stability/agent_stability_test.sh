@@ -28,8 +28,7 @@ start_time=$(date +%s)
 end_time=$((start_time+timeout))
 
 function setup {
-	sudo systemctl restart containerd
-	clean_env_ctr
+	restart_containerd_service
 	sudo ctr image pull $IMAGE
 	sudo ctr run --runtime=$CONTAINERD_RUNTIME -d $IMAGE $CONTAINER_NAME sh -c $PAYLOAD_ARGS
 }

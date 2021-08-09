@@ -19,9 +19,8 @@ CONTAINER_NAME="${CONTAINER_NAME:-test}"
 PAYLOAD_ARGS="${PAYLOAD_ARGS:-tail -f /dev/null}"
 
 setup()  {
-	sudo systemctl restart containerd
+	restart_containerd_service
 	extract_kata_env
-	clean_env_ctr
 	HYPERVISOR_NAME=$(basename ${HYPERVISOR_PATH})
 	sudo ctr image pull $IMAGE
 	[ $? != 0 ] && die "Unable to get image $IMAGE"

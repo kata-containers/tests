@@ -10,6 +10,9 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 
+SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
+source "${SCRIPT_PATH}/../../../lib/common.bash"
+
 # runc is installed in /usr/local/sbin/ add that path
 export PATH="$PATH:/usr/local/sbin"
 
@@ -52,15 +55,6 @@ readonly default_containerd_config_backup="$CONTAINERD_CONFIG_FILE.backup"
 readonly kata_config="/etc/kata-containers/configuration.toml"
 readonly default_kata_config="/usr/share/defaults/kata-containers/configuration.toml"
 
-info() {
-	echo -e "INFO: $*"
-}
-
-die() {
-	echo >&2 "ERROR: $*"
-	exit 1
-}
-
 ci_config() {
 	sudo mkdir -p $(dirname "${kata_config}")
 	sudo cp "${default_kata_config}" "${kata_config}"
@@ -76,7 +70,6 @@ ci_config() {
 		fi
 	fi
 
-	SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 	if [ -n "${CI}" ]; then
 		(
 		echo "Install cni config"
@@ -166,37 +159,12 @@ err_report() {
 
 trap err_report ERR
 
-restart_docker() {
-	info "restart docker service"
-
-	back_file=$(mktemp)
-
-	#avoid the "Start request repeated too quickly" error
-        if [ -f "/lib/systemd/system/docker.service" ]; then
-		cp /lib/systemd/system/docker.service ${back_file}
-                sudo sed -i 's/StartLimitBurst.*$/StartLimitBurst=0/g' /lib/systemd/system/docker.service
-        elif [ -f "/usr/lib/systemd/system/docker.service" ]; then
-		cp /usr/lib/systemd/system/docker.service ${back_file}
-                sudo sed -i 's/StartLimitBurst.*$/StartLimitBurst=0/g' /usr/lib/systemd/system/docker.service
-        fi
-        sudo systemctl daemon-reload
-        sudo systemctl restart docker
-
-	#recover docker service file
-	if [ -f "/lib/systemd/system/docker.service" ]; then
-		sudo mv ${back_file} /lib/systemd/system/docker.service
-	elif [ -f "/usr/lib/systemd/system/docker.service" ]; then
-		sudo mv ${back_file} /usr/lib/systemd/system/docker.service
-	fi
-        sudo systemctl daemon-reload
-}
-
 check_daemon_setup() {
 	info "containerd(cri): Check daemon works with runc"
 	create_containerd_config "runc"
 
 	#restart docker service as TestImageLoad depends on it
-	restart_docker
+	restart_docker_service
 
 	sudo -E PATH="${PATH}:/usr/local/bin" \
 		REPORT_DIR="${REPORT_DIR}" \
@@ -228,7 +196,7 @@ EOF
 	sudo cp "$default_containerd_config" "$default_containerd_config_backup"
 	sudo cp $CONTAINERD_CONFIG_FILE "$default_containerd_config"
 
-	sudo systemctl restart containerd
+	restart_containerd_service
 
 	sudo crictl pull $image
 	podid=$(sudo crictl runp $pod_yaml)
@@ -243,7 +211,7 @@ testContainerStop() {
 	sudo crictl rmp $podid
 
 	sudo cp "$default_containerd_config_backup" "$default_containerd_config"
-	sudo systemctl restart containerd
+	restart_containerd_service
 }
 
 TestKilledVmmCleanup() {
