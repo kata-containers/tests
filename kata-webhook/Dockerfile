@@ -5,7 +5,6 @@ FROM golang:latest AS builder
 
 WORKDIR /go/src/kata-pod-annotate
 
-COPY ../vendor ./
 COPY . ./
 RUN CGO_ENABLED=0 go build -o /go/bin/kata-pod-annotate
 
