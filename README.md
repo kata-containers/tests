@@ -191,7 +191,7 @@ You need to install the following to run Kata Containers tests:
 
 The recommended method to set up Kata Containers is to use the official and latest
 stable release. You can find the official documentation to do this in the
-[Kata Containers installation user guides](https://github.com/kata-containers/documentation/blob/master/install/README.md).
+[Kata Containers installation user guides](https://github.com/kata-containers/kata-containers/blob/main/docs/install/README.md).
 
 To try the latest commits of Kata use the CI scripts, which build and install from the
 `kata-containers` repositories, with the following steps:
