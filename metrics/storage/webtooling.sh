@@ -13,6 +13,7 @@ set -o pipefail
 # General env
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 source "${SCRIPT_PATH}/../lib/common.bash"
+NUM_CONTAINERS="$1"
 
 TEST_NAME="web-tooling"
 IMAGE="docker.io/library/local-web-tooling:latest"
@@ -26,11 +27,12 @@ file_path="/web-tooling-benchmark"
 file_name="output"
 CMD="mkdir -p ${TESTDIR}; cd $file_path && node dist/cli.js > $file_name"
 PAYLOAD_ARGS="${PAYLOAD_ARGS:-tail -f /dev/null}"
-NUM_CONTAINERS="$1"
+
 # This timeout is related with the amount of time that
 # webtool benchmark needs to run inside the container
-timeout=$((180 * "$NUM_CONTAINERS"))
-declare -a CONTAINERS_ID
+timeout=600
+INITIAL_NUM_PIDS=1
+
 cpu_period="100000"
 cpu_quota="200000"
 
@@ -47,8 +49,49 @@ help(){
 cat << EOF
 Usage: $0 <count>
    Description:
-        <count> : Number of containers to run.
+       <count> : Number of containers to run.
 EOF
+}
+
+verify_task_is_completed_on_all_containers() {
+	local containers=( $(sudo ctr c list -q) )
+	local sleep_secs=10
+	local max=$(bc <<<"$timeout / $sleep_secs")
+	local wip_list=()
+	local count=1
+	local sum=0
+	local i=""
+
+	while (( $sum < $NUM_CONTAINERS )); do
+
+	    for i in "${containers[@]}"; do
+		# Only check containers that have not completed the workload at this step
+		num_pids=$(sudo ctr t metrics "$i" | grep pids.current | grep pids.current | xargs | cut -d ' ' -f 2)
+
+	        if [ "$num_pids" -lt "$INITIAL_NUM_PIDS" ]; then
+                    ((sum++))
+                else
+                    wip_list+=("$i")
+                fi
+            done
+
+            # hold the list of containers that are still running the workload
+            containers=(${wip_list[*]})
+            wip_list=()
+
+            info "loop $count of $max: sleeping for $sleep_secs seconds"
+            sleep $sleep_secs
+            ((count++))
+	done
+}
+
+check_containers_are_up() {
+	info "Verify that the containers are running"
+	local containers_launched=0
+	while (( $containers_launched < $NUM_CONTAINERS )); do
+		containers_launched="$(sudo ctr t list | grep -c "RUNNING")"
+		sleep 1
+	done
 }
 
 save_config(){
@@ -74,55 +117,76 @@ function main() {
 		exit 1
 	fi
 
-	containers=()
-	# Check tools/commands dependencies
-	local cmds=()
-	cmds+=("docker")
+	local i=0
+	local containers=()
+	local cmds=("docker")
+	local not_started_count=$NUM_CONTAINERS
 
 	restart_containerd_service
+	# Check tools/commands dependencies
 	init_env
 	check_cmds "${cmds[@]}"
 	check_ctr_images "$IMAGE" "$DOCKERFILE"
-
 	metrics_json_init
-
 	save_config
+
+	info "Creating $NUM_CONTAINERS containers"
 
 	for ((i=1; i<= "$NUM_CONTAINERS"; i++)); do
 		containers+=($(random_name))
 		# Web tool benchmark needs 2 cpus to run completely in its cpu utilization
 		sudo -E ctr run -d --runtime "${CTR_RUNTIME}" --cpu-quota "${cpu_quota}" --cpu-period "${cpu_period}" "$IMAGE" "${containers[-1]}" sh -c "$PAYLOAD_ARGS"
+		((not_started_count--))
+		info "$not_started_count remaining containers"
 	done
 
-	# We verify that number of containers that we selected
-	# are running
-	for i in $(seq "$timeout") ; do
-		echo "Verify that the containers are running"
-		containers_launched=$(sudo ctr c list -q | wc -l)
-		[ "$containers_launched" -eq "$NUM_CONTAINERS" ] && break
-		sleep 1
-		[ "$i" == "$timeout" ] && return 1
-	done
+	# Check that the requested number of containers are running
+	local timeout_launch="10"
+	check_containers_are_up & pid=$!
+	(sleep "$timeout_launch" && kill -HUP $pid) 2>/dev/null & pid_tout=$! 
+
+	if wait $pid 2>/dev/null; then
+		pkill -HUP -P $pid_tout
+		wait $pid_tout
+	else
+		warn "Time out exceeded"
+		return 1
+	fi
+
+	# Get the initial number of pids in a single container before the workload starts
+        INITIAL_NUM_PIDS=$(sudo ctr t metrics "${containers[-1]}" | grep pids.current | grep pids.current | xargs | cut -d ' ' -f 2)
+	((INITIAL_NUM_PIDS++))
 
 	# Launch webtooling benchmark
-	CONTAINERS_ID=($(sudo ctr c list -q))
-	for i in "${CONTAINERS_ID[@]}"; do
-		sudo ctr t exec -d --exec-id "$(random_name)" "$i" sh -c "$CMD"
+	local pids=()
+	local j=0
+	for i in "${containers[@]}"; do
+		$(sudo ctr t exec -d --exec-id "$(random_name)" "$i" sh -c "$CMD") &
+		pids[${j}]=$!
+		((j++))
 	done
 
-	CONTAINERS_ID=($(sudo ctr c list -q))
-	for j in $(seq 1 "$timeout"); do
-		FILE_CMD="cat $file_path/$file_name | grep Geometric"
-		# Here we are using i to iterate with the proper container id and perform an exec
-		check_file_content=$(sudo ctr t exec --exec-id "$(random_name)" "$i" sh -c "$FILE_CMD")
-		[ ! -z "$check_file_content" ] && break
-		sleep 1
+	# wait for all pids
+	for pid in ${pids[*]}; do
+	    wait $pid
 	done
+
+	info "All containers are running the workload..."
+
+	# Verify that all containers have completed the assigned task
+	verify_task_is_completed_on_all_containers & pid=$!
+	(sleep "$timeout" && kill -HUP $pid) 2>/dev/null & pid_tout=$!
+	if wait $pid 2>/dev/null; then
+		pkill -HUP -P $pid_tout
+		wait $pid_tout
+	else
+		warn "Time out exceeded"
+		return 1
+	fi
 
 	RESULTS_CMD="cat $file_path/$file_name"
-	CONTAINERS_ID=($(sudo ctr c list -q))
-	for i in "${CONTAINERS_ID[@]}"; do
-		sudo ctr t exec --exec-id "$(random_name)" "$i" sh -c "$RESULTS_CMD" >> "$TMP_DIR"/results
+	for i in "${containers[@]}"; do
+		sudo ctr t exec --exec-id "$RANDOM" "$i" sh -c "$RESULTS_CMD" >> "$TMP_DIR/results"
 	done
 
 	# Save configuration
@@ -182,8 +246,7 @@ EOF
 	metrics_json_add_array_element "$json"
 	metrics_json_end_array "Results"
 	metrics_json_save
-	sudo ctr tasks rm -f $(sudo ctr task list -q)
-	sudo ctr c rm $(sudo ctr c list -q)
+	clean_env_ctr
 }
 
 main "$@"
