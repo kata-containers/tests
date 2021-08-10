@@ -79,7 +79,6 @@ function dump_caches() {
 function init() {
 	restart_containerd_service
 
-	CONTAINERD_RUNTIME="io.containerd.kata.v2"
 	check_cmds $REQUIRED_COMMANDS
 	sudo ctr image pull "$PAYLOAD"
 
@@ -306,7 +305,7 @@ launch_containers() {
 		echo "Launch iteration ${iter}"
 		for n in $(seq 1 $PARALLELISM); do
 			containers+=($(random_name))
-			sudo ctr run $PAYLOAD_RUNTIME_ARGS -d --runtime=$CONTAINERD_RUNTIME $PAYLOAD ${containers[-1]} sh -c $PAYLOAD_ARGS &
+			sudo ctr run $PAYLOAD_RUNTIME_ARGS -d --runtime=$CTR_RUNTIME $PAYLOAD ${containers[-1]} sh -c $PAYLOAD_ARGS &
 		done
 
 		if [[ $PAYLOAD_SLEEP ]]; then
@@ -322,7 +321,7 @@ launch_containers() {
 
 	for n in $(seq 1 $leftovers); do
 		containers+=($(random_name))
-		sudo ctr run $PAYLOAD_RUNTIME_ARGS -d --runtime=$CONTAINERD_RUNTIME $PAYLOAD ${containers[-1]} sh -c $PAYLOAD_ARGS &
+		sudo ctr run $PAYLOAD_RUNTIME_ARGS -d --runtime=$CTR_RUNTIME $PAYLOAD ${containers[-1]} sh -c $PAYLOAD_ARGS &
 	done
 }
 
