@@ -21,6 +21,7 @@ config/AB
 crypto		# Cryptography
 DaemonSet/AB
 deliverable/AB
+dev
 devicemapper/B
 deploy
 dialer
@@ -116,3 +117,4 @@ webhook/AB
 whitespace
 workflow/A
 Xeon/A
+yaml
