@@ -41,6 +41,7 @@ Kubernetes/B
 Launchpad/B
 LevelDB/B
 libcontainer/B
+libelf/B
 libvirt/B
 Linkerd/B
 Logrus/B
@@ -80,4 +81,5 @@ Vexxhost/B
 virtcontainers/B
 VMWare/B
 Yamux/B
+yq/B
 Zun/B

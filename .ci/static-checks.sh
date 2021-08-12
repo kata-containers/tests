@@ -169,18 +169,18 @@ Notes:
 
 Examples:
 
-- Run all tests on a specific branch (stable or master) of runtime repository:
+- Run all tests on a specific branch (stable or main) of kata-containers repo:
 
-  $ $script_name github.com/kata-containers/runtime true
+  $ $script_name github.com/kata-containers/kata-containers true
 
 - Auto-detect repository and run golang tests for current repository:
 
   $ KATA_DEV_MODE=true $script_name --golang
 
-- Run all tests on the agent repository, forcing the tests to consider all
-  files, not just those changed by a PR branch:
+- Run all tests on the kata-containers repository, forcing the tests to
+  consider all files, not just those changed by a PR branch:
 
-  $ $script_name github.com/kata-containers/agent --all
+  $ $script_name github.com/kata-containers/kata-containers --all
 
 
 EOT
@@ -246,7 +246,7 @@ static_check_commits()
 {
 	# Since this script is called from another repositories directory,
 	# ensure the utility is built before running it.
-	# for master branch
+	# for main branch
 	# (cd "${tests_repo_dir}" && make checkcommits)
 	# for main branch
 	(cd "${tests_repo_dir}" && make checkcommits && git remote set-branches origin 'main' && git fetch -v)
@@ -272,7 +272,7 @@ static_check_commits()
 	ERROR: checkcommits failed. See the document below for help on formatting
 	commits for the project.
 
-		https://github.com/kata-containers/community/blob/master/CONTRIBUTING.md#patch-format
+		https://github.com/kata-containers/community/blob/main/CONTRIBUTING.md#patch-format
 
 EOT
 		exit 1
@@ -824,7 +824,7 @@ static_check_docs()
 		"$cmd" check "$doc" || { info "spell check failed for document $doc" && docs_failed=1; }
 	done
 
-	[ $docs_failed -eq 0 ] || die "spell check failed, See https://github.com/kata-containers/documentation/blob/master/Documentation-Requirements.md#spelling for more information."
+	[ $docs_failed -eq 0 ] || die "spell check failed, See https://github.com/kata-containers/kata-containers/blob/main/docs/Documentation-Requirements.md#spelling for more information."
 }
 
 # Tests to apply to all files.
@@ -913,7 +913,7 @@ static_check_files()
 #   vendor tooling config file. If not, the user simply hacked the vendor files
 #   rather than following the correct process:
 #
-#   https://github.com/kata-containers/community/blob/master/VENDORING.md
+#   https://github.com/kata-containers/community/blob/main/VENDORING.md
 #
 # - Ensure vendor metadata is valid.
 static_check_vendor()
