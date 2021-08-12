@@ -49,7 +49,7 @@ externals:
 
   flannel:
     url: "https://github.com/coreos/flannel"
-    version: "v0.13.0-rc2"
+    version: "v0.14.0"
 
   xurls:
     description: |
