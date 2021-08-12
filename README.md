@@ -133,7 +133,7 @@ For example:
 ```
 
 In this example, we tell the CI to fetch the pull request 999 from the `kata-containers`
-repository and use that rather than the `master` branch when testing the changes
+repository and use that rather than the `main` branch when testing the changes
 contained in this pull request.
 
 ## CLI tools
@@ -185,7 +185,7 @@ You need to install the following to run Kata Containers tests:
 
 The recommended method to set up Kata Containers is to use the official and latest
 stable release. You can find the official documentation to do this in the
-[Kata Containers installation user guides](https://github.com/kata-containers/documentation/blob/master/install/README.md).
+[Kata Containers installation user guides](https://github.com/kata-containers/kata-containers/blob/main/docs/install/README.md).
 
 To try the latest commits of Kata use the CI scripts, which build and install from the
 `kata-containers` repositories, with the following steps:

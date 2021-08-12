@@ -90,7 +90,7 @@ categories:
       Issue cannot be resolved (too hard/impossible, would be too slow,
       insufficient resources, etc).
     url: |
-      https://github.com/kata-containers/documentation/blob/master/Limitations.md
+      https://github.com/kata-containers/kata-containers/blob/main/docs/Documentation-Requirements.md
 
   - name: new-contributor
     description: Small, self-contained tasks suitable for newcomers.
