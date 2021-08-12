@@ -41,7 +41,7 @@ echo "priority=1" | sudo tee -a "$repo_file"
 sudo -E dnf -y clean all
 
 echo "Update repositories"
-sudo -E dnf -y update
+sudo -E dnf -y --nobest update
 
 echo "Enable PowerTools repository"
 sudo -E dnf install -y 'dnf-command(config-manager)'
