@@ -15,7 +15,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	whhttp "github.com/slok/kubewebhook/pkg/http"
+	whhttp "github.com/slok/kubewebhook/v2/pkg/http"
 	"github.com/slok/kubewebhook/pkg/log"
 	mctx "github.com/slok/kubewebhook/pkg/webhook/context"
 	mutatingwh "github.com/slok/kubewebhook/pkg/webhook/mutating"
