@@ -90,8 +90,8 @@ EOF
 )"
 		metrics_json_add_fragment "$json"
 	else
-		if [ "$RUNTIME" == "runc" ]; then
-			local output=$(docker-runc -v)
+		if [ "$CTR_RUNTIME" == "io.containerd.runc.v2" ]; then
+			local output=$(runc -v)
 			local runcversion=$(grep version <<< "$output" | sed 's/runc version //')
 			local runccommit=$(grep commit <<< "$output" | sed 's/commit: //')
 			local json="$(cat << EOF
