@@ -336,7 +336,9 @@ main() {
 	pushd "${GOPATH}/src/${cri_repo}"
 
 	git reset HEAD
-	git checkout release/1.3
+	git checkout master
+	# switch to the default pause image set by containerd:1.5.x
+	sed -i 's#k8s.gcr.io/pause:3.[0-9]#k8s.gcr.io/pause:3.5#' integration/main_test.go
 	cp "${SCRIPT_PATH}/container_restart_test.go.patch" ./integration/container_restart_test.go
 
 	#test cri using the built/installed containerd instead of containerd built in cri
