@@ -74,7 +74,7 @@ setup_pmem_csi() {
 	git clone https://github.com/intel/pmem-csi/
 	pushd pmem-csi
 
-	make build-images
+	make BUILD_ARGS="--build-arg LINUX_BASE=public.ecr.aws/debian/debian:buster-slim" build-images
 	make push-images
 
 	kubectl label node $(hostname) storage=pmem
