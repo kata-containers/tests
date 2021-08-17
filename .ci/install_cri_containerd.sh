@@ -28,7 +28,11 @@ CONTAIENRD_ARCH=$(go env GOARCH)
 cri_containerd_tarball_version=$(get_version "externals.cri-containerd.version")
 cri_containerd_repo=$(get_version "externals.cri-containerd.url")
 
-cri_containerd_version=${cri_containerd_tarball_version#v}
+cri_repository="github.com/containerd/cri"
+
+#echo "Get cri_containerd version"
+cri_containerd_version_url="https://raw.githubusercontent.com/containerd/containerd/${cri_containerd_tarball_version}/vendor.conf"
+cri_containerd_version=$(curl -sL $cri_containerd_version_url | grep "github.com/containerd/cri" | awk '{print $2}')
 
 echo "Set up environment"
 if [ "$ID" == centos ]; then
@@ -39,12 +43,16 @@ fi
 install_from_source() {
 	echo "Trying to install containerd from source"
 	(
-		cd "${GOPATH}/src/${cri_containerd_repo}" >>/dev/null
+		go get github.com/containerd/cri
+		cd "${GOPATH}/src/${cri_repository}" >>/dev/null
 		git fetch
-		git checkout "${cri_containerd_tarball_version}"
-		make BUILDTAGS="${BUILD_TAGS:-}" cri-cni-release
-		tarball_name="cri-containerd-cni-${cri_containerd_version}-${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
-		sudo tar -xvf "./releases/${tarball_name}" -C /
+		echo "${cri_containerd_version}"
+		git checkout "${cri_containerd_version}"
+		make release
+		local commit
+		commit=$(git rev-parse --short HEAD)
+		tarball_name="cri-containerd-${commit}.${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
+		sudo tar -xvf "./_output/${tarball_name}" -C /
 	)
 }
 
