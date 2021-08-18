@@ -181,7 +181,13 @@ install_docker(){
 	fi
 	restart_docker_service
 	sudo gpasswd -a ${USER} docker
-	sudo chmod g+rw /var/run/docker.sock
+	echo "change mod for docker.sock"
+	sudo chmod 660 /var/run/docker.sock
+	newgrp docker
+	ls -l /var/run/docker.sock
+	echo "############# after install docker, run hello_world ##########"
+docker run hello-world
+	echo "############# after run hello-world SUCEESSFULLY ###########"
 }
 
 install_docker_s390x(){

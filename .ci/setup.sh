@@ -142,7 +142,7 @@ install_extra_tools() {
 
 }
 
-main() {
+main() { 
 	local setup_type="default"
 
 	# Travis only needs a very basic setup
