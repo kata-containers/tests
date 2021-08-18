@@ -15,6 +15,7 @@ source "${SCRIPT_PATH}/../../.ci/lib.sh"
 source "${SCRIPT_PATH}/../../lib/common.bash"
 source "/etc/os-release" || source "/usr/lib/os-release"
 
+CI=${CI:-""}
 RUNTIME=${RUNTIME:-containerd-shim-kata-v2}
 RUNTIME_PATH=${RUNTIME_PATH:-$(command -v $RUNTIME)}
 
