@@ -143,7 +143,7 @@ function main() {
 	# Check that the requested number of containers are running
 	local timeout_launch="10"
 	check_containers_are_up & pid=$!
-	(sleep "$timeout_launch" && kill -HUP $pid) 2>/dev/null & pid_tout=$! 
+	(sleep "$timeout_launch" && kill -HUP $pid) 2>/dev/null & pid_tout=$!
 
 	if wait $pid 2>/dev/null; then
 		pkill -HUP -P $pid_tout
@@ -214,8 +214,8 @@ function main() {
 	local typescript=$(echo "$output" | grep -w "typescript" | eval "${cut_results}")
 	local uglify_js=$(echo "$output" | grep -w "uglify-js" | eval "${cut_results}")
 	local geometric_mean=$(echo "$output" | grep -w "Geometric" | eval "${cut_results}")
-	local tps=$(echo "$geometric_mean" | sed "s/,/+/g;s/.*/(&)\/$NUM_CONTAINERS/g" | bc -l)
-	local total_tps=$(echo "$tps*$NUM_CONTAINERS" | bc -l)
+	local average_tps=$(echo "$geometric_mean" | sed "s/,/+/g;s/.*/(&)\/$NUM_CONTAINERS/g" | bc -l)
+	local tps=$(echo "$average_tps*$NUM_CONTAINERS" | bc -l)
 
 	local json="$(cat << EOF
 	{
@@ -238,8 +238,8 @@ function main() {
 		"Typescript" : "$typescript",
 		"Uglify js" : "$uglify_js",
 		"Geometric mean" : "$geometric_mean",
-		"TPS" : "$tps",
-		"Total TPS" : "$total_tps"
+		"Average TPS" : "$average_tps",
+		"TPS" : "$tps"
 	}
 EOF
 )"
