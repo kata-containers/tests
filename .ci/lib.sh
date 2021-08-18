@@ -62,6 +62,20 @@ jenkins_url="http://jenkins.katacontainers.io"
 # Path where cached artifacts are found.
 cached_artifacts_path="lastSuccessfulBuild/artifact/artifacts"
 
+# Info for running local registry
+registry_port="${REGISTRY_PORT:-5000}"
+registry_name="kata-registry"
+container_engine="${USE_PODMAN:+podman}"
+container_engine="${container_engine:-docker}"
+# We cannot use Podman's and Kubernetes' CNI at the same time, but Podman uses k8s' namespace
+if [ "${container_engine}" == "podman" ]; then
+	stress_image="localhost/stress-kata:latest"
+	stress_image_pull_policy="Never"
+else
+	stress_image="localhost:${registry_port}/stress-kata:latest"
+	stress_image_pull_policy="Always"
+fi
+
 # Clone repo only if $kata_repo_dir is empty
 # Otherwise, we assume $kata_repo is cloned and in correct branch, e.g. a PR or local change
 clone_kata_repo() {

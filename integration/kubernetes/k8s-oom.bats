@@ -16,8 +16,14 @@ setup() {
 
 @test "Test OOM events for pods" {
 
+	# Create test .yaml
+	sed \
+		-e "s|\${stress_image}|${stress_image}|" \
+		-e "s/\${stress_image_pull_policy}/${stress_image_pull_policy}/" \
+		"${pod_config_dir}/pod-oom.yaml" > "${pod_config_dir}/test_pod_oom.yaml"
+
 	# Create pod
-	kubectl create -f "${pod_config_dir}/pod-oom.yaml"
+	kubectl create -f "${pod_config_dir}/test_pod_oom.yaml"
 
 	# Check pod creation
 	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
@@ -26,6 +32,8 @@ setup() {
 	cmd="kubectl get pods "$pod_name" -o yaml | yq r - 'status.containerStatuses[0].state.terminated.reason' | grep OOMKilled"
 
 	waitForProcess "$wait_time" "$sleep_time" "$cmd"
+
+	rm -f "${pod_config_dir}/test_pod_oom.yaml"
 }
 
 teardown() {

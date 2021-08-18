@@ -69,6 +69,20 @@ esac
 # Check no there are no kata processes from previous tests.
 check_processes
 
+echo "Build custom stress image"
+registry_image="docker.io/library/registry"
+arch=$("${SCRIPT_PATH}/../../.ci/kata-arch.sh")
+if [[ "${arch}" == "ppc64le" || "${arch}" == "s390x" ]]; then
+	# that image is not built for these architectures
+	registry_image="docker.io/ibmcom/registry:2.6.2.5"
+fi
+
+runtimeclass_files_path="${SCRIPT_PATH}/runtimeclass_workloads"
+pushd "${runtimeclass_files_path}/stress"
+[ "${container_engine}" == "docker" ] && sudo -E systemctl restart docker
+sudo -E "${container_engine}" build . -t "${stress_image}"
+popd
+
 # Remove existing CNI configurations:
 cni_config_dir="/etc/cni"
 cni_interface="cni0"
@@ -98,6 +112,12 @@ for i in $(seq ${max_cri_socket_check}); do
 done
 
 sudo systemctl status "${cri_runtime}" --no-pager
+
+if [ "${stress_image_pull_policy}" == "Always" ]; then
+	echo "Store custom stress image in registry"
+	sudo -E "${container_engine}" run -d -p ${registry_port}:5000 --name "${registry_name}" "${registry_image}"
+	sudo -E "${container_engine}" push "${stress_image}"
+fi
 
 echo "Init cluster using ${cri_runtime_socket}"
 kubeadm_config_template="${SCRIPT_PATH}/kubeadm/config.yaml"
@@ -139,7 +159,6 @@ kubectl get pods
 flannel_version="$(get_test_version "externals.flannel.version")"
 flannel_url="https://raw.githubusercontent.com/coreos/flannel/${flannel_version}/Documentation/kube-flannel.yml"
 
-arch=$("${SCRIPT_PATH}/../../.ci/kata-arch.sh")
 #Load arch-specific configure file
 if [ -f "${SCRIPT_PATH}/../../.ci/${arch}/kubernetes/init.sh" ]; then
         source "${SCRIPT_PATH}/../../.ci/${arch}/kubernetes/init.sh"
@@ -152,7 +171,6 @@ kubectl apply -f "$network_plugin_config"
 # we need to ensure a few specific pods ready and running
 wait_pods_ready
 
-runtimeclass_files_path="${SCRIPT_PATH}/runtimeclass_workloads"
 echo "Create kata RuntimeClass resource"
 kubectl create -f "${runtimeclass_files_path}/kata-runtimeclass.yaml"
 
