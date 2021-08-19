@@ -181,7 +181,7 @@ install_docker(){
 	fi
 	restart_docker_service
 	sudo gpasswd -a ${USER} docker
-	sudo chmod g+rw /var/run/docker.sock
+	sudo chmod 666 /var/run/docker.sock
 }
 
 install_docker_s390x(){
