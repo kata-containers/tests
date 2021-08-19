@@ -27,7 +27,6 @@ fi
 
 function setup() {
 	restart_containerd_service
-	CONTAINERD_RUNTIME="io.containerd.kata.v2"
 	check_processes
 }
 

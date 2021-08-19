@@ -38,11 +38,10 @@ trap teardown EXIT
 function run_with_ksm() {
 	setup
 
-	CONTAINERD_RUNTIME="io.containerd.kata.v2"
 	sudo ctr image pull "${IMAGE}"
 
 	# Running the first container
-	sudo ctr run -d --runtime="${CONTAINERD_RUNTIME}" "${IMAGE}" test  sh -c "${PAYLOAD_ARGS}"
+	sudo ctr run -d --runtime="${CTR_RUNTIME}" "${IMAGE}" test  sh -c "${PAYLOAD_ARGS}"
 
 	echo "Entering KSM settle mode on first container"
 	wait_ksm_settle "${WAIT_TIME}"
@@ -53,7 +52,7 @@ function run_with_ksm() {
 	echo "Pages merged $first_pages_merged"
 
 	# Running the second container
-	sudo ctr run -d --runtime="${CONTAINERD_RUNTIME}" "${IMAGE}" test1  sh -c "${PAYLOAD_ARGS}"
+	sudo ctr run -d --runtime="${CTR_RUNTIME}" "${IMAGE}" test1  sh -c "${PAYLOAD_ARGS}"
 
 	echo "Entering KSM settle mode on second container"
 	wait_ksm_settle "${WAIT_TIME}"

@@ -87,7 +87,7 @@ check_all_running() {
 		fi
 
 		# if this is kata-runtime, check how many pods virtcontainers thinks we have
-		if [[ "$RUNTIME" == "$KATA_RUNTIME_NAME" ]]; then
+		if [[ "$RUNTIME" == "containerd-shim-kata-v2" ]]; then
 			num_vc_pods=$(sudo ls -1 ${VC_POD_DIR} | wc -l)
 
 			if (( ${how_many_running} != ${num_vc_pods} )); then
@@ -118,7 +118,7 @@ go() {
 
 		for ((i=1; i<= ${MAX_CONTAINERS}; i++)); do
 			containers+=($(random_name))
-			sudo ctr run --runtime=${CONTAINERD_RUNTIME} -d ${nginx_image} ${containers[-1]} sh -c ${COMMAND}
+			sudo ctr run --runtime=${CTR_RUNTIME} -d ${nginx_image} ${containers[-1]} sh -c ${COMMAND}
 			((how_many++))
 		done
 
@@ -167,8 +167,8 @@ init() {
 	initial_mount_count=$(count_mounts)
 
 	# Only check Kata items if we are using a Kata runtime
-	if [[ "$RUNTIME" == "$KATA_RUNTIME_NAME" ]]; then
-		echo "Checking Kata runtime $RUNTIME"
+	if [[ "$RUNTIME" == "containerd-shim-kata-v2" ]]; then
+		echo "Checking Kata runtime"
 		check_kata_components=1
 	else
 		echo "Not a Kata runtime, not checking for Kata components"

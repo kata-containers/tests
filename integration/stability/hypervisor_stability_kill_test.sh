@@ -25,7 +25,7 @@ setup()  {
 	sudo ctr image pull $IMAGE
 	[ $? != 0 ] && die "Unable to get image $IMAGE"
 
-	sudo ctr run --runtime=$CONTAINERD_RUNTIME -d $IMAGE $CONTAINER_NAME sh -c $PAYLOAD_ARGS
+	sudo ctr run --runtime=$CTR_RUNTIME -d $IMAGE $CONTAINER_NAME sh -c $PAYLOAD_ARGS
 	num=$(pidof ${HYPERVISOR_NAME} | wc -w)
 	[ ${num} -eq 1 ] || die "hypervisor count:${num} expected:1"
 }

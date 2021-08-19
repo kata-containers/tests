@@ -30,7 +30,7 @@ end_time=$((start_time+timeout))
 function setup {
 	restart_containerd_service
 	sudo ctr image pull $IMAGE
-	sudo ctr run --runtime=$CONTAINERD_RUNTIME -d $IMAGE $CONTAINER_NAME sh -c $PAYLOAD_ARGS
+	sudo ctr run --runtime=$CTR_RUNTIME -d $IMAGE $CONTAINER_NAME sh -c $PAYLOAD_ARGS
 }
 
 function exec_loop {

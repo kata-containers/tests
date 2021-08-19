@@ -17,8 +17,6 @@ CTR_EXE="${CTR_EXE:-ctr}"
 DOCKER_EXE="${DOCKER_EXE:-docker}"
 CTR_RUNTIME="${CTR_RUNTIME:-io.containerd.run.kata.v2}"
 RUNTIME="${RUNTIME:-containerd-shim-kata-v2}"
-KATA_RUNTIME_NAME="containerd-shim-kata-v2"
-CONTAINERD_RUNTIME="io.containerd.kata.v2"
 
 KSM_BASE="/sys/kernel/mm/ksm"
 KSM_ENABLE_FILE="${KSM_BASE}/run"
@@ -199,17 +197,12 @@ show_system_ctr_state() {
 }
 
 common_init(){
-
-	# If we are running a kata runtime, go extract its environment
-	# for later use.
-	local iskata=$(is_a_kata_runtime "$RUNTIME")
-
-	if [ "$iskata" == "1" ]; then
+	if [ "$CTR_RUNTIME" == "io.containerd.runc.v2" ] || [ "$RUNTIME" == "containerd-shim-kata-v2" ]; then
 		extract_kata_env
 	else
 		# We know we have nothing to do for runc or shimv2
-		if [ "$RUNTIME" != "runc" ]; then
-			warning "Unrecognised runtime ${RUNTIME}"
+		if [ "$CTR_RUNTIME" != "io.containerd.runc.v2" ] || [ "$RUNTIME" != "runc" ]; then
+			warning "Unrecognised runtime"
 		fi
 	fi
 }
@@ -282,7 +275,7 @@ check_for_ksm(){
 #
 # arg1 - timeout in seconds
 wait_ksm_settle(){
-	[[ "$RUNTIME" == "runc" ]] || [[ "$RUNTIME" == "kata-fc" ]] && return
+	[[ "$RUNTIME" == "runc" ]] || [[ "$RUNTIME" == "kata-fc" ]] || [[ "$CTR_RUNTIME" == "io.containerd.runc.v2" ]] && return
 	local t pcnt
 	local oldscan=-1 newscan
 	local oldpages=-1 newpages

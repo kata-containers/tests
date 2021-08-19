@@ -37,10 +37,9 @@ function setup() {
 }
 
 function test_ctr_with_vcpus() {
-	CONTAINERD_RUNTIME="io.containerd.kata.v2"
 	sudo ctr image pull "${IMAGE}"
 	[ $? != 0 ] && die "Unable to get image $IMAGE"
-	sudo ctr run --runtime="${CONTAINERD_RUNTIME}" -d "${IMAGE}" \
+	sudo ctr run --runtime="${CTR_RUNTIME}" -d "${IMAGE}" \
 		"${CONTAINER_NAME}" sh -c "${PAYLOAD_ARGS}" || die "Test failed"
 }
 
