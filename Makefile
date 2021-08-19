@@ -173,6 +173,9 @@ $(INSTALL_TARGETS): install-%: .ci/install_%.sh
 list-install-targets:
 	@echo $(INSTALL_TARGETS) | tr " " "\n"
 
+rootless:
+	bash -f integration/rootless/rootless_test.sh
+
 vfio:
 #	Skip: Issue: https://github.com/kata-containers/kata-containers/issues/1488
 #	bash -f functional/vfio/run.sh -s false -p clh -i image
@@ -199,6 +202,7 @@ help:
 	log-parser \
 	pentest \
 	qat \
+	rootless \
 	sandbox-cgroup \
 	test \
 	tracing \

@@ -68,6 +68,8 @@ case "${CI_JOB}" in
 	"CRIO_K8S")
 		echo "INFO: Running kubernetes tests"
 		sudo -E PATH="$PATH" bash -c "make kubernetes"
+		echo "INFO: Running rootless tests"
+		sudo -E PATH="$PATH" bash -c "make rootless"
 		;;
 	"CRIO_K8S_COMPLETE")
 		echo "INFO: Running kubernetes tests (minimal) with CRI-O"
