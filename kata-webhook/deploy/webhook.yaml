@@ -33,6 +33,10 @@ spec:
             - name: webhook-certs
               mountPath: /etc/webhook/certs
               readOnly: true
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "250Mi"
       volumes:
         - name: webhook-certs
           secret:
