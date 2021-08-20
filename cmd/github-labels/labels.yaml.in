@@ -90,7 +90,7 @@ categories:
       Issue cannot be resolved (too hard/impossible, would be too slow,
       insufficient resources, etc).
     url: |
-      https://github.com/kata-containers/kata-containers/blob/main/docs/Documentation-Requirements.md
+      https://github.com/kata-containers/kata-containers/blob/CCv0/docs/Documentation-Requirements.md
 
   - name: new-contributor
     description: Small, self-contained tasks suitable for newcomers.
@@ -110,7 +110,7 @@ categories:
   - name: related
     description: |
       Related project. Base set can be generated from
-      https://github.com/kata-containers/kata-containers/blob/main/versions.yaml.
+      https://github.com/kata-containers/kata-containers/blob/CCv0/versions.yaml.
 
   - name: release
     description: Related to production of new versions.
