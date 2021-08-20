@@ -38,7 +38,7 @@ kubectl create secret generic \
     ${WEBHOOK_SVC}-certs \
     --from-file=key.pem=./webhookCA.key \
     --from-file=cert.pem=./webhook.crt \
-    --dry-run -o yaml > ./deploy/webhook-certs.yaml
+    --dry-run=client -o yaml > ./deploy/webhook-certs.yaml
 
 # Set the CABundle on the webhook registration
 CA_BUNDLE=$(cat ./webhook.crt | base64 -w0)
