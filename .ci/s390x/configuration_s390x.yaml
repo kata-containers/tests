@@ -1,8 +1,0 @@
-#
-# Copyright (c) 2019 IBM
-#
-# SPDX-License-Identifier: Apache-2.0
-#
-kubernetes:
-  - k8s-oom
-  - k8s-memory
