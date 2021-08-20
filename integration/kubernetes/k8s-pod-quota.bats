@@ -15,21 +15,24 @@ setup() {
 @test "Pod quota" {
 	resource_name="pod-quota"
 	deployment_name="deploymenttest"
+	namespace="test-quota-ns"
 
 	# Create the resourcequota
 	kubectl create -f "${pod_config_dir}/resource-quota.yaml"
 
 	# View information about resourcequota
-	kubectl get resourcequota "$resource_name" --output=yaml | grep 'pods: "2"'
+	kubectl get -n "$namespace" resourcequota "$resource_name" \
+		--output=yaml | grep 'pods: "2"'
 
 	# Create deployment
 	kubectl create -f "${pod_config_dir}/pod-quota-deployment.yaml"
 
 	# View deployment
-	kubectl wait --for=condition=Available --timeout=$timeout deployment/${deployment_name}
+	kubectl wait --for=condition=Available --timeout=$timeout \
+		-n "$namespace" deployment/${deployment_name}
 }
 
 teardown() {
-	kubectl delete resourcequota "$resource_name"
-	kubectl delete deployment "$deployment_name"
+	kubectl delete -n "$namespace" deployment "$deployment_name"
+	kubectl delete -f "${pod_config_dir}/resource-quota.yaml"
 }
