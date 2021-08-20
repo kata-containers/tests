@@ -18,3 +18,7 @@ items:
   spec:
     hard:
       pods: "2"
+      requests.cpu: "3"
+      requests.memory: "1Gi"
+      limits.cpu: "6"
+      limits.memory: "2Gi"
