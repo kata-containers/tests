@@ -40,7 +40,7 @@ typeset -r arch_func_regex="_arch_specific$"
 repo=""
 specific_branch="false"
 force="false"
-branch=${branch:-main}
+branch=${branch:-CCv0}
 
 # Which static check functions to consider.
 handle_funcs="all"
@@ -249,7 +249,7 @@ static_check_commits()
 	# for main branch
 	# (cd "${tests_repo_dir}" && make checkcommits)
 	# for main branch
-	(cd "${tests_repo_dir}" && make checkcommits && git remote set-branches origin 'main' && git fetch -v)
+	(cd "${tests_repo_dir}" && make checkcommits && git remote set-branches origin 'CCv0' && git fetch -v)
 
 	command -v checkcommits &>/dev/null || \
 		die 'checkcommits command not found. Ensure that "$GOPATH/bin" is in your $PATH.'
@@ -262,7 +262,7 @@ static_check_commits()
 			--ignore-fixes-for-subsystem "release" \
 			--verbose \
 			HEAD \
-			main; \
+			CCv0; \
 			rc="$?";
 	} || true
 
@@ -1238,7 +1238,7 @@ main()
 	for func in $all_check_funcs
 	do
 		if [ "$func" = "static_check_commits" ]; then
-			if [ -n "$TRAVIS_BRANCH" ] && [ "$TRAVIS_BRANCH" != "main" ]
+			if [ -n "$TRAVIS_BRANCH" ] && [ "$TRAVIS_BRANCH" != "CCv0" ]
 			then
 				echo "Skipping checkcommits"
 				echo "See issue: https://github.com/kata-containers/tests/issues/632"
