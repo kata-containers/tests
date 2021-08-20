@@ -40,7 +40,6 @@ fi
 
 init() {
 	${dir_path}/../../integration/kubernetes/init.sh
-	docker run -d -p 5000:5000 --restart=always --name registry registry:2
 }
 
 cleanup() {
@@ -59,10 +58,6 @@ cleanup() {
 	rm -rf pmem-csi
 
 	${dir_path}/../../integration/kubernetes/cleanup_env.sh
-
-	docker rm -f $(docker ps -aq)
-	rid=$(docker images -q registry:2)
-	docker rmi -f $(docker images -q | sed '/'$rid'/d')
 }
 
 run_test() {

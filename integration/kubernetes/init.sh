@@ -71,7 +71,7 @@ esac
 check_processes
 
 echo "Build custom stress image"
-registry_image="docker.io/library/registry"
+registry_image="docker.io/library/registry:2"
 arch=$("${SCRIPT_PATH}/../../.ci/kata-arch.sh")
 if [[ "${arch}" == "ppc64le" || "${arch}" == "s390x" ]]; then
 	# that image is not built for these architectures
