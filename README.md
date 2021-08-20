@@ -37,11 +37,11 @@ We provide several tests to ensure Kata-Containers run on different scenarios
 and with different container managers.
 
 1. Integration tests to ensure compatibility with:
-   - [Kubernetes](https://github.com/kata-containers/tests/tree/main/integration/kubernetes)
-   - [Containerd](https://github.com/kata-containers/tests/tree/main/integration/containerd)
-2. [Stability tests](https://github.com/kata-containers/tests/tree/main/integration/stability)
-3. [Metrics](https://github.com/kata-containers/tests/tree/main/metrics)
-4. [VFIO](https://github.com/kata-containers/tests/tree/main/functional/vfio)
+   - [Kubernetes](https://github.com/kata-containers/tests/tree/CCv0/integration/kubernetes)
+   - [Containerd](https://github.com/kata-containers/tests/tree/CCv0/integration/containerd)
+2. [Stability tests](https://github.com/kata-containers/tests/tree/CCv0/integration/stability)
+3. [Metrics](https://github.com/kata-containers/tests/tree/CCv0/metrics)
+4. [VFIO](https://github.com/kata-containers/tests/tree/CCv0/functional/vfio)
 
 ## CI Content
 
@@ -183,7 +183,7 @@ You need to install the following to run Kata Containers tests:
 - [golang](https://golang.org/dl)
 
   To view the versions of go known to work, see the `golang` entry in the
-  [versions database](https://github.com/kata-containers/kata-containers/blob/main/versions.yaml).
+  [versions database](https://github.com/kata-containers/kata-containers/blob/CCv0/versions.yaml).
 
 - `make`.
 
