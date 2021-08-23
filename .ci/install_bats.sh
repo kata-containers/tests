@@ -12,7 +12,7 @@ which bats && exit
 BATS_REPO="github.com/bats-core/bats-core"
 
 echo "Install BATS from sources"
-go get -d "${BATS_REPO}" || true
+GO111MODULE="auto" go get -d "${BATS_REPO}" || true
 pushd "${GOPATH}/src/${BATS_REPO}"
 sudo -E PATH=$PATH sh -c "./install.sh /usr"
 popd
