@@ -117,6 +117,8 @@ sudo systemctl status "${cri_runtime}" --no-pager
 if [ "${stress_image_pull_policy}" == "Always" ]; then
 	echo "Store custom stress image in registry"
 	sudo -E "${container_engine}" run -d -p ${registry_port}:5000 --name "${registry_name}" "${registry_image}"
+	# wait for registry container
+	waitForProcess 15 3 "curl http://localhost:${registry_port}"
 	sudo -E "${container_engine}" push "${stress_image}"
 fi
 
