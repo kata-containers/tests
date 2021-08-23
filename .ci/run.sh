@@ -29,7 +29,7 @@ if [ "$(uname -m)" == "x86_64" ]; then
 fi
 
 case "${CI_JOB}" in
-	"BAREMETAL-PMEM")
+	"BAREMETAL-PMEM"|"PMEM")
 		echo "INFO: Running pmem integration test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make pmem"
 		;;

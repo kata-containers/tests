@@ -17,6 +17,7 @@ source /etc/os-release || source /usr/lib/os-release
 TEST_INITRD="${TEST_INITRD:-no}"
 experimental_qemu="${experimental_qemu:-false}"
 arch=$("${dir_path}"/../../.ci/kata-arch.sh -d)
+CI_JOB="${CI_JOB:-}"
 
 if [ "$TEST_INITRD" == "yes" ]; then
 	echo "Skip pmem test: nvdimm is disabled when initrd is used as rootfs"
@@ -44,36 +45,26 @@ init() {
 
 cleanup() {
 	set +e
-	kubectl describe pod/my-csi-kata-app
-	kubectl get pod --all-namespaces
+	if [[ $CI_JOB == "PMEM_BAREMETAL" ]]; then
+		kubectl describe pod/my-csi-kata-app
+		kubectl get pod --all-namespaces
 
-	pushd pmem-csi
-	kubectl delete -f "deploy/common/pmem-kata-app.yaml"
-	kubectl delete -f "deploy/common/pmem-kata-pvc.yaml"
-	kubectl delete -f "deploy/common/pmem-storageclass-ext4-kata.yaml"
-	kubectl delete PmemCSIDeployment/pmem-csi.intel.com
-	kubectl delete -f "deploy/crd/pmem-csi.intel.com_pmemcsideployments.yaml"
-	kubectl delete -f "deploy/operator/pmem-csi-operator.yaml"
-	popd
+		pushd pmem-csi
+		kubectl delete -f "deploy/common/pmem-kata-app.yaml"
+		kubectl delete -f "deploy/common/pmem-kata-pvc.yaml"
+		kubectl delete -f "deploy/common/pmem-storageclass-ext4-kata.yaml"
+		kubectl delete PmemCSIDeployment/pmem-csi.intel.com
+		kubectl delete -f "deploy/crd/pmem-csi.intel.com_pmemcsideployments.yaml"
+		kubectl delete -f "deploy/operator/pmem-csi-operator.yaml"
+		popd
+	fi
+
 	rm -rf pmem-csi
-
 	${dir_path}/../../integration/kubernetes/cleanup_env.sh
 }
 
 run_test() {
-	kubectl exec pod/my-csi-kata-app -- df /data | grep pmem
-	kubectl exec pod/my-csi-kata-app -- mount | grep pmem | grep data | grep dax
-}
-
-setup_pmem_csi() {
-	git clone https://github.com/intel/pmem-csi/
 	pushd pmem-csi
-
-	make BUILD_ARGS="--build-arg LINUX_BASE=public.ecr.aws/debian/debian:buster-slim" build-images
-	make push-images
-
-	kubectl label node $(hostname) storage=pmem
-	kubectl label node $(hostname) katacontainers.io/kata-runtime=true
 
 	oper_yml="deploy/operator/pmem-csi-operator.yaml"
 	sed -i -e 's|image:.*|image: localhost:5000/pmem-csi-driver:canary|g' \
@@ -105,17 +96,33 @@ EOF
 		-e 's|runtimeClassName:.*|runtimeClassName: kata|g' \
 		"${app_yml}"
 	kubectl apply -f "${app_yml}"
+
+	kubectl wait --for=condition=Ready --timeout=120s pod/my-csi-kata-app
+	sleep 5
+
 	popd
 
-	kubectl wait --for=condition=Ready --timeout=90s pod/my-csi-kata-app
-	sleep 5
+	kubectl exec pod/my-csi-kata-app -- df /data | grep pmem
+	kubectl exec pod/my-csi-kata-app -- mount | grep pmem | grep data | grep dax
+}
+
+setup_pmem_csi() {
+	git clone https://github.com/intel/pmem-csi/
+	pushd pmem-csi
+
+	make build-images
+	make push-images
+
+	kubectl label node $(hostname) storage=pmem
+	kubectl label node $(hostname) katacontainers.io/kata-runtime=true
+	popd
 }
 
 main() {
 	trap cleanup EXIT QUIT KILL
 	init
 	setup_pmem_csi
-	run_test
+	[[ $CI_JOB != "PMEM_BAREMETAL" ]] || run_test
 }
 
 main

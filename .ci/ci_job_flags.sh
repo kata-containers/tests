@@ -82,7 +82,7 @@ init_ci_flags() {
 # - If the repo is not "tests", call the repo-specific script (which is
 #   expected to call the script of the same name in the "tests" repo).
 case "${CI_JOB}" in
-"BAREMETAL-PMEM")
+"BAREMETAL-PMEM"|"PMEM")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
