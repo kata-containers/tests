@@ -22,67 +22,6 @@ WORKSPACE=${WORKSPACE:-}
 BAREMETAL=${BAREMETAL:-false}
 TMPDIR=${TMPDIR:-}
 
-# List of all setup flags used by scripts
-init_ci_flags() {
-	# Make jobs work like in CI
-	# CI disables non-working tests
-	export CI="true"
-
-	# Many checks assume this environment variable to be not set
-	# (e.g. [ -n $KATA_DEV_MODE ]). As a result, even its value is
-	# set to 'false', the check would think we are in "kata_dev_mode".
-	# export KATA_DEV_MODE="false"
-
-	# Install crio
-	export CRIO="no"
-	# Install cri-containerd
-	export CRI_CONTAINERD="no"
-	# Default cri runtime - used to setup k8s
-	export CRI_RUNTIME=""
-	# Ask runtime to only use cgroup at pod level
-	# Useful for pod overhead
-	export DEFSANDBOXCGROUPONLY="false"
-	# Hypervisor to use
-	export KATA_HYPERVISOR=""
-	# Install k8s
-	export KUBERNETES="no"
-	# Run a subset of k8s e2e test
-	# Will run quick to ensure e2e setup is OK
-	# - Use false for PRs
-	# - Use true for nightly testing
-	export MINIMAL_K8S_E2E="false"
-	# Test cgroup v2
-	export TEST_CGROUPSV2="false"
-	# Run crio functional test
-	export TEST_CRIO="false"
-	# Use experimental kernel
-	# Values: true|false
-	export experimental_kernel="false"
-	# Use experimental qemu
-	# Values: true|false
-	export experimental_qemu="false"
-	# Run the kata-check checks
-	export RUN_KATA_CHECK="true"
-
-	# METRICS_CI flags
-	# Request to run METRICS_CI
-	# Values: "true|false"
-	export METRICS_CI="false"
-	# Metrics check values depend in the env it run
-	# Define a profile to check on PRs
-	# Values: empty|string : String will be used to find a profile with defined values to check
-	export METRICS_CI_PROFILE=""
-	# Check values for a profile defined as CLOUD
-	# Deprecated use METRICS_CI_PROFILE will be replaced by METRICS_CI_PROFILE=cloud-metrics
-	export METRICS_CI_CLOUD=""
-	# Generate a report using a jenkins job data
-	# Name of the job to get data from
-	export METRICS_JOB_BASELINE=""
-	# Configure test to use Kata SHIM V2
-	export SHIMV2_TEST="true"
-	export CTR_RUNTIME="io.containerd.run.kata.v2"
-}
-
 # Run noninteractive on debian and ubuntu
 if [ "$ID" == "debian" ] || [ "$ID" == "ubuntu" ]; then
 	export DEBIAN_FRONTEND=noninteractive
@@ -211,109 +150,12 @@ if [ "$ret" -eq 0 ]; then
 	echo "Short circuit fast path skipping the rest of the CI."
 	exit 0
 fi
+# Source the variables needed for setup the system and run the tests
+# according to the job type.
+pushd "${GOPATH}/src/${tests_repo}"
+source ".ci/ci_job_flags.sh"
+popd
 
-# Setup Kata Containers Environment
-#
-# - If the repo is "tests", this will call the script living in that repo
-#   directly.
-# - If the repo is not "tests", call the repo-specific script (which is
-#   expected to call the script of the same name in the "tests" repo).
-case "${CI_JOB}" in
-"CRI_CONTAINERD_K8S")
-	# This job only tests containerd + k8s
-	export CRI_CONTAINERD="yes"
-	export KUBERNETES="yes"
-	export CRIO="no"
-	;;
-"CRI_CONTAINERD_K8S_COMPLETE")
-	export CRI_CONTAINERD="yes"
-	export KUBERNETES="yes"
-	export CRIO="no"
-	;;
-"CRI_CONTAINERD_K8S_MINIMAL")
-	export MINIMAL_CONTAINERD_K8S_E2E="true"
-	export CRI_CONTAINERD="yes"
-	export KUBERNETES="yes"
-	export CRIO="no"
-	;;
-"CRIO_K8S")
-	export KUBERNETES="yes"
-	export CRIO="yes"
-	export CRI_CONTAINERD="no"
-	# test images in cri-o repo are mostly x86_64 specific, so ignore cri-o intergration tests on aarch64, etc.
-	if [ "$arch" == "x86_64" ]; then
-		export TEST_CRIO="true"
-	fi
-	;;
-"CRIO_K8S_MINIMAL")
-	export MINIMAL_CONTAINERD_K8S_E2E="true"
-	export CRI_CONTAINERD="no"
-	export KUBERNETES="yes"
-	export CRIO="yes"
-	;;
-"CLOUD-HYPERVISOR-K8S-CRIO")
-	init_ci_flags
-	export KUBERNETES=yes
-	export CRIO=yes
-	export KATA_HYPERVISOR="cloud-hypervisor"
-	;;
-"CLOUD-HYPERVISOR-K8S-CONTAINERD")
-	init_ci_flags
-	export CRI_CONTAINERD="yes"
-	export CRI_RUNTIME="containerd"
-	export KATA_HYPERVISOR="cloud-hypervisor"
-	export KUBERNETES="yes"
-	;;
-"CLOUD-HYPERVISOR-K8S-CONTAINERD-MINIMAL")
-	init_ci_flags
-	export MINIMAL_CONTAINERD_K8S_E2E="true"
-	export CRI_CONTAINERD="yes"
-	export CRI_RUNTIME="containerd"
-	export KATA_HYPERVISOR="cloud-hypervisor"
-	export KUBERNETES="yes"
-	;;
-"CLOUD-HYPERVISOR-K8S-CONTAINERD-FULL")
-	init_ci_flags
-	export MINIMAL_CONTAINERD_K8S_E2E="false"
-	export CRI_CONTAINERD="yes"
-	export CRI_RUNTIME="containerd"
-	export KATA_HYPERVISOR="cloud-hypervisor"
-	export KUBERNETES="yes"
-	;;
-"FIRECRACKER")
-	init_ci_flags
-	export CRI_CONTAINERD="yes"
-	export CRI_RUNTIME="containerd"
-	export CRIO="no"
-	export KATA_HYPERVISOR="firecracker"
-	export KUBERNETES="yes"
-	;;
-"VFIO")
-	init_ci_flags
-	export CRIO="no"
-	export CRI_CONTAINERD="yes"
-	export CRI_RUNTIME="containerd"
-	export KATA_HYPERVISOR="qemu"
-	export KUBERNETES="no"
-	;;
-"VIRTIOFS_EXPERIMENTAL")
-	init_ci_flags
-	export CRI_CONTAINERD="yes"
-	export KUBERNETES="yes"
-	export DEFVIRTIOFSCACHESIZE="1024"
-	export experimental_qemu="true"
-	export experimental_kernel="true"
-	;;
-"METRICS")
-	init_ci_flags
-	export CRIO="no"
-	export CRI_CONTAINERD="yes"
-	export CRI_RUNTIME="containerd"
-	export KATA_HYPERVISOR="qemu"
-	export KUBERNETES="yes"
-	export METRICS_CI=1
-;;
-esac
 "${ci_dir_name}/setup.sh"
 
 if [ "${CI_JOB}" == "VFIO" ]; then
