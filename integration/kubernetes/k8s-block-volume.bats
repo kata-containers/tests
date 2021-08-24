@@ -20,7 +20,7 @@ setup() {
 
 	# Create Loop Device
 	tmp_disk_image=$(mktemp --tmpdir disk.XXXXXX.img)
-	sudo truncate "$tmp_disk_image" --size "$vol_capacity"
+	truncate "$tmp_disk_image" --size "$vol_capacity"
 	loop_dev=$(sudo losetup -f)
 	sudo losetup "$loop_dev" "$tmp_disk_image"
 }
