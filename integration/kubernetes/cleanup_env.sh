@@ -27,6 +27,8 @@ esac
 export KUBECONFIG="$HOME/.kube/config"
 sudo -E kubeadm reset -f --cri-socket="${cri_runtime_socket}"
 
+sudo -E "${container_engine}" rm -f "${registry_name}" || true
+
 sudo systemctl stop "${cri_runtime}"
 
 sudo ip link set dev cni0 down || true
@@ -39,8 +41,6 @@ BAREMETAL="${BAREMETAL:-false}"
 if [ "${BAREMETAL}" == true ] && [ -f "${SCRIPT_PATH}/cleanup_bare_metal_env.sh" ]; then
 	bash -f "${SCRIPT_PATH}/cleanup_bare_metal_env.sh"
 fi
-
-sudo -E "${container_engine}" rm -f "${registry_name}" || true
 
 # Check no kata processes are left behind after reseting kubernetes
 check_processes
