@@ -122,7 +122,7 @@ func (mc *metricsCheck) checkstats(m metrics) (summary []string, err error) {
 		val = m.stats.Mean
 	}
 
-	log.Debugf(" Check minval (%f > %f)", m.MinVal, val)
+	log.Debugf(" Check minval (%f < %f)", m.MinVal, val)
 	if val < m.MinVal {
 		log.Warnf("Failed Minval (%7f > %7f) for [%s]",
 			m.MinVal, val,
@@ -132,7 +132,7 @@ func (mc *metricsCheck) checkstats(m metrics) (summary []string, err error) {
 		log.Debug("Passed")
 	}
 
-	log.Debugf(" Check maxval (%f < %f)", m.MaxVal, val)
+	log.Debugf(" Check maxval (%f > %f)", m.MaxVal, val)
 	if val > m.MaxVal {
 		log.Warnf("Failed Maxval (%7f < %7f) for [%s]",
 			m.MaxVal, val,
