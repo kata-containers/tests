@@ -178,7 +178,7 @@ case "${CI_JOB}" in
 	export KUBERNETES="yes"
 	export experimental_kernel="true"
 	;;
-"FIRECRACKER"|"FIRECRACKER_JAILER")
+"FIRECRACKER")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
