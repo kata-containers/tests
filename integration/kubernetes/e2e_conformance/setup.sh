@@ -21,7 +21,7 @@ CRI_RUNTIME="${CRI_RUNTIME:-containerd}"
 wait_init_retry="10s"
 
 info "Setup env for K8s e2e testing"
-cd "${GOPATH}/src/github.com/kata-containers/tests/integration/kubernetes"
+cd "${tests_repo_dir}/integration/kubernetes"
 if ! bash ./init.sh; then
 	info "k8s init failed trying again"
 	sudo systemctl restart "${CRI_RUNTIME}"
