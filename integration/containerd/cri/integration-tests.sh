@@ -151,10 +151,13 @@ cleanup() {
 trap cleanup EXIT
 
 err_report() {
-	echo "ERROR: containerd log :"
-	echo "-------------------------------------"
-	cat "${REPORT_DIR}/containerd.log"
-	echo "-------------------------------------"
+	local log_file="${REPORT_DIR}/containerd.log"
+	if [ -f "$log_file" ]; then
+		echo "ERROR: containerd log :"
+		echo "-------------------------------------"
+		cat "${log_file}"
+		echo "-------------------------------------"
+	fi
 }
 
 trap err_report ERR
