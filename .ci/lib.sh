@@ -12,8 +12,11 @@ export KATA_ETC_CONFIG_PATH="/etc/kata-containers/configuration.toml"
 
 export kata_repo=${katacontainers_repo:="github.com/kata-containers/kata-containers"}
 export kata_repo_dir="${GOPATH}/src/${kata_repo}"
-export kata_default_branch="${kata_default_branch:-CCv0}"
+export kata_default_branch="${kata_default_branch:-main}"
 export CI_JOB="${CI_JOB:-}"
+
+export tests_repo="${tests_repo:-github.com/kata-containers/tests}"
+export tests_repo_dir="${GOPATH}/src/${tests_repo}"
 
 # Name of systemd service for the throttler
 KATA_KSM_THROTTLER_JOB="kata-ksm-throttler"
@@ -511,4 +514,9 @@ print_environment() {
 		env
 		echo "#########################################"
 	fi
+}
+
+warn()
+{
+	echo >&2 "WARNING: $*"
 }
