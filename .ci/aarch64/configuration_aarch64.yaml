@@ -39,4 +39,3 @@ kubernetes:
   - k8s-expose-ip
   - k8s-oom
   - k8s-block-volume
-  - k8s-memory
