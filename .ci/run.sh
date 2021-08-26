@@ -22,7 +22,7 @@ if [ "$(uname -m)" == "x86_64" ]; then
 	/usr/share/defaults/kata-containers/configuration.toml \
 	/etc/kata-containers/configuration.toml 2> /dev/null \
 	| cut -d= -f2 | tr -d '"' | tr -d ' ' || true)"
-	if [ -n "${rootfs_img}" ]; then
+	if [ -n "${rootfs_img}" ] && [ -w "${rootfs_img}" ]; then
 		echo "INFO: making rootfs image read-only"
 		sudo mount --bind -r "${rootfs_img}" "${rootfs_img}"
 	fi
