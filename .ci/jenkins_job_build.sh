@@ -70,6 +70,12 @@ export PATH=${GOPATH}/bin:/usr/local/go/bin:/usr/sbin:/sbin:${PATH}
 # a go.mod file is present in the current directory.
 export GO111MODULE="auto"
 
+if [ ${ghprbTargetBranch} == "CCv0" ] || [ ${GIT_BRANCH} == "CCv0" ]; then
+	export CCV0="yes"
+	echo "Running CCv0 build"
+	export kata_default_branch="CCv0"
+fi
+
 kata_repo_dir="${GOPATH}/src/${kata_repo}"
 tests_repo_dir="${GOPATH}/src/${tests_repo}"
 
