@@ -167,13 +167,19 @@ clean_env()
 
 clean_env_ctr()
 {
-	check_containers=$(sudo ctr c list -q | wc -l)
-	if ((${check_containers})); then
-		sudo ctr tasks kill $(sudo ctr task list -q)
-		sudo ctr tasks rm -f $(sudo ctr task list -q)
-		sudo ctr c rm $(sudo ctr c list -q)
-	fi
+	local i=""
+	local containers=( $(sudo ctr c list -q) )
+	local count_running="${#containers[@]}"
+
+	[ "$count_running" -eq "0" ] && return 0
+
+	for i in "${containers[@]}"; do
+		sudo ctr tasks kill $(sudo ctr task ls | grep $i)
+	done
+	sleep 1
+	sudo ctr containers delete $(sudo ctr c list -q)
 }
+
 
 # Restarts a systemd service while ensuring the start-limit-burst is set to 0.
 # Outputs warnings to stdio if something has gone wrong.
