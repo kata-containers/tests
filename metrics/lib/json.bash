@@ -106,7 +106,7 @@ EOF
 )"
 			metrics_json_add_fragment "$json"
 		else
-			warning "Unrecognised runtime ${RUNTIME} - no env extracted"
+			warning "Unrecognised runtime - no env extracted"
 		fi
 	fi
 

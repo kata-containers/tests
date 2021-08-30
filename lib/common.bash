@@ -57,7 +57,7 @@ trap 'handle_error $LINENO' ERR
 # want in reality, but this function knows the names of the default
 # and recommended Kata docker runtime install names.
 is_a_kata_runtime(){
-	if [ "$1" = "containerd-shim-kata-v2" ]; then
+	if [ "$1" = "containerd-shim-kata-v2" ] || [ "$1" = "io.containerd.kata.v2" ]; then
 		echo "1"
 	else
 		echo "0"
