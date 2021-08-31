@@ -71,18 +71,6 @@ EOF
     echo "cd $kata_tests_repo_dir" >> #{guest_home_dir}/.bashrc
     sudo -E PATH=$PATH -u #{guest_user} \
     echo "source $env_file" >> #{guest_home_dir}/.bashrc
-
-    distro=$(source /etc/os-release; echo $ID)
-    case "$distro" in
-      "ubuntu")
-        # TODO: redis-server package fails to install if IPv6 is disabled. Move this
-        # code to the setup script.
-        if [[ $(sysctl -n net.ipv6.conf.all.disable_ipv6) -eq 1 ]]; then
-          sudo sysctl -w net.ipv6.conf.all.disable_ipv6=0
-          sudo sed -i 's/\(net.ipv6.conf.all.disable_ipv6\).*/\1=0/' /etc/sysctl.conf
-        fi
-        ;;
-    esac
   SHELL
 
   config.vm.define "fedora", autostart: false do |fedora|
