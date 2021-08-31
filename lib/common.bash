@@ -170,14 +170,16 @@ clean_env_ctr()
 	local i=""
 	local containers=( $(sudo ctr c list -q) )
 	local count_running="${#containers[@]}"
+	local tasks=""
 
 	[ "$count_running" -eq "0" ] && return 0
 
 	for i in "${containers[@]}"; do
-		sudo ctr tasks kill $(sudo ctr task ls | grep $i)
+		tasks="$(sudo ctr task ls | grep $i || true)"
+		[ -n "$tasks" ] && sudo ctr tasks kill $tasks
 	done
 	sleep 1
-	sudo ctr containers delete $(sudo ctr c list -q)
+	sudo ctr containers delete ${containers[@]}
 }
 
 
