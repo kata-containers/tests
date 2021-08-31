@@ -16,6 +16,7 @@ source "${script_path}/../../lib/common.bash"
 
 declare -r container_id="vfiotest${RANDOM}"
 
+addr=
 tmp_data_dir="$(mktemp -d)"
 trap cleanup EXIT
 
@@ -26,52 +27,37 @@ MACHINE_TYPE=
 IMAGE_TYPE=
 
 cleanup() {
-	sudo ctr t kill -a -s 9 $(sudo ctr task list -q) && sleep 3
-	sudo ctr t rm -f $(sudo ctr task list -q) && sleep 3
-	sudo ctr c rm $(sudo ctr c list -q)
+	clean_env_ctr
 	sudo rm -rf "${tmp_data_dir}"
+
+	[ -n "${addr}" ] && sudo driverctl unset-override "${addr}"
 }
 
 get_eth_addr() {
-	lspci | grep "Ethernet controller" | grep "Virtio network device" | tail -1 | cut -d' ' -f1
-}
-
-unbind_pci_dev() {
-	addr="$1"
-	echo "0000:${addr}" | sudo tee "/sys/bus/pci/devices/0000:${addr}/driver/unbind"
-}
-
-get_pci_dev_vendor_id() {
-	addr="$1"
-	lspci -n -s "${addr}" | cut -d' ' -f3 | sed 's|:| |'
-}
-
-bind_to_vfio() {
-	dev_vendor_id="$1"
-	echo "${dev_vendor_id}" | sudo tee "/sys/bus/pci/drivers/vfio-pci/new_id"
+	lspci -D | grep "Ethernet controller" | grep "Virtio network device" | tail -1 | cut -d' ' -f1
 }
 
 get_vfio_path() {
-	addr="$1"
-	echo "/dev/vfio/$(basename $(realpath /sys/bus/pci/drivers/vfio-pci/0000:${addr}/iommu_group))"
+	local addr="$1"
+	echo "/dev/vfio/$(basename $(realpath /sys/bus/pci/drivers/vfio-pci/${addr}/iommu_group))"
 }
 
 create_bundle() {
-	bundle_dir="$1"
+	local bundle_dir="$1"
 	mkdir -p "${bundle_dir}"
 
 	# pull and export busybox image in tar file
-	rootfs_tar="${tmp_data_dir}/rootfs.tar"
-	image="quay.io/prometheus/busybox:latest"
+	local rootfs_tar="${tmp_data_dir}/rootfs.tar"
+	local image="quay.io/prometheus/busybox:latest"
 	sudo -E ctr i pull ${image}
 	sudo -E ctr i export "${rootfs_tar}" "${image}"
 	sudo chown ${USER}:${USER} "${rootfs_tar}"
 	sync
 
 	# extract busybox rootfs
-	rootfs_dir="${bundle_dir}/rootfs"
+	local rootfs_dir="${bundle_dir}/rootfs"
 	mkdir -p "${rootfs_dir}"
-	layers_dir="$(mktemp -d)"
+	local layers_dir="$(mktemp -d)"
 	tar -C "${layers_dir}" -pxf "${rootfs_tar}"
 	for ((i=0;i<$(cat ${layers_dir}/manifest.json | jq -r ".[].Layers | length");i++)); do
 		tar -C ${rootfs_dir} -xf ${layers_dir}/$(cat ${layers_dir}/manifest.json | jq -r ".[].Layers[${i}]")
@@ -83,13 +69,22 @@ create_bundle() {
 }
 
 run_container() {
-	bundle_dir="$1"
+	local bundle_dir="$1"
 	sudo -E ctr run -d --runtime io.containerd.run.kata.v2 --config "${bundle_dir}/config.json" "${container_id}"
+}
+
+
+get_ctr_cmd_output() {
+	sudo -E ctr t exec --exec-id 2 "${container_id}" "${@}"
 }
 
 check_eth_dev() {
 	# container MUST have a eth net interface
-	sudo -E ctr t exec --exec-id 2 "${container_id}" ip a | grep "eth"
+	get_ctr_cmd_output ip a | grep "eth"
+}
+
+get_dmesg() {
+	get_ctr_cmd_output dmesg
 }
 
 # Show help about this script
@@ -172,6 +167,7 @@ setup_configuration_file() {
 
 	# enable debug
 	sed -i -e 's/^#\(enable_debug\).*=.*$/\1 = true/g' \
+	       -e 's/^#\(debug_console_enabled\).*=.*$/\1 = true/g' \
 	       -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug"/g' \
 	       "${kata_config_file}"
 }
@@ -214,10 +210,7 @@ main() {
 	addr=$(get_eth_addr)
 	[ -n "${addr}" ] || die "virtio ethernet controller address not found"
 
-	unbind_pci_dev "${addr}"
-
-	dev_vendor_id="$(get_pci_dev_vendor_id "${addr}")"
-	bind_to_vfio "${dev_vendor_id}"
+	sudo driverctl set-override "${addr}" vfio-pci
 
 	# get vfio information
 	vfio_device="$(get_vfio_path "${addr}")"
@@ -241,6 +234,9 @@ main() {
 
 	# run container
 	run_container "${bundle_dir}"
+
+	# output VM dmesg
+	get_dmesg
 
 	# run container checks
 	check_eth_dev

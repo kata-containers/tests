@@ -183,8 +183,12 @@ clean_env_ctr()
 		[ -n "$tasks" ] && sudo ctr tasks kill $tasks
 	done
 
-	cmd="[[ $(sudo ctr tasks list | grep -c "STOPPED") == "$count_running" ]]"
-	[ ! waitForProcess "${time_out}" "${sleep_time}" "$cmd" ] && sudo systemctl restart containerd
+	# do not stop if the command fails, it will be evaluated by waitForProcess
+	local cmd="[[ $(sudo ctr tasks list | grep -c "STOPPED") == "$count_running" ]]" || true
+
+	local res="ok"
+	waitForProcess "${time_out}" "${sleep_time}" "$cmd" || res="fail"
+	[ "$res" == "ok" ] || sudo systemctl restart containerd
 
 	sudo ctr containers delete ${containers[@]}
 }

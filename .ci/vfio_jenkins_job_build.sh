@@ -142,7 +142,7 @@ ${environment}
     # Make sure the packages were installed
     # Sometimes cloud-init is unable to install them
     sudo dnf makecache
-    sudo dnf install -y git make pciutils
+    sudo dnf install -y git make pciutils driverctl
 
     git config --global user.email "foo@bar"
     git config --global user.name "Foo Bar"
