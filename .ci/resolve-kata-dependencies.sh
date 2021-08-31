@@ -101,8 +101,7 @@ clone_repos() {
 			git log --oneline "origin/${branch}~1..HEAD"
 		else
 			echo "Checking out to ${branch}"
-			#TODO: remove next commented lines
-			#git fetch origin && git checkout "$branch"
+			git fetch origin && git checkout "$branch"
 		fi
 		popd
 	done
