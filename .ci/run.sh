@@ -36,8 +36,11 @@ case "${CI_JOB}" in
 	"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S"|"CRI_CONTAINERD_K8S_INITRD")
 		echo "INFO: Running stability test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
-		echo "INFO: Containerd checks"
-		sudo -E PATH="$PATH" bash -c "make cri-containerd"
+		# Issue https://github.com/kata-containers/tests/issues/3906
+		if [ "$(uname -m)" != "aarch64" ]; then
+			echo "INFO: Containerd checks"
+			sudo -E PATH="$PATH" bash -c "make cri-containerd"
+		fi
 		[ "${CI_JOB}" != "CRI_CONTAINERD" ] && \
 			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
 		echo "INFO: Running vcpus test"
