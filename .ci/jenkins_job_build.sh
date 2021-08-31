@@ -154,6 +154,7 @@ fi
 # according to the job type.
 pushd "${GOPATH}/src/${tests_repo}"
 source ".ci/ci_job_flags.sh"
+source "${cidir}/lib.sh"
 popd
 
 "${ci_dir_name}/setup.sh"
