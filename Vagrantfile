@@ -12,6 +12,9 @@
 job = ENV['CI_JOB'] || ""
 guest_user = 'vagrant'
 guest_home_dir = '/home/vagrant'
+# The file on the guest where environment variables are going to be set
+# to export.
+guest_env_file = guest_home_dir + '/ci_job_env'
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -48,7 +51,7 @@ Vagrant.configure("2") do |config|
     chown -R #{guest_user}:#{guest_user} "${GOPATH}"
     kata_tests_repo_dir="${GOPATH}/src/github.com/kata-containers/tests"
 
-    env_file="#{guest_home_dir}/ci_job_env"
+    env_file="#{guest_env_file}"
     sudo -E PATH=$PATH -H -u #{guest_user} \
     cat <<-EOF > ${env_file}
 export GOPATH="$GOPATH"
@@ -71,12 +74,6 @@ EOF
 
     distro=$(source /etc/os-release; echo $ID)
     case "$distro" in
-      "fedora")
-        # Fedora >= 32 Kernel comes configured with cgroup v2 by default.
-        # This switches back to cgroup v1. It requires a reboot.
-        sudo dnf install -y grubby
-        sudo grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
-        ;;
       "ubuntu")
         # TODO: redis-server package fails to install if IPv6 is disabled. Move this
         # code to the setup script.
@@ -86,12 +83,6 @@ EOF
         fi
         ;;
     esac
-
-    # Build the osbuilder with same distro as the host.
-    export osbuilder_distro="$distro"
-
-    cd ${kata_tests_repo_dir}
-    sudo -E PATH=$PATH -H -u #{guest_user} bash -c '.ci/setup.sh'
   SHELL
 
   config.vm.define "fedora", autostart: false do |fedora|
@@ -99,11 +90,28 @@ EOF
     # Fedora is required to reboot so that the change to cgroups v1
     # makes effect.
     fedora.vm.provision "shell", reboot: true, inline: <<-SHELL
-      echo "Need to reboot the VM"
+      sudo dnf install -y grubby
+      # Set the kernel parameter to use cgroups v1.
+      sudo grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
+    SHELL
+
+    fedora.vm.provision "shell", inline: <<-SHELL
+      source "#{guest_env_file}"
+      cd "${GOPATH}/src/github.com/kata-containers/tests"
+      # Build the osbuilder with same distro as the host.
+      export osbuilder_distro="fedora"
+      sudo -E PATH=$PATH -H -u #{guest_user} bash -c '.ci/setup.sh'
     SHELL
   end
 
   config.vm.define "ubuntu", autostart: false do |ubuntu|
     ubuntu.vm.box = "generic/ubuntu2004"
+    ubuntu.vm.provision "shell", inline: <<-SHELL
+      source "#{guest_env_file}"
+      cd "${GOPATH}/src/github.com/kata-containers/tests"
+      # Build the osbuilder with same distro as the host.
+      export osbuilder_distro="ubuntu"
+      sudo -E PATH=$PATH -H -u #{guest_user} bash -c '.ci/setup.sh'
+    SHELL
   end
 end
