@@ -52,7 +52,7 @@ install_container_engine() {
 		return
 	fi
 
-	if grep -E "\<fedora\>" /etc/os-release 2> /dev/null; then
+	if [ "${USE_PODMAN:-}" == "true" ]; then
 		# Podman is the primary container engine on Fedora-likes
 		# Remove Docker repo to avoid its runc, see https://github.com/containers/podman/issues/8764
 		sudo rm -f /etc/yum.repos.d/docker-ce.repo
