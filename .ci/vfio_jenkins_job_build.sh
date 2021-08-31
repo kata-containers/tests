@@ -249,45 +249,22 @@ install_dependencies() {
 			# cloud image dependencies
 			deps=(xorriso curl qemu-utils openssh-client)
 
-			# QEMU dependencies
-			deps+=(libcap-dev libattr1-dev libcap-ng-dev librbd-dev gcc pkg-config libglib2.0-dev libpixman-1-dev psmisc ninja-build)
-
 			sudo apt-get update
 			sudo apt-get install -y ${deps[@]}
+			sudo apt-get install --reinstall -y qemu-system-x86
 			;;
-		fedora|centos|rhel)
+		fedora)
 			# cloud image dependencies
 			deps=(xorriso curl qemu-img openssh)
 
-			# QEMU dependencies
-			deps+=(libcap-devel libattr-devel libcap-ng-devel librbd-devel gcc glib2-devel pixman-devel psmisc ninja-build)
-
-			sudo dnf install -y ${deps[@]}
+			sudo dnf install -y ${deps[@]} qemu-system-x86-core
+			sudo dnf reinstall -y qemu-system-x86-core
 			;;
 
 		"*")
 			die "Unsupported distro: ${ID}"
 			;;
 	esac
-
-	# Build and Install QEMU
-	qemu_version=$(get_version "assets.hypervisor.qemu.version" | tr -d v)
-	qemu_dir="${data_dir}/qemu-${qemu_version}"
-	qemu_tar_file="${data_dir}/qemu-${qemu_version}.tar.xz"
-
-	rm -rf "${qemu_dir}"
-	mkdir -p "${qemu_dir}"
-
-	pushd "${qemu_dir}"
-	[ ! -f "${qemu_tar_file}" ] && curl -sL https://download.qemu.org/qemu-${qemu_version}.tar.xz -o "${qemu_tar_file}"
-	tar --strip-components=1 -xf "${qemu_tar_file}"
-	local pkg_dir="${kata_repo_dir}/tools/packaging"
-	local patches_dir="${pkg_dir}/qemu/patches/$(echo ${qemu_version} | sed -e 's/^v//' -e 's/.\d*$/x/')"
-	bash ${pkg_dir}/scripts/apply_patches.sh ${patches_dir}
-	bash ${pkg_dir}/scripts/configure-hypervisor.sh qemu | sed -e 's|--disable-slirp||' -e 's|--enable-libpmem||' | xargs ./configure
-	make -j$(($(nproc)-1))
-	sudo make install
-	popd
 }
 
 ssh_vm() {
