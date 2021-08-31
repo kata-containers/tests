@@ -43,21 +43,24 @@ metrics_json_init() {
 	"@timestamp" : $(timestamp_ms)
 EOF
 )"
-	metrics_json_add_fragment "$json"
 
-	local json="$(cat << EOF
-	"env" : {
-		"RuntimeVersion": "$RUNTIME_VERSION",
-		"RuntimeCommit": "$RUNTIME_COMMIT",
-		"RuntimeConfig": "$RUNTIME_CONFIG_PATH",
-		"Hypervisor": "$HYPERVISOR_PATH",
-		"HypervisorVersion": "$HYPERVISOR_VERSION",
-		"Shim": "$SHIM_PATH",
-		"ShimVersion": "$SHIM_VERSION",
-		"machinename": "$(uname -n)"
-	}
+	if [ "$CTR_RUNTIME" == "io.containerd.kata.v2" ]; then
+		metrics_json_add_fragment "$json"
+
+		local json="$(cat << EOF
+		"env" : {
+			"RuntimeVersion": "$RUNTIME_VERSION",
+			"RuntimeCommit": "$RUNTIME_COMMIT",
+			"RuntimeConfig": "$RUNTIME_CONFIG_PATH",
+			"Hypervisor": "$HYPERVISOR_PATH",
+			"HypervisorVersion": "$HYPERVISOR_VERSION",
+			"Shim": "$SHIM_PATH",
+			"ShimVersion": "$SHIM_VERSION",
+			"machinename": "$(uname -n)"
+		}
 EOF
 )"
+	fi
 
 	metrics_json_add_fragment "$json"
 
@@ -77,17 +80,20 @@ EOF
 	}
 EOF
 )"
-	metrics_json_add_fragment "$json"
 
-	# Now add a runtime specific environment section if we can
-	local iskata=$(is_a_kata_runtime "$RUNTIME")
-	if [ "$iskata" == "1" ]; then
-		local rpath="$(command -v kata-runtime)"
-		local json="$(cat << EOF
-	"kata-env" :
-	$($rpath kata-env --json)
+	if [ "$CTR_RUNTIME" == "io.containerd.kata.v2" ]; then
+		metrics_json_add_fragment "$json"
+
+		# Now add a runtime specific environment section if we can
+		local iskata=$(is_a_kata_runtime "$RUNTIME")
+		if [ "$iskata" == "1" ]; then
+			local rpath="$(command -v kata-runtime)"
+			local json="$(cat << EOF
+		"kata-env" :
+		$($rpath kata-env --json)
 EOF
 )"
+	fi
 		metrics_json_add_fragment "$json"
 	else
 		if [ "$CTR_RUNTIME" == "io.containerd.runc.v2" ]; then
