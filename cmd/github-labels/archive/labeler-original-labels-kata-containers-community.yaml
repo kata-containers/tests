@@ -4,9 +4,6 @@ repo: kata-containers/community
 labels:
   - name: WIP
     color: b60205
-  - name: add-to-userguide
-    color: 55bf3d
-    description: https://github.com/kata-containers/documentation/wiki/UserGuide
   - name: bitesize
     color: d4c5f9
     description: small/easy task
