@@ -170,21 +170,6 @@ function get_test_version(){
 	get_dep_from_yaml_db "${db}" "${dependency}"
 }
 
-function waitForProcess(){
-        wait_time="$1"
-        sleep_time="$2"
-        cmd="$3"
-        while [ "$wait_time" -gt 0 ]; do
-                if eval "$cmd"; then
-                        return 0
-                else
-                        sleep "$sleep_time"
-                        wait_time=$((wait_time-sleep_time))
-                fi
-        done
-        return 1
-}
-
 kill_stale_process()
 {
 	clean_env
