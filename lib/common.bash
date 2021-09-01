@@ -170,14 +170,21 @@ clean_env_ctr()
 	local i=""
 	local containers=( $(sudo ctr c list -q) )
 	local count_running="${#containers[@]}"
+	local count_stopped=0
+	local time_out=10
+	local sleep_time=1
 
 	[ "$count_running" -eq "0" ] && return 0
 
 	for i in "${containers[@]}"; do
-		sudo ctr tasks kill $(sudo ctr task ls | grep $i)
+		sudo ctr tasks kill "$i"
 	done
-	sleep 1
-	sudo ctr containers delete $(sudo ctr c list -q)
+
+	cmd="[[ $(sudo ctr tasks list | grep -c "STOPPED") == "$count_running" ]]"
+	info "Wait until the containers gets removed"
+	waitForProcess "${time_out}" "${sleep_time}" "$cmd"
+
+	sudo ctr containers delete ${containers[@]}
 }
 
 
@@ -268,5 +275,3 @@ function waitForProcess(){
 	done
 	return 1
 }
-
-
