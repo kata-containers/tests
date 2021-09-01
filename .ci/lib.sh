@@ -76,6 +76,23 @@ else
 	stress_image_pull_policy="Always"
 fi
 
+# Some tests will start a local registry server for container images.
+# Use this function to clean up the server container after its use.
+registry_server_teardown() {
+	[ -n "$container_engine" ] || \
+		die "Do not know what container engine to use."
+	[ -n "$registry_name" ] || \
+		die "Do not know the container registry name."
+
+	local is_running="$(sudo -E ${container_engine} ps -a | \
+		grep -c "${registry_name}")"
+	if [ "${is_running}" -gt 0 ]; then
+		info "remove local registry server: ${registry_name}"
+		sudo -E "${container_engine}" rm -f \
+			"${registry_name}" &>/dev/null
+	fi
+}
+
 # Clone repo only if $kata_repo_dir is empty
 # Otherwise, we assume $kata_repo is cloned and in correct branch, e.g. a PR or local change
 clone_kata_repo() {
