@@ -12,7 +12,6 @@ set -o errtrace
 
 cidir=$(dirname "$0")
 source "/etc/os-release" || source "/usr/lib/os-release"
-source "${cidir}/lib.sh"
 
 CI_JOB=${CI_JOB:-}
 ghprbPullId=${ghprbPullId:-}
@@ -165,6 +164,7 @@ fi
 # according to the job type.
 pushd "${GOPATH}/src/${tests_repo}"
 source ".ci/ci_job_flags.sh"
+source "${cidir}/lib.sh"
 popd
 
 "${ci_dir_name}/setup.sh"
