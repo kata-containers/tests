@@ -292,6 +292,20 @@ delete_containerd_cri_stale_resource() {
 	sudo rm -f /etc/systemd/system/containerd.service
 }
 
+cleanup_network_interface() {
+	local FLANNEL=$(ls /sys/class/net | grep flannel)
+	local CNI=$(ls /sys/class/net | grep cni)
+
+	[ "$FLANNEL" != "" ] && sudo ip link del $FLANNEL
+	[ "$CNI" != "" ] && sudo ip link del $CNI
+
+	FLANNEL=$(ls /sys/class/net | grep flannel)
+	CNI=$(ls /sys/class/net | grep cni)
+
+	[ "$FLANNEL" != "" ] && info "$FLANNEL doesn't clean up"
+	[ "$CNI" != "" ] && info "$CNI doesn't clean up"
+}
+
 gen_clean_arch() {
 	# Set up some vars
 	stale_process_union=( "docker-containerd-shim" )
@@ -307,6 +321,8 @@ gen_clean_arch() {
 		info "delete stale docker resource under ${stale_docker_dir_union[@]}"
 		delete_stale_docker_resource
 	fi
+	info "remove containers started by ctr"
+	clean_env_ctr
 	info "delete stale kata resource under ${stale_kata_dir_union[@]}"
 	delete_stale_kata_resource
 	info "Remove installed kata packages"
@@ -315,16 +331,22 @@ gen_clean_arch() {
 	delete_crio_stale_resource
 	info "Remove installed containerd-cri related binaries and configuration"
 	delete_containerd_cri_stale_resource
+	#reset k8s service may impact metrics test on x86_64, so limit it to arm64
+	[ $(uname -m) == "aarch64" -a "$(pgrep kubelet)" != "" ] && sudo sh -c 'kubeadm reset -f'
 	info "Remove installed kubernetes packages and configuration"
 	if [ "$ID" == ubuntu ]; then
 		sudo rm -rf /etc/systemd/system/kubelet.service.d
 		sudo apt-get autoremove -y kubeadm kubelet kubectl \
 			$(dpkg -l | awk '{print $2}' | grep -E '^(containerd(.\io)?|docker(\.io|-ce(-cli)?))$')
 	fi
-	# Remove existing CNI configurations and binaries.
+	# Remove existing k8s related configurations and binaries.
 	sudo sh -c 'rm -rf /opt/cni/bin/*'
-	sudo sh -c 'rm -rf /etc/cni'
-	sudo sh -c 'rm -rf /var/lib/cni'
+	sudo sh -c 'rm -rf /etc/cni /etc/kubernetes/'
+	sudo sh -c 'rm -rf /var/lib/cni /var/lib/etcd /var/lib/kubelet'
+	sudo sh -c 'rm -rf /run/flannel'
+
+	info "Clean up stale network interface"
+	cleanup_network_interface
 
 	info "Remove Kata package repo registrations"
 	delete_kata_repo_registrations
