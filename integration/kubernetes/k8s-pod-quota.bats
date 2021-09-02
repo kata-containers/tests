@@ -30,11 +30,6 @@ setup() {
 	# View deployment
 	kubectl wait --for=condition=Available --timeout=$timeout \
 		-n "$namespace" deployment/${deployment_name}
-
-	# Check the quota was filled out
-	used_pods=$(kubectl get -n "$namespace" resourcequota \
-		--output=jsonpath={.items[0].status.used.pods})
-	[ "$used_pods" -eq 2 ]
 }
 
 teardown() {
