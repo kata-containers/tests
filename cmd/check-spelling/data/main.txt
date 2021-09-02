@@ -55,6 +55,7 @@ linter/AB
 logfile/A
 Longterm
 longterm
+losetup
 memcpy/A
 mergeable
 metadata
@@ -95,6 +96,7 @@ sysctl/AB
 teardown
 templating
 timestamp/AB
+tmp
 tracability
 ttRPC/B
 udev/B
