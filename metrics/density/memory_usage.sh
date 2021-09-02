@@ -294,7 +294,7 @@ get_docker_memory_usage(){
 EOF
 )"
 
-	elif [ "$RUNTIME" == "kata-qemu" ] || [ "$RUNTIME" == "kata-fc" ] || [ "$RUNTIME" == "kata-runtime" ]; then
+	else [ "$RUNTIME" == "kata-runtime" ] || [ "$RUNTIME" == "kata-fc" ] || [ "$RUNTIME" == "kata-qemu" ]
 		# Get PSS memory of VM runtime components.
 		# And check that the smem search has found the process - we get a "0"
 		#  back if that procedure fails (such as if a process has changed its name
@@ -341,8 +341,6 @@ EOF
 	}
 EOF
 )"
-	else
-		die "Unknown runtime: $RUNTIME"
 	fi
 
 	metrics_json_add_array_element "$json"
@@ -386,6 +384,14 @@ main(){
 
 	check_cmds "${SMEM_BIN}" bc
 	check_images "$IMAGE"
+
+	if [ "${CTR_RUNTIME}" == "io.containerd.run.kata.v2" ]; then
+		export RUNTIME="kata-runtime"
+        elif [ "${CTR_RUNTIME}" == "io.containerd.runc.v2" ]; then
+		export RUNTIME="runc"
+        else
+		die "Unknown runtime ${CTR_RUNTIME}"
+	fi
 
 	metrics_json_init
 	save_config
