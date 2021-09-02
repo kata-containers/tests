@@ -66,6 +66,10 @@ teardown() {
 	# Debugging information
 	kubectl describe "pod/$pod_name"
 
+	# print for debug
+	echo "DEBUG: $pod_name $volume_claim $volume_name $loop_dev"
+	kubectl describe storageclass local-storage
+
 	# Delete k8s resources
 	kubectl delete pod "$pod_name"
 	kubectl delete pvc "$volume_claim"
