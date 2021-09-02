@@ -65,6 +65,8 @@ setup() {
 }
 
 teardown() {
+	set -x
+
 	# Debugging information
 	kubectl describe "pod/$pod_name"
 
