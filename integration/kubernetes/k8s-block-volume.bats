@@ -28,6 +28,8 @@ setup() {
 }
 
 @test "Block Storage Support" {
+	set -x
+
 	# Create Storage Class
 	kubectl create -f volume/local-storage.yaml
 
