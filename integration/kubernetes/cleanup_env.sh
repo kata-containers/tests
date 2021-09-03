@@ -27,7 +27,7 @@ esac
 export KUBECONFIG="$HOME/.kube/config"
 sudo -E kubeadm reset -f --cri-socket="${cri_runtime_socket}"
 
-sudo -E "${container_engine}" rm -f "${registry_name}" || true
+registry_server_teardown
 
 sudo systemctl stop "${cri_runtime}"
 
