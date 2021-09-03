@@ -44,7 +44,7 @@ metrics_json_init() {
 EOF
 )"
 
-	if [ "$CTR_RUNTIME" == "io.containerd.kata.v2" ]; then
+	if [ "$CTR_RUNTIME" == "io.containerd.run.kata.v2" ]; then
 		metrics_json_add_fragment "$json"
 
 		local json="$(cat << EOF
@@ -81,7 +81,7 @@ EOF
 EOF
 )"
 
-	if [ "$CTR_RUNTIME" == "io.containerd.kata.v2" ]; then
+	if [ "$CTR_RUNTIME" == "io.containerd.run.kata.v2" ]; then
 		metrics_json_add_fragment "$json"
 
 		# Now add a runtime specific environment section if we can
@@ -89,31 +89,28 @@ EOF
 		if [ "$iskata" == "1" ]; then
 			local rpath="$(command -v kata-runtime)"
 			local json="$(cat << EOF
-		"kata-env" :
-		$($rpath kata-env --json)
+			"kata-env" :
+				$($rpath kata-env --json)
 EOF
 )"
-	fi
-		metrics_json_add_fragment "$json"
-	else
-		if [ "$CTR_RUNTIME" == "io.containerd.runc.v2" ]; then
-			local output=$(runc -v)
-			local runcversion=$(grep version <<< "$output" | sed 's/runc version //')
-			local runccommit=$(grep commit <<< "$output" | sed 's/commit: //')
-			local json="$(cat << EOF
-	"runc-env" :
-	{
-		"Version": {
-			"Semver": "$runcversion",
-			"Commit": "$runccommit"
-		}
-	}
-EOF
-)"
-			metrics_json_add_fragment "$json"
-		else
-			warning "Unrecognised runtime - no env extracted"
 		fi
+	fi
+
+	if [ "$CTR_RUNTIME" == "io.containerd.runc.v2" ]; then
+		metrics_json_add_fragment "$json"
+		local output=$(runc -v)
+		local runcversion=$(grep version <<< "$output" | sed 's/runc version //')
+		local runccommit=$(grep commit <<< "$output" | sed 's/commit: //')
+		local json="$(cat << EOF
+		"runc-env" :
+		{
+			"Version": {
+				"Semver": "$runcversion",
+				"Commit": "$runccommit"
+			}
+		}
+EOF
+)"
 	fi
 
 	metrics_json_end_of_system
