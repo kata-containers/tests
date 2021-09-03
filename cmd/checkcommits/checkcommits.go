@@ -59,7 +59,7 @@ const (
 	defaultMaxBodyLineLength    = 150
 
 	defaultCommit = "HEAD"
-	defaultBranch = "master"
+	defaultBranch = "main"
 
 	versionSuffix = "for kata-containers"
 )

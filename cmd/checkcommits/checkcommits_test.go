@@ -685,8 +685,8 @@ func TestGetCommitAndBranch(t *testing.T) {
 		{"", "", nil, nil, true},
 		{"", "", []string{}, nil, true},
 		{"", "", nil, []string{}, true},
-		{"HEAD", "master", []string{}, []string{}, false},
-		{"commit", "master", []string{"commit"}, []string{}, false},
+		{"HEAD", "main", []string{}, []string{}, false},
+		{"commit", "main", []string{"commit"}, []string{}, false},
 		{"commit", "branch", []string{"commit", "branch"}, []string{}, false},
 		{"commit", "branch", []string{"too", "many", "args"}, []string{}, true},
 	}
