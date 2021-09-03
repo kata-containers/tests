@@ -49,6 +49,9 @@ type Commit struct {
 	subject   string
 	subsystem string
 	body      []string
+
+	// true if the commit undoes a previous commit.
+	revertCommit bool
 }
 
 const (
@@ -62,6 +65,9 @@ const (
 	defaultBranch = "main"
 
 	versionSuffix = "for kata-containers"
+
+	// The prefix git-revert(1) uses.
+	revertPrefix = "Revert"
 )
 
 var (
@@ -113,6 +119,35 @@ func checkCommitSubject(config *CommitConfig, commit *Commit) error {
 
 	if strings.TrimSpace(subject) == "" {
 		return fmt.Errorf("Commit %v: pure whitespace subject", commit.hash)
+	}
+
+	lcSubject := strings.ToLower(subject)
+
+	if strings.HasPrefix(lcSubject, strings.ToLower(revertPrefix)) {
+		// A revert commit is formatted by git(1), not the user,
+		// so always allow it.
+		commit.revertCommit = true
+
+		// The format of a revert commit is as follows:
+		//
+		//   'Revert "<original-subject-line"'
+		//
+		// Once we've identified the commit as a revert commit, we
+		// still want to check the subsystem, so convert it back into
+		// the original commit's subsystem. Note that these changes
+		// are not very strict (for example missing double quotes are
+		// accepted)
+
+		// To undo git(1)'s changes to the subject line, first remove
+		// the revert prefix
+		subject = strings.TrimPrefix(subject, revertPrefix)
+		subject = strings.TrimPrefix(subject, strings.ToLower(revertPrefix))
+
+		// Now, remove space
+		subject = strings.TrimSpace(subject)
+
+		// Finally, remove quotes
+		subject = strings.TrimFunc(subject, func(r rune) bool { return string(r) == "\"" })
 	}
 
 	subsystemPattern := regexp.MustCompile(`^[[:blank:]]*([^:[:blank:]]*)[[:blank:]]*:`)
@@ -203,7 +238,7 @@ func checkCommitBodyLine(config *CommitConfig, commit *Commit, line string,
 	// normal word if the default lengths are being used), so length
 	// checks won't be applied to it.
 	length := len(line)
-	if length > config.MaxBodyLineLength && len(trimmedLine) > 1 {
+	if !commit.revertCommit && length > config.MaxBodyLineLength && len(trimmedLine) > 1 {
 		return fmt.Errorf("commit %v: body line %d too long (max %v, got %v): %q",
 			commit.hash, 1+lineNum, config.MaxBodyLineLength, length, line)
 	}
@@ -315,6 +350,11 @@ func checkCommit(config *CommitConfig, commit *Commit) error {
 	err := checkCommitSubject(config, commit)
 	if err != nil {
 		return err
+	}
+
+	// Don't check the body for revert commits.
+	if commit.revertCommit {
+		return nil
 	}
 
 	return checkCommitBody(config, commit)
