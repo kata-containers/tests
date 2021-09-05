@@ -2,3 +2,4 @@ ginkgo
 !/**/ginkgo
 /cmd/log-parser/kata-log-parser
 /.vagrant/
+cmd/check-markdown/kata-check-markdown

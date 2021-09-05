@@ -124,25 +124,38 @@ create_containerd_config() {
 	if [ "${runtime_type}" == "${default_runtime_type}" ];then
 		local containerd_runtime=$(command -v "${runtime}")
 	fi
+
 	# Remove dots.  Dots are used by toml syntax as atribute separator
 	runtime="${runtime//./-}"
 
-cat << EOF | sudo tee "${CONTAINERD_CONFIG_FILE}"
+
+if [ $kata_annotations -eq 1 ]; then
+	cat << EOF | sudo tee "${CONTAINERD_CONFIG_FILE}"
 [plugins]
-  [plugins.cri]
-    [plugins.cri.containerd]
+  [plugins."io.containerd.grpc.v1.cri"]
+    [plugins."io.containerd.grpc.v1.cri".containerd]
         default_runtime_name = "$runtime"
-      [plugins.cri.containerd.runtimes.${runtime}]
-        runtime_type = "${runtime_type}"
-        $( [ $kata_annotations -eq 1 ] && \
-        echo 'pod_annotations = ["io.katacontainers.*"]' && \
-        echo '        container_annotations = ["io.katacontainers.*"]'
-        )
-        [plugins.cri.containerd.runtimes.${runtime}.options]
-          Runtime = "${containerd_runtime}"
-[plugins.linux]
-       shim = "${containerd_shim_path}"
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.${runtime}]
+          runtime_type = "${runtime_type}"
+          pod_annotations = ["io.katacontainers.*"]
+          container_annotations = ["io.katacontainers.*"]
+  [plugins."io.containerd.runtime.v1.linux"]
+    shim = "${containerd_shim_path}"
 EOF
+else
+	cat << EOF | sudo tee "${CONTAINERD_CONFIG_FILE}"
+[plugins]
+  [plugins."io.containerd.grpc.v1.cri"]
+    [plugins."io.containerd.grpc.v1.cri".containerd]
+        default_runtime_name = "$runtime"
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.${runtime}]
+          runtime_type = "${runtime_type}"
+  [plugins."io.containerd.runtime.v1.linux"]
+    shim = "${containerd_shim_path}"
+EOF
+fi
 
 if [ "$KATA_HYPERVISOR" == "firecracker" ]; then
 	sudo sed -i 's|^\(\[plugins\]\).*|\1\n  \[plugins.devmapper\]\n    pool_name = \"contd-thin-pool\"\n    base_image_size = \"4096MB\"|' ${CONTAINERD_CONFIG_FILE}

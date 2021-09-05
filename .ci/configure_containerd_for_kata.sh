@@ -17,17 +17,17 @@ cat << EOF | sudo tee /etc/containerd/config.toml
 [debug]
   level = "debug"
 [plugins]
-  [plugins.cri]
-    [plugins.cri.containerd]
-      [plugins.cri.containerd.runtimes]
-        [plugins.cri.containerd.runtimes.runc]
+  [plugins."io.containerd.grpc.v1.cri"]
+    [plugins."io.containerd.grpc.v1.cri".containerd]
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
            runtime_type = "io.containerd.runc.v1"
-           [plugins.cri.containerd.runtimes.runc.options]
+           [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
              BinaryName = "${runc_path}"
              Root = ""
-        [plugins.cri.containerd.runtimes.kata]
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.kata]
            runtime_type = "io.containerd.kata.v2"
            privileged_without_host_devices = true
-    [plugins.cri.registry.mirrors."localhost:5000"]
+    [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:5000"]
       endpoint = ["http://localhost:5000"]
 EOF
