@@ -46,10 +46,10 @@ Run the following for reach repository:
 $ labeler scan -r ${github_repo_slug} ${output_file}
 ```
 
-For example, to save the labels for the `runtime` repository:
+For example, to save the labels for the `tests` repository:
 
 ```sh
-$ labeler scan -r kata-container/runtime runtime.yaml
+$ labeler scan -r kata-containers/tests tests.yaml
 
 ```
 
