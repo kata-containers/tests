@@ -15,6 +15,7 @@ guest_home_dir = '/home/vagrant'
 # The file on the guest where environment variables are going to be set
 # to export.
 guest_env_file = guest_home_dir + '/ci_job_env'
+host_arch = `uname -m`.strip
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -40,6 +41,9 @@ Vagrant.configure("2") do |config|
     lv.driver = "kvm"
     lv.cpus = "4"
     lv.memory = "8192"
+    if host_arch == "x86_64"
+      lv.machine_type = "q35"
+    end
   end
 
   # Shared provision script.
