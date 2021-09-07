@@ -197,7 +197,7 @@ show_system_ctr_state() {
 }
 
 common_init(){
-	if [ "$CTR_RUNTIME" == "io.containerd.runc.v2" ] || [ "$RUNTIME" == "containerd-shim-kata-v2" ]; then
+	if [ "$CTR_RUNTIME" == "io.containerd.run.kata.v2" ] || [ "$RUNTIME" == "containerd-shim-kata-v2" ]; then
 		extract_kata_env
 	else
 		# We know we have nothing to do for runc or shimv2
