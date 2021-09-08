@@ -131,6 +131,8 @@ ${environment}
         sleep 5;
     done
 
+    export FORCE_JENKINS_JOB_BUILD=1
+    export DEBUG=true
     export CI_JOB="VFIO"
     export GOPATH=\${WORKSPACE}/go
     export PATH=\${GOPATH}/bin:/usr/local/go/bin:/usr/sbin:\${PATH}
@@ -152,6 +154,8 @@ ${environment}
     mkdir -p "\${tests_repo_dir}"
     git clone https://\${tests_repo} "\${tests_repo_dir}"
     cd "\${tests_repo_dir}"
+    # Checkout to target branch: master, stable-X.Y, main etc
+    git checkout "origin/${ghprbTargetBranch}"
 
     trap "cd \${tests_repo_dir}; sudo -E PATH=\$PATH .ci/teardown.sh ${artifacts_dir} || true; sudo chown -R \${USER} ${artifacts_dir}" EXIT
 
