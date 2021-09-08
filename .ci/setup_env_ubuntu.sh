@@ -102,6 +102,12 @@ main()
 		pkgs_to_install+=" ${rust_agent_pkgs[@]}"
 	fi
 
+	# The redis-server package fails to install if IPv6 is disabled. Let's
+	# check if that's the case and then enable it.
+	if [ $(sudo sysctl -n net.ipv6.conf.all.disable_ipv6) -eq 1 ]; then
+		sudo sysctl -w net.ipv6.conf.all.disable_ipv6=0
+	fi
+
 	chronic sudo -E apt -y install $pkgs_to_install
 
 	[ "$setup_type" = "minimal" ] && exit 0
