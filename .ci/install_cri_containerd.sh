@@ -54,16 +54,14 @@ install_from_pr() {
 	echo "Trying to install containerd from a PR"
 	(
 		cd "${GOPATH}/src/${cri_containerd_repo}" >>/dev/null
-		git fetch origin pull/${cri_containerd_pr}/head:PR_BRANCH
-		git checkout "PR_BRANCH"
+		git fetch
+		git checkout release/1.5
 		make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
 		# SH: The PR containerd version might not match the version.yaml one, so get from build
 		cri_containerd_version=$(_output/cri/bin/containerd --version | awk '{ print substr($3,2); }')
 		tarball_name="cri-containerd-cni-${cri_containerd_version}-${CONTAINERD_OS}-${CONTAINERD_ARCH}.tar.gz"
-		echo "Tarball name is : '${tarball_name}'"
+		echo "Tarball name is: '${tarball_name}'"
 		sudo tar -xvf "./releases/${tarball_name}" -C /
-		# Clean up PR_BRANCH
-		git checkout main && git branch -D "PR_BRANCH"
 	)
 }
 
