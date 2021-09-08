@@ -5,12 +5,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-set -x
-
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 setup() {
+	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
+
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	get_pod_config_dir
 
@@ -28,7 +28,6 @@ setup() {
 }
 
 @test "Block Storage Support" {
-	set -x
 
 	# Create Storage Class
 	kubectl create -f volume/local-storage.yaml
@@ -67,7 +66,6 @@ setup() {
 }
 
 teardown() {
-	set -x
 
 	# Debugging information
 	kubectl describe "pod/$pod_name"
