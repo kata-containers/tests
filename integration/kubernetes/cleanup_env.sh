@@ -27,6 +27,7 @@ esac
 export KUBECONFIG="$HOME/.kube/config"
 sudo -E kubeadm reset -f --cri-socket="${cri_runtime_socket}"
 
+[ "${container_engine}" == "docker" ] && restart_docker_service
 registry_server_teardown
 
 sudo systemctl stop "${cri_runtime}"
