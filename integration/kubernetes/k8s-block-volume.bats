@@ -9,7 +9,7 @@ load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 setup() {
-	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
+	#[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
 
 	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	get_pod_config_dir
@@ -28,7 +28,6 @@ setup() {
 }
 
 @test "Block Storage Support" {
-
 	# Create Storage Class
 	kubectl create -f volume/local-storage.yaml
 
@@ -63,11 +62,10 @@ setup() {
 	kubectl exec "$pod_name" -- sh -c "mount $ctr_dev_path $ctr_mount_path"
 	kubectl exec "$pod_name" -- sh -c "echo $ctr_message > $ctr_file"
 	kubectl exec "$pod_name" -- sh -c "grep '$ctr_message' $ctr_file"
+	kubectl exec "$pod_name" -- sh -c "umount $ctr_mount_path"
 }
 
 teardown() {
-	# Debugging information
-	kubectl describe "pod/$pod_name"
 
 	# Delete k8s resources
 	kubectl delete pod "$pod_name"
