@@ -105,22 +105,7 @@ build_and_install_qemu() {
 	[ -n "$(ls -A ui/keycodemapdb)" ] || git clone  https://github.com/qemu/keycodemapdb.git ui/keycodemapdb
 
 	# Apply required patches
-	QEMU_PATCHES_BRANCH=$(echo "${CURRENT_QEMU_VERSION}" | cut -d '.' -f1-2)
-	QEMU_PATCHES_BRANCH=${QEMU_PATCHES_BRANCH#"v"}
-	QEMU_PATCHES_PATH="${PACKAGING_DIR}/qemu/patches/${QEMU_PATCHES_BRANCH}.x"
-	QEMU_VERSION_PATCHES_PATH="${PACKAGING_DIR}/qemu/patches/tag_patches/${CURRENT_QEMU_VERSION}"
-	for patch in ${QEMU_PATCHES_PATH}/*.patch; do
-		echo "Applying patch: $patch"
-		git apply "$patch"
-	done
-
-	echo "INFO: Apply patches for qemu version ${CURRENT_QEMU_VERSION}"
-	patches=($(find "$QEMU_VERSION_PATCHES_PATH" -name '*.patch'|sort -t- -k1,1n))
-	echo "INFO: Found ${#patches[@]} patches"
-	for patch in ${patches[@]}; do
-		echo "Applying patch for version ${CURRENT_QEMU_VERSION}: $patch"
-		git apply "$patch"
-	done
+	${PACKAGING_DIR}/scripts/patch_qemu.sh ${CURRENT_QEMU_VERSION} ${PACKAGING_DIR}/qemu/patches
 
 	echo "Build QEMU"
 	# Not all distros have the libpmem package
