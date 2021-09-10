@@ -347,3 +347,10 @@ same VM (`vagrant provision [fedora|ubuntu]`), however this is not recommended b
 our CI scripts are meant for a single-shot execution. So if you need to run a different
 job locally, you should destroy the VM with the `vagrant destroy [fedora|ubuntu]` command
 then start the process again.
+
+The Vagrant configuration sometimes can get into inconsistent state. That may happen, for
+instance, when the domain on Libvirt was created by the framework but it thinks the box
+is not initialized yet. Also you may want to stop using Vagrant and you want to simply
+wipe out all Vagrant control files and resources from your workstation. For those purposes you
+should consider using the `.ci/vagrant-cleaner.sh` script; run `.ci/vagrant-cleaner.sh -h` for
+further information.
