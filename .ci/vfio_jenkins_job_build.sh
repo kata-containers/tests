@@ -151,23 +151,10 @@ ${environment}
 
     tests_repo="github.com/kata-containers/tests"
     tests_repo_dir="\${GOPATH}/src/\${tests_repo}"
-    mkdir -p "\${tests_repo_dir}"
-    git clone https://\${tests_repo} "\${tests_repo_dir}"
-    cd "\${tests_repo_dir}"
-    # Checkout to target branch: master, stable-X.Y, main etc
-    git checkout "origin/${ghprbTargetBranch}"
-
     trap "cd \${tests_repo_dir}; sudo -E PATH=\$PATH .ci/teardown.sh ${artifacts_dir} || true; sudo chown -R \${USER} ${artifacts_dir}" EXIT
 
-    if echo \${GIT_URL} | grep -q tests; then
-        pr_number="\${ghprbPullId}"
-        pr_branch="PR_\${pr_number}"
-        git fetch origin "pull/\${pr_number}/head:\${pr_branch}"
-        git checkout "\${pr_branch}"
-        git rebase "origin/\${ghprbTargetBranch}"
-    fi
-
-    sudo -E PATH=\$PATH .ci/jenkins_job_build.sh "\$(echo \${GIT_URL} | sed -e 's|https://||' -e 's|.git||')"
+    curl -OL https://raw.githubusercontent.com/kata-containers/tests/\${ghprbTargetBranch}/.ci/ci_entry_point.sh
+    bash -x ci_entry_point.sh "${GIT_URL}"
 
   path: /home/${USER}/run.sh
   permissions: '0755'
