@@ -17,6 +17,7 @@ set -o errtrace
 script_name=${0##*/}
 script_dir=$(dirname "$(readlink -f "$0")")
 CI_JOB="${CI_JOB:-}"
+FORCE_JENKINS_JOB_BUILD=${FORCE_JENKINS_JOB_BUILD:-0}
 
 handle_error() {
 	local exit_code="${?}"
@@ -67,7 +68,7 @@ if [ "${repo_to_test}" == "${tests_repo}" ]; then
 	git rebase "origin/${ghprbTargetBranch}"
 fi
 
-if [ "${CI_JOB}" == "VFIO" ]; then
+if [ "${CI_JOB}" == "VFIO" ] && [ ${FORCE_JENKINS_JOB_BUILD} = 0 ]; then
 	.ci/vfio_jenkins_job_build.sh "${repo_to_test}"
 else
 	.ci/jenkins_job_build.sh "${repo_to_test}"
