@@ -20,12 +20,26 @@ IMAGE="docker.io/library/local-web-tooling:latest"
 DOCKERFILE="${SCRIPT_PATH}/web-tooling-dockerfile/Dockerfile"
 CI_JOB="${CI_JOB:-""}"
 configuration_file="/usr/share/defaults/kata-containers/configuration.toml"
-# Directory to run the test on
-# This is run inside of the container
+
+# Directory to run the test inside of the container
 TESTDIR="${TESTDIR:-/testdir}"
 file_path="/web-tooling-benchmark"
 file_name="output"
-CMD="mkdir -p ${TESTDIR}; cd $file_path && node dist/cli.js > $file_name"
+
+# Directory where the webtooling results are stored
+TMP_DIR=$(mktemp --tmpdir -d webtool.XXXXXXXXXX)
+
+# Options to control the start of the workload using a trigger-file
+dst_dir="/host"
+src_dir=$(mktemp --tmpdir -d webtool.XXXXXXXXXX)
+trigger_file="$RANDOM.txt"
+guest_trigger_file="$dst_dir/$trigger_file"
+host_trigger_file="$src_dir/$trigger_file"
+start_script="webtooling_start.sh"
+
+# CMD points to the script that starts the workload
+CMD="$dst_dir/$start_script"
+MOUNT_OPTIONS="type=bind,src=$src_dir,dst=$dst_dir,options=rbind:ro"
 PAYLOAD_ARGS="${PAYLOAD_ARGS:-tail -f /dev/null}"
 
 # This timeout is related with the amount of time that
@@ -36,10 +50,9 @@ INITIAL_NUM_PIDS=1
 cpu_period="100000"
 cpu_quota="200000"
 
-TMP_DIR=$(mktemp --tmpdir -d webtool.XXXXXXXXXX)
-
 remove_tmp_dir() {
 	rm -rf "$TMP_DIR"
+	rm -rf "$src_dir"
 }
 
 trap remove_tmp_dir EXIT
@@ -51,6 +64,24 @@ Usage: $0 <count>
    Description:
        <count> : Number of containers to run.
 EOF
+}
+
+# script used to launch the workload
+create_start_script() {
+	local script="$src_dir/$start_script"
+	rm -rf "$script"
+
+cat <<EOF >>"$script"
+#!/bin/bash
+mkdir -p ${TESTDIR}
+
+until [ -f $guest_trigger_file ]; do
+	sleep 1
+done
+pushd $file_path
+node dist/cli.js > $file_name
+EOF
+	chmod +x "$script"
 }
 
 verify_task_is_completed_on_all_containers() {
@@ -129,13 +160,15 @@ function main() {
 	check_ctr_images "$IMAGE" "$DOCKERFILE"
 	metrics_json_init
 	save_config
+	create_start_script
+	rm -rf $host_trigger_file
 
 	info "Creating $NUM_CONTAINERS containers"
 
 	for ((i=1; i<= "$NUM_CONTAINERS"; i++)); do
 		containers+=($(random_name))
 		# Web tool benchmark needs 2 cpus to run completely in its cpu utilization
-		sudo -E ctr run -d --runtime "${CTR_RUNTIME}" --cpu-quota "${cpu_quota}" --cpu-period "${cpu_period}" "$IMAGE" "${containers[-1]}" sh -c "$PAYLOAD_ARGS"
+		sudo -E ctr run -d --runtime "${CTR_RUNTIME}" --cpu-quota "${cpu_quota}" --cpu-period "${cpu_period}" --mount="$MOUNT_OPTIONS" "$IMAGE" "${containers[-1]}" sh -c "$PAYLOAD_ARGS"
 		((not_started_count--))
 		info "$not_started_count remaining containers"
 	done
@@ -171,6 +204,7 @@ function main() {
 	    wait $pid
 	done
 
+	touch $host_trigger_file
 	info "All containers are running the workload..."
 
 	# Verify that all containers have completed the assigned task
