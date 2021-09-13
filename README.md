@@ -294,11 +294,22 @@ the [vagrant](https://www.vagrantup.com) tool to create a VM with the setup as c
 as possible to the environments where CI jobs will run the tests. Thus, allowing to
 reproduce a CI job locally.
 
-Currently it is only able to create a *Fedora 32* or *Ubuntu 20.04* VM. And your workstation
-must be capable of running VMs with:
+Your workstation must be capable of running VMs with:
  * 8GB of system memory
  * ~45GB and ~20GB of disk space for the VM images (Fedora and Ubuntu, respectively) on
    the Libvirt's storage pool
+
+Currently it supports the creation of *Fedora 32* and *Ubuntu 20.04* VM, as shown on the table
+below. The `Vagrantfile` was tested on Fedora 33 and Ubuntu 20.04 hosts, and it is
+[known to fail](https://github.com/kata-containers/tests/issues/3942) the boot of Fedora VM on
+Ubuntu host. If you have the need of testing on a different guest or it fails to work
+on your host's distro then please [open an issue](https://github.com/kata-containers/tests/issues/new/choose)
+to let us know.
+
+|Host | Fedora 32 guest | Ubuntu 20.04 guest |
+| --- | --- | --- |
+| Fedora 33    |   Yes  |   Yes  |
+| Ubuntu 20.04 |   No   |   Yes  |
 
 Besides having vagrant installed in your host, it is needed the [vagrant libvirt plug-in](https://github.com/vagrant-libvirt/vagrant-libvirt) (Libvirt is the provider currently used), QEMU and `rsync` (needed to copy files between
 the host and guest).
