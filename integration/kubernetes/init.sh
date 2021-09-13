@@ -40,6 +40,33 @@ wait_pods_ready()
 	done
 }
 
+build_custom_stress_image()
+{
+	info "Build custom stress image"
+	image_version=$(get_test_version "docker_images.registry.version")
+	registry_image=$(get_test_version "docker_images.registry.registry_url"):"${image_version}"
+	arch=$("${SCRIPT_PATH}/../../.ci/kata-arch.sh")
+	if [[ "${arch}" == "ppc64le" || "${arch}" == "s390x" ]]; then
+		# that image is not built for these architectures
+		image_version=$(get_test_version "docker_images.registry_ibm.version")
+		registry_image=$(get_test_version "docker_images.registry_ibm.registry_url"):"${image_version}"
+	fi
+
+	runtimeclass_files_path="${SCRIPT_PATH}/runtimeclass_workloads"
+	pushd "${runtimeclass_files_path}/stress"
+	[ "${container_engine}" == "docker" ] && restart_docker_service
+	sudo -E "${container_engine}" build . -t "${stress_image}"
+	popd
+
+	if [ "${stress_image_pull_policy}" == "Always" ]; then
+		info "Store custom stress image in registry"
+		sudo -E "${container_engine}" run -d -p ${registry_port}:5000 --restart=always --name "${registry_name}" "${registry_image}"
+		# wait for registry container
+		waitForProcess 15 3 "curl http://localhost:${registry_port}"
+		sudo -E "${container_engine}" push "${stress_image}"
+	fi
+}
+
 cri_runtime="${CRI_RUNTIME:-crio}"
 kubernetes_version=$(get_version "externals.kubernetes.version")
 
@@ -70,19 +97,8 @@ esac
 # Check no there are no kata processes from previous tests.
 check_processes
 
-echo "Build custom stress image"
-registry_image="docker.io/library/registry:2"
-arch=$("${SCRIPT_PATH}/../../.ci/kata-arch.sh")
-if [[ "${arch}" == "ppc64le" || "${arch}" == "s390x" ]]; then
-	# that image is not built for these architectures
-	registry_image="docker.io/ibmcom/registry:2.6.2.5"
-fi
-
-runtimeclass_files_path="${SCRIPT_PATH}/runtimeclass_workloads"
-pushd "${runtimeclass_files_path}/stress"
-[ "${container_engine}" == "docker" ] && sudo -E systemctl restart docker
-sudo -E "${container_engine}" build . -t "${stress_image}"
-popd
+# Build and store custom stress image
+build_custom_stress_image
 
 # Remove existing CNI configurations:
 cni_config_dir="/etc/cni"
@@ -113,14 +129,6 @@ for i in $(seq ${max_cri_socket_check}); do
 done
 
 sudo systemctl status "${cri_runtime}" --no-pager
-
-if [ "${stress_image_pull_policy}" == "Always" ]; then
-	echo "Store custom stress image in registry"
-	sudo -E "${container_engine}" run -d -p ${registry_port}:5000 --name "${registry_name}" "${registry_image}"
-	# wait for registry container
-	waitForProcess 15 3 "curl http://localhost:${registry_port}"
-	sudo -E "${container_engine}" push "${stress_image}"
-fi
 
 echo "Init cluster using ${cri_runtime_socket}"
 kubeadm_config_template="${SCRIPT_PATH}/kubeadm/config.yaml"

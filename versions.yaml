@@ -35,6 +35,16 @@ docker_images:
     url: "https://hub.docker.com/_/nginx/"
     version: "1.15-alpine"
 
+  registry:
+    description: "Registry component for x86_64 and ARM"
+    registry_url: "registry"
+    version: "2"
+
+  registry_ibm:
+    description: "Registry component for s390x and ppc64le"
+    registry_url: "ibmcom/registry"
+    version: "2.6.2.5"
+
 container_images:
   description: "Images used for testing but not hosted on Docker hub"
 
