@@ -41,6 +41,8 @@ Vagrant.configure("2") do |config|
     lv.driver = "kvm"
     lv.cpus = "4"
     lv.memory = "8192"
+    # Domains on Libvirt will be created with the following prefix.
+    lv.default_prefix = "kata_containers_test-"
     if host_arch == "x86_64"
       lv.machine_type = "q35"
     end

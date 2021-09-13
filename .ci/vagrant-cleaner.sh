@@ -60,8 +60,9 @@ vagrant_destroy() {
 #   $1 - the VM name
 libvirt_cleanup() {
 	local vm="$1"
-	# TODO: find a way to discovery the domain prefix.
-	local prefix="tests_"
+	# Note: the prefix here should equal to the 'default_prefix'
+	# property in the Vagrantfile.
+	local prefix="kata_containers_test-"
 	local domain="${prefix}${vm}"
 	if ! virsh dominfo "$vm" &> /dev/null; then
 		echo "Domain '$domain' does not exist. Nothing to do."
