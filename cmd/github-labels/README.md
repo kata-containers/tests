@@ -30,7 +30,7 @@ repository (in order to generate the combined labels database) and the name of
 a file to write the combined database:
 
 ```sh
-$ ./github-labels.sh generate github.com/kata-containers/runtime /tmp/combined.yaml
+$ ./github-labels.sh generate github.com/kata-containers/kata-containers /tmp/combined.yaml
 ```
 
 This script validates the combined labels database by performing a number of

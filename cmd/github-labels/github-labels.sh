@@ -149,7 +149,7 @@ Examples:
 
   # Generate combined labels database for runtime repo and write to
   # specified file
-  \$ ${script_name} generate github.com/kata-containers/runtime /tmp/out.yaml
+  \$ ${script_name} generate github.com/kata-containers/kata-containers /tmp/out.yaml
 
 EOT
 }
