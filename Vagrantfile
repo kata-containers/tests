@@ -101,7 +101,6 @@ EOF
     # Fedora is required to reboot so that the change to cgroups v1
     # and kernel arguments make effect.
     fedora.vm.provision "shell", reboot: true, inline: <<-SHELL
-      sudo dnf install -y grubby
       # Set the kernel parameter to use cgroups v1.
       sudo grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
       # Set iommu's kernel parameters for vfio tests.
