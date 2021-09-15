@@ -167,12 +167,30 @@ clean_env()
 
 clean_env_ctr()
 {
-	check_containers=$(sudo ctr c list -q | wc -l)
-	if ((${check_containers})); then
-		sudo ctr tasks kill $(sudo ctr task list -q)
-		sudo ctr tasks rm -f $(sudo ctr task list -q)
-		sudo ctr c rm $(sudo ctr c list -q)
-	fi
+	local i=""
+	local containers=( $(sudo ctr c list -q) )
+	local count_running="${#containers[@]}"
+	local count_stopped=0
+	local time_out=10
+	local sleep_time=1
+	local tasks=""
+
+	[ "$count_running" -eq "0" ] && return 0
+
+	info "Wait until the containers gets removed"
+	for i in "${containers[@]}"; do
+		task="$(sudo ctr task ls | grep -E "\<${i}\>" | cut -f1 -d" " || true)"
+		[ -n "${task}" ] && sudo ctr task kill "${task}"
+	done
+
+	# do not stop if the command fails, it will be evaluated by waitForProcess
+	local cmd="[[ $(sudo ctr tasks list | grep -c "STOPPED") == "$count_running" ]]" || true
+
+	local res="ok"
+	waitForProcess "${time_out}" "${sleep_time}" "$cmd" || res="fail"
+	[ "$res" == "ok" ] || sudo systemctl restart containerd
+
+	sudo ctr containers delete ${containers[@]}
 }
 
 # Restarts a systemd service while ensuring the start-limit-burst is set to 0.
