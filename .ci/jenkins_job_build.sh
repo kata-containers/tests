@@ -196,4 +196,20 @@ else
 	"${ci_dir_name}/run.sh"
 fi
 
+test_snap_build() {
+	if [[ "${ID}" == "ubuntu" && "$(uname -m)" != "x86_64" ]]; then
+		echo "Test snap build"
+		sudo apt install -y snapcraft
+		pushd ${cidir}/../../kata-containers
+		sudo snapcraft -d snap --destructive-mode
+		# PREFIX is changed in snap build, change it back
+		PREFIX=
+		popd
+	else
+		echo "Skipping snap test because it is assumed to run elsewhere"
+	fi
+}
+
+test_snap_build
+
 popd
