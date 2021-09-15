@@ -179,8 +179,8 @@ clean_env_ctr()
 
 	info "Wait until the containers gets removed"
 	for i in "${containers[@]}"; do
-		tasks="$(sudo ctr task ls | grep $i || true)"
-		[ -n "$tasks" ] && sudo ctr tasks kill $tasks
+		task="$(sudo ctr task ls | grep -E "\<${i}\>" | cut -f1 -d" " || true)"
+		[ -n "${task}" ] && sudo ctr task kill "${task}"
 	done
 
 	# do not stop if the command fails, it will be evaluated by waitForProcess
