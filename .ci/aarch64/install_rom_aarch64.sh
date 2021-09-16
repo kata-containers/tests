@@ -49,7 +49,7 @@ build_uefi()
 
 	mkdir toolchain
 	pushd toolchain/
-	curl -LO "${TOOLCHAIN_SOURCE_URL}" && tar -xf "${TOOLCHAIN_ARCHIVE}"
+	curl -kLO "${TOOLCHAIN_SOURCE_URL}" && tar -xf "${TOOLCHAIN_ARCHIVE}"
 	popd
 
 	make -C acpica/
