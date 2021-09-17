@@ -97,7 +97,7 @@ EOF
   SHELL
 
   config.vm.define "fedora", autostart: false do |fedora|
-    fedora.vm.box = "fedora/32-cloud-base"
+    fedora.vm.box = "generic/fedora32"
     # Fedora is required to reboot so that the change to cgroups v1
     # and kernel arguments make effect.
     fedora.vm.provision "shell", reboot: true, inline: <<-SHELL
