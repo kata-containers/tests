@@ -771,7 +771,6 @@ setup()
 		"$cargo" \
 		"$kata_repo_dir"
 
-	cargo --version || "${SCRIPT_PATH}/../.ci/install_rust.sh"
 	local file="${cargo}/env"
 	[ -e "$file" ] && source "$file"
 
@@ -991,9 +990,7 @@ run_agent_ctl()
 	# Note that we don't use the same logic for checking the control tool
 	# since that uses a different build profile compared to the agent.
 	command -v "$agent_ctl_binary_name" &>/dev/null || \
-		(cd "$agent_ctl_dir" && \
-			sudo chown -R "${USER}:" "${kata_repo_dir}" && \
-			cargo install --path .)
+		(cd "$agent_ctl_dir" && cargo install --path .)
 
 	local agent_ctl_path
 	agent_ctl_path=$(command -v "$agent_ctl_binary_name" || true)
