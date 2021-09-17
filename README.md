@@ -253,6 +253,8 @@ test selection depends on which type of test framework the test is written
 with. Most of the Kata Containers test suites are written
 using [Bats](https://github.com/sstephenson/bats) files.
 
+dummy change. Do not merge
+
 #### Running Bats based tests
 
 The Bats based tests are shell scripts, starting with the line:
