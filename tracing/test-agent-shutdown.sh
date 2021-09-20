@@ -760,7 +760,7 @@ setup()
 		exit 0
 	fi
 
-	[ "${METRICS_CI:-}" = "true" ] && {
+	[ "${CI_JOB:-}" = "METRICS" ] && {
 		info "Exiting as not running on metrics CI"
 		exit 0
 	}
