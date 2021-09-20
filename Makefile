@@ -148,7 +148,7 @@ agent-shutdown:
 
 # Tracing requires the agent to shutdown cleanly,
 # so run the shutdown test first.
-tracing: agent-shutdown
+tracing:
 	bash tracing/tracing-test.sh
 
 vcpus:
