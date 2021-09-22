@@ -143,6 +143,9 @@ log-parser:
 pentest:
 	bash -f pentest/all.sh
 
+qat:
+	bash -f integration/qat/qat_test.sh
+
 agent-shutdown:
 	bash tracing/test-agent-shutdown.sh
 
@@ -195,6 +198,7 @@ help:
 	list-install-targets \
 	log-parser \
 	pentest \
+	qat \
 	sandbox-cgroup \
 	test \
 	tracing \

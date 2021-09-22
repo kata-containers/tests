@@ -89,6 +89,13 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="qemu"
 	export KUBERNETES="yes"
 	;;
+"BAREMETAL-QAT")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="qemu"
+	export KUBERNETES="no"
+	;;
 "CRI_CONTAINERD"|"CRI_CONTAINERD_K8S")
 	# This job only tests containerd + k8s
 	init_ci_flags
