@@ -27,11 +27,7 @@ build_and_install_qemu() {
         [ -d "ui/keycodemapdb" ] || git clone  https://github.com/qemu/keycodemapdb.git --depth 1 ui/keycodemapdb
 
         # Apply required patches
-        QEMU_PATCHES_PATH="${PACKAGING_DIR}/qemu/patches/5.1.x"
-        for patch in ${QEMU_PATCHES_PATH}/*.patch; do
-                echo "Applying patch: $patch"
-                patch -p1 <"$patch"
-        done
+	${PACKAGING_DIR}/scripts/patch_qemu.sh ${CURRENT_QEMU_VERSION} ${PACKAGING_DIR}/qemu/patches
 
         echo "Build Qemu"
         "${QEMU_CONFIG_SCRIPT}" "qemu" | xargs ./configure
