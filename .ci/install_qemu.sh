@@ -150,7 +150,9 @@ main() {
 					die "Failed to calculate SHA-256 for QEMU"
 				cached_sha256sum="$(echo $latest | awk '{print $2}')"
 				if [ "$current_sha256sum" == "$cached_sha256sum" ]; then
-					install_cached_qemu
+					# If installing cached QEMU fails,
+					# then build and install it from sources.
+					install_cached_qemu || build_and_install_static_qemu
 				else
 					warn "Mismatch of cached ($cached_sha256sum) and expected ($current_sha256sum) versions"
 					build_and_install_static_qemu
