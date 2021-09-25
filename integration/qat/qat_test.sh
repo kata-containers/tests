@@ -116,10 +116,10 @@ run_test() {
 
 	sudo sed -i -e 's/^kernel_params =.*/kernel_params = "modules-load=usdm_drv,qat_c62xvf"/g' ${config_file}
 
-	sudo ctr run --runtime ${CTR_RUNTIME} --privileged -d -t --rm --device=/dev/vfio/${vfio_dev} \
+	sudo ctr run --runtime ${CTR_RUNTIME} --privileged -d --rm --device=/dev/vfio/${vfio_dev} \
 		 --mount type=bind,src=/dev,dst=/dev,options=rbind:rw \
 		 --mount type=bind,src=${qat_conf_dir}/c6xxvf_dev0.conf,dst=/etc/c6xxvf_dev0.conf,options=rbind:rw \
-		 ${docker_ssl_img} qat /bin/bash
+		 ${docker_ssl_img} qat sh -c "tail -f /dev/null"
 
 	sudo ctr t exec --exec-id 2 qat cat /proc/modules | grep intel_qat
 	sudo ctr t exec --exec-id 2 qat adf_ctl restart 2>/dev/null || true
