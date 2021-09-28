@@ -29,6 +29,9 @@ if ! bash ./init.sh; then
 	bash ./init.sh
 fi
 crictl --version
-kubectl get runtimeclass
-kubectl apply -f "runtimeclass_workloads/kata-runtimeclass.yaml"
+if ! kubectl get -f "runtimeclass_workloads/kata-runtimeclass.yaml" \
+	&>/dev/null; then
+	info "Install the kata runtimeClass"
+	kubectl create -f "runtimeclass_workloads/kata-runtimeclass.yaml"
+fi
 kubectl get pods --all-namespaces
