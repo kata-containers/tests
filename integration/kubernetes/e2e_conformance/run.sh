@@ -163,10 +163,12 @@ cleanup() {
 		fi
 	fi
 	{
-		info "View sonobuoy status"
-		sonobuoy status
-		# Remove sonobuoy execution pods
-		sonobuoy delete
+		if command -v sonobuoy &>/dev/null; then
+			info "View sonobuoy status"
+			sonobuoy status
+			# Remove sonobuoy execution pods
+			sonobuoy delete
+		fi
 	} || true
 }
 
