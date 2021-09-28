@@ -304,7 +304,7 @@ kill_tmux_sessions()
 		"$KATA_TMUX_LOCAL_SESSION" \
 		"$KATA_TMUX_VM_SESSION"
 		do
-			tmux kill-session -t "$session" &>/dev/null || true
+			sudo tmux kill-session -t "$session" &>/dev/null || true
 	done
 
 	true
@@ -544,7 +544,7 @@ connect_to_vsock_debug_console()
 	local port=$(echo "$suffix"|cut -d: -f2)
 
 	run_cmd \
-		"tmux new-session \
+		"sudo tmux new-session \
 		-d \
 		-s \"$KATA_TMUX_CONSOLE_SESSION\" \
 		\"socat \
@@ -856,7 +856,7 @@ start_local_agent()
 	# Note: it's imperative that we capture stderr to the log file
 	# as the agent writes the shutdown message to this stream!
 	run_cmd \
-		"tmux new-session \
+		"sudo tmux new-session \
 		-d \
 		-s \"$KATA_TMUX_LOCAL_SESSION\" \
 		\"sudo \
@@ -944,7 +944,7 @@ start_agent_in_kata_vm()
 	local cmd='tail -f /dev/null'
 
 	run_cmd \
-		"tmux new-session \
+		"sudo tmux new-session \
 		-d \
 		-s \"$KATA_TMUX_VM_SESSION\" \
 		\"sudo ctr run \
@@ -1068,7 +1068,7 @@ get_agent_vsock_address()
 {
 	local addresses
 
-	addresses=$(ss -Hp --vsock |\
+	addresses=$(sudo ss -Hp --vsock |\
 		egrep -v "\<socat\>" |\
 		awk '$2 ~ /^ESTAB$/ {print $6}' |\
 		grep ":${EXPECTED_VSOCK_PORT}$")
@@ -1268,7 +1268,7 @@ run_trace_forwarder()
 		(cd "$forwarder_dir" && cargo install --path .)
 
 	run_cmd \
-		"tmux new-session \
+		"sudo tmux new-session \
 		-d \
 		-s \"$KATA_TMUX_FORWARDER_SESSION\" \
 		\"$forwarder_binary_name --dump-only -l trace\""
@@ -1331,7 +1331,7 @@ get_vm_pid()
 
 check_vm_stopped()
 {
-	tmux list-sessions |\
+	sudo tmux list-sessions |\
 		grep -q "^${KATA_TMUX_VM_SESSION}:" \
 		&& return 1
 
