@@ -26,12 +26,13 @@ setup() {
 
 cleanup() {
 	sudo sed -i -e 's/^.*\(rootless\)/# \1/g' /usr/share/defaults/kata-containers/configuration.toml
+	sudo crictl stopp $(sudo crictl pods -q) || true
+	sudo crictl rmp $(sudo crictl pods -q) || true
 }
 
 run() {
 	sudo crictl runp -r kata "${dir_path}/rootless-pod.json"
-	sudo crictl stopp $(sudo crictl pods -q)
-	sudo crictl rmp $(sudo crictl pods -q)
+	waitForProcess 15 3 "sudo crictl inspectp $(sudo crictl pods -q) | jq '.status.state' | grep 'SANDBOX_READY'"
 }
 
 main() {
