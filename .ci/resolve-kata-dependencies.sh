@@ -99,10 +99,10 @@ clone_repos() {
 			git merge "origin/${branch}"
 			# And show what we merged on top of to aid debugging
 			git log --oneline "origin/${branch}~1..HEAD"
-		else
+		elif [ -n "${branch}" ]
+		then
 			echo "Checking out to ${branch}"
-			#TODO: remove next commented lines
-			#git fetch origin && git checkout "$branch"
+			git fetch origin && git checkout "$branch"
 		fi
 		popd
 	done
