@@ -19,11 +19,46 @@ source /etc/os-release
 
 source "${cidir}/lib.sh"
 
-[ -z "$1" ] && die "Usage: $0 path/to/install/dir"
+usage() {
+	cat <<-EOF
+	Usage: $0 path/to/install/dir
+
+	This script is used by the CI job on OpenShift CI to build and install
+	Kata Containers in a given directory.
+
+	Environment variables:
+
+	- Use SANDBOXED_CONTAINERS_CONF="yes" to configure like the OpenShift
+	  Sandboxed Containers.
+	EOF
+}
+
+if [ -z "$1" ]; then
+	usage
+	die "$0: missing parameter"
+fi
+
 export DESTDIR="$1"
 info "Build and install Kata Containers at ${DESTDIR}"
 
 [ "$(id -u)" -ne 0 ] && die "$0 must be executed by privileged user"
+
+# This applies a set of build configurations akin to OpenShift
+# Sandboxed Containers.
+#
+# The following environment variables have the origin on the Fedora rawhide
+# specfile [*].
+#
+# [*] https://src.fedoraproject.org/rpms/kata-containers/blob/rawhide/f/kata-containers.spec
+sandboxed_containers_build_configs() {
+	export KERNELTYPE="compressed"
+	export DEFSHAREDFS="virtio-fs"
+	export DEFVIRTIOFSCACHESIZE=0
+	export DEFSANDBOXCGROUPONLY=true
+	export MACHINETYPE="q35"
+	export FEATURE_SELINUX="yes"
+	export DEFENABLEANNOTATIONS=['\".*\"']
+}
 
 # Let the scripts know it is in CI context.
 export OPENSHIFT_CI="true"
@@ -75,6 +110,10 @@ export PREFIX="/opt/kata"
 unset VERSION
 "${cidir}/install_kata_image.sh"
 
+if [ "${SANDBOXED_CONTAINERS_CONF:-no}" == "yes" ]; then
+	info "Apply build configurations akin to Openshift Sandboxed Containers"
+	sandboxed_containers_build_configs
+fi
 "${cidir}/install_runtime.sh"
 
 # The resulting kata installation will be merged in rhcos filesystem, and
