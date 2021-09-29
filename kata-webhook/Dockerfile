@@ -5,8 +5,8 @@ FROM golang:latest AS builder
 
 WORKDIR /go/src/kata-pod-annotate
 
-COPY ../vendor ./
-COPY . ./
+COPY vendor/ ./vendor
+COPY kata-webhook/* ./
 RUN CGO_ENABLED=0 go build -o /go/bin/kata-pod-annotate
 
 FROM alpine:latest
