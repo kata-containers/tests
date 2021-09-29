@@ -128,11 +128,10 @@ fi
 "${GOPATH}/src/${tests_repo}/.ci/resolve-kata-dependencies.sh"
 
 # Run the static analysis tools
-if [ -z "${METRICS_CI}" ]; then
-	# We also run static checks on travis for x86 and ppc64le,
-	# so run them on jenkins only on architectures that travis
-	# do not support.
-	if [ "$arch" = "s390x" ] || [ "$arch" = "aarch64" ]; then
+if [ "${METRICS_CI}" = "false" ]; then
+	# We run static checks on GitHub Actions for x86_64, 
+	# hence run them on Jenkins for non-x86_64 only.	
+	if [ "$arch" != "x86_64" ]; then
 		specific_branch=""
 		# If not a PR, we are testing on stable or master branch.
 		[ -z "$pr_number" ] && specific_branch="true"
