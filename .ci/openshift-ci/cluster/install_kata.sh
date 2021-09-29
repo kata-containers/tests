@@ -158,7 +158,7 @@ wait_for_reboot
 # Add a runtime class for kata
 info "Adding the kata runtime class"
 oc apply -f ${deployments_dir}/runtimeclass_kata.yaml
-oc get runtimeclass/kata || die "kata runtime class not found"
+oc get -f ${deployments_dir}/runtimeclass_kata.yaml || die "kata runtime class not found"
 
 # Set SELinux to permissive mode
 if [ ${SELINUX_PERMISSIVE} == "yes" ]; then

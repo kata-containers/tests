@@ -7,13 +7,21 @@
 # This script builds the kata-webhook and deploys it in the test cluster.
 #
 # You should export the KATA_RUNTIME variable with the runtimeclass name
-# configured in your cluster in case it is not the default "kata".
+# configured in your cluster in case it is not the default "kata-ci".
 #
 set -e
+set -o nounset
+set -o pipefail
 
 script_dir="$(dirname $0)"
 webhook_dir="${script_dir}/../../../kata-webhook"
 source "${script_dir}/../../lib.sh"
+KATA_RUNTIME=${KATA_RUNTIME:-kata-ci}
+
+info "Creates the kata-webhook ConfigMap"
+RUNTIME_CLASS="${KATA_RUNTIME}" \
+	envsubst < "${script_dir}/deployments/configmap_kata-webhook.yaml.in" \
+	| oc apply -f -
 
 pushd "${webhook_dir}" >/dev/null
 # Build and deploy the webhook
@@ -23,5 +31,5 @@ info "Builds the kata-webhook"
 info "Deploys the kata-webhook"
 oc apply -f deploy/
 # Check the webhook was deployed and is working.
-./webhook-check.sh
+RUNTIME_CLASS="${KATA_RUNTIME}" ./webhook-check.sh
 popd >/dev/null
