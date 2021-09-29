@@ -163,11 +163,18 @@ cleanup() {
 		fi
 	fi
 	{
-		info "View sonobuoy status"
-		sonobuoy status
-		# Remove sonobuoy execution pods
-		sonobuoy delete
+		if command -v sonobuoy &>/dev/null; then
+			info "View sonobuoy status"
+			sonobuoy status
+			# Remove sonobuoy execution pods
+			sonobuoy delete
+		fi
 	} || true
+
+	# Revert the changes applied by the integration/kubernetes/init.sh
+	# script when it was called in our setup.sh.
+	info "Clean up the environment"
+	bash -c "$(readlink -f ${SCRIPT_PATH}/../cleanup_env.sh)" || true
 }
 
 trap "{ cleanup; }" EXIT
