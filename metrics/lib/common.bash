@@ -29,6 +29,13 @@ KSM_PAGES_SHARED="${KSM_BASE}/pages_shared"
 KSM_AGGRESIVE_PAGES=1000
 KSM_AGGRESIVE_SLEEP=50
 
+declare -A registries
+registries[ubuntu]=\
+"docker.io/library
+public.ecr.aws/lts
+mirror.gcr.io/library
+quay.io/libpod"
+
 # If we fail for any reason, exit through here and we should log that to the correct
 # place and return the correct code to halt the run
 die(){
@@ -83,6 +90,22 @@ check_images()
 	done
 }
 
+generate_build_dockerfile() {
+	local dockerfile="$1"
+	local image="$2"
+	local map_key="$3"
+	local text_to_replace="$4"
+	local regs=(${registries["${map_key}"]})
+	for r in ${regs[@]}; do
+		sed 's|'${text_to_replace}'|'${r}'|g' \
+			"${dockerfile}.in" > "${dockerfile}"
+		if ${DOCKER_EXE} build --label "$image" --tag "${image}" -f "$dockerfile" "$dockerfile_dir"; then
+			return 0
+		fi
+	done
+	return 1
+}
+
 # This function performs a build on the image names
 # passed in, to ensure that we have the latest changes from
 # the dockerfiles
@@ -92,10 +115,16 @@ build_dockerfile_image()
 	local dockerfile_path="$2"
 	local dockerfile_dir=${2%/*}
 
-	echo "docker building $image"
-	if ! ${DOCKER_EXE} build --label "$image" --tag "${image}" -f "$dockerfile_path" "$dockerfile_dir"; then
-		die "Failed to docker build image $image"
+	if [ -f "$dockerfile_path" ]; then
+		echo "docker building $image"
+		if ! ${DOCKER_EXE} build --label "$image" --tag "${image}" -f "$dockerfile_path" "$dockerfile_dir"; then
+			die "Failed to docker build image $image"
+		fi
+		return 0
 	fi
+
+	generate_build_dockerfile "${dockerfile_path}" "${image}" "ubuntu" "@UBUNTU_REGISTRY@" \
+		|| die "Failed to docker build image $image"
 }
 
 # This function removes the ctr image, builds a new one using a dockerfile
