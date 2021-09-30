@@ -14,6 +14,7 @@ cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 rust_agent_repo=${katacontainers_repo:="github.com/kata-containers/kata-containers"}
 arch=$("${cidir}"/kata-arch.sh -d)
+go_arch=$("${cidir}"/kata-arch.sh -g)
 PREFIX="${PREFIX:-/usr}"
 DESTDIR="${DESTDIR:-/}"
 image_path="${DESTDIR}${image_path:-${PREFIX}/share/kata-containers}"
@@ -43,27 +44,33 @@ build_rust_image() {
 	info "Building ${target_image} with AGENT_INIT=${AGENT_INIT}"
 	case "$build_method" in
 		"distro")
-			if [ ${CCV0} == "yes"]; then
-				# CCv0 is using skopeo and gpg packages and we've added a few more for debugging. The default distro of ubuntu is really back level, so some are missing there, so use fedora
-				# We also need to split the rootfs create and image build so we can add umoci to the rootfs directly
-				distro=fedora
-				EXTRA_PKGS="skopeo gnupg gpgme-devel vim iputils net-tools iproute"
-				sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" EXTRA_PKGS="${EXTRA_PKGS}" \
+			if [[ ! "${osbuild_docker:-}" =~ ^(0|false|no)$ ]]; then
+				use_docker="${osbuild_docker:-}"
+				[[ -z "${USE_PODMAN:-}" ]] && use_docker="${use_docker:-1}"
+			fi
+			distro="${osbuilder_distro:-ubuntu}"
+			if [ ${CCV0} == "yes" ]; then
+				# CCv0 needs some extra packages for debug and dealing with network and signatures
+				EXTRA_PKGS="ca-certificates vim iputils-ping net-tools gnupg libgpgme-dev"
+				sudo -E OS_VERSION="${OS_VERSION:-}" USE_DOCKER="${use_docker:-}" DISTRO="${distro}" EXTRA_PKGS="${EXTRA_PKGS}" \
 					make -e "rootfs"
-				rootfs_target="$(shell pwd)/$(DISTRO)_rootfs"
-				# CCv0 is using umoci which isn't in a fedora package we can access yet, so grabbing from their webstire
-				go_arch=$("${cidir}"/kata-arch.sh -g)
-				mkdir -p ${rootfs_target}/usr/local/bin/
+				rootfs_target="$(pwd)/${distro}_rootfs"
+				
+				# CCv0 is using umoci which isn't in a ubuntu package we can access yet, so grabbing from their website
+				sudo mkdir -p ${rootfs_target}/usr/local/bin/
 				sudo curl -Lo ${rootfs_target}/usr/local/bin/umoci https://github.com/opencontainers/umoci/releases/download/v0.4.7/umoci.${go_arch}
 				sudo chmod u+x ${rootfs_target}/usr/local/bin/umoci
+
+				# CCv0 is using skopeo which isn't available as a ubuntu repo until 20.10+, so building ourselves
+				git clone --branch release-1.4 https://github.com/containers/skopeo "${GOPATH}/src/github.com/containers/skopeo"
+				pushd "${GOPATH}/src/github.com/containers/skopeo"
+				make bin/skopeo
+				popd
+				sudo cp "${GOPATH}/src/github.com/containers/skopeo/bin/skopeo" "${rootfs_target}/usr/bin/skopeo"
+
 				sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" \
 					make -e "image"
 			else
-				distro="${osbuilder_distro:-ubuntu}"
-				if [[ ! "${osbuild_docker:-}" =~ ^(0|false|no)$ ]]; then
-					use_docker="${osbuild_docker:-}"
-					[[ -z "${USE_PODMAN:-}" ]] && use_docker="${use_docker:-1}"
-				fi
 				sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" EXTRA_PKGS="${EXTRA_PKGS}" \
 					make -e "${target_image}"
 			fi

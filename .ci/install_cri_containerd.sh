@@ -29,7 +29,7 @@ cri_containerd_tarball_version=$(get_version "externals.cri-containerd.version")
 cri_containerd_repo=$(get_version "externals.cri-containerd.url")
 
 cri_containerd_version=${cri_containerd_tarball_version#v}
-cri_containerd_pr="5911" # TODO - put in version.yaml and pull dynamically $(get_version "externals.cri-containerd.pr_id")
+cri_containerd_pr=$(get_version "externals.cri-containerd.pr_id")
 
 echo "Set up environment"
 if [ "$ID" == centos ] || [ "$ID" == rhel ] || [ "$ID" == sles ]; then
