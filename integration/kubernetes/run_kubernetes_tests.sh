@@ -36,6 +36,8 @@ K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-memory.bats" \
 	"k8s-number-cpus.bats" \
 	"k8s-oom.bats" \
+	"k8s-optional-empty-configmap.bats" \
+	"k8s-optional-empty-secret.bats" \
 	"k8s-parallel.bats" \
 	"k8s-pid-ns.bats" \
 	"k8s-pod-quota.bats" \
