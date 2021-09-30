@@ -28,7 +28,7 @@ CONTAINERD_ARCH=$(go env GOARCH)
 containerd_tarball_version=$(get_version "externals.containerd.version")
 
 containerd_version=${containerd_tarball_version#v}
-containerd_pr="5911" # TODO - put in version.yaml and pull dynamically $(get_version "externals.cri-containerd.pr_id")
+containerd_pr=$(get_version "externals.cri-containerd.pr_id")
 
 echo "Set up environment"
 if [ "$ID" == centos ] || [ "$ID" == rhel ] || [ "$ID" == sles ]; then
@@ -59,8 +59,8 @@ install_from_pr() {
 		git checkout "PR_BRANCH"
 		make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
 		# SH: The PR containerd version might not match the version.yaml one, so get from build
-		cri_containerd_version=$(_output/cri/bin/containerd --version | awk '{ print substr($3,2); }')
-		tarball_name="cri-containerd-cni-${cri_containerd_version}-${CONTAINERD_OS}-${CONTAINERD_ARCH}.tar.gz"
+		containerd_version=$(_output/cri/bin/containerd --version | awk '{ print substr($3,2); }')
+		tarball_name="cri-containerd-cni-${containerd_version}-${CONTAINERD_OS}-${CONTAINERD_ARCH}.tar.gz"
 		echo "Tarball name is : '${tarball_name}'"
 		sudo tar -xvf "./releases/${tarball_name}" -C /
 		# Clean up PR_BRANCH
