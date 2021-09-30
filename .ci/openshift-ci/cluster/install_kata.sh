@@ -18,6 +18,11 @@ source ${scripts_dir}/../../lib.sh
 #
 SELINUX_PERMISSIVE=${SELINUX_PERMISSIVE:-no}
 
+# Set to 'yes' if you want to configure Kata Containers to use the system's
+# QEMU (from the RHCOS extension).
+#
+KATA_WITH_SYSTEM_QEMU=${KATA_WITH_SYSTEM_QEMU:-no}
+
 # The daemonset name.
 #
 export DAEMONSET_NAME="kata-deploy"
@@ -66,6 +71,52 @@ wait_for_reboot() {
 	done
 }
 
+wait_mcp_update() {
+	local delta="${1:-900}"
+	local sleep_time=30
+	# The machineconfigpool is fine when all the workers updated and are ready,
+	# and none are degraded.
+	local ready_count=0
+	local degraded_count=0
+	local machine_count=$(oc get mcp worker -o jsonpath='{.status.machineCount}')
+
+	if [[ -z "$machine_count" && "$machine_count" -lt 1 ]]; then
+		warn "Unabled to obtain the machine count"
+		return 1
+	fi
+
+	echo "Set timeout to $delta seconds"
+	local deadline=$(($(date +%s) + $delta))
+	# The ready count might not have changed yet, so wait a little.
+	while [[ "$ready_count" != "$machine_count" && \
+		"$degraded_count" == 0 ]]; do
+		# Let's check it hit the timeout (or not).
+		local now=$(date +%s)
+		if [ $deadline -lt $now ]; then
+			echo "Timeout: not all workers updated" >&2
+			return 1
+		fi
+		sleep $sleep_time
+		ready_count=$(oc get mcp worker \
+			-o jsonpath='{.status.readyMachineCount}')
+		degraded_count=$(oc get mcp worker \
+			-o jsonpath='{.status.degradedMachineCount}')
+		echo "check machineconfigpool - ready_count: $ready_count degraded_count: $degraded_count"
+	done
+	[ $degraded_count -eq 0 ]
+}
+
+# Enable the RHCOS extension for the Sandboxed Containers.
+#
+enable_sandboxedcontainers_extension() {
+	info "Enabling the RHCOS extension for Sandboxed Containers"
+	local deployment_file="${deployments_dir}/machineconfig_sandboxedcontainers_extension.yaml"
+	oc apply -f ${deployment_file}
+	oc get -f ${deployment_file} || \
+		die "Sandboxed Containers extension machineconfig not found"
+	wait_mcp_update || die "Failed to update the machineconfigpool"
+}
+
 # Print useful information for debugging.
 #
 # Params:
@@ -91,6 +142,14 @@ for node in $worker_nodes; do
 		kata-install-daemon.v1.openshift.com/state=installing
 	oc label --overwrite node $node "${DAEMONSET_LABEL}=true"
 done
+
+if [ "${KATA_WITH_SYSTEM_QEMU}" == "yes" ]; then
+	# QEMU is deployed on the workers via RCHOS extension.
+	enable_sandboxedcontainers_extension
+	# Export additional information for the installer to deal with
+	# the QEMU path, for example.
+	oc apply -f ${deployments_dir}/configmap_installer_qemu.yaml
+fi
 
 info "Applying the Kata Containers installer daemonset"
 if [ -z "$KATA_INSTALLER_IMG" ]; then

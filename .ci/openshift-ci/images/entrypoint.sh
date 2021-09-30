@@ -16,6 +16,9 @@ SRC="${PWD}/_out/build_install"
 # Expect the host filesystem to be mounted in following path.
 HOST_MOUNT=/host
 
+# Overwrite the default QEMU path on configuration.toml
+QEMU_PATH=${QEMU_PATH:-}
+
 function terminate()
 {
 	# Sending a termination message. Can be used by an orchestrator that
@@ -32,10 +35,26 @@ function terminate()
 	tail -f /dev/null
 }
 
+# Set the QEMU path on configuration.toml to $QEMU_PATH, also update
+# virtiofsd's path.
+function update_qemu_path()
+{
+	local toml="${SRC}/opt/kata/share/defaults/kata-containers/configuration.toml"
+	# Make a copy of the original file, it can help with debugging.
+	cp -f "$toml" "${toml}.orig"
+	sed -i 's#/opt/kata/bin/qemu-system-x86_64#'${QEMU_PATH}'#g' "$toml"
+	# Assume virtiofsd is located at same directory of QEMU.
+	local virtiofsd_path="$(dirname $QEMU_PATH)/virtiofsd"
+	sed -i 's#/opt/kata/libexec/kata-qemu/virtiofsd#'$virtiofsd_path'#g' \
+		"$toml"
+}
+
 if [ "$(id -u)" -ne 0 ]; then
 	echo "ERROR: $0 must be executed by privileged user"
 	terminate
 fi
+
+[ -n "$QEMU_PATH" ] && update_qemu_path
 
 # Some files are copied over /usr which on Red Hat CoreOS (rhcos) is mounted
 # read-only by default. So re-mount it as read-write, otherwise files won't
