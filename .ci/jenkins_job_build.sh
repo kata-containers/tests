@@ -132,6 +132,7 @@ if [ "${METRICS_CI}" = "false" ]; then
 	# We run static checks on GitHub Actions for x86_64, 
 	# hence run them on Jenkins for non-x86_64 only.	
 	if [ "$arch" != "x86_64" ]; then
+		"${ci_dir_name}/install_gcc.sh"
 		specific_branch=""
 		# If not a PR, we are testing on stable or master branch.
 		[ -z "$pr_number" ] && specific_branch="true"
