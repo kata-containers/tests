@@ -132,6 +132,9 @@ if [ "${METRICS_CI}" = "false" ]; then
 	# We run static checks on GitHub Actions for x86_64, 
 	# hence run them on Jenkins for non-x86_64 only.	
 	if [ "$arch" != "x86_64" ]; then
+		if [ "${kata_repo}" == "${katacontainers_repo}" ]; then
+			make -C src/runtime pkg/katautils/config-settings.go
+		fi
 		specific_branch=""
 		# If not a PR, we are testing on stable or master branch.
 		[ -z "$pr_number" ] && specific_branch="true"
