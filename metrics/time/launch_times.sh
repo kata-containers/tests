@@ -258,7 +258,7 @@ main() {
 	done
 	metrics_json_end_array "Results"
 	metrics_json_save
-	clean_env
+	clean_env_ctr
 }
 
 main "$@"
