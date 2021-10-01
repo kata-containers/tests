@@ -23,6 +23,10 @@ SELINUX_PERMISSIVE=${SELINUX_PERMISSIVE:-no}
 #
 KATA_WITH_SYSTEM_QEMU=${KATA_WITH_SYSTEM_QEMU:-no}
 
+# Set to 'yes' if you want to configure Kata Containers to use the host kernel.
+#
+KATA_WITH_HOST_KERNEL=${KATA_WITH_HOST_KERNEL:-no}
+
 # The daemonset name.
 #
 export DAEMONSET_NAME="kata-deploy"
@@ -149,6 +153,10 @@ if [ "${KATA_WITH_SYSTEM_QEMU}" == "yes" ]; then
 	# Export additional information for the installer to deal with
 	# the QEMU path, for example.
 	oc apply -f ${deployments_dir}/configmap_installer_qemu.yaml
+fi
+
+if [ "${KATA_WITH_HOST_KERNEL}" == "yes" ]; then
+	oc apply -f ${deployments_dir}/configmap_installer_kernel.yaml
 fi
 
 info "Applying the Kata Containers installer daemonset"

@@ -18,6 +18,8 @@ HOST_MOUNT=/host
 
 # Overwrite the default QEMU path on configuration.toml
 QEMU_PATH=${QEMU_PATH:-}
+# Overwrite the default Kernel path on configuration.toml
+USE_HOST_KERNEL=${USE_HOST_KERNEL:-no}
 
 function terminate()
 {
@@ -49,12 +51,22 @@ function update_qemu_path()
 		"$toml"
 }
 
+# Set the Kernel path on configuration.toml to the host's.
+#
+function update_kernel_path()
+{
+	local toml="${SRC}/opt/kata/share/defaults/kata-containers/configuration.toml"
+	local kernel_path="/lib/modules/$(uname -r)/vmlinuz"
+	sed -i 's#^kernel = ".*"#kernel = "'${kernel_path}'"#g' "$toml"
+}
+
 if [ "$(id -u)" -ne 0 ]; then
 	echo "ERROR: $0 must be executed by privileged user"
 	terminate
 fi
 
 [ -n "$QEMU_PATH" ] && update_qemu_path
+[ "$USE_HOST_KERNEL" == "yes" ] && update_kernel_path
 
 # Some files are copied over /usr which on Red Hat CoreOS (rhcos) is mounted
 # read-only by default. So re-mount it as read-write, otherwise files won't

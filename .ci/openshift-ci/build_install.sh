@@ -60,6 +60,37 @@ sandboxed_containers_build_configs() {
 	export DEFENABLEANNOTATIONS=['\".*\"']
 }
 
+# This ensures the guest image is built to work with the host Kernel akin to
+# OpenShift Sandboxed Containers.
+sandboxed_containers_image_configs() {
+	# It needs to overwrite some variables of
+	# kata-containers/tools/osbuilder/Makefile.
+	export DRACUT_KVERSION="$(get_test_version "openshift-ci.dracut_kernel.version")"
+	[ -n "$DRACUT_KVERSION" ] || \
+		die "Unabled to get the kernel version from versions.yaml"
+	export DRACUT_CONF_DIR=$(mktemp -d --tmpdir dracut.conf.d.XXXX)
+	yum install -y "kernel-modules-${DRACUT_KVERSION}"
+	# Unlike the kernel installed by the .ci/install_kata_kernel.sh script,
+	# the host kernel doesn't have the needed modules built static. Thus,
+	# we need to package them as loadable modules into the guest image.
+	cp -r "${kata_repo_dir}/tools/osbuilder/dracut/dracut.conf.d"/* \
+		"${DRACUT_CONF_DIR}"
+	cat <<-EOF >> "${DRACUT_CONF_DIR}/10-drivers.conf"
+	drivers+="irqbypass "
+	drivers+="vfio "
+	drivers+="vfio_iommu_type1 "
+	drivers+="vfio-pci "
+	drivers+="vfio_virqfd "
+	drivers+="virtio_blk "
+	drivers+="virtio_console "
+	drivers+="virtiofs "
+	drivers+="virtio_net "
+	drivers+="virtio_scsi "
+	drivers+="vmw_vsock_virtio_transport "
+	dracutmodules+=" bash rescue "
+	EOF
+}
+
 # Let the scripts know it is in CI context.
 export OPENSHIFT_CI="true"
 export CI="true"
@@ -105,15 +136,17 @@ export PREFIX="/opt/kata"
 
 "${cidir}/install_kata_kernel.sh"
 
+if [ "${SANDBOXED_CONTAINERS_CONF:-no}" == "yes" ]; then
+	info "Apply build configurations akin to Openshift Sandboxed Containers"
+	sandboxed_containers_build_configs
+	sandboxed_containers_image_configs
+fi
+
 # osbuilder's make define a VERSION variable which value might clash with
 # VERSION sourced from /etc/os-release.
 unset VERSION
 "${cidir}/install_kata_image.sh"
 
-if [ "${SANDBOXED_CONTAINERS_CONF:-no}" == "yes" ]; then
-	info "Apply build configurations akin to Openshift Sandboxed Containers"
-	sandboxed_containers_build_configs
-fi
 "${cidir}/install_runtime.sh"
 
 # The resulting kata installation will be merged in rhcos filesystem, and

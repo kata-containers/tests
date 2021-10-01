@@ -3,12 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Instruct the daemonset installer to configure Kata Containers to use the
-# system QEMU.
+# host kernel.
 #
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: ci.kata.installer.qemu
+  name: ci.kata.installer.kernel
 data:
-  qemu_path: /usr/libexec/qemu-kiwi
   host_kernel: "yes"
