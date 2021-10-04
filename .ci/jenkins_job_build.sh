@@ -169,6 +169,20 @@ popd
 
 "${ci_dir_name}/setup.sh"
 
+# Run unit tests on non x86_64
+# Unit tests on ARM, refer issue :https://github.com/kata-containers/kata-containers/issues/2809 
+if [[ "$arch" == "s390x" || "$arch" == "ppc64le" ]]; then
+	echo "Running unit tests"
+	cargo_env="$HOME/.cargo/env"
+	[ -e "${cargo_env}" ] || "${ci_dir_name}/install_rust.sh" && source "${cargo_env}"
+	pushd "${GOPATH}/src/${katacontainers_repo}"
+	sudo -E PATH=$PATH make test
+	popd
+else
+	echo "Skip running unit tests because it is assumed to run elsewhere"
+fi
+
+
 if [ "${CI_JOB}" == "VFIO" ]; then
 	pushd "${GOPATH}/src/${tests_repo}"
 	ci_dir_name=".ci"
