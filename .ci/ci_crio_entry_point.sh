@@ -1,5 +1,9 @@
 #!/bin/bash
 #
+# Copyright (c) 2021 Red Hat, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 # This script is called by our jenkins instances, triggered by PRs on cri-o.
 # It relies on the following environment variables being set:
 # REPO_OWNER    - owner of the source repository (default: cri-o)
@@ -13,9 +17,10 @@
 # curl -OL https://raw.githubusercontent.com/kata-containers/tests/main/.ci/ci_crio_entry_point.sh
 # bash ci_crio_entry_point.sh
 
-set -ex
-
-uname -a
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
 
 if [ -z "$PULL_NUMBER" ]; then
 	echo "ERROR: PULL_NUMBER missing"
@@ -37,9 +42,6 @@ export MINIMAL_CONTAINERD_K8S_E2E="true"
 export MINIMAL_K8S_E2E="true"
 export GO111MODULE=auto
 
-
-# Print env variables in case we need to debug
-env
 
 latest_release="1.21"
 
@@ -92,6 +94,10 @@ tests_repo_dir="${GOPATH}/src/${tests_repo}"
 kata_repo="${kata_github}/kata-containers"
 kata_repo_dir="${GOPATH}/src/${kata_repo}"
 
+# Print system info and env variables in case we need to debug
+uname -a
+env
+
 echo "This Job will test CRI-O changes using Kata Containers runtime."
 echo "Testing PR number ${pr_number}."
 
@@ -142,15 +148,6 @@ cd "${tests_repo_dir}"
 
 sudo -E PATH=$PATH make kubernetes
 sudo -E PATH=$PATH make kubernetes-e2e
-
-#cleanup
-## littlejawa: temporary fix: comment cleanup section - the kubernetes-e2e test seems to be cleaning up already, making the following calls to fail
-#sudo systemctl stop kubelet
-#PODLIST=`sudo crictl pods -q`
-#sudo crictl stopp $PODLIST
-#sudo crictl rmp $PODLIST
-#sudo systemctl stop crio
-#sudo nmcli dev delete cni0
 
 sudo dnf install -y parallel
 export TEST_CRIO=true
