@@ -14,7 +14,7 @@ export KATA_ETC_CONFIG_PATH="/etc/kata-containers/configuration.toml"
 export kata_repo=${katacontainers_repo:="github.com/kata-containers/kata-containers"}
 export kata_repo_dir="${GOPATH}/src/${kata_repo}"
 export kata_default_branch="${kata_default_branch:-main}"
-
+export CI_JOB="${CI_JOB:-}"
 
 # Name of systemd service for the throttler
 KATA_KSM_THROTTLER_JOB="kata-ksm-throttler"
@@ -324,30 +324,40 @@ cleanup_network_interface() {
 }
 
 gen_clean_arch() {
-	# Set up some vars
-	stale_process_union=( "docker-containerd-shim" )
-	#docker supports different storage driver, such like overlay2, aufs, etc.
-	docker_storage_driver=$(timeout ${KATA_DOCKER_TIMEOUT} docker info --format='{{.Driver}}')
-	stale_docker_mount_point_union=( "/var/lib/docker/containers" "/var/lib/docker/${docker_storage_driver}" )
-	stale_docker_dir_union=( "/var/lib/docker" )
-	stale_kata_dir_union=( "/var/lib/vc" "/run/vc" "/usr/share/kata-containers" "/usr/share/defaults/kata-containers" )
+	# For metrics CI we are removing unnecessary steps like
+	# removing packages, removing CRI-O, etc mainly because
+	# they do not exist on metrics CI
+	if [[ $CI_JOB != "METRICS" ]]; then
+		# Set up some vars
+		stale_process_union=( "docker-containerd-shim" )
+		#docker supports different storage driver, such like overlay2, aufs, etc.
+		docker_storage_driver=$(timeout ${KATA_DOCKER_TIMEOUT} docker info --format='{{.Driver}}')
+		stale_docker_mount_point_union=( "/var/lib/docker/containers" "/var/lib/docker/${docker_storage_driver}" )
+		stale_docker_dir_union=( "/var/lib/docker" )
+		stale_kata_dir_union=( "/var/lib/vc" "/run/vc" "/usr/share/kata-containers" "/usr/share/defaults/kata-containers" )
 
-	info "kill stale process"
-	kill_stale_process
-	if [ -z "${USE_PODMAN}" ]; then
-		info "delete stale docker resource under ${stale_docker_dir_union[@]}"
-		delete_stale_docker_resource
+		info "kill stale process"
+		kill_stale_process
+		if [ -z "${USE_PODMAN}" ]; then
+			info "delete stale docker resource under ${stale_docker_dir_union[@]}"
+			delete_stale_docker_resource
+		fi
 	fi
+
 	info "remove containers started by ctr"
 	clean_env_ctr
-	info "delete stale kata resource under ${stale_kata_dir_union[@]}"
-	delete_stale_kata_resource
-	info "Remove installed kata packages"
-	${GOPATH}/src/${tests_repo}/cmd/kata-manager/kata-manager.sh remove-packages
-	info "Remove installed cri-o related binaries and configuration"
-	delete_crio_stale_resource
-	info "Remove installed containerd-cri related binaries and configuration"
-	delete_containerd_cri_stale_resource
+
+	if [[ $CI_JOB != "METRICS" ]]; then
+		info "delete stale kata resource under ${stale_kata_dir_union[@]}"
+		delete_stale_kata_resource
+		info "Remove installed kata packages"
+		${GOPATH}/src/${tests_repo}/cmd/kata-manager/kata-manager.sh remove-packages
+		info "Remove installed cri-o related binaries and configuration"
+		delete_crio_stale_resource
+		info "Remove installed containerd-cri related binaries and configuration"
+		delete_containerd_cri_stale_resource
+	fi
+
 	#reset k8s service may impact metrics test on x86_64, so limit it to arm64
 	[ $(uname -m) == "aarch64" -a "$(pgrep kubelet)" != "" ] && sudo sh -c 'kubeadm reset -f'
 	info "Remove installed kubernetes packages and configuration"
@@ -365,8 +375,10 @@ gen_clean_arch() {
 	info "Clean up stale network interface"
 	cleanup_network_interface
 
-	info "Remove Kata package repo registrations"
-	delete_kata_repo_registrations
+	if [[ $CI_JOB != "METRICS" ]]; then
+		info "Remove Kata package repo registrations"
+		delete_kata_repo_registrations
+	fi
 
 	info "Clean GOCACHE"
 	if command -v go > /dev/null; then
