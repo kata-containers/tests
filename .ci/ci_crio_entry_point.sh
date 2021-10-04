@@ -1,11 +1,33 @@
 #!/bin/bash
+#
+# This script is called by our jenkins instances, triggered by PRs on cri-o.
+# It relies on the following environment variables being set:
+# REPO_OWNER    - owner of the source repository (default: cri-o)
+# REPO_NAME     - repository name (default: cri-o)
+# PULL_BASE_REF - name of the branch where the pull request is merged to (default: main)
+# PULL_NUMBER   - pull request number (REQUIRED)
+#
+# (see: http://jenkins.katacontainers.io/job/kata-containers-2-crio-PR/)
+#
+# Usage:
+# curl -OL https://raw.githubusercontent.com/kata-containers/tests/main/.ci/ci_crio_entry_point.sh
+# bash ci_crio_entry_point.sh
 
 set -ex
 
 uname -a
 
-# Export all environment variables needed.
+if [ -z "$PULL_NUMBER" ]; then
+	echo "ERROR: PULL_NUMBER missing"
+	exit 1
+fi
 
+# set defaults for required variables
+export REPO_OWNER=${REPO_OWNER:-"cri-o"}
+export REPO_NAME=${REPO_NAME:-"cri-o"}
+export PULL_BASE_REF=${PULL_BASE_REF:-"main"}
+
+# Export all environment variables needed.
 export CI="true"
 export CRIO="yes"
 export INSTALL_KATA="yes"
@@ -15,11 +37,6 @@ export MINIMAL_CONTAINERD_K8S_E2E="true"
 export MINIMAL_K8S_E2E="true"
 export GO111MODULE=auto
 
-
-export PULL_BASE_REF
-export PULL_NUMBER
-export REPO_NAME
-export REPO_OWNER
 
 # Print env variables in case we need to debug
 env
