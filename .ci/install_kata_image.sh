@@ -43,6 +43,7 @@ build_rust_image() {
 	case "$build_method" in
 		"distro")
 			distro="${osbuilder_distro:-fedora}"
+			OS_VERSION="34"
 			if [[ ! "${osbuild_docker:-}" =~ ^(0|false|no)$ ]]; then
 				use_docker="${osbuild_docker:-}"
 				[[ -z "${USE_PODMAN:-}" ]] && use_docker="${use_docker:-1}"
