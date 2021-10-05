@@ -48,7 +48,7 @@ build_rust_image() {
 				use_docker="${osbuild_docker:-}"
 				[[ -z "${USE_PODMAN:-}" ]] && use_docker="${use_docker:-1}"
 			fi
-			sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" \
+			sudo -E OS_VERSION="34" USE_DOCKER="${use_docker:-}" DISTRO="${distro}" \
 				make -e "${target_image}"
 			;;
 		"dracut")
