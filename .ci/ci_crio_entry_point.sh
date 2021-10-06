@@ -33,15 +33,9 @@ export REPO_NAME=${REPO_NAME:-"cri-o"}
 export PULL_BASE_REF=${PULL_BASE_REF:-"main"}
 
 # Export all environment variables needed.
-export CI="true"
-export CRIO="yes"
+export CI_JOB="EXTERNAL_CRIO"
 export INSTALL_KATA="yes"
-export KATA_HYPERVISOR="qemu"
-export KUBERNETES="yes"
-export MINIMAL_CONTAINERD_K8S_E2E="true"
-export MINIMAL_K8S_E2E="true"
 export GO111MODULE=auto
-
 
 latest_release="1.21"
 
@@ -104,6 +98,7 @@ echo "Testing PR number ${pr_number}."
 # Clone the tests repository
 mkdir -p $(dirname "${tests_repo_dir}")
 [ -d "${tests_repo_dir}" ] || git clone "https://${tests_repo}.git" "${tests_repo_dir}"
+source ${tests_repo_dir}/.ci/ci_job_flags.sh
 
 # Clone the kata-containers repository
 mkdir -p $(dirname "${kata_repo_dir}")
