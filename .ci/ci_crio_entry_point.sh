@@ -141,10 +141,7 @@ cd "${tests_repo_dir}"
 #echo "CRI-O Version to test:"
 #crio --version
 
-sudo -E PATH=$PATH make kubernetes
-sudo -E PATH=$PATH make kubernetes-e2e
-
+# required for cri-o integration tests (see .ci/test_crio.sh)
 sudo dnf install -y parallel
-export TEST_CRIO=true
-export JOBS=1
-sudo -E PATH=$PATH make crio 
+
+.ci/run.sh
