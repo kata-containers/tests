@@ -8,6 +8,19 @@
 # values set specifically for packet.com c1.small worker.
 
 [[metric]]
+name = "memory-footprint"
+type = "json"
+description = "measure container average footprint"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"memory-footprint\".Results | .[] | .average.Result"
+checktype = "mean"
+midval = 122481.45
+minpercent = 5.0
+maxpercent = 5.0
+
+[[metric]]
 name = "memory-footprint-inside-container"
 type = "json"
 description = "measure memory inside the container"

@@ -47,16 +47,18 @@ run() {
 			disable_ksm
 		fi
 
-		# Run the density tests - no KSM, so no need to wait for settle
-		# (so set a token 5s wait)
-		bash density/memory_usage.sh 20 5
-
 		# Run the time tests
 		bash time/launch_times.sh -i public.ecr.aws/ubuntu/ubuntu:latest -n 20
 	fi
 
-	# Run storage tests
 	restart_docker_service
+
+	# Run the density tests - no KSM, so no need to wait for settle
+	# (so set a token 5s wait)
+	disable_ksm
+	bash density/memory_usage.sh 20 5
+
+	# Run storage tests
 	bash storage/blogbench.sh
 
 	# Run the density test inside the container
