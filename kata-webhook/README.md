@@ -14,7 +14,7 @@ Kubernetes YAML files required to instantiate the admission
 controller.
 
 ```bash
-$ docker build -t quay.io/kata-containers/kata-webhook-example:latest -f Dockerfile ..
+$ docker build -t quay.io/kata-containers/kata-webhook-example:latest -f Dockerfile .
 ```
 
 > **Note:**
@@ -41,6 +41,13 @@ and sample admission controller we created by running the commands below:
 ```bash
 $ ./create_certs.sh
 $ kubectl apply -f deploy/
+```
+
+Afterwards you can run the `webhook-check.sh` script to check the webhook was
+deployed correctly and is working:
+
+```bash
+$ ./webhook-check.sh
 ```
 
 The webhook mutates pods to use the Kata runtime class for all pods except

@@ -20,7 +20,8 @@ spec:
     spec:
       containers:
         - name: pod-annotate-webhook
-          image: quay.io/kata-containers/kata-webhook-example:latest
+          # FIXME: https://github.com/kata-containers/tests/issues/4080
+          image: quay.io/wainersm/kata-webhook-api-v1:latest
           imagePullPolicy: Always
           env:
             - name: RUNTIME_CLASS
