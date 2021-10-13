@@ -104,11 +104,10 @@ install_docker(){
 		log_message "Installing docker"
 		pkg_name="docker-ce"
 		if [ "$ID" == "ubuntu" ]; then
-			sudo -E apt-get -y install apt-transport-https ca-certificates software-properties-common
+			sudo -E apt-get -y install apt-transport-https ca-certificates software-properties-common apt-utils
 			repo_url="https://download.docker.com/linux/ubuntu"
 			curl -fsSL "${repo_url}/gpg" | sudo apt-key add -
 			sudo -E add-apt-repository "deb [arch=${arch}] ${repo_url} $(lsb_release -cs) stable"
-			sudo -E apt-get update
 			sudo -E apt-get -y install "${pkg_name}"
 		elif [ "$ID" == "fedora" ]; then
 			repo_url="https://download.docker.com/linux/fedora/docker-ce.repo"
