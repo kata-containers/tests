@@ -27,6 +27,7 @@ GOPATH/AB
 GPG/AB
 GPU/AB
 gRPC/AB
+GSC/AB
 GVT/AB
 IOMMU/AB
 IoT/AB	# Internet of Things
