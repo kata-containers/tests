@@ -21,6 +21,7 @@ trap '${kubernetes_dir}/cleanup_env.sh' EXIT
 
 K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-block-volume.bats" \
+	"k8s-caps.bats" \
 	"k8s-configmap.bats" \
 	"k8s-copy-file.bats" \
 	"k8s-cpu-ns.bats" \
