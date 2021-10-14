@@ -178,6 +178,8 @@ install_docker(){
 		# If tag received is invalid, then return an error message
 		die "Unrecognized tag. Tag supported is: swarm"
 	fi
+	sudo systemctl daemon-reload
+	sudo systemctl start docker.socket
 	restart_docker_service
 	sudo gpasswd -a ${USER} docker
 	sudo chmod g+rw /var/run/docker.sock
