@@ -52,6 +52,21 @@ handle_error() {
 }
 trap 'handle_error $LINENO' ERR
 
+waitForProcess(){
+	wait_time="$1"
+	sleep_time="$2"
+	cmd="$3"
+	while [ "$wait_time" -gt 0 ]; do
+		if eval "$cmd"; then
+			return 0
+		else
+			sleep "$sleep_time"
+			wait_time=$((wait_time-sleep_time))
+		fi
+	done
+	return 1
+}
+
 # Check if the $1 argument is the name of a 'known'
 # Kata runtime. Of course, the end user can choose any name they
 # want in reality, but this function knows the names of the default
@@ -265,19 +280,4 @@ restart_docker_service() {
 	[ "$counter" -ge "$retries" ] && { warn "Can't connect to docker socket"; return 1; }
 
 	return 0
-}
-
-function waitForProcess(){
-	wait_time="$1"
-	sleep_time="$2"
-	cmd="$3"
-	while [ "$wait_time" -gt 0 ]; do
-		if eval "$cmd"; then
-			return 0
-		else
-			sleep "$sleep_time"
-			wait_time=$((wait_time-sleep_time))
-		fi
-	done
-	return 1
 }
