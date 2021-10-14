@@ -361,6 +361,7 @@ static_check_go_arch_specific()
 	echo
 	info "Package paths:\n"
 	echo "$dirs" | sed 's/^ *//g' | tr ' ' '\n'
+	ls $GOPATH/go/src/github.com/kata-containers/kata-containers/src/runtime/pkg/katautils/config-settings.go
 	for d in ${dirs};do
 		info "Running $linter on $d"
 		(cd $d && GO111MODULE=auto eval "$linter" "${linter_args}" ".")
