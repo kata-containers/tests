@@ -98,6 +98,12 @@ case "${CI_JOB}" in
 		echo "INFO: Running complete e2e kubernetes tests"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes-e2e"
 		;;
+	"EXTERNAL_CRIO")
+		echo "INFO: Running tests on cri-o PR"
+		sudo -E PATH="$PATH" bash -c "make kubernetes"
+		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
+		sudo -E PATH="$PATH" bash -c "make crio"
+		;;
 	"FIRECRACKER")
 		echo "INFO: Running Kubernetes tests with Jailed Firecracker"
 		sudo -E PATH="$PATH" bash -c "make kubernetes"

@@ -185,6 +185,15 @@ case "${CI_JOB}" in
 	export KUBERNETES="yes"
 	export experimental_kernel="true"
 	;;
+"EXTERNAL_CRIO")
+	init_ci_flags
+	export CRIO="yes"
+	export KATA_HYPERVISOR="qemu"
+	export KUBERNETES="yes"
+	export TEST_CRIO="true"
+	export MINIMAL_K8S_E2E="true"
+	export MINIMAL_CONTAINERD_K8S_E2E="true"
+	;;
 "FIRECRACKER")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
