@@ -33,7 +33,7 @@ case "${CI_JOB}" in
 		echo "INFO: Running pmem integration test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make pmem"
 		;;
-	"BAREMETAL-QAT")
+	"BAREMETAL-QAT"|"QAT")
 		echo "INFO: Running QAT integration test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make qat"
 		;;
