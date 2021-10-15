@@ -475,6 +475,7 @@ static_check_license_headers()
 		local missing=$(egrep \
 			--exclude=".git/*" \
 			--exclude=".gitignore" \
+			--exclude=".dockerignore" \
 			--exclude="Gopkg.lock" \
 			--exclude="*.gpl.c" \
 			--exclude="*.ipynb" \
