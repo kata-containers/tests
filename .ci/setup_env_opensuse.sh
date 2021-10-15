@@ -30,6 +30,7 @@ declare -A packages=( \
 	[qemu_dependencies]="libcap-devel libattr1 libcap-ng-devel librbd-devel ninja" \
 	[kernel_dependencies]="libelf-devel flex glibc-devel-static thin-provisioning-tools" \
 	[crio_dependencies]="libglib-2_0-0 libseccomp-devel libapparmor-devel libgpg-error-devel go-md2man libgpgme-devel libassuan-devel glib2-devel glibc-devel" \
+	[gperf_dependencies]="gcc-c++" \
 	[bison_binary]="bison" \
 	[build_tools]="gcc python pkg-config zlib-devel" \
 	[os_tree]="libostree-devel" \

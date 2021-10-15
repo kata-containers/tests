@@ -34,6 +34,7 @@ declare -A packages=(
 	[qemu_dependencies]="libcap-devel libcap-ng-devel libattr-devel libcap-ng-devel librbd1-devel flex libfdt-devel ninja-build" \
 	[kernel_dependencies]="elfutils-libelf-devel flex" \
 	[crio_dependencies]="glibc-static libseccomp-devel libassuan-devel libgpg-error-devel device-mapper-libs util-linux gpgme-devel glib2-devel glibc-devel libselinux-devel pkgconfig" \
+	[gperf_dependencies]="gcc-c++" \
 	[bison_binary]="bison" \
 	[build_tools]="python3 pkgconfig zlib-devel" \
 	[os_tree]="ostree-devel" \
@@ -43,7 +44,7 @@ declare -A packages=(
 	[crudini]="crudini" \
 	[procenv]="procenv" \
 	[haveged]="haveged" \
-        [libsystemd]="systemd-devel" \
+	[libsystemd]="systemd-devel" \
 	[redis]="redis" \
 	[agent_shutdown_test]="tmux" \
 )
