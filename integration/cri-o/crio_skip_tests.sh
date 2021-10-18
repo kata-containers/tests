@@ -11,6 +11,7 @@ declare -a skipCRIOTests=(
 'test "ctr lifecycle"'
 'test "ctr logging"'
 'test "ctr journald logging"'
+'test "ctr logging \[tty=true\]"' # FIXME: See https://github.com/kata-containers/tests/issues/4069
 'test "ctr log max"'
 'test "ctr log max with minimum value"'
 'test "ctr partial line logging"'
