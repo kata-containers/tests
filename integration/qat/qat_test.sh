@@ -18,6 +18,7 @@ source "${dir_path}/../../lib/common.bash"
 source "${dir_path}/../../.ci/lib.sh"
 source /etc/os-release || source /usr/lib/os-release
 arch=$("${dir_path}"/../../.ci/kata-arch.sh -d)
+CI_JOB="${CI_JOB:-}"
 
 QAT_DRIVER_VER=qat1.7.l.4.14.0-00031.tar.gz
 QAT_DRIVER_URL=https://downloadmirror.intel.com/30178/eng/${QAT_DRIVER_VER}
@@ -131,12 +132,12 @@ run_test() {
 }
 
 main() {
-	trap cleanup EXIT QUIT KILL
-	init
+	[[ $CI_JOB != "BAREMETAL-QAT" ]] || trap cleanup EXIT QUIT KILL
+	[[ $CI_JOB != "BAREMETAL-QAT" ]] || init
 	build_install_qat_image_and_kernel
 	build_openssl_image
-	bind_vfio_dev
-	run_test
+	[[ $CI_JOB != "BAREMETAL-QAT" ]] || bind_vfio_dev
+	[[ $CI_JOB != "BAREMETAL-QAT" ]] || run_test
 }
 
 main

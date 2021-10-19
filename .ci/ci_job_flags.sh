@@ -89,7 +89,7 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="qemu"
 	export KUBERNETES="yes"
 	;;
-"BAREMETAL-QAT")
+"BAREMETAL-QAT"|"QAT")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
