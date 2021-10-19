@@ -25,10 +25,9 @@ source "${script_dir}/lib.sh"
 CONTAINERD_OS=$(go env GOOS)
 CONTAIENRD_ARCH=$(go env GOARCH)
 
-cri_containerd_tarball_version=$(get_version "externals.cri-containerd.version")
-cri_containerd_repo=$(get_version "externals.cri-containerd.url")
+containerd_tarball_version=$(get_version "externals.containerd.version")
 
-cri_containerd_version=${cri_containerd_tarball_version#v}
+containerd_version=${containerd_tarball_version#v}
 
 echo "Set up environment"
 if [ "$ID" == centos ] || [ "$ID" == rhel ] || [ "$ID" == sles ]; then
@@ -39,21 +38,23 @@ fi
 install_from_source() {
 	echo "Trying to install containerd from source"
 	(
-		cd "${GOPATH}/src/${cri_containerd_repo}" >>/dev/null
+		containerd_repo=$(get_version "externals.containerd.url")
+		go get "${containerd_repo}"
+		cd "${GOPATH}/src/${containerd_repo}" >>/dev/null
 		git fetch
-		git checkout "${cri_containerd_tarball_version}"
+		git checkout "${containerd_tarball_version}"
 		make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
-		tarball_name="cri-containerd-cni-${cri_containerd_version}-${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
+		tarball_name="cri-containerd-cni-${containerd_version}-${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
 		sudo tar -xvf "./releases/${tarball_name}" -C /
 	)
 }
 
 install_from_static_tarball() {
 	echo "Trying to install containerd from static tarball"
-	local tarball_url=$(get_version "externals.cri-containerd.tarball_url")
+	local tarball_url=$(get_version "externals.containerd.tarball_url")
 
-	local tarball_name="cri-containerd-cni-${cri_containerd_version}-${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
-	local url="${tarball_url}/${cri_containerd_tarball_version}/${tarball_name}"
+	local tarball_name="cri-containerd-cni-${containerd_version}-${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
+	local url="${tarball_url}/${containerd_tarball_version}/${tarball_name}"
 
 	echo "Download tarball from ${url}"
 	if ! curl -OL -f "${url}"; then
@@ -64,7 +65,6 @@ install_from_static_tarball() {
 	sudo tar -xvf "${tarball_name}" -C /
 }
 
-go get "${cri_containerd_repo}"
 install_from_static_tarball || install_from_source
 
 sudo systemctl daemon-reload
