@@ -46,9 +46,6 @@ run() {
 			# And now ensure KSM is turned off for the rest of the tests
 			disable_ksm
 		fi
-
-		# Run the time tests
-		bash time/launch_times.sh -i public.ecr.aws/ubuntu/ubuntu:latest -n 20
 	fi
 
 	restart_docker_service
@@ -63,6 +60,9 @@ run() {
 
 	# Run the density test inside the container
 	bash density/memory_usage_inside_container.sh
+
+	# Run the time tests
+	bash time/launch_times.sh -i public.ecr.aws/ubuntu/ubuntu:latest -n 20
 
 	# Skip: Issue: https://github.com/kata-containers/tests/issues/3203
 	# Run the cpu statistics test
