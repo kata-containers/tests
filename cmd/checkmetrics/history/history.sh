@@ -11,7 +11,7 @@ set -e
 
 export KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 
-# Base dir of where we store the downloaded data. 
+# Base dir of where we store the downloaded data
 datadir=$(dirname "$0")/data
 
 # How many recent builds do we evaluate
@@ -28,6 +28,12 @@ tests=()
 test_queries=()
 tests+=("boot-times")
 test_queries+=(".\"boot-times\".Results | [.[] | .\"to-workload\".Result] | add / length")
+
+tests+=("blogbench")
+test_queries+=(".\"blogbench\".Results | .[] | .write.Result")
+
+tests+=("blogbench")
+test_queries+=(".\"blogbench\".Results | .[] | .read.Result")
 
 tests+=("memory-footprint")
 test_queries+=(".\"memory-footprint\".Results | .[] | .average.Result")
