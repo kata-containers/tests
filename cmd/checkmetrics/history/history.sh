@@ -41,6 +41,9 @@ test_queries+=(".\"memory-footprint\".Results | .[] | .average.Result")
 tests+=("memory-footprint-ksm")
 test_queries+=(".\"memory-footprint-ksm\".Results | .[] | .average.Result")
 
+tests+=("memory-footprint-inside-container")
+test_queries+=(".\"memory-footprint-inside-container\".Results | .[] | .memtotal.Result")
+
 # What is the base URL of the Jenkins server
 url_base="http://jenkins.katacontainers.io/job"
 
