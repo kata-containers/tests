@@ -8,7 +8,6 @@
 # Currently these are the CRI-O tests that are not working
 
 declare -A skipCRIOTests=(
-['test "ctr lifecycle"']='FIXME: See https://github.com/kata-containers/kata-containers/issues/2096'
 ['test "ctr logging"']='This is not working'
 ['test "ctr journald logging"']='Not implemented'
 ['test "ctr logging \[tty=true\]"']='FIXME: See https://github.com/kata-containers/tests/issues/4069'
