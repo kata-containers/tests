@@ -172,8 +172,7 @@ popd
 "${ci_dir_name}/setup.sh"
 
 # Run unit tests on non x86_64
-# Unit tests on ARM, refer issue :https://github.com/kata-containers/kata-containers/issues/2809 
-if [[ "$arch" == "s390x" || "$arch" == "ppc64le" ]]; then
+if [ "$arch" != "x86_64" ]; then
 	echo "Running unit tests"
 	cargo_env="$HOME/.cargo/env"
 	[ -e "${cargo_env}" ] || "${ci_dir_name}/install_rust.sh" && source "${cargo_env}"
