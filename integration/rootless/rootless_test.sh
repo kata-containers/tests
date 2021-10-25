@@ -14,6 +14,7 @@ dir_path=$(dirname "$0")
 source "${dir_path}/../../lib/common.bash"
 source "${dir_path}/../../.ci/lib.sh"
 source /etc/os-release || source /usr/lib/os-release
+pod_id=""
 
 setup() {
 	getent group kvm &>/dev/null || sudo groupadd --system kvm
@@ -26,13 +27,13 @@ setup() {
 
 cleanup() {
 	sudo sed -i -e 's/^.*\(rootless\)/# \1/g' /usr/share/defaults/kata-containers/configuration.toml
-	sudo crictl stopp $(sudo crictl pods -q) || true
-	sudo crictl rmp $(sudo crictl pods -q) || true
+	sudo crictl stopp "$pod_id" || true
+	sudo crictl rmp "$pod_id" || true
 }
 
 run() {
-	sudo crictl runp -r kata "${dir_path}/rootless-pod.json"
-	waitForProcess 15 3 "sudo crictl inspectp $(sudo crictl pods -q) | jq '.status.state' | grep 'SANDBOX_READY'"
+	pod_id="$(sudo crictl runp -r kata "${dir_path}/rootless-pod.json")"
+	waitForProcess 15 3 "sudo crictl inspectp "$pod_id" | jq '.status.state' | grep 'SANDBOX_READY'"
 }
 
 main() {
