@@ -12,7 +12,8 @@ The files in this directory are named according to how the
 using the CI build machine hostname to locate the correct file:
 
 ```bash
-local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DIR}/checkmetrics-json-$(uname -n).toml"
+local KATA_HYPERVISOR="qemu"
+local CM_BASE_FILE="${CHECKMETRICS_CONFIG_DIR}/checkmetrics-json-${KATA_HYPERVISOR}-kata-metric.toml"
 ```
 
 Thus, each CI metrics worker machine should be uniquely named, to allow for file
