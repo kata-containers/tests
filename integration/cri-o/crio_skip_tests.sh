@@ -32,3 +32,8 @@ declare -A skipCRIOTests=(
 ['test "ctr with absent mount that should be rejected"']='This is not working'
 );
 
+# The following lists tests that should be skipped in specific cri-o versions.
+# When adding a test here, you need to provide the version of cri-o where the
+# bug was fixed. The script will skip this test in all previous versions.
+declare -A fixedInCrioVersion=();
+
