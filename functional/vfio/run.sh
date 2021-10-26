@@ -14,10 +14,9 @@ set -o errtrace
 script_path=$(dirname "$0")
 source "${script_path}/../../lib/common.bash"
 
-declare -r container_id="vfiotest${RANDOM}"
-
 addr=
 tmp_data_dir="$(mktemp -d)"
+rootfs_tar="${tmp_data_dir}/rootfs.tar"
 trap cleanup EXIT
 
 # kata-runtime options
@@ -42,17 +41,18 @@ get_vfio_path() {
 	echo "/dev/vfio/$(basename $(realpath /sys/bus/pci/drivers/vfio-pci/${addr}/iommu_group))"
 }
 
-create_bundle() {
-	local bundle_dir="$1"
-	mkdir -p "${bundle_dir}"
-
+pull_rootfs() {
 	# pull and export busybox image in tar file
-	local rootfs_tar="${tmp_data_dir}/rootfs.tar"
 	local image="quay.io/prometheus/busybox:latest"
 	sudo -E ctr i pull ${image}
 	sudo -E ctr i export "${rootfs_tar}" "${image}"
 	sudo chown ${USER}:${USER} "${rootfs_tar}"
 	sync
+}
+
+create_bundle() {
+	local bundle_dir="$1"
+	mkdir -p "${bundle_dir}"
 
 	# extract busybox rootfs
 	local rootfs_dir="${bundle_dir}/rootfs"
@@ -69,22 +69,30 @@ create_bundle() {
 }
 
 run_container() {
-	local bundle_dir="$1"
+	local container_id="$1"
+	local bundle_dir="$2"
+
 	sudo -E ctr run -d --runtime io.containerd.run.kata.v2 --config "${bundle_dir}/config.json" "${container_id}"
 }
 
 
 get_ctr_cmd_output() {
+	local container_id="$1"
+	shift
 	sudo -E ctr t exec --exec-id 2 "${container_id}" "${@}"
 }
 
-check_eth_dev() {
-	# container MUST have a eth net interface
-	get_ctr_cmd_output ip a | grep "eth"
+check_guest_kernel() {
+	local container_id="$1"
+	# For vfio_mode=guest-kernel, the device should be bound to
+	# the guest kernel's native driver.  To check this has worked,
+	# we look for an ethernet device named 'eth*'
+	get_ctr_cmd_output "${container_id}" ip a | grep "eth"
 }
 
 get_dmesg() {
-	get_ctr_cmd_output dmesg
+	local container_id="$1"
+	get_ctr_cmd_output "${container_id}" dmesg
 }
 
 # Show help about this script
@@ -176,6 +184,28 @@ setup_configuration_file() {
 		"${kata_config_file}"
 }
 
+run_test_container() {
+	local container_id="$1"
+	local bundle_dir="$2"
+	local config_json_in="$3"
+
+	# generate final config.json
+	sed -e '/^#.*/d' \
+	    -e 's|@VFIO_PATH@|'"${vfio_device}"'|g' \
+	    -e 's|@VFIO_MAJOR@|'"${vfio_major}"'|g' \
+	    -e 's|@VFIO_MINOR@|'"${vfio_minor}"'|g' \
+	    -e 's|@ROOTFS@|'"${bundle_dir}/rootfs"'|g' \
+	    "${config_json_in}" > "${script_path}/config.json"
+
+	create_bundle "${bundle_dir}"
+
+	# run container
+	run_container "${container_id}" "${bundle_dir}"
+
+	# output VM dmesg
+	get_dmesg "${container_id}"
+}
+
 main() {
 	local OPTIND
 	while getopts "hi:m:p:s:" opt;do
@@ -205,6 +235,9 @@ main() {
 	done
 	shift $((OPTIND-1))
 
+	#
+	# Get the device ready on the host
+	#
 	setup_configuration_file
 
 	restart_containerd_service
@@ -216,34 +249,24 @@ main() {
 
 	sudo driverctl set-override "${addr}" vfio-pci
 
-	# get vfio information
 	vfio_device="$(get_vfio_path "${addr}")"
 	[ -n "${vfio_device}" ] || die "vfio device not found"
 	vfio_major="$(printf '%d' $(stat -c '0x%t' ${vfio_device}))"
 	vfio_minor="$(printf '%d' $(stat -c '0x%T' ${vfio_device}))"
 
-	# create container bundle
-	bundle_dir="${tmp_data_dir}/bundle"
+	# Get the rootfs we'll use for all tests
+	pull_rootfs
 
-	# generate final config.json
-	config_json_in="${script_path}/config.json.in"
-	sed -e '/^#.*/d' \
-		-e 's|@VFIO_PATH@|'"${vfio_device}"'|g' \
-		-e 's|@VFIO_MAJOR@|'"${vfio_major}"'|g' \
-		-e 's|@VFIO_MINOR@|'"${vfio_minor}"'|g' \
-		-e 's|@ROOTFS@|'"${bundle_dir}/rootfs"'|g' \
-		"${config_json_in}" > "${script_path}/config.json"
+	#
+	# Run the tests
+	#
 
-	create_bundle "${bundle_dir}"
-
-	# run container
-	run_container "${bundle_dir}"
-
-	# output VM dmesg
-	get_dmesg
-
-	# run container checks
-	check_eth_dev
+	# test for guest-kernel mode
+	guest_kernel_cid="vfio-guest-kernel-${RANDOM}"
+	run_test_container "${guest_kernel_cid}" \
+			   "${tmp_data_dir}/vfio-guest-kernel" \
+			   "${script_path}/guest-kernel.json.in"
+	check_guest_kernel "${guest_kernel_cid}"
 }
 
 main $@

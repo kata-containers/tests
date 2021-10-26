@@ -9,6 +9,10 @@
 		"os": "linux",
 		"arch": "amd64"
 	},
+	"annotations": {
+		"io.katacontainers.config.hypervisor.enable_iommu": "false",
+		"io.katacontainers.config.runtime.vfio_mode": "guest-kernel"
+	},
 	"process": {
 		"terminal": false,
 		"consoleSize": {
