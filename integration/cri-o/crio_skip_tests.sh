@@ -14,7 +14,6 @@ declare -A skipCRIOTests=(
 ['test "ctr log max"']='Not implemented'
 ['test "ctr log max with minimum value"']='Not implemented'
 ['test "ctr partial line logging"']='This is not working'
-['test "ctr execsync"']='FIXME: See https://github.com/cri-o/cri-o/pull/5041'
 ['test "ctr execsync should not overwrite initial spec args"']='This is not working'
 ['test "ctr execsync std{out,err}"']='This is not working'
 ['test "ctr oom"']='This is not working'
@@ -36,5 +35,6 @@ declare -A skipCRIOTests=(
 declare -A fixedInCrioVersion=(
 ['test "privileged ctr device add"']="1.22"
 ['test "privileged ctr -- check for rw mounts"']="1.22"
+['test "ctr execsync"']="1.22"
 );
 
