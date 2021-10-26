@@ -19,6 +19,7 @@ export CONTAINER_DEFAULT_RUNTIME="${CONTAINER_DEFAULT_RUNTIME:-$CONTAINER_RUNTIM
 export RUNTIME_ROOT="${RUNTIME_ROOT:-/run/vc}"
 export RUNTIME_TYPE="${RUNTIME_TYPE:-vm}"
 export STORAGE_OPTIONS="--storage-driver overlay"
+export PRIVILEGED_WITHOUT_HOST_DEVICES=true
 
 # Skip the cri-o tests if TEST_CRIO is not true
 # and we are on a CI job.
