@@ -170,6 +170,10 @@ setup_configuration_file() {
 	       -e 's/^#\(debug_console_enabled\).*=.*$/\1 = true/g' \
 	       -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug"/g' \
 	       "${kata_config_file}"
+
+	# enable VFIO relevant hypervisor annotations
+	sed -i -e 's/^\(enable_annotations\).*=.*$/\1 = ["enable_iommu"]/' \
+		"${kata_config_file}"
 }
 
 main() {
