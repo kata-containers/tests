@@ -90,6 +90,27 @@ check_guest_kernel() {
 	get_ctr_cmd_output "${container_id}" ip a | grep "eth" || die "Missing VFIO network interface"
 }
 
+check_vfio() {
+	local cid="$1"
+	# For vfio_mode=vfio, the device should be bound to the guest
+	# vfio-pci driver.
+
+	# Check the control device is visible
+	get_ctr_cmd_output "${cid}" ls /dev/vfio/vfio || die "Couldn't find VFIO control device in container"
+
+	# The device should *not* cause an ethernet interface to appear
+	! get_ctr_cmd_output "${cid}" ip a | grep "eth" || die "Unexpected network interface"
+
+	# There should be exactly one VFIO group device (there might
+	# be multiple IOMMU groups in the VM, but only one device
+	# should be bound to the VFIO driver, so there should still
+	# only be one VFIO device
+	group="$(get_ctr_cmd_output "${cid}" ls /dev/vfio | grep -v vfio)"
+	if [ $(echo "${group}" | wc -w) != "1" ] ; then
+	    die "Expected exactly one VFIO group got: ${group}"
+	fi
+}
+
 get_dmesg() {
 	local container_id="$1"
 	get_ctr_cmd_output "${container_id}" dmesg
@@ -194,6 +215,8 @@ run_test_container() {
 	    -e 's|@VFIO_PATH@|'"${vfio_device}"'|g' \
 	    -e 's|@VFIO_MAJOR@|'"${vfio_major}"'|g' \
 	    -e 's|@VFIO_MINOR@|'"${vfio_minor}"'|g' \
+	    -e 's|@VFIO_CTL_MAJOR@|'"${vfio_ctl_major}"'|g' \
+	    -e 's|@VFIO_CTL_MINOR@|'"${vfio_ctl_minor}"'|g' \
 	    -e 's|@ROOTFS@|'"${bundle_dir}/rootfs"'|g' \
 	    "${config_json_in}" > "${script_path}/config.json"
 
@@ -254,6 +277,10 @@ main() {
 	vfio_major="$(printf '%d' $(stat -c '0x%t' ${vfio_device}))"
 	vfio_minor="$(printf '%d' $(stat -c '0x%T' ${vfio_device}))"
 
+	[ -n "/dev/vfio/vfio" ] || die "vfio control device not found"
+	vfio_ctl_major="$(printf '%d' $(stat -c '0x%t' /dev/vfio/vfio))"
+	vfio_ctl_minor="$(printf '%d' $(stat -c '0x%T' /dev/vfio/vfio))"
+
 	# Get the rootfs we'll use for all tests
 	pull_rootfs
 
@@ -267,6 +294,16 @@ main() {
 			   "${tmp_data_dir}/vfio-guest-kernel" \
 			   "${script_path}/guest-kernel.json.in"
 	check_guest_kernel "${guest_kernel_cid}"
+
+	# Remove the container so we can re-use the device for the next test
+	clean_env_ctr
+
+	# test for vfio mode
+	vfio_cid="vfio-vfio-${RANDOM}"
+	run_test_container "${vfio_cid}" \
+			   "${tmp_data_dir}/vfio-vfio" \
+			   "${script_path}/vfio.json.in"
+	check_vfio "${vfio_cid}"
 }
 
 main $@
