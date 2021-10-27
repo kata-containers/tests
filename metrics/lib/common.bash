@@ -17,6 +17,7 @@ CTR_EXE="${CTR_EXE:-ctr}"
 DOCKER_EXE="${DOCKER_EXE:-docker}"
 CTR_RUNTIME="${CTR_RUNTIME:-io.containerd.run.kata.v2}"
 RUNTIME="${RUNTIME:-containerd-shim-kata-v2}"
+KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 
 KSM_BASE="/sys/kernel/mm/ksm"
 KSM_ENABLE_FILE="${KSM_BASE}/run"
@@ -253,10 +254,12 @@ set_ksm_aggressive(){
 	sudo bash -c "echo ${KSM_AGGRESIVE_SLEEP} > ${KSM_SLEEP_FILE}"
 	sudo bash -c "echo 1 > ${KSM_ENABLE_FILE}"
 
-	# Disable virtio-fs and save whether it was enabled previously
-	set_virtio_out=$(sudo -E "${LIB_DIR}/../../.ci/set_kata_config.sh" shared_fs virtio-9p)
-	echo "${set_virtio_out}"
-	grep -q "already" <<< "${set_virtio_out}" || was_virtio_fs=true;
+	if [ "${KATA_HYPERVISOR}" == "qemu" ]; then
+		# Disable virtio-fs and save whether it was enabled previously
+		set_virtio_out=$(sudo -E "${LIB_DIR}/../../.ci/set_kata_config.sh" shared_fs virtio-9p)
+		echo "${set_virtio_out}"
+		grep -q "already" <<< "${set_virtio_out}" || was_virtio_fs=true;
+	fi
 }
 
 restore_virtio_fs(){
@@ -273,13 +276,13 @@ restore_ksm_settings(){
 	sudo bash -c "echo ${ksm_stored_pages} > ${KSM_PAGES_FILE}"
 	sudo bash -c "echo ${ksm_stored_sleep} > ${KSM_SLEEP_FILE}"
 	sudo bash -c "echo ${ksm_stored_run} > ${KSM_ENABLE_FILE}"
-	restore_virtio_fs
+	[ "${KATA_HYPERVISOR}" == "qemu" ] && restore_virtio_fs
 }
 
 disable_ksm(){
 	echo "disabling KSM"
 	sudo bash -c "echo 0 > ${KSM_ENABLE_FILE}"
-	restore_virtio_fs
+	[ "${KATA_HYPERVISOR}" == "qemu" ] && restore_virtio_fs
 }
 
 # See if KSM is enabled.
