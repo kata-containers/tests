@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2018 Intel Corporation
+# Copyright (c) 2018-2021 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -19,11 +19,6 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 source "${SCRIPT_DIR}/../lib/common.bash"
 RESULTS_DIR=${SCRIPT_DIR}/../results
 
-# Get working elasticsearch version
-VERSIONS_FILE="${SCRIPT_DIR}/../../versions.yaml"
-ELASTICSEARCH_VERSION=$("${GOPATH}/bin/yq" read "$VERSIONS_FILE" "docker_images.elasticsearch.version")
-ELASTICSEARCH_IMAGE="elasticsearch:$ELASTICSEARCH_VERSION"
-
 # By default we run all the tests
 RUN_ALL=1
 
@@ -40,7 +35,6 @@ Usage: $0 [-h] [options]
         -a,         Run all tests (default).
         -d,         Run the density tests.
         -h,         Print this help.
-        -n,         Run the networking tests.
         -s,         Run the storage tests.
         -t,         Run the time tests.
 EOF
@@ -53,7 +47,7 @@ init() {
 	metrics_onetime_init
 
 	local OPTIND
-	while getopts "adhnst" opt;do
+	while getopts "adhst" opt;do
 		case ${opt} in
 		a)
 		    RUN_ALL=1
@@ -65,10 +59,6 @@ init() {
 		h)
 		    help
 		    exit 0;
-		    ;;
-		n)
-		    RUN_NETWORK=1
-		    RUN_ALL=
 		    ;;
 		s)
 		    RUN_STORAGE=1
@@ -97,33 +87,7 @@ run_density_ksm() {
 	# containers), and a large enough timeout  for KSM to settle.
 	# If KSM has not settled down by then, just take the measurement.
 	# 'auto' mode should detect when KSM has settled automatically.
-	bash density/docker_memory_usage.sh 20 300 auto
-
-	# Grab scaling system level footprint data for different sized
-	# container workloads - with KSM enabled.
-
-	# busybox - small container
-	export PAYLOAD_SLEEP="1"
-	export PAYLOAD="busybox"
-	export PAYLOAD_ARGS="tail -f /dev/null"
-	export PAYLOAD_RUNTIME_ARGS=" -m 2G"
-	bash density/footprint_data.sh
-
-	# mysql - medium sized container
-	# Need to wait for mysql to boot and settle before we measure
-	export PAYLOAD_SLEEP="10"
-	export PAYLOAD="mysql"
-	PAYLOAD_ARGS=" --innodb_use_native_aio=0 --disable-log-bin"
-	PAYLOAD_RUNTIME_ARGS=" -m 4G -e MYSQL_ALLOW_EMPTY_PASSWORD=1"
-	bash density/footprint_data.sh
-
-	# elasticsearch - large container
-	# Need to wait for elasticsearch to boot and settle before we measure
-	export PAYLOAD_SLEEP="10"
-	export PAYLOAD=$ELASTICSEARCH_IMAGE
-	PAYLOAD_ARGS=" "
-	PAYLOAD_RUNTIME_ARGS=" -m 8G"
-	bash density/footprint_data.sh
+	bash density/memory_usage.sh 20 300 auto
 
 	# Get a measure for the overhead we take from the container memory
 	bash density/memory_usage_inside_container.sh
@@ -135,7 +99,7 @@ run_density() {
 	# Run the density tests - no KSM, so no need to wait for settle
 	# Set a token short timeout, and use enough containers to get a
 	# good average measurement.
-	bash density/docker_memory_usage.sh 20 5
+	bash density/memory_usage.sh 20 5
 }
 
 run_time() {
@@ -144,20 +108,15 @@ run_time() {
 	# 100 'first and only container' launches.
 	# NOTE - whichever container you test here must support a full 'date'
 	# command - busybox based containers (including Alpine) will not work.
-	bash time/launch_times.sh -i ubuntu -n 100
+	bash time/launch_times.sh -i public.ecr.aws/ubuntu/ubuntu:latest -n 100
 }
 
 run_storage() {
 	echo "Running storage tests"
 
-	# Enable this if you want to test a volume mount
-	#export TEST_VOLUME_MOUNT=1
-	bash storage/fio.sh
+	bash storage/blogbench.sh
 }
 
-run_network() {
-	bash network/cpu_statistics_iperf.sh
-}
 
 # Execute metrics scripts
 run() {
@@ -195,10 +154,6 @@ run() {
 		run_storage
 	fi
 
-	if [ -n "$RUN_ALL" ] || [ -n "$RUN_NETWORK" ]; then
-		run_network
-	fi
-
 	popd
 }
 
@@ -211,4 +166,3 @@ finish() {
 init "$@"
 run
 finish
-
