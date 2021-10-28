@@ -123,7 +123,7 @@
 			"type": "c",
 			"major": @VFIO_MAJOR@,
 			"minor": @VFIO_MINOR@,
-			"fileMode": 600,
+			"fileMode": 384,
 			"uid": 0,
 			"gid": 0
 		}],
