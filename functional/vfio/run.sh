@@ -87,7 +87,7 @@ check_guest_kernel() {
 	# For vfio_mode=guest-kernel, the device should be bound to
 	# the guest kernel's native driver.  To check this has worked,
 	# we look for an ethernet device named 'eth*'
-	get_ctr_cmd_output "${container_id}" ip a | grep "eth"
+	get_ctr_cmd_output "${container_id}" ip a | grep "eth" || die "Missing VFIO network interface"
 }
 
 get_dmesg() {
