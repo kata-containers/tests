@@ -2,14 +2,6 @@
 
 
 [[projects]]
-  branch = "master"
-  digest = "1:2dce13883b3f598f3be6b9827426e7dacd40f57d014e030d5997d71484e6e0f1"
-  name = "code.cloudfoundry.org/bytefmt"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "1eb035ffe2b6e5bead676a86e0c8d5ec96af36f3"
-
-[[projects]]
   digest = "1:be3ccd9f881604e4dd6d15cccfa126aa309232f0ba075ae5f92d3ef729a62758"
   name = "github.com/BurntSushi/toml"
   packages = ["."]
@@ -236,7 +228,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "code.cloudfoundry.org/bytefmt",
     "github.com/BurntSushi/toml",
     "github.com/go-logfmt/logfmt",
     "github.com/montanaflynn/stats",
