@@ -177,6 +177,13 @@ if [ "$arch" != "x86_64" ]; then
 	cargo_env="$HOME/.cargo/env"
 	[ -e "${cargo_env}" ] || "${ci_dir_name}/install_rust.sh" && source "${cargo_env}"
 	pushd "${GOPATH}/src/${katacontainers_repo}"
+	echo "Installing libseccomp library from sources"
+	libseccomp_install_dir=$(mktemp -d -t libseccomp.XXXXXXXXXX)
+	gperf_install_dir=$(mktemp -d -t gperf.XXXXXXXXXX)
+	sudo -E ./ci/install_libseccomp.sh "${libseccomp_install_dir}" "${gperf_install_dir}"
+	echo "Set environment variables for the libseccomp crate to link the libseccomp library statically"
+	export LIBSECCOMP_LINK_TYPE=static
+	export LIBSECCOMP_LIB_PATH="${libseccomp_install_dir}/lib"
 	sudo -E PATH=$PATH make test
 	popd
 else
