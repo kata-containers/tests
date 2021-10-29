@@ -34,6 +34,10 @@ setup() {
 	# Check volume mounts
 	cmd="mount | grep cache"
 	kubectl exec $pod_name -- sh -c "$cmd" | grep "/tmp/cache type tmpfs"
+
+	# Check it can write up to the volume limit (50M)
+	cmd="dd if=/dev/zero of=/tmp/cache/file1 bs=1M count=50; echo $?"
+	kubectl exec $pod_name -- sh -c "$cmd" | tail -1 | grep 0
 }
 
 @test "Empty dir volume when FSGroup is specified with non-root container" {
