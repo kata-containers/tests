@@ -98,11 +98,6 @@ case "${KATA_HYPERVISOR}" in
 			# see https://github.com/kata-containers/runtime/pull/2355#issuecomment-625469252
 			sudo sed -i 's|^cpu_features="|cpu_features="-vmx-rdseed-exit,|g' "${runtime_config_path}"
 		fi
-		if [ "$arch" == "aarch64" ]; then
-			# virtio-fs is not working on aarch64 yet.
-			# See https://github.com/kata-containers/kata-containers/issues/990
-			sudo sed -i 's|^shared_fs = "virtio-fs"|shared_fs = "virtio-9p"|g' "${runtime_config_path}"
-		fi
 		;;
 	*)
 		die "failed to enable config for '${KATA_HYPERVISOR}', not supported"
