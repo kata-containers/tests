@@ -46,7 +46,8 @@ install_cached_kernel(){
 	sudo mkdir -p "${kernel_dir}"
 	local kernel_binary_name="${kernel_binary}-${cached_kernel_version}"
 	local kernel_binary_path="${kernel_dir}/${kernel_binary_name}"
-	sudo -E curl -fL --progress-bar "${latest_build_url}/${kernel_binary_name}" -o "${kernel_binary_path}" || return 1
+	curl -fL --progress-bar "${latest_build_url}/${kernel_binary_name}" -o "${tmp_dir}/${kernel_binary_name}" || return 1
+	sudo mv ${tmp_dir}/${kernel_binary_name} ${kernel_binary_path}
 	kernel_symlink="${kernel_dir}/${kernel_binary}.container"
 	info "Installing ${kernel_binary_path} and symlink ${kernel_symlink}"
 	sudo -E ln -sf "${kernel_binary_path}" "${kernel_symlink}"
@@ -61,7 +62,8 @@ install_prebuilt_kernel() {
 
 	pushd "${kernel_dir}" >/dev/null
 	info "Verify download checksum"
-	sudo -E curl -fsOL "${latest_build_url}/sha256sum-kernel" || return 1
+	curl -fsL "${latest_build_url}/sha256sum-kernel" -o ${tmp_dir}/sha256sum-kernel || return 1
+	sudo mv ${tmp_dir}/sha256sum-kernel .
 	sudo sha256sum -c "sha256sum-kernel" || return 1
 	popd >/dev/null
 }
