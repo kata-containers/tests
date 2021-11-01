@@ -56,9 +56,6 @@ pr_branch="PR_${pr_number}"
 branch_release_number=$(echo ${PULL_BASE_REF} | cut -d'-' -f 2)
 [ "$branch_release_number" == "main" ] && branch_release_number=${latest_release}
 
-# Workaround to test release-1.22 against kubernetes 1.21, while we figure out the needed fixes for our kata webhook.
-[ "$branch_release_number" == "1.22" ] && branch_release_number=${latest_release}
-
 export ghprbGhRepository="${REPO_OWNER}/${REPO_NAME}"
 export GOROOT="/usr/local/go"
 
