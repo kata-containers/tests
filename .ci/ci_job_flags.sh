@@ -47,9 +47,6 @@ init_ci_flags() {
 	export TEST_CGROUPSV2="false"
 	# Run crio functional test
 	export TEST_CRIO="false"
-	# Use experimental kernel
-	# Values: true|false
-	export experimental_kernel="false"
 	# Use experimental qemu
 	# Values: true|false
 	export experimental_qemu="false"
@@ -175,7 +172,6 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
 	export MINIMAL_K8S_E2E="true"
-	export experimental_kernel="true"
 	;;
 "CLOUD-HYPERVISOR-K8S-CONTAINERD-FULL")
 	init_ci_flags
@@ -183,7 +179,6 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
-	export experimental_kernel="true"
 	;;
 "EXTERNAL_CRIO")
 	init_ci_flags
@@ -214,7 +209,6 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export DEFVIRTIOFSCACHESIZE="1024"
 	export KUBERNETES="yes"
-	export experimental_kernel="true"
 	export experimental_qemu="true"
 	;;
 "METRICS"|"METRICS_EXPERIMENTAL")
@@ -226,7 +220,6 @@ case "${CI_JOB}" in
 	export METRICS_CI=1
 	if [ "$CI_JOB" == "METRICS_EXPERIMENTAL" ]; then
 		export DEFVIRTIOFSCACHESIZE="1024"
-		export experimental_kernel="true"
 		export experimental_qemu="true"
 	fi
 ;;

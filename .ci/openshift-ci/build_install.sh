@@ -46,7 +46,6 @@ export TEST_CGROUPSV2="false"
 
 # Configure to use the standard QEMU.
 export experimental_qemu="false"
-export experimental_kernel="false"
 
 # Configure to use the initrd rootfs.
 export TEST_INITRD="yes"
