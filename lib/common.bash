@@ -281,3 +281,36 @@ restart_docker_service() {
 
 	return 0
 }
+
+# This function verifies that the dockerfile version is
+# equal to the test version in order to build the image or
+# just run the test
+check_dockerfiles_images()
+{
+	local image="${1:-}"
+	local dockerfile_path="${2:-}"
+
+	if [ -z "$image" ] || [ -z "$dockerfile_path" ]; then
+		die "Missing image or dockerfile path variable"
+	fi
+
+	# Verify that dockerfile version is equal to test version
+	check_image=$(docker images "$image" -q)
+	if [ -n "$check_image" ]; then
+		# Check image label
+		local check_image_version=$(docker image inspect $image | grep -w DOCKERFILE_VERSION | head -1 | cut -d '"' -f4)
+		if [ -n "$check_image_version" ]; then
+			echo "$image is not updated"
+			build_dockerfile_image "$image" "$dockerfile_path"
+		else
+			# Check dockerfile label
+			local dockerfile_version=$(grep DOCKERFILE_VERSION= $dockerfile_path | cut -d '"' -f2)
+			if [ "$dockerfile_version" != "$check_image_version" ]; then
+				echo "$dockerfile_version is not equal to $check_image_version"
+				build_dockerfile_image "$image" "$dockerfile_path"
+			fi
+		fi
+	else
+		build_dockerfile_image "$image" "$dockerfile_path"
+	fi
+}
