@@ -601,7 +601,7 @@ func TestCheckCommitBody(t *testing.T) {
 		{config, []string{strings.Repeat("v", (defaultMaxBodyLineLength)-1), "Signed-off-by: me@foo.com"}, false, false, false},
 		{config, []string{strings.Repeat("w", defaultMaxBodyLineLength), "Signed-off-by: me@foo.com"}, false, false, false},
 
-		//{config, []string{strings.Repeat("w", (7 * defaultMaxBodyLineLength)), "Signed-off-by: me@foo.com"}, false, false, false},
+		{config, []string{strings.Repeat("w", (7 * defaultMaxBodyLineLength)), "Signed-off-by: me@foo.com"}, false, false, false},
 
 		// Single word lines can be any length
 		{config, []string{strings.Join([]string{longWord}, " "), "Signed-off-by: me@foo.com"}, false, false, false},
