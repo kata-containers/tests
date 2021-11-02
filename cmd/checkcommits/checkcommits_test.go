@@ -257,6 +257,10 @@ func TestCheckCommitsDetails(t *testing.T) {
 
 	ignoreSubsystem := "release"
 
+	ignoreSubject := fmt.Sprintf("%s: this is ignored", ignoreSubsystem)
+
+	revertSubject := `Revert "foo: bar baz"`
+
 	makeConfigWithIgnoreSubsys := func(ignoreFixesSubsystem string) *CommitConfig {
 		return NewCommitConfig(true, true,
 			testFixesString,
@@ -272,11 +276,11 @@ func TestCheckCommitsDetails(t *testing.T) {
 		expectFail bool
 	}
 
-	makeCommits := func(subsystem, fixesLine string) []Commit {
+	makeCommits := func(subjectLine, fixesLine string) []Commit {
 		return []Commit{
 			{
 				"",
-				fmt.Sprintf("%s: bar baz", subsystem),
+				subjectLine,
 				"",
 				[]string{
 					"body line 1",
@@ -292,17 +296,23 @@ func TestCheckCommitsDetails(t *testing.T) {
 
 	data := []testData{
 		// A "normal" commit
-		{makeConfigWithIgnoreSubsys(""), makeCommits("foo", "Fixes #123"), false},
+		{makeConfigWithIgnoreSubsys(""), makeCommits("foo: bar baz", "Fixes #123"), false},
 
 		// Releases don't require a Fixes comment
-		{makeConfigWithIgnoreSubsys(ignoreSubsystem), makeCommits(ignoreSubsystem, "foo"), false},
+		{makeConfigWithIgnoreSubsys(ignoreSubsystem), makeCommits(ignoreSubject, "foo"), false},
 
 		// Valid since there is no instance of ignoreSubsystem and the
 		// commits are "well-formed".
-		{makeConfigWithIgnoreSubsys(ignoreSubsystem), makeCommits("foo", "Fixes #123"), false},
+		{makeConfigWithIgnoreSubsys(ignoreSubsystem), makeCommits("foo: bar baz", "Fixes #123"), false},
 
 		// Fails as no "Fixes #XXX"
-		{makeConfigWithIgnoreSubsys(""), makeCommits(ignoreSubsystem, "foo"), true},
+		{makeConfigWithIgnoreSubsys(""), makeCommits(ignoreSubject, "foo"), true},
+
+		// Revert commit which fails as no "Fixes #XXX"
+		{makeConfigWithIgnoreSubsys(""), makeCommits(revertSubject, ""), true},
+
+		// Successful revert commit
+		{makeConfigWithIgnoreSubsys(""), makeCommits(revertSubject, "Fixes #123"), false},
 	}
 
 	for _, d := range data {
@@ -601,7 +611,7 @@ func TestCheckCommitBody(t *testing.T) {
 		{config, []string{strings.Repeat("v", (defaultMaxBodyLineLength)-1), "Signed-off-by: me@foo.com"}, false, false, false},
 		{config, []string{strings.Repeat("w", defaultMaxBodyLineLength), "Signed-off-by: me@foo.com"}, false, false, false},
 
-		//{config, []string{strings.Repeat("w", (7 * defaultMaxBodyLineLength)), "Signed-off-by: me@foo.com"}, false, false, false},
+		{config, []string{strings.Repeat("w", (7 * defaultMaxBodyLineLength)), "Signed-off-by: me@foo.com"}, false, false, false},
 
 		// Single word lines can be any length
 		{config, []string{strings.Join([]string{longWord}, " "), "Signed-off-by: me@foo.com"}, false, false, false},
