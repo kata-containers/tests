@@ -19,6 +19,7 @@ export CONTAINER_DEFAULT_RUNTIME="${CONTAINER_DEFAULT_RUNTIME:-$CONTAINER_RUNTIM
 export RUNTIME_ROOT="${RUNTIME_ROOT:-/run/vc}"
 export RUNTIME_TYPE="${RUNTIME_TYPE:-vm}"
 export STORAGE_OPTIONS="--storage-driver overlay"
+export PRIVILEGED_WITHOUT_HOST_DEVICES=true
 
 # Skip the cri-o tests if TEST_CRIO is not true
 # and we are on a CI job.
@@ -73,6 +74,24 @@ for testName in "${!skipCRIOTests[@]}"
 do
 	sed -i '/'${testName}'/a skip \"'${skipCRIOTests[$testName]}'\"' "ctr_kata_integration_tests.bats"
 done
+
+# selectively skip tests depending on the version of cri-o we're testing with
+CRIO_VERSION=$(git status | head -n1 | awk '{print $NF}' | cut -d'-' -f 2)
+echo GOT CRIO VERSION $CRIO_VERSION
+if [ "$CRIO_VERSION" != "main" ]; then
+    if [ -z "$CRIO_VERSION" ]; then
+        echo "Unknown version of cri-o - skipping more tests"
+        CRIO_VERSION="1.21"
+    fi
+
+    for testName in "${!fixedInCrioVersion[@]}"
+    do
+        if [ "$(echo -e "$CRIO_VERSION\n${fixedInCrioVersion[$testName]}" | sort -V | head -n1)" != "${fixedInCrioVersion[$testName]}" ]; then
+            echo "Skipping $testName for cri-o v$CRIO_VERSION"
+            sed -i '/'${testName}'/a skip \"- fixed in cri-o v'${fixedInCrioVersion[$testName]}'\"' "ctr_kata_integration_tests.bats"
+        fi
+    done
+fi
 
 IFS=$OLD_IFS
 
