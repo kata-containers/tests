@@ -352,11 +352,6 @@ func checkCommit(config *CommitConfig, commit *Commit) error {
 		return err
 	}
 
-	// Don't check the body for revert commits.
-	if commit.revertCommit {
-		return nil
-	}
-
 	return checkCommitBody(config, commit)
 }
 
