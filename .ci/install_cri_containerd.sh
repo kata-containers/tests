@@ -28,7 +28,7 @@ CONTAINERD_ARCH=$(go env GOARCH)
 containerd_tarball_version=$(get_version "externals.containerd.version")
 
 containerd_version=${containerd_tarball_version#v}
-containerd_pr=$(get_version "externals.cri-containerd.pr_id")
+containerd_branch=$(get_version "externals.containerd.branch")
 
 echo "Set up environment"
 if [ "$ID" == centos ] || [ "$ID" == rhel ] || [ "$ID" == sles ]; then
@@ -50,21 +50,20 @@ install_from_source() {
 	)
 }
 
-install_from_pr() {
-	warn "Using patched Confidential Computing containerd version: see https://github.com/containerd/containerd/pull/${cri_containerd_pr}"
-	echo "Trying to install containerd from a PR"
+install_from_branch() {
+	containerd_repo=$(get_version "externals.containerd.url")
+	warn "Using patched Confidential Computing containerd version: see https://${containerd_repo}/tree/${containerd_branch}"
+	echo "Trying to install containerd from a branch"
 	(
-		cd "${GOPATH}/src/${cri_containerd_repo}" >>/dev/null
-		git fetch origin pull/${cri_containerd_pr}/head:PR_BRANCH
-		git checkout "PR_BRANCH"
+		go get -d "${containerd_repo}"
+		cd "${GOPATH}/src/${containerd_repo}" >>/dev/null
+		git fetch
+		git checkout "${containerd_branch}"
 		make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
 		# SH: The PR containerd version might not match the version.yaml one, so get from build
 		containerd_version=$(_output/cri/bin/containerd --version | awk '{ print substr($3,2); }')
 		tarball_name="cri-containerd-cni-${containerd_version}-${CONTAINERD_OS}-${CONTAINERD_ARCH}.tar.gz"
-		echo "Tarball name is : '${tarball_name}'"
 		sudo tar -xvf "./releases/${tarball_name}" -C /
-		# Clean up PR_BRANCH
-		git checkout main && git branch -D "PR_BRANCH"
 	)
 }
 
@@ -84,9 +83,9 @@ install_from_static_tarball() {
 	sudo tar -xvf "${tarball_name}" -C /
 }
 
-# For 'CCv0' we are pulling in a PR of containerd with our custom code
-if [ -n ${containerd_pr} ]; then
-  install_from_pr
+# For 'CCv0' we are pulling in a branch of our confidential-containers fork of containerd with our custom code
+if [ -n ${containerd_branch} ]; then
+  install_from_branch
 else
   install_from_static_tarball || install_from_source
 fi
