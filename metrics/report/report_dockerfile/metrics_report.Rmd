@@ -13,17 +13,6 @@ This report was generated using the data from the **`r resultdirs`** results dir
 
 \pagebreak
 
-# Container PSS footprint
-This [test](https://github.com/kata-containers/tests/blob/main/metrics/density/memory_usage.sh)
-measures the PSS footprint of all the container runtime components whilst running a number
-of parallel containers. The results are the mean footprint proportion for a single
-container.
-
-```{r memory-footprint, echo=FALSE, fig.cap="Memory PSS footprint"}
-source('memory-footprint.R')
-```
-\pagebreak
-
 # Container scaling system footprint
 This [test](https://github.com/kata-containers/tests/blob/main/metrics/density/footprint_data.sh)
 measures the system memory footprint impact whilst running an increasing number
