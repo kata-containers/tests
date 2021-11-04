@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# Copyright (c) 2018 Intel Corporation
+# Copyright (c) 2018-2021 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -16,21 +16,9 @@ suppressMessages(library(jsonlite))			# to load the data.
 # A list of all the known results files we might find the information inside.
 resultsfiles=c(
 	"boot-times.json",
-	"footprint-busybox-ksm.json",
-	"footprint-elasticsearch-ksm.json",
-	"footprint-mysql-ksm.json",
 	"memory-footprint.json",
 	"memory-footprint-ksm.json",
-	"fio-randread-16k.json",
-	"fio-randread-32k.json",
-	"fio-randread-4k.json",
-	"fio-randread-64k.json",
-	"fio-randread-8k.json",
-	"fio-randwrite-16k.json",
-	"fio-randwrite-32k.json",
-	"fio-randwrite-4k.json",
-	"fio-randwrite-64k.json",
-	"fio-randwrite-8k.json"
+	"memory-footprint-inside-container.json"
 	)
 
 data=c()
