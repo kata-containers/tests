@@ -22,9 +22,8 @@ long_options=(
 # "go test -timeout X"
 timeout_value=${KATA_GO_TEST_TIMEOUT:-30s}
 
-# -race flag is supported only on amd64/x86_64 arch , hence 
-# enabling the flag depending on the arch.
-[ "$(go env GOARCH)" = "amd64" ] && race="-race"
+# -race flag is not supported on s390x
+[ "$(go env GOARCH)" != "s390x" ] && race="-race"
 
 # Notes:
 #
