@@ -76,7 +76,7 @@ do
 done
 
 # selectively skip tests depending on the version of cri-o we're testing with
-CRIO_VERSION=$(git status | head -n1 | awk '{print $NF}' | cut -d'-' -f 2)
+CRIO_VERSION=$(echo ${PULL_BASE_REF} | cut -d'-' -f 2)
 echo GOT CRIO VERSION $CRIO_VERSION
 if [ "$CRIO_VERSION" != "main" ]; then
     if [ -z "$CRIO_VERSION" ]; then
