@@ -49,27 +49,8 @@ build_rust_image() {
 				[[ -z "${USE_PODMAN:-}" ]] && use_docker="${use_docker:-1}"
 			fi
 			distro="${osbuilder_distro:-ubuntu}"
-			if [ ${CCV0} == "yes" ]; then
-				# CCv0 needs some extra packages for debug and dealing with network and signatures
-				EXTRA_PKGS="ca-certificates vim iputils-ping net-tools gnupg libgpgme-dev"
-				sudo -E OS_VERSION="${OS_VERSION:-}" USE_DOCKER="${use_docker:-}" DISTRO="${distro}" EXTRA_PKGS="${EXTRA_PKGS}" \
-					make -e "rootfs"
-				rootfs_target="$(pwd)/${distro}_rootfs"
-				
-				# CCv0 is using umoci which isn't in a ubuntu package we can access yet, so grabbing from their website
-				sudo mkdir -p ${rootfs_target}/usr/local/bin/
-				sudo curl -Lo ${rootfs_target}/usr/local/bin/umoci https://github.com/opencontainers/umoci/releases/download/v0.4.7/umoci.${go_arch}
-				sudo chmod u+x ${rootfs_target}/usr/local/bin/umoci
-
-				# CCv0 is using skopeo which isn't available as a ubuntu repo until 20.10+, so building ourselves
-				git clone --branch release-1.4 https://github.com/containers/skopeo "${GOPATH}/src/github.com/containers/skopeo"
-				pushd "${GOPATH}/src/github.com/containers/skopeo"
-				make bin/skopeo
-				popd
-				sudo cp "${GOPATH}/src/github.com/containers/skopeo/bin/skopeo" "${rootfs_target}/usr/bin/skopeo"
-
-				sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" \
-					make -e "image"
+			if [ ${CCV0} == "yes"]; then
+				sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" SKOPEO_UMOCI=yes make -e "image"
 			else
 				sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" EXTRA_PKGS="${EXTRA_PKGS}" \
 					make -e "${target_image}"
