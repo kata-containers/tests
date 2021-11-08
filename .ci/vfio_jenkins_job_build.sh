@@ -145,6 +145,7 @@ ${environment}
     # Sometimes cloud-init is unable to install them
     sudo dnf makecache
     sudo dnf install -y git make pciutils driverctl
+    sudo dnf install -y --nobest runc
 
     git config --global user.email "foo@bar"
     git config --global user.name "Foo Bar"
@@ -181,10 +182,10 @@ create_config_iso() {
 pull_fedora_cloud_image() {
 	fedora_img="$1"
 	fedora_img_cache="${fedora_img}.cache"
-	fedora_version=32
+	fedora_version=33
 
 	if [ ! -f "${fedora_img_cache}" ]; then
-		curl -sL "https://download.fedoraproject.org/pub/fedora/linux/releases/${fedora_version}/Cloud/${arch}/images/Fedora-Cloud-Base-${fedora_version}-1.6.${arch}.raw.xz" -o "${fedora_img_cache}.xz"
+		curl -sL "https://download.fedoraproject.org/pub/fedora/linux/releases/${fedora_version}/Cloud/${arch}/images/Fedora-Cloud-Base-${fedora_version}-1.2.${arch}.raw.xz" -o "${fedora_img_cache}.xz"
 		xz -f -d "${fedora_img_cache}.xz"
 		sync
 	fi
