@@ -109,35 +109,28 @@ install_extra_tools() {
 	sudo rm -f /etc/systemd/system/kubelet.service.d/0-crio.conf
 
 	if [ "${CRIO}" == "yes" ]; then
-		echo "Install CRI-O" &&
-		bash -f "${cidir}/install_crio.sh" &&
-		bash -f "${cidir}/configure_crio_for_kata.sh" &&
-		echo "CRI-O installed" ||
-		die "CRI-O not installed"
+		info "Install CRI-O"
+		bash -f "${cidir}/install_crio.sh"
+		bash -f "${cidir}/configure_crio_for_kata.sh"
 	fi
 
 	if [ "${CRI_CONTAINERD}" == "yes" ]; then
-		echo "Install cri-containerd" &&
-		bash -f "${cidir}/install_cri_containerd.sh" &&
-		bash -f "${cidir}/configure_containerd_for_kata.sh" &&
-		echo "containerd installed" ||
-		die "containerd not installed"
+		info "Install cri-containerd"
+		bash -f "${cidir}/install_cri_containerd.sh"
+		bash -f "${cidir}/configure_containerd_for_kata.sh"
 	fi
 
 	if [ "${KATA_HYPERVISOR}" == "firecracker" ]; then
-		echo "Configure devicemapper for firecracker" &&
-		bash -f "${cidir}/containerd_devmapper_setup.sh" &&
-		echo "Devicemapper configured" ||
-		die "Devicemapper not configured"
+		info "Configure devicemapper for firecracker"
+		bash -f "${cidir}/containerd_devmapper_setup.sh"
 	fi
 
 	if [ "${KUBERNETES}" == "yes" ]; then
-		echo "Install Kubernetes" &&
-		bash -f "${cidir}/install_kubernetes.sh" &&
-		[ "${CRI_CONTAINERD}" = "yes" ] &&
-		bash -f "${cidir}/configure_containerd_for_kubernetes.sh" ||
-		echo "Kubernetes installed" ||
-		die "Kubernetes not installed"
+		info "Install Kubernetes"
+		bash -f "${cidir}/install_kubernetes.sh"
+		if [ "${CRI_CONTAINERD}" == "yes" ]; then
+			bash -f "${cidir}/configure_containerd_for_kubernetes.sh"
+		fi
 	fi
 
 }
