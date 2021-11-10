@@ -20,8 +20,8 @@ source /etc/os-release || source /usr/lib/os-release
 arch=$("${dir_path}"/../../.ci/kata-arch.sh -d)
 CI_JOB="${CI_JOB:-}"
 
-QAT_DRIVER_VER=qat1.7.l.4.14.0-00031.tar.gz
-QAT_DRIVER_URL=https://downloadmirror.intel.com/30178/eng/${QAT_DRIVER_VER}
+QAT_DRIVER_VER=QAT.L.4.15.0-00011.tar.gz
+QAT_DRIVER_URL=https://downloadmirror.intel.com/649693/${QAT_DRIVER_VER}
 # List of QAT device IDs
 QAT_VENDOR_AND_ID_VF=
 QAT_DEVICE_ID=37c8
