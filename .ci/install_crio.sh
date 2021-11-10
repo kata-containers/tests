@@ -38,7 +38,7 @@ popd
 echo "Configure registries"
 sudo mkdir -p /etc/containers/registries.conf.d/
 cat <<EOF| sudo tee "/etc/containers/registries.conf.d/ciregistries.conf"
-unqualified-search-registries = ["registry.fedoraproject.org", "registry.access.redhat.com", "registry.centos.org", "docker.io", "registry-proxy.engineering.redhat.com"]
+unqualified-search-registries = ["registry.fedoraproject.org", "registry.access.redhat.com", "registry.centos.org", "docker.io"]
 
 [aliases]
   # centos
