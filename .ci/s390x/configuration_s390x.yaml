@@ -5,3 +5,4 @@
 
 kubernetes:
   - k8s-caps
+  - k8s-inotify
