@@ -294,11 +294,22 @@ the [vagrant](https://www.vagrantup.com) tool to create a VM with the setup as c
 as possible to the environments where CI jobs will run the tests. Thus, allowing to
 reproduce a CI job locally.
 
-Currently it is only able to create a *Fedora 32* or *Ubuntu 20.04* VM. And your workstation
-must be capable of running VMs with:
+Your workstation must be capable of running VMs with:
  * 8GB of system memory
  * ~45GB and ~20GB of disk space for the VM images (Fedora and Ubuntu, respectively) on
    the Libvirt's storage pool
+
+Currently it supports the creation of *Fedora 32* and *Ubuntu 20.04* VM, as shown on the table
+below. The `Vagrantfile` was tested on Fedora 33 and Ubuntu 20.04 hosts, and it is
+[known to fail](https://github.com/kata-containers/tests/issues/3942) the boot of Fedora VM on
+Ubuntu host. If you have the need of testing on a different guest or it fails to work
+on your host's distro then please [open an issue](https://github.com/kata-containers/tests/issues/new/choose)
+to let us know.
+
+|Host | Fedora 32 guest | Ubuntu 20.04 guest |
+| --- | --- | --- |
+| Fedora 33    |   Yes  |   Yes  |
+| Ubuntu 20.04 |   No   |   Yes  |
 
 Besides having vagrant installed in your host, it is needed the [vagrant libvirt plug-in](https://github.com/vagrant-libvirt/vagrant-libvirt) (Libvirt is the provider currently used), QEMU and `rsync` (needed to copy files between
 the host and guest).
@@ -347,3 +358,10 @@ same VM (`vagrant provision [fedora|ubuntu]`), however this is not recommended b
 our CI scripts are meant for a single-shot execution. So if you need to run a different
 job locally, you should destroy the VM with the `vagrant destroy [fedora|ubuntu]` command
 then start the process again.
+
+The Vagrant configuration sometimes can get into inconsistent state. That may happen, for
+instance, when the domain on Libvirt was created by the framework but it thinks the box
+is not initialized yet. Also you may want to stop using Vagrant and you want to simply
+wipe out all Vagrant control files and resources from your workstation. For those purposes you
+should consider using the `.ci/vagrant-cleaner.sh` script; run `.ci/vagrant-cleaner.sh -h` for
+further information.
