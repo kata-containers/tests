@@ -307,7 +307,7 @@ check_for_ksm(){
 #
 # arg1 - timeout in seconds
 wait_ksm_settle(){
-	[[ "$RUNTIME" == "runc" ]] || [[ "$RUNTIME" == "kata-fc" ]] || [[ "$CTR_RUNTIME" == "io.containerd.runc.v2" ]] && return
+	[[ "$RUNTIME" == "runc" ]] || [[ "$CTR_RUNTIME" == "io.containerd.runc.v2" ]] && return
 	local t pcnt
 	local oldscan=-1 newscan
 	local oldpages=-1 newpages
