@@ -517,6 +517,8 @@ static_check_license_headers()
 			--exclude="tools/packaging/qemu/default-configs/*" \
 			--exclude="src/agent/protocols/protos/gogo/*" \
 			--exclude="src/agent/protocols/protos/google/*" \
+			--exclude="*.tar" \
+			--exclude="*.gpg" \
 			-EL $extra_args "\<${pattern}\>" \
 			$files || true)
 
