@@ -12,11 +12,9 @@ cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 
 rustarch=$(${cidir}/kata-arch.sh --rust)
-# release="nightly"
-# recent functional version
 version="${1:-""}"
 if [ -z "${version}" ]; then
-	version=$(get_version "languages.rust.meta.newest-version")
+	version=$(get_version "languages.rust.version")
 fi
 
 echo "Install rust ${version}"
