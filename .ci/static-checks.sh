@@ -93,6 +93,7 @@ long_options=(
 	[branch]="Specify upstream branch to compare against (default '$branch')"
 	[commits]="Check commits"
 	[docs]="Check document files"
+	[dockerfiles]="Check dockerfiles"
 	[files]="Check files"
 	[force]="Force a skipped test to run"
 	[golang]="Check '.go' files"
@@ -1102,6 +1103,96 @@ static_check_json()
 	done
 }
 
+static_check_dockerfiles()
+{
+	local all_files
+	local files
+	local ignore_files
+	local linter_cmd="hadolint"
+	# Put here a list of files which should be ignored.
+        local ignore_files=(
+        )
+
+	command -v "$linter_cmd" &>/dev/null || \
+		die "$linter_cmd command not found. You must have it installed to run this check."
+
+        all_files=$(git ls-files "*/Dockerfile*" | grep -Ev "/(vendor|grpc-rs|target)/" | sort || true)
+
+        if [ "$specific_branch" = "true" ]; then
+                info "Checking all Dockerfiles in $branch branch"
+		files="$all_files"
+        else
+                info "Checking local branch for changed Dockerfiles only"
+
+                local files_status
+		files_status=$(get_pr_changed_file_details || true)
+		files_status=$(echo "$files_status" | grep -E "Dockerfile.*$" || true)
+
+		files=$(echo "$files_status" | awk '{print $NF}')
+        fi
+
+        [ -z "$files" ] && info "No Dockerfiles to check" && return 0
+
+	linter_cmd+=" --no-color"
+
+	# Let's not fail with INFO rules.
+	linter_cmd+=" --failure-threshold warning"
+
+	# Some rules we don't want checked, below we ignore them.
+	#
+	# "DL3008 warning: Pin versions in apt get install"
+	linter_cmd+=" --ignore DL3008"
+	# "DL3041 warning: Specify version with `dnf install -y <package>-<version>`"
+	linter_cmd+=" --ignore DL3041"
+	# "DL3033 warning: Specify version with `yum install -y <package>-<version>`"
+	linter_cmd+=" --ignore DL3033"
+	# "DL3003 warning: Use WORKDIR to switch to a directory"
+	# See https://github.com/hadolint/hadolint/issues/70
+	linter_cmd+=" --ignore DL3003"
+	# "DL3048 style: Invalid label key"
+	linter_cmd+=" --ignore DL3048"
+
+	local file
+	for file in $files; do
+		if echo "${ignore_files[@]}" | grep -q $file ; then
+			info "Ignoring Dockerfile '$file'"
+			continue
+		fi
+
+		info "Checking Dockerfile '$file'"
+		local ret
+		# The linter generates an Abstract Syntax Tree (AST) from the
+		# dockerfile. Some of our dockerfiles are actually templates
+		# with special syntax, thus the linter might fail to build
+		# the AST. Here we handle Dockerfile templates.
+		if [[ "$file" =~ Dockerfile.in$ ]]; then
+			# In our templates, text with marker as @SOME_NAME@ is
+			# replaceable. Usually it is used to replace in a
+			# FROM command (e.g. `FROM @UBUNTU_REGISTRY@/ubuntu`)
+			# but also to add an entire block of commands. Example
+			# of later:
+			# ```
+			# RUN apt-get install -y package1
+			# @INSTALL_MUSL@
+			# @INSTALL_RUST@
+			# ```
+			# It's known that the linter will fail to parse lines
+			# started with `@`. Also it might give false-positives
+		        # on some cases. Here we remove all markers as a best
+			# effort approach. If the template file is still
+			# unparseable then it should be added in the
+			# `$ignore_files` list.
+			{ sed -e 's/@[A-Z_]*@//' "$file" | $linter_cmd -; ret=$?; }\
+				|| true
+		else
+			# Non-template Dockerfile.
+			{ $linter_cmd "$file"; ret=$?; } || true
+		fi
+
+		[ "$ret" -eq 0 ] || die "failed to check Dockerfile '$file'"
+	done
+}
+
 # Run the specified function (after first checking it is compatible with the
 # users architectural preferences), or simply list the function name if list
 # mode is active.
@@ -1177,6 +1268,7 @@ main()
 			--branch) branch="$2"; shift ;;
 			--commits) func=static_check_commits ;;
 			--docs) func=static_check_docs ;;
+			--dockerfiles) func=static_check_dockerfiles ;;
 			--files) func=static_check_files ;;
 			--force) force="true" ;;
 			--golang) func=static_check_go_arch_specific ;;
