@@ -59,7 +59,7 @@ install_from_branch() {
 		cd "${GOPATH}/src/${containerd_repo}" >>/dev/null
 		git fetch
 		git checkout "${containerd_branch}"
-		make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
+		sudo -E PATH="$PATH" make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
 		# SH: The PR containerd version might not match the version.yaml one, so get from build
 		containerd_version=$(_output/cri/bin/containerd --version | awk '{ print substr($3,2); }')
 		tarball_name="cri-containerd-cni-${containerd_version}-${CONTAINERD_OS}-${CONTAINERD_ARCH}.tar.gz"
