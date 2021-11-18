@@ -457,11 +457,17 @@ main() {
 	# make sure cri-containerd test install the proper critest version its testing
 	rm -f "${CRITEST}"
 
-	go get ${cri_containerd_repo}
+	go get -d ${cri_containerd_repo}
 	pushd "${GOPATH}/src/${cri_containerd_repo}"
 
 	git reset HEAD
-	git checkout ${containerd_tarball_version}
+
+	# In CCv0 we are using a fork of containerd, so pull the matching branch of this
+	containerd_branch=$(get_version "externals.containerd.branch")
+	git checkout "${containerd_branch}"
+	
+	# switch to the default pause image set by containerd:1.6.x
+	sed -i 's#k8s.gcr.io/pause:3.[0-9]#k8s.gcr.io/pause:3.6#' integration/main_test.go
 	cp "${SCRIPT_PATH}/container_restart_test.go.patch" ./integration/container_restart_test.go
 
 	# Make sure the right artifacts are going to be built
