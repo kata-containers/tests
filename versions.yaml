@@ -79,6 +79,11 @@ externals:
     url: "github.com/golangci/golangci-lint"
     version: "v1.41.1"
 
+  hadolint:
+    description: "the dockerfile linter used by static-checks"
+    url: "https://github.com/hadolint/hadolint"
+    version: "2.7.0"
+
   sonobuoy:
     description: "Tool to run kubernetes e2e conformance tests"
     url: "https://github.com/vmware-tanzu/sonobuoy"

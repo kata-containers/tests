@@ -1103,18 +1103,52 @@ static_check_json()
 	done
 }
 
+# The dockerfile checker relies on the hadolint tool. This function handle its
+# installation if it is not found on PATH.
+# Note that we need a specific version of the tool as it seems to not have
+# backward/forward compatibility between versions.
+has_hadolint_or_install()
+{
+	# Global variable set by the caller. It might be overwritten here.
+	linter_cmd=${linter_cmd:-"hadolint"}
+	local linter_version=$(get_test_version "externals.hadolint.version")
+	local linter_url=$(get_test_version "externals.hadolint.url")
+	local linter_dest="${GOPATH}/bin/hadolint"
+
+	local has_linter=$(command -v "$linter_cmd")
+	if [[ -z "$has_linter" && "$KATA_DEV_MODE" == "yes" ]]; then
+		# Do not install if it is in development mode.
+		die "$linter_cmd command not found. You must have the version $linter_version installed to run this check."
+	elif [ -n "$has_linter" ]; then
+		# Check if the expected linter version
+		if $linter_cmd --version | grep -v "$linter_version" &>/dev/null; then
+			warn "$linter_cmd command found but not the required version $linter_version"
+			has_linter=""
+		fi
+	fi
+
+	if [ -z "$has_linter" ]; then
+		local download_url="${linter_url}/releases/download/v${linter_version}/hadolint-Linux-x86_64"
+		info "Installing $linter_cmd $linter_version at $linter_dest"
+
+		curl -sfL "$download_url" -o "$linter_dest" || \
+			die "Failed to download $download_url"
+		chmod +x "$linter_dest"
+
+		# Overwrite in case it cannot be found in PATH.
+		linter_cmd="$linter_dest"
+	fi
+}
+
 static_check_dockerfiles()
 {
 	local all_files
 	local files
 	local ignore_files
-	local linter_cmd="hadolint"
 	# Put here a list of files which should be ignored.
         local ignore_files=(
         )
-
-	command -v "$linter_cmd" &>/dev/null || \
-		die "$linter_cmd command not found. You must have it installed to run this check."
+	local linter_cmd="hadolint"
 
         all_files=$(git ls-files "*/Dockerfile*" | grep -Ev "/(vendor|grpc-rs|target)/" | sort || true)
 
@@ -1132,6 +1166,8 @@ static_check_dockerfiles()
         fi
 
         [ -z "$files" ] && info "No Dockerfiles to check" && return 0
+
+	has_hadolint_or_install
 
 	linter_cmd+=" --no-color"
 
