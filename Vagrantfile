@@ -15,6 +15,7 @@ guest_home_dir = '/home/vagrant'
 # The file on the guest where environment variables are going to be set
 # to export.
 guest_env_file = guest_home_dir + '/ci_job_env'
+host_arch = `uname -m`.strip
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -40,6 +41,28 @@ Vagrant.configure("2") do |config|
     lv.driver = "kvm"
     lv.cpus = "4"
     lv.memory = "8192"
+    # Domains on Libvirt will be created with the following prefix.
+    lv.default_prefix = "kata_containers_test-"
+    if host_arch == "x86_64"
+      lv.machine_type = "q35"
+    end
+    # The VM needs one additional virtio-net device and iommu enabled
+    # for the vfio tests.
+    if host_arch == "x86_64"
+      lv.qemuargs :value => "-machine"
+      lv.qemuargs :value => "kernel-irqchip=split"
+      lv.qemuargs :value => "-device"
+      lv.qemuargs :value => "intel-iommu,intremap=on,caching-mode=on,device-iotlb=on"
+      # Currently the vfio test picks the last virtio-net device from lspci's
+      # output. Here we add the device in a PCIe root port with higher slot
+      # number on the hope it will be the last in the list.
+      lv.qemuargs :value => "-device"
+      lv.qemuargs :value => "pcie-root-port,port=0x16,chassis=7,id=pcie.7,multifunction=on,bus=pcie.0,addr=0xF"
+      lv.qemuargs :value => "-netdev"
+      lv.qemuargs :value => "user,id=vfio1"
+      lv.qemuargs :value => "-device"
+      lv.qemuargs :value => "virtio-net-pci,netdev=vfio1,bus=pcie.7,disable-legacy=on,disable-modern=off,iommu_platform=on,ats=on"
+    end
   end
 
   # Shared provision script.
@@ -74,13 +97,17 @@ EOF
   SHELL
 
   config.vm.define "fedora", autostart: false do |fedora|
-    fedora.vm.box = "fedora/32-cloud-base"
+    fedora.vm.box = "generic/fedora32"
     # Fedora is required to reboot so that the change to cgroups v1
-    # makes effect.
+    # and kernel arguments make effect.
     fedora.vm.provision "shell", reboot: true, inline: <<-SHELL
-      sudo dnf install -y grubby
       # Set the kernel parameter to use cgroups v1.
       sudo grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
+      # Set iommu's kernel parameters for vfio tests.
+      source "#{guest_env_file}"
+      if [ "${CI_JOB}" == "VFIO" ]; then
+        grubby --update-kernel=ALL --args="intel_iommu=on iommu=pt"
+      fi
     SHELL
 
     fedora.vm.provision "shell", inline: <<-SHELL
@@ -94,6 +121,14 @@ EOF
 
   config.vm.define "ubuntu", autostart: false do |ubuntu|
     ubuntu.vm.box = "generic/ubuntu2004"
+    if job == "VFIO"
+      ubuntu.vm.provision "shell", reboot: true, inline: <<-SHELL
+        # Set iommu's kernel parameters for vfio tests. That requires a reboot.
+        sed -i 's/\\(GRUB_CMDLINE_LINUX_DEFAULT\\)="\\(.*\\)"/\\1="\\2 intel_iommu=on iommu=pt"/' /etc/default/grub
+        update-grub
+      SHELL
+    end
+
     ubuntu.vm.provision "shell", inline: <<-SHELL
       source "#{guest_env_file}"
       cd "${GOPATH}/src/github.com/kata-containers/tests"

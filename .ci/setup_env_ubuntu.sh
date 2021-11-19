@@ -47,6 +47,8 @@ declare -A packages=( \
 
 if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 20.04" | bc -q)" == "1" ]; then
 	packages[cri-containerd_dependencies]+=" libbtrfs-dev"
+	# driverctl is unavailable on older Ubuntu like 18.04
+	packages[vfio_test]="pciutils driverctl"
 fi
 
 if [ "$(uname -m)" == "x86_64" ] && [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 18.04" | bc -q)" == "1" ]; then
