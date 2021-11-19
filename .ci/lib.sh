@@ -285,12 +285,12 @@ delete_containerd_cri_stale_resource() {
 	# stop containerd service
 	sudo systemctl stop containerd
 	# remove stale binaries
-	containerd_cri_dir="github.com/containerd/cri"
-	release_dir="${GOPATH}/src/${containerd_cri_dir}/_output/release-stage"
+	containerd_cri_dir=$(get_version "externals.containerd.url")
+	release_bin_dir="${GOPATH}/src/${containerd_cri_dir}/bin"
 	binary_dir_union=( "/usr/local/bin" "/usr/local/sbin" )
 	for binary_dir in ${binary_dir_union[@]}
 	do
-		for stale_binary in ${release_dir}/${binary_dir}/*
+		for stale_binary in ${release_bin_dir}/*
 		do
 			sudo rm -rf ${binary_dir}/$(basename ${stale_binary})
 		done
