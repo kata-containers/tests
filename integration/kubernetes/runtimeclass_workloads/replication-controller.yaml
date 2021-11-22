@@ -10,12 +10,12 @@ metadata:
 spec:
   replicas: 1
   selector:
-    app: nginx
+    app: nginx-rc-test
   template:
     metadata:
       name: nginx
       labels:
-        app: nginx
+        app: nginx-rc-test
     spec:
       terminationGracePeriodSeconds: 0
       runtimeClassName: kata
