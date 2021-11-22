@@ -102,7 +102,6 @@ case "${CI_JOB}" in
 		sudo -E ln -sf "${config_path}/configuration-qemu.toml" "${config_path}/configuration.toml"
 		echo "INFO: Running qemu metrics tests"
 		sudo -E PATH="$PATH" ".ci/run_metrics_PR_ci.sh"
-		echo "INFO: Running cloud hypervisor metrics tests"
 		export KATA_HYPERVISOR="cloud-hypervisor"
 		tests_repo="github.com/kata-containers/tests"
 		pushd "${GOPATH}/src/${tests_repo}"
