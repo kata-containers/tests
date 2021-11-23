@@ -1175,6 +1175,11 @@ static_check_dockerfiles()
 
         [ -z "$files" ] && info "No Dockerfiles to check" && return 0
 
+	# As of this writing hadolint is only distributed for x86_64
+	if [ "$(uname -m)" != "x86_64" ]; then
+		info "Skip checking as $linter_cmd is not available for $(uname -m)"
+		return 0
+	fi
 	has_hadolint_or_install
 
 	linter_cmd+=" --no-color"
