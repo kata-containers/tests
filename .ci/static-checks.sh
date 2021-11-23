@@ -1147,6 +1147,14 @@ static_check_dockerfiles()
 	local ignore_files
 	# Put here a list of files which should be ignored.
         local ignore_files=(
+		"tools/osbuilder/rootfs-builder/debian/Dockerfile-aarch64.in"
+		"tools/osbuilder/rootfs-builder/centos/Dockerfile.in"
+		"tools/osbuilder/rootfs-builder/debian/Dockerfile.in"
+		"tools/osbuilder/rootfs-builder/fedora/Dockerfile.in"
+		"tools/osbuilder/rootfs-builder/ubuntu/Dockerfile.in"
+		"tools/osbuilder/rootfs-builder/ubuntu/Dockerfile-aarch64.in"
+		"tools/packaging/tests/Dockerfile/Dockerfile.in"
+		"tools/packaging/tests/Dockerfile/FedoraDockerfile.in"
         )
 	local linter_cmd="hadolint"
 
@@ -1182,11 +1190,15 @@ static_check_dockerfiles()
 	linter_cmd+=" --ignore DL3041"
 	# "DL3033 warning: Specify version with `yum install -y <package>-<version>`"
 	linter_cmd+=" --ignore DL3033"
+	# "DL3018 warning: Pin versions in apk add. Instead of `apk add <package>` use `apk add <package>=<version>`" 
+	linter_cmd+=" --ignore DL3018"
 	# "DL3003 warning: Use WORKDIR to switch to a directory"
 	# See https://github.com/hadolint/hadolint/issues/70
 	linter_cmd+=" --ignore DL3003"
 	# "DL3048 style: Invalid label key"
 	linter_cmd+=" --ignore DL3048"
+        # DL3037 warning: Specify version with `zypper install -y <package>=<version>`.
+	linter_cmd+=" --ignore DL3037"
 
 	local file
 	for file in $files; do
@@ -1201,7 +1213,7 @@ static_check_dockerfiles()
 		# dockerfile. Some of our dockerfiles are actually templates
 		# with special syntax, thus the linter might fail to build
 		# the AST. Here we handle Dockerfile templates.
-		if [[ "$file" =~ Dockerfile.in$ ]]; then
+		if [[ "$file" =~ Dockerfile.*.in$ ]]; then
 			# In our templates, text with marker as @SOME_NAME@ is
 			# replaceable. Usually it is used to replace in a
 			# FROM command (e.g. `FROM @UBUNTU_REGISTRY@/ubuntu`)
