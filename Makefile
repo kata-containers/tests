@@ -103,12 +103,6 @@ crio:
 	bash .ci/install_bats.sh
 	./integration/cri-o/cri-o.sh
 
-docker-stability:
-	systemctl is-active --quiet docker || sudo systemctl start docker
-	cd integration/stability && \
-	export ITERATIONS=2 && export MAX_CONTAINERS=20 && ./soak_parallel_rm.sh
-	cd integration/stability && ./hypervisor_stability_kill_test.sh
-
 ksm:
 	bash -f integration/ksm/ksm_test.sh
 
@@ -193,7 +187,6 @@ help:
 	checkcommits \
 	crio \
 	docker \
-	docker-stability \
 	filesystem \
 	ginkgo \
 	$(INSTALL_TARGETS) \
