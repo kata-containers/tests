@@ -21,7 +21,7 @@ QEMU_PATH=${QEMU_PATH:-}
 # Overwrite the default Kernel path on configuration.toml
 USE_HOST_KERNEL=${USE_HOST_KERNEL:-no}
 
-function terminate()
+terminate()
 {
 	# Sending a termination message. Can be used by an orchestrator that
 	# will look into this file to check the installation has finished
@@ -39,7 +39,7 @@ function terminate()
 
 # Set the QEMU path on configuration.toml to $QEMU_PATH, also update
 # virtiofsd's path.
-function update_qemu_path()
+update_qemu_path()
 {
 	local toml="${SRC}/opt/kata/share/defaults/kata-containers/configuration.toml"
 	# Make a copy of the original file, it can help with debugging.
@@ -53,7 +53,7 @@ function update_qemu_path()
 
 # Set the Kernel path on configuration.toml to the host's.
 #
-function update_kernel_path()
+update_kernel_path()
 {
 	local toml="${SRC}/opt/kata/share/defaults/kata-containers/configuration.toml"
 	local kernel_path="/lib/modules/$(uname -r)/vmlinuz"
