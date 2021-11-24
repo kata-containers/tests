@@ -24,7 +24,7 @@ info "Setup env for K8s e2e testing"
 cd "${GOPATH}/src/github.com/kata-containers/tests/integration/kubernetes"
 if ! bash ./init.sh; then
 	info "k8s init failed trying again"
-	sudo systemctl restart "${CRI_RUNTIME}"
+	bash ./cleanup_env.sh
 	sleep "${wait_init_retry}"
 	bash ./init.sh
 fi
