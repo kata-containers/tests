@@ -21,7 +21,7 @@ CI=${CI:-""}
 source "${script_dir}/lib.sh"
 
 #Use cri contaienrd tarball format.
-#https://github.com/containerd/cri/blob/master/docs/installation.md#release-tarball
+#https://github.com/containerd/containerd/blob/main/docs/cri/installation.md#release-tarball
 CONTAINERD_OS=$(go env GOOS)
 CONTAINERD_ARCH=$(go env GOARCH)
 

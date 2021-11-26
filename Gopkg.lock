@@ -84,7 +84,6 @@
   packages = [
     ".",
     "config",
-    "extensions/table",
     "internal/codelocation",
     "internal/containernode",
     "internal/failer",
@@ -105,27 +104,6 @@
   pruneopts = "NT"
   revision = "ce5d301e555bb672c693c099ba6ca5087b06c0b4"
   version = "v1.10.3"
-
-[[projects]]
-  digest = "1:dbc32e78111432cefebd2bae8a913581ccea31c1f79547aac1c431a8e1b28c55"
-  name = "github.com/onsi/gomega"
-  packages = [
-    ".",
-    "format",
-    "internal/assertion",
-    "internal/asyncassertion",
-    "internal/oraclematcher",
-    "internal/testingtsupport",
-    "matchers",
-    "matchers/support/goraph/bipartitegraph",
-    "matchers/support/goraph/edge",
-    "matchers/support/goraph/node",
-    "matchers/support/goraph/util",
-    "types",
-  ]
-  pruneopts = "NUT"
-  revision = "334b8f472b3af5d541c5642701c1e29e2126f486"
-  version = "v1.1.0"
 
 [[projects]]
   digest = "1:57234a321bf1f8f98a8a9a5122a2404cc60d0800516f4ab7a7b2375e4b2d19ea"
@@ -233,9 +211,6 @@
     "github.com/montanaflynn/stats",
     "github.com/olekukonko/tablewriter",
     "github.com/onsi/ginkgo",
-    "github.com/onsi/ginkgo/config",
-    "github.com/onsi/ginkgo/extensions/table",
-    "github.com/onsi/gomega",
     "github.com/opencontainers/specs/specs-go",
     "github.com/pkg/errors",
     "github.com/sirupsen/logrus",

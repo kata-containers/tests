@@ -30,12 +30,10 @@ Options:
 	-h                         : Help, show this information.
 	-r <runtime>               : Supported runtimes: runc and kata-runtime.
 	-s <storage_driver>        : Supported storage driver: overlay2(default), devicemapper, etc.
-	-t <tag>                   : Tags supported: swarm, latest. If you do not specify
+	-t <tag>                   : Tags supported: latest. If you do not specify
                                      a tag, the script will use latest as default.
-                                     With this tag you can install the correct version
-                                     of docker that has CC compatibility with swarm.
 Example:
-	./$SCRIPT_NAME docker install -t swarm -f
+	./$SCRIPT_NAME docker install -t latest -f
 EOF
 }
 
@@ -130,53 +128,12 @@ install_docker(){
 			sudo -E apt-get -y install "${pkg_name}"
 		elif [[ "$ID" =~ ^opensuse.*$ ]] || [ "$ID" == "sles" ]; then
 			sudo zypper removelock docker
-			sudo zypper -n  install "${pkg_name}" 
+			sudo zypper -n  install "${pkg_name}"
 			sudo zypper addlock docker
-		fi
-	elif [ "$tag" == "swarm" ]; then
-		# If tag is swarm, install docker 1.12.1
-		log_message "Installing docker $docker_swarm_version"
-		pkg_name="docker-engine"
-		if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
-			# We stick to the xenial repo, since it is the only one that
-			# provides docker 1.12.1
-			repo_url="https://apt.dockerproject.org"
-			sudo -E apt-get -y install apt-transport-https ca-certificates
-			curl -fsSL "${repo_url}/gpg" | sudo apt-key add -
-			sudo -E add-apt-repository "deb [arch=${arch}] ${repo_url}/repo ubuntu-xenial main"
-			sudo -E apt-get update
-			docker_version_full=$(apt-cache show docker-engine | grep "^Version: $docker_swarm_version" | awk '{print $2}' | head -1)
-			sudo -E apt-get -y install --allow-downgrades "${pkg_name}=${docker_version_full}"
-		elif [ "$ID" == "fedora" ]; then
-			# We stick to the Fedora 24 repo, since it is the only one that
-			# provides docker 1.12.1
-			repo_url="https://yum.dockerproject.org"
-			fedora24_repo="${repo_url}/repo/main/fedora/24"
-			gpg_key="gpg"
-			sudo -E dnf -y install dnf-plugins-core
-			sudo -E dnf config-manager --add-repo  "${fedora24_repo}"
-			curl -O "${repo_url}/${gpg_key}"
-			sudo rpm --import "./${gpg_key}"
-			rm "./${gpg_key}"
-			sudo -E dnf makecache
-			docker_version_full=$(dnf --showduplicate list "$pkg_name" | grep "$docker_swarm_version" | awk '{print $2}' | tail -1)
-			sudo -E dnf -y install "${pkg_name}-${docker_version_full}"
-		elif [ "$ID" == "centos" ]; then
-			repo_url="https://yum.dockerproject.org"
-			centos7_repo="${repo_url}/repo/main/centos/7"
-			gpg_key="gpg"
-			sudo -E yum -y install yum-utils
-			sudo -E yum config-manager --add-repo  "${centos7_repo}"
-			curl -O "${repo_url}/${gpg_key}"
-			sudo rpm --import "./${gpg_key}"
-			rm "./${gpg_key}"
-			sudo -E yum makecache
-			docker_version_full=$(yum --showduplicate list "$pkg_name" | grep "$docker_swarm_version" | awk '{print $2}' | tail -1)
-			sudo -E yum -y install "${pkg_name}-${docker_version_full}"
 		fi
 	else
 		# If tag received is invalid, then return an error message
-		die "Unrecognized tag. Tag supported is: swarm"
+		die "Unrecognized tag."
 	fi
 	sudo systemctl daemon-reload
 	sudo systemctl start docker.socket
@@ -309,11 +266,7 @@ configure_docker(){
 			docker_https_proxy="HTTPS_PROXY=$https_proxy"
 		fi
 
-		if [ "$tag" == "swarm" ] ; then
-			default_runtime=$runtime
-		else
-			default_runtime="runc"
-		fi
+		default_runtime="runc"
 
 		if [ "$runtime" == "kata-runtime" ]  ; then
 			# Try to find kata-runtime in $PATH, if it is not present
