@@ -91,7 +91,7 @@ install_jq() {
 		centos|rhel)
 			sudo yum -y install "${package}" 1>&5 2>&1
 			;;
-		debian|ubuntu)
+		ubuntu)
 			sudo apt-get -y install "${package}" 1>&5 2>&1
 			;;
 		opensuse-*|sles)

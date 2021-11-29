@@ -119,13 +119,6 @@ install_docker(){
 			sudo yum-config-manager --add-repo "$repo_url"
 			sudo yum makecache
 			sudo -E yum -y install "${pkg_name}"
-		elif [ "$ID" == "debian" ]; then
-			sudo -E apt-get -y install apt-transport-https ca-certificates software-properties-common
-			curl -sL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
-			arch=$(dpkg --print-architecture)
-			sudo -E add-apt-repository "deb [arch=${arch}] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
-			sudo -E apt-get update
-			sudo -E apt-get -y install "${pkg_name}"
 		elif [[ "$ID" =~ ^opensuse.*$ ]] || [ "$ID" == "sles" ]; then
 			sudo zypper removelock docker
 			sudo zypper -n  install "${pkg_name}"
@@ -169,7 +162,7 @@ remove_docker(){
 		sudo systemctl stop docker
 		version=$(get_docker_version)
 		log_message "Removing package: $pkg_name version: $version"
-		if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
+		if [ "$ID" == "ubuntu" ]; then
 			sudo apt -y purge ${pkg_name}
 		elif [ "$ID" == "fedora" ]; then
 			sudo dnf -y remove ${pkg_name}
@@ -193,7 +186,7 @@ get_docker_version(){
 }
 
 get_docker_package_name(){
-	if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
+	if [ "$ID" == "ubuntu" ]; then
 		dpkg --get-selections | awk '/docker/ {print $1}'
 	elif [ "$ID" == "fedora" ] || [ "$ID" == "centos" ] || [ "$ID" == "rhel" ] || [[ "$ID" =~ ^opensuse.*$ ]] || [ "$ID" == "sles" ]; then
 		rpm -qa | grep docker | grep -v selinux
