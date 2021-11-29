@@ -24,7 +24,11 @@ spec:
           imagePullPolicy: Always
           env:
             - name: RUNTIME_CLASS
-              value: kata
+              valueFrom:
+                configMapKeyRef:
+                  name: kata-webhook
+                  key: runtime_class
+                  optional: true
           args:
             - -tls-cert-file=/etc/webhook/certs/cert.pem
             - -tls-key-file=/etc/webhook/certs/key.pem

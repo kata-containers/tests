@@ -9,7 +9,7 @@ kind: MachineConfig
 metadata:
   labels:
     machineconfiguration.openshift.io/role: worker
-  name: 50-kata
+  name: 50-kata-ci
 spec:
   config:
     ignition:
@@ -20,4 +20,4 @@ spec:
               source: data:text/plain;charset=utf-8;base64,${KATA_CRIO_CONF_BASE64}
         filesystem: root
         mode: 0420
-        path: /etc/crio/crio.conf.d/50-kata
+        path: /etc/crio/crio.conf.d/50-kata-ci

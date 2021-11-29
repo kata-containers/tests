@@ -35,6 +35,18 @@ spec:
                   valueFrom:
                   fieldRef:
                    fieldPath: spec.nodeName
+                - name: QEMU_PATH
+                  valueFrom:
+                    configMapKeyRef:
+                      name: ci.kata.installer.qemu
+                      key: qemu_path
+                      optional: true
+                - name: USE_HOST_KERNEL
+                  valueFrom:
+                    configMapKeyRef:
+                      name: ci.kata.installer.kernel
+                      key: host_kernel
+                      optional: true
             hostNetwork: true
             hostPID: true
             #nodeName: $NODE_NAME

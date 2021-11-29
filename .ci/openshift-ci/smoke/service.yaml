@@ -17,7 +17,7 @@ spec:
       targetPort: 8080
 # Create the route to the app's service '/'.
 ---
-apiVersion: v1
+apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: http-server-route
