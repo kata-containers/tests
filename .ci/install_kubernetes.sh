@@ -20,7 +20,7 @@ source /etc/os-release || source /usr/lib/os-release
 kubernetes_version=$(get_version "externals.kubernetes.version")
 ARCH=$("${cidir}"/kata-arch.sh -d)
 
-if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
+if [ "$ID" == "ubuntu" ]; then
 	if [ "$(command -v kubelet)" != "" ]; then
 		sudo -E apt purge kubelet -y
 	fi

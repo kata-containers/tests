@@ -236,7 +236,7 @@ run_vm() {
 
 install_dependencies() {
 	case "${ID}" in
-		ubuntu|debian)
+		ubuntu)
 			# cloud image dependencies
 			deps=(xorriso curl qemu-utils openssh-client)
 

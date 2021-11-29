@@ -383,7 +383,7 @@ install_yamllint()
 
 	case "$ID" in
 		centos|rhel) sudo yum -y install $package ;;
-		debian|ubuntu) sudo apt-get -y install $package ;;
+		ubuntu) sudo apt-get -y install $package ;;
 		fedora) sudo dnf -y install $package ;;
 		*) die "Please install yamllint on $ID" ;;
 	esac

@@ -23,8 +23,8 @@ WORKSPACE=${WORKSPACE:-}
 BAREMETAL=${BAREMETAL:-false}
 TMPDIR=${TMPDIR:-}
 
-# Run noninteractive on debian and ubuntu
-if [ "$ID" == "debian" ] || [ "$ID" == "ubuntu" ]; then
+# Run noninteractive on ubuntu
+if [ "$ID" == "ubuntu" ]; then
 	export DEBIAN_FRONTEND=noninteractive
 fi
 
@@ -129,8 +129,8 @@ fi
 
 # Run the static analysis tools
 if [ "${METRICS_CI}" = "false" ]; then
-	# We run static checks on GitHub Actions for x86_64, 
-	# hence run them on Jenkins for non-x86_64 only.	
+	# We run static checks on GitHub Actions for x86_64,
+	# hence run them on Jenkins for non-x86_64 only.
 	if [ "$arch" != "x86_64" ]; then
 		if [ "${kata_repo}" == "${katacontainers_repo}" ]; then
 			make -C src/runtime pkg/katautils/config-settings.go

@@ -385,7 +385,7 @@ cmd_remove_packages()
 			packages=$(rpm -qa|egrep "${packages_regex}" || true)
 			;;
 
-		debian|ubuntu)
+		ubuntu)
 			packages=$(dpkg-query -W -f='${Package}\n'|egrep "${packages_regex}" || true)
 			;;
 
@@ -410,7 +410,7 @@ cmd_remove_packages()
 		do
 			case "$distro" in
 				centos|rhel) sudo yum versionlock delete "$pkg" &>/dev/null || true ;;
-				debian|ubuntu) sudo apt-mark unhold "$pkg" &>/dev/null || true ;;
+				ubuntu) sudo apt-mark unhold "$pkg" &>/dev/null || true ;;
 				fedora) sudo dnf versionlock delete "$pkg" &>/dev/null || true ;;
 				opensuse|sles) sudo zypper removelock "$pkg" &>/dev/null || true ;;
 			esac
@@ -419,7 +419,7 @@ cmd_remove_packages()
 
 	case "$distro" in
 		centos|rhel) sudo yum -y remove $packages ;;
-		debian|ubuntu) sudo apt-get -y remove $packages ;;
+		ubuntu) sudo apt-get -y remove $packages ;;
 		fedora) sudo dnf -y remove $packages ;;
 		opensuse|sles) sudo zypper remove -y $packages ;;
 	esac
