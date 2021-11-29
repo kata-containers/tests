@@ -12,9 +12,12 @@ set -o errtrace
 
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 source "${SCRIPT_PATH}/../../../lib/common.bash"
+source "${SCRIPT_PATH}/../../../.ci/lib.sh"
 
 # runc is installed in /usr/local/sbin/ add that path
 export PATH="$PATH:/usr/local/sbin"
+
+containerd_tarball_version=$(get_version "externals.containerd.version")
 
 # Runtime to be used for testing
 RUNTIME=${RUNTIME:-containerd-shim-kata-v2}
@@ -43,8 +46,7 @@ SNAP_CI=${SNAP_CI:-""}
 CI=${CI:-""}
 
 containerd_shim_path="$(command -v containerd-shim)"
-readonly cri_containerd_repo="github.com/containerd/containerd"
-readonly cri_repo="github.com/containerd/cri"
+readonly cri_containerd_repo=$(get_version "externals.containerd.url")
 
 #containerd config file
 readonly tmp_dir=$(mktemp -t -d test-cri-containerd.XXXX)
@@ -181,7 +183,7 @@ check_daemon_setup() {
 		FOCUS="TestImageLoad" \
 		RUNTIME="" \
 		CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE" \
-		make -e test-integration
+		make -e cri-integration
 }
 
 testContainerStart() {
@@ -455,17 +457,12 @@ main() {
 	# make sure cri-containerd test install the proper critest version its testing
 	rm -f "${CRITEST}"
 
-	go get ${cri_repo}
-	pushd "${GOPATH}/src/${cri_repo}"
+	go get ${cri_containerd_repo}
+	pushd "${GOPATH}/src/${cri_containerd_repo}"
 
 	git reset HEAD
-	git checkout master
-	# switch to the default pause image set by containerd:1.5.x
-	sed -i 's#k8s.gcr.io/pause:3.[0-9]#k8s.gcr.io/pause:3.5#' integration/main_test.go
+	git checkout ${containerd_tarball_version}
 	cp "${SCRIPT_PATH}/container_restart_test.go.patch" ./integration/container_restart_test.go
-
-	#test cri using the built/installed containerd instead of containerd built in cri
-	sed -i 's#${ROOT}/_output/containerd#/usr/local/bin/containerd#' hack/test-utils.sh
 
 	# Make sure the right artifacts are going to be built
 	make clean
@@ -476,16 +473,7 @@ main() {
 
 	create_containerd_config "${containerd_runtime_test}"
 
-	info "containerd(cri): Running cri-tools"
-	sudo -E PATH="${PATH}:/usr/local/bin" \
-		FOCUS="runtime should support basic operations on container" \
-		RUNTIME="" \
-		SKIP="runtime should support execSync with timeout" \
-		REPORT_DIR="${REPORT_DIR}" \
-		CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE" \
-		make -e test-cri
-
-	info "containerd(cri): Running test-integration"
+	info "containerd(cri): Running cri-integration"
 
 	passing_test=(
 	TestContainerStats
@@ -514,7 +502,7 @@ main() {
 			FOCUS="${t}" \
 			RUNTIME="" \
 			CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE" \
-			make -e test-integration
+			make -e cri-integration
 	done
 
 	TestContainerMemoryUpdate 1

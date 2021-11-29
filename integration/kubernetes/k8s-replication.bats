@@ -18,7 +18,6 @@ setup() {
 
 @test "Replication controller" {
 	replication_name="replicationtest"
-	number_of_replicas="1"
 
 	# Create yaml
 	sed -e "s/\${nginx_version}/${nginx_image}/" \
@@ -28,23 +27,37 @@ setup() {
 	kubectl create -f "${pod_config_dir}/test-replication-controller.yaml"
 
 	# Check replication controller
-	kubectl describe replicationcontrollers/"$replication_name" | grep "replication-controller"
+	kubectl describe replicationcontrollers/"$replication_name" | \
+		grep "replication-controller"
 
-	# Check pod creation
-	pod_name=$(kubectl get pods --output=jsonpath={.items..metadata.name})
-	cmd="kubectl wait --for=condition=Ready --timeout=$timeout pod $pod_name"
+	number_of_replicas=$(kubectl get replicationcontrollers/"$replication_name" \
+		--output=jsonpath='{.spec.replicas}')
+	[ "${number_of_replicas}" -gt 0 ]
+
+	# The replicas pods can be in running, waiting, succeeded or failed
+	# status. We need them all on running state before proceed.
+	cmd="kubectl describe rc/\"${replication_name}\""
+	cmd+="| grep \"Pods Status\" | grep \"${number_of_replicas} Running\""
 	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 
 	# Check number of pods created for the
 	# replication controller is equal to the
 	# number of replicas that we defined
-	launched_pods=$(echo $pod_name | wc -l)
+	launched_pods=($(kubectl get pods --selector=app=nginx-rc-test \
+		--output=jsonpath={.items..metadata.name}))
+	[ "${#launched_pods[@]}" -eq "$number_of_replicas" ]
 
-	[ "$launched_pods" -eq "$number_of_replicas" ]
+	# Check pod creation
+	for pod_name in ${launched_pods[@]}; do
+		cmd="kubectl wait --for=condition=Ready --timeout=$timeout pod $pod_name"
+		waitForProcess "$wait_time" "$sleep_time" "$cmd"
+	done
 }
 
 teardown() {
+	# Debugging information
+	kubectl describe replicationcontrollers/"$replication_name"
+
 	rm -f "${pod_config_dir}/test-replication-controller.yaml"
-	kubectl delete pod "$pod_name"
 	kubectl delete rc "$replication_name"
 }
