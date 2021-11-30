@@ -164,7 +164,10 @@ echo "Kubelet options:"
 sudo cat /var/lib/kubelet/kubeadm-flags.env
 sudo systemctl daemon-reload && sudo systemctl restart kubelet
 
-kubectl get nodes
+for i in $(seq 4)
+do
+        kubectl get nodes && break || sleep $i
+done
 kubectl get pods
 
 # default network plugin should be flannel, and its config file is taken from k8s 1.12 documentation
