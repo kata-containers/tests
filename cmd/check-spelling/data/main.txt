@@ -27,6 +27,7 @@ deploy
 dialer
 dialog/A
 distro/AB
+emptydir/A
 enablement/AB
 entrypoint/AB
 ethernet
@@ -55,6 +56,7 @@ linter/AB
 logfile/A
 Longterm
 longterm
+loopback
 memcpy/A
 mergeable
 metadata

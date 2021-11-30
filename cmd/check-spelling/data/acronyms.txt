@@ -7,6 +7,7 @@
 ACPI/AB
 ACS/AB
 API/AB
+AUFS # Another Union FS
 AWS/AB
 BDF/AB
 CFS/AB
@@ -17,6 +18,8 @@ CPUID/AB
 CRI/AB
 CVE/AB
 DAX/AB
+DinD/B # Docker in Docker
+dind/B
 DMA/AB
 DPDK/AB
 FaaS/AB
@@ -40,12 +43,14 @@ KVM/AB
 LTS/AB
 MACVTAP/AB
 mem/B	# For terms like "virtio-mem"
+memdisk/B
 MDEV/AB
 NEMU/AB
 NIC/AB
 NVDIMM/AB
 OCI/AB
 OVMF/AB
+OverlayFS/B
 PCDIMM/AB
 PCI/AB
 PCIe/AB
