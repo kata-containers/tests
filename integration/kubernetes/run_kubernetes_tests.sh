@@ -35,6 +35,7 @@ K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-limit-range.bats" \
 	"k8s-liveness-probes.bats" \
 	"k8s-memory.bats" \
+	"k8s-nested-configmap-secret.bats" \
 	"k8s-number-cpus.bats" \
 	"k8s-oom.bats" \
 	"k8s-optional-empty-configmap.bats" \
