@@ -320,7 +320,7 @@ setup()
 
 usage()
 {
-	cat <<-EOT
+	cat <<-EOF
 	Usage: ${script_name} <command> [arguments]
 
 	Description: Spell-checking utility.
@@ -332,7 +332,7 @@ usage()
 	  delete-dict  : Delete the dictionary.
 	  help         : Show this usage.
 	  make-dict    : Create the dictionary.
-EOT
+EOF
 }
 
 main()

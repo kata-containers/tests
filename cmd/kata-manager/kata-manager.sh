@@ -47,7 +47,7 @@ kata_repos_base=
 
 usage()
 {
-	cat <<EOT
+	cat <<EOF
 Usage: ${script_name} [options] [command]
 
 Description: Install and configure Kata Containers.
@@ -81,7 +81,7 @@ Notes:
 [1] - This is only possible if the user has not specified '-c'.
 
 
-EOT
+EOF
 }
 
 die()

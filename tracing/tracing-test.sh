@@ -306,7 +306,7 @@ run_tests()
 
 usage()
 {
-	cat <<EOT
+	cat <<EOF
 
 Usage: $script_name [<command>]
 
@@ -326,7 +326,7 @@ Environment variables:
 Notes:
   - Runs all test phases if no arguments are specified.
 
-EOT
+EOF
 }
 
 main()

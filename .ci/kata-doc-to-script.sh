@@ -45,7 +45,7 @@ verbose="no"
 
 usage()
 {
-	cat <<EOT
+	cat <<EOF
 Usage: ${script_name} [options] <markdown-file> [<script-file> [<description>]]
 
 This script will convert a github-flavoured markdown document file into a
@@ -102,7 +102,7 @@ Limitations:
 
 ${warning}
 
-EOT
+EOF
 
 	exit 0
 }
@@ -119,7 +119,7 @@ script_header()
 {
 	local -r description="$1"
 
-	cat <<-EOT
+	cat <<-EOF
 	#!/bin/bash
 	${license}
 	#----------------------------------------------
@@ -135,7 +135,7 @@ script_header()
 	# fail the entire script if any simple command fails
 	set -e
 
-EOT
+EOF
 }
 
 # Convert the specified github-flavoured markdown format file

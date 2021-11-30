@@ -127,7 +127,7 @@ create_containerd_config() {
 	# Remove dots.  Dots are used by toml syntax as atribute separator
 	runtime="${runtime//./-}"
 
-cat << EOT | sudo tee "${CONTAINERD_CONFIG_FILE}"
+cat << EOF | sudo tee "${CONTAINERD_CONFIG_FILE}"
 [plugins]
   [plugins.cri]
     [plugins.cri.containerd]
@@ -142,7 +142,7 @@ cat << EOT | sudo tee "${CONTAINERD_CONFIG_FILE}"
           Runtime = "${containerd_runtime}"
 [plugins.linux]
        shim = "${containerd_shim_path}"
-EOT
+EOF
 
 if [ "$KATA_HYPERVISOR" == "firecracker" ]; then
 	sudo sed -i 's|^\(\[plugins\]\).*|\1\n  \[plugins.devmapper\]\n    pool_name = \"contd-thin-pool\"\n    base_image_size = \"4096MB\"|' ${CONTAINERD_CONFIG_FILE}
