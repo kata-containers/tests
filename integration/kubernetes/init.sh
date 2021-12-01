@@ -141,6 +141,7 @@ sed -i "s|CGROUP_DRIVER|${cgroup_driver}|" "${kubeadm_config_file}"
 trap 'sudo -E sh -c "rm -r "${kubeadm_config_file}""' EXIT
 
 if [ "${CI}" == true ] && [[ $(wc -l /proc/swaps | awk '{print $1}') -gt 1 ]]; then
+	grep -q zram /proc/swaps && echo "# zram swap disabled"  | sudo tee /etc/systemd/zram-generator.conf
 	sudo swapoff -a || true
 fi
 
