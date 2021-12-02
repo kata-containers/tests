@@ -141,7 +141,7 @@ cmd_generate()
 
 usage()
 {
-	cat <<EOT
+	cat <<EOF
 Usage: ${script_name} help
        ${script_name} generate <repo-name> <output-file>
 
@@ -151,7 +151,7 @@ Examples:
   # specified file
   \$ ${script_name} generate github.com/kata-containers/kata-containers /tmp/out.yaml
 
-EOT
+EOF
 }
 
 main()

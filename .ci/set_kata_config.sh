@@ -29,7 +29,7 @@ option=${1:-}
 request=${2:-}
 
 usage(){
-	cat <<EOT
+	cat <<EOF
 Usage:
 ${script_name} <option> <request>
 
@@ -43,7 +43,7 @@ The configuration changes are applied in kata user config:
 ${KATA_ETC_CONFIG_PATH}
 
 Remove it if you want to use the stateless options.
-EOT
+EOF
 	exit 1
 }
 

@@ -32,17 +32,17 @@ setup() {
 	kubectl exec "$pod_name" -- date
 
 	## Case for stdin
-	kubectl exec -i "$pod_name" -- sh <<EOC
+	kubectl exec -i "$pod_name" -- sh <<-EOF
 echo abc > /tmp/abc.txt
 grep abc /tmp/abc.txt
 exit
-EOC
+EOF
 
 	## Case for return value
 	### Command return non-zero code
-	run bash -c "kubectl exec -i $pod_name -- sh <<EOC
+	run bash -c "kubectl exec -i $pod_name -- sh <<-EOF
 exit 123
-EOC"
+EOF"
 	echo "run status: $status" 1>&2
 	echo "run output: $output" 1>&2
 	[ "$status" -eq 123 ]

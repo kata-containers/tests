@@ -14,7 +14,7 @@ source "${cidir}/lib.sh"
 
 usage()
 {
-cat <<EOT
+cat <<EOF
 Description: Display host architecture name in various formats.
 
 Usage: $script_name [options]
@@ -27,7 +27,7 @@ Options:
  -h, --help            : Show this help.
  -k, --kernel          : Show architecture name compatible with Linux* build system.
 
-EOT
+EOF
 }
 
 # Convert architecture to the name used by golang
