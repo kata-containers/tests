@@ -22,7 +22,7 @@ containerd_tarball_version=$(get_version "externals.containerd.version")
 # Runtime to be used for testing
 RUNTIME=${RUNTIME:-containerd-shim-kata-v2}
 SHIMV2_TEST=${SHIMV2_TEST:-""}
-FACTORY_TEST=${FACTORY_TEST:-""}
+FACTORY_TEST=${FACTORY_TEST:-"true"}
 KILL_VMM_TEST=${KILL_VMM_TEST:-""}
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 ARCH=$(uname -m)
@@ -68,7 +68,7 @@ ci_config() {
 		if [ -n "${FACTORY_TEST}" ]; then
 			sudo sed -i -e 's/^#enable_template.*$/enable_template = true/g' "${kata_config}"
 			echo "init vm template"
-			sudo -E PATH=$PATH "$RUNTIME" factory init
+			sudo -E PATH=$PATH "kata-runtime" factory init
 		fi
 	fi
 
@@ -89,7 +89,7 @@ ci_cleanup() {
 
 	if [ -n "${FACTORY_TEST}" ]; then
 		echo "destroy vm template"
-		sudo -E PATH=$PATH "$RUNTIME" factory destroy
+		sudo -E PATH=$PATH "kata-runtime" factory destroy
 	fi
 
 	if [ -n "${KILL_VMM_TEST}" ] && [ -e "$default_containerd_config_backup" ]; then
