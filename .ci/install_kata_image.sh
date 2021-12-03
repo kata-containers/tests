@@ -50,7 +50,7 @@ build_rust_image() {
 			fi
 			distro="${osbuilder_distro:-ubuntu}"
 			if [ ${CCV0} == "yes" ]; then
-				sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" SKOPEO_UMOCI=yes make -e "image"
+				sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" UMOCI=yes make -e "image"
 			else
 				sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" EXTRA_PKGS="${EXTRA_PKGS}" \
 					make -e "${target_image}"
