@@ -155,7 +155,7 @@ create_cache_asset() {
 }
 
 usage() {
-cat <<EOT
+cat <<EOF
 Usage: $script_name [options]
 Description: This script builds the cache of several Kata components.
 Options:
@@ -168,7 +168,7 @@ Options:
 -q      Run qemu cache
 -r      Run image initrd cache
 
-EOT
+EOF
 }
 
 main() {

@@ -261,14 +261,14 @@ can_we_skip() {
 	# If we have any files that *must* be checked, then immediately return
 	if [ -n "$need_checking" ]; then
 		# stderr, so it does not get in our return value...
-		cat >&2 <<-EOT
+		cat >&2 <<-EOF
 		INFO: Cannot fastpath skip CI.
 		INFO: Some files present must be CI checked.
 		INFO: Files to check are:
 
 		$need_checking
 
-EOT
+EOF
 		echo "1"
 		return 0
 	else
@@ -288,23 +288,23 @@ EOT
 
 	if [ -z "$non_skippable" ]; then
 		# stderr, so it does not get in our return value...
-		cat >&2 <<-EOT
+		cat >&2 <<-EOF
 		INFO: No files to check in CI.
 		INFO: Fastpath short circuit returning from CI.
 		INFO: Files skipped are:
 
 		$filenames
 
-EOT
+EOF
 		echo "0"
 		return 0
 	else
-		cat >&2 <<-EOT
+		cat >&2 <<-EOF
 		INFO: Not all files skippable
 
 		$non_skippable
 
-EOT
+EOF
 		echo "1"
 		return 0
 	fi
@@ -634,7 +634,7 @@ self_test() {
 
 help()
 {
-	cat <<EOT
+	cat <<EOF
 Usage: ${script_name} [test]
 
 This script will check if the CI system needs to be run, according
@@ -642,7 +642,7 @@ to the egrep patterns found in the file ${yqfile}
 
 Passing the argument 'test' to this script will cause it to only
 run its self tests.
-EOT
+EOF
 
 	exit 0
 }

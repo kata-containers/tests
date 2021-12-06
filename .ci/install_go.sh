@@ -35,7 +35,7 @@ info() {
 
 usage(){
 	exit_code="$1"
-	cat <<EOT
+	cat <<EOF
 Usage:
 
 ${script_name} [options] <args>
@@ -52,7 +52,7 @@ Options
 -h        : Show this help
 -p        : Install go defined in ${PROJECT} versions file.
 
-EOT
+EOF
 
 	exit "$exit_code"
 }

@@ -217,7 +217,7 @@ hypervisor_binary="qemu-system-${arch}"
 
 usage()
 {
-	cat <<EOT
+	cat <<EOF
 Usage: $script_name [options]
 
 Summary: Run Kata Agent shutdown tests.
@@ -251,7 +251,7 @@ Notes:
 - By default all shutdown test types are run, but only the default agent test
   type is run.
 
-EOT
+EOF
 }
 
 warn()
@@ -644,13 +644,13 @@ setup_containerd()
 
 	if [ -z "$containerd_debug_enabled" ]
 	then
-		cat <<-EOT | sudo tee -a "$file"
+		cat <<-EOF | sudo tee -a "$file"
 		[debug]
 		    # Allow Kata Containers debug messages to be propageted
 		    # into the hosts journal.
 		    # (use "journalctl -t kata" to view).
 		    level = "debug"
-		EOT
+		EOF
 
 		sudo systemctl restart containerd
 	fi

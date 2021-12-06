@@ -21,7 +21,7 @@ info()
 
 usage()
 {
-	cat <<EOT
+	cat <<EOF
 Usage: $script_name [-h | --help | help]
 
 Options:
@@ -40,7 +40,7 @@ code that is not being exercised.
 ---
 [1] - A skip is a test which has been marked as disabled so that it is not
       currently run.
-EOT
+EOF
 }
 
 # Determine if the specified github issue is closed.

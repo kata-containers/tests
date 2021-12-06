@@ -30,7 +30,7 @@ sudo truncate --size 10G /var/lib/containerd/devmapper/meta-disk.img
 
 sudo mkdir -p /etc/systemd/system
 
-cat<<EOT | sudo tee /etc/systemd/system/containerd-devmapper.service
+cat<<EOF | sudo tee /etc/systemd/system/containerd-devmapper.service
 [Unit]
 Description=Setup containerd devmapper device
 DefaultDependencies=no
@@ -44,7 +44,7 @@ ExecStart=-/sbin/losetup /dev/loop20 /var/lib/containerd/devmapper/data-disk.img
 ExecStart=-/sbin/losetup /dev/loop21 /var/lib/containerd/devmapper/meta-disk.img
 [Install]
 WantedBy=local-fs.target
-EOT
+EOF
 
 sudo systemctl daemon-reload
 sudo systemctl enable --now containerd-devmapper
@@ -68,7 +68,7 @@ then
 	sudo sed -i 's|^\(\[plugins\]\).*|\1\n  \[plugins.devmapper\]\n    pool_name = \"contd-thin-pool\"\n    base_image_size = \"4096MB\"|' "$containerd_config_file"
 	sudo sed -i 's|\(\[plugins.cri.containerd\]\).*|\1\n      snapshotter = \"devmapper\"|' "$containerd_config_file"
 else
-	cat<<EOT | sudo tee $containerd_config_file
+	cat<<EOF | sudo tee $containerd_config_file
 [plugins]
   [plugins.devmapper]
     pool_name = "contd-thin-pool"
@@ -76,7 +76,7 @@ else
   [plugins.cri]
     [plugins.cri.containerd]
       snapshotter = "devmapper"
-EOT
+EOF
 fi
 
 restart_containerd_service

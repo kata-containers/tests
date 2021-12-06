@@ -127,14 +127,14 @@ chronic=chronic
 
 usage()
 {
-	cat <<EOT
+	cat <<EOF
 
 Usage: $script_name help
        $script_name [options] repo-name [true]
 
 Options:
 
-EOT
+EOF
 
 	local option
 	local description
@@ -156,7 +156,7 @@ EOT
 		printf "    --%-10.10s # %s\n" "$option" "$description"
 	done
 
-	cat <<EOT
+	cat <<EOF
 
 Parameters:
 
@@ -188,7 +188,7 @@ Examples:
   $ $script_name github.com/kata-containers/kata-containers --all
 
 
-EOT
+EOF
 }
 
 # Calls die() if the specified function is not valid.
@@ -273,13 +273,13 @@ static_check_commits()
 
 	if [ "$rc" -ne 0 ]
 	then
-		cat >&2 <<-EOT
+		cat >&2 <<-EOF
 	ERROR: checkcommits failed. See the document below for help on formatting
 	commits for the project.
 
 		https://github.com/kata-containers/community/blob/main/CONTRIBUTING.md#patch-format
 
-EOT
+EOF
 		exit 1
 	fi
 }
@@ -523,12 +523,12 @@ static_check_license_headers()
 			$files || true)
 
 		if [ -n "$missing" ]; then
-			cat >&2 <<-EOT
+			cat >&2 <<-EOF
 		ERROR: Required $desc check ('$pattern') failed for the following files:
 
 		$missing
 
-EOT
+EOF
 			exit 1
 		fi
 	done

@@ -19,7 +19,7 @@ die()
 
 usage()
 {
-    cat <<EOT
+    cat <<EOF
 Description: Simplify the specified logfile by replacing common fields with
 fixed strings to make diff(1)-ing easier.
 
@@ -36,7 +36,7 @@ Limitations:
 
 - This script uses simple heuristics and might break at any time.
 
-EOT
+EOF
 }
 
 # Use heuristics to convert patterns in the specified structured logfile into
