@@ -7,7 +7,7 @@
 #
 FROM registry.centos.org/centos:8
 
-RUN yum install -y rsync
+RUN yum install -y rsync dracut
 
 # Load the installation files.
 COPY ./_out ./_out

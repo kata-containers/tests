@@ -86,4 +86,4 @@ externals:
 openshift-ci:
   dracut_kernel:
     description: "kernel that dracut should be pulling modules in the initramfs"
-    version: "4.18.0-305.19.1.el8_4.x86_64"
+    version: "4.18.0-348.2.1.el8_5.x86_64"
