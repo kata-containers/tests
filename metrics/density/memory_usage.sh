@@ -294,7 +294,7 @@ get_docker_memory_usage(){
 EOF
 )"
 
-	else [ "$RUNTIME" == "kata-runtime" ] || [ "$RUNTIME" == "kata-fc" ] || [ "$RUNTIME" == "kata-qemu" ]
+	else [ "$RUNTIME" == "kata-runtime" ] || [ "$RUNTIME" == "kata-qemu" ]
 		# Get PSS memory of VM runtime components.
 		# And check that the smem search has found the process - we get a "0"
 		#  back if that procedure fails (such as if a process has changed its name
