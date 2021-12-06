@@ -58,14 +58,14 @@ warn()
 
 usage()
 {
-	cat <<EOT
+	cat <<EOF
 
 Usage: $script_name help
        $script_name [options] [cmd]
 
 Options:
 
-EOT
+EOF
 
 	local option
 	local description
@@ -87,14 +87,14 @@ EOT
 		printf "    --%-10.10s # %s\n" "$option" "$description"
 	done
 
-	cat <<EOT
+	cat <<EOF
 
 Commands:
 
     help           # Show usage.
     html-coverage  # Run tests and create HTML coverage report.
 
-EOT
+EOF
 }
 
 list_packages()

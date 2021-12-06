@@ -13,7 +13,7 @@ readonly runc_path=$(command -v runc)
 
 sudo mkdir -p /etc/containerd/
 
-cat << EOT | sudo tee /etc/containerd/config.toml
+cat << EOF | sudo tee /etc/containerd/config.toml
 [debug]
   level = "debug"
 [plugins]
@@ -30,4 +30,4 @@ cat << EOT | sudo tee /etc/containerd/config.toml
            privileged_without_host_devices = true
     [plugins.cri.registry.mirrors."localhost:5000"]
       endpoint = ["http://localhost:5000"]
-EOT
+EOF
