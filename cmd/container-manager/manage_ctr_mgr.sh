@@ -113,7 +113,7 @@ install_docker(){
 			sudo -E dnf config-manager --add-repo "$repo_url"
 			sudo -E dnf makecache
 			sudo -E dnf -y install "${pkg_name}"
-		elif [ "$ID" == "centos" ] || [ "$ID" == "rhel" ]; then
+		elif [ "$ID" == "centos" ]; then
 			sudo -E yum install -y yum-utils
 			repo_url="https://download.docker.com/linux/centos/docker-ce.repo"
 			sudo yum-config-manager --add-repo "$repo_url"
@@ -166,7 +166,7 @@ remove_docker(){
 			sudo apt -y purge ${pkg_name}
 		elif [ "$ID" == "fedora" ]; then
 			sudo dnf -y remove ${pkg_name}
-		elif [ "$ID" == "centos" ] || [ "$ID" == "rhel" ]; then
+		elif [ "$ID" == "centos" ]; then
 			sudo yum -y remove ${pkg_name}
 		elif [[ "$ID" =~ ^opensuse.*$ ]] || [ "$ID" == "sles" ]; then
 			sudo zypper removelock ${pkg_name}
@@ -188,7 +188,7 @@ get_docker_version(){
 get_docker_package_name(){
 	if [ "$ID" == "ubuntu" ]; then
 		dpkg --get-selections | awk '/docker/ {print $1}'
-	elif [ "$ID" == "fedora" ] || [ "$ID" == "centos" ] || [ "$ID" == "rhel" ] || [[ "$ID" =~ ^opensuse.*$ ]] || [ "$ID" == "sles" ]; then
+	elif [ "$ID" == "fedora" ] || [ "$ID" == "centos" ] || [[ "$ID" =~ ^opensuse.*$ ]] || [ "$ID" == "sles" ]; then
 		rpm -qa | grep docker | grep -v selinux
 	else
 		die "This script doesn't support your Linux distribution"

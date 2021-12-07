@@ -30,7 +30,7 @@ containerd_tarball_version=$(get_version "externals.containerd.version")
 containerd_version=${containerd_tarball_version#v}
 
 echo "Set up environment"
-if [ "$ID" == centos ] || [ "$ID" == rhel ] || [ "$ID" == sles ]; then
+if [ "$ID" == centos ] || [ "$ID" == sles ]; then
 	# CentOS/RHEL/SLES: remove seccomp from runc build, no btrfs
 	export BUILDTAGS=${BUILDTAGS:-apparmor no_btrfs}
 fi

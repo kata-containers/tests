@@ -381,7 +381,7 @@ cmd_remove_packages()
 	info "removing packages"
 
 	case "$distro" in
-		centos|fedora|opensuse|rhel|sles)
+		centos|fedora|opensuse|sles)
 			packages=$(rpm -qa|egrep "${packages_regex}" || true)
 			;;
 
@@ -409,7 +409,7 @@ cmd_remove_packages()
 		for pkg in $packages
 		do
 			case "$distro" in
-				centos|rhel) sudo yum versionlock delete "$pkg" &>/dev/null || true ;;
+				centos) sudo yum versionlock delete "$pkg" &>/dev/null || true ;;
 				ubuntu) sudo apt-mark unhold "$pkg" &>/dev/null || true ;;
 				fedora) sudo dnf versionlock delete "$pkg" &>/dev/null || true ;;
 				opensuse|sles) sudo zypper removelock "$pkg" &>/dev/null || true ;;
@@ -418,7 +418,7 @@ cmd_remove_packages()
 	fi
 
 	case "$distro" in
-		centos|rhel) sudo yum -y remove $packages ;;
+		centos) sudo yum -y remove $packages ;;
 		ubuntu) sudo apt-get -y remove $packages ;;
 		fedora) sudo dnf -y remove $packages ;;
 		opensuse|sles) sudo zypper remove -y $packages ;;

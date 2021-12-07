@@ -88,7 +88,7 @@ install_jq() {
 	command -v "$cmd" &>/dev/null && return 0 || true
 
 	case "$ID" in
-		centos|rhel)
+		centos)
 			sudo yum -y install "${package}" 1>&5 2>&1
 			;;
 		ubuntu)
