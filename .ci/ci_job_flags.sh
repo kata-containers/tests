@@ -183,6 +183,7 @@ case "${CI_JOB}" in
 "EXTERNAL_CRIO")
 	init_ci_flags
 	export CRIO="yes"
+	export CRI_RUNTIME="crio"
 	export KATA_HYPERVISOR="qemu"
 	export KUBERNETES="yes"
 	export TEST_CRIO="true"
