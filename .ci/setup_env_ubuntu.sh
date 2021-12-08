@@ -36,6 +36,7 @@ declare -A packages=( \
 	[build_tools]="build-essential python pkg-config zlib1g-dev" \
 	[crio_dependencies_for_ubuntu]="libdevmapper-dev util-linux" \
 	[metrics_dependencies]="smem jq" \
+        [k8s_dependencies]="iproute2" \
 	[cri-containerd_dependencies]="btrfs-progs libseccomp-dev libapparmor-dev make gcc pkg-config" \
 	[crudini]="crudini" \
 	[procenv]="procenv" \

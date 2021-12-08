@@ -25,6 +25,7 @@ declare -A packages=( \
 	[qemu_dependencies]="libcap-devel libattr-devel libcap-ng-devel zlib-devel pixman-devel librbd-devel ninja-build" \
 	[kernel_dependencies]="elfutils-libelf-devel flex" \
 	[crio_dependencies]="btrfs-progs-devel device-mapper-devel glib2-devel glibc-devel glibc-static gpgme-devel libassuan-devel libseccomp-devel libselinux-devel" \
+        [k8s_dependencies]="iproute-tc" \
 	[gperf_dependencies]="gcc-c++" \
 	[bison_binary]="bison" \
 	[os_tree]="ostree-devel" \

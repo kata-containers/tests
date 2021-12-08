@@ -362,3 +362,58 @@ is not initialized yet. Also you may want to stop using Vagrant and you want to 
 wipe out all Vagrant control files and resources from your workstation. For those purposes you
 should consider using the `.ci/vagrant-cleaner.sh` script; run `.ci/vagrant-cleaner.sh -h` for
 further information.
+
+
+## Using the `kata-local-ci` libvirt-based script
+
+Another way to setup a local CI is tu use the `cmd/kata-local-ci` script. This
+script uses [libvirt](https://libvirt.org`) in order to setup a virtual machine
+in which the CI environment is created. A snapshot of this VM is taken, immediately
+after setup, so that the same environment can be restored quickly.
+
+Compared to the Vagrant approach, the main benefit is that this setup can
+easily be deployed on environment where `vagrant` is not available by default
+(like Red Hat Enterprise Linux or Red Hat Core OS systems). Also, because of the
+snapshot, the setup is restored to the "clean" initial state at every run by
+default (this can be disabled by using the `-F` option).
+
+The VM snapshot is particularly useful for people with a very slow network
+connexion, but will also save time for people with a reasonably fast one. In my
+measurements, the initial setup of the VM takes about 20 minutes on a reasonably
+fast network, but can take 3 hours (and fail with timeouts a large fraction of
+the runs) from a low-grade DSL.
+
+To get the various options provided by the script, use `cmd/kata-local-ci -h`.
+
+The most important options are:
+
+* `-d <distro>` to select a `fedora`, `ubuntu` or `centos` virtual machine. You
+  can have all three deployed at the same time independently.
+
+* `-j` to specify the job to run (the value of `CI_JOB`, see
+  [`.ci/ci_job_flags.sh`](.ci/ci_job_flags.sh) for possible values
+
+* `-w` to specify a different work directory than `~/go/src/github.com/kata-containers`
+
+* `-f` to force a clean installation of the CI virtual machine even if it already
+  exists.
+
+* `-F` to run "faster" by not restoring the VM snapshot before running the
+  tests. The time this option saves is relatively minimal, but the option can be
+  used to check if a particular test is resilient to "unclean" environments.
+
+**IMPORTANT** This script uses the contents of the `tests` and `kata-containers`
+repositories located in your work directory, as specified by the `-w` option
+(defaulting to `~/go/src/github.com/kata-containers/{tests,kata-containers}`).
+They _do not use_ the current directory. Furthermore, the `origin` remote must be
+setup to use `git@github.com:kata-containers/tests.git` and not for example `https://`.
+The message otherwise is [frighteningly non-intuitive](https://github.com/kata-containers/tests/pull/4269#issuecomment-990898974):
+
+```
+error: cannot run ssh: No such file or directory
+fatal: unable to fork
+Failed at 566: bash ${script_dir}/../../../ci/install_rust.sh ${RUST_VERSION}
+make: *** [Makefile:93: /home/kata/go/src/github.com/kata-containers/kata-containers/tools/osbuilder/.ubuntu_rootfs.done] Error 1
+[install_kata_image.sh:50] ERROR: sudo -E USE_DOCKER= DISTRO=ubuntu make -e image
+[install_kata.sh:22] ERROR: .ci/install_kata_image.sh
+```

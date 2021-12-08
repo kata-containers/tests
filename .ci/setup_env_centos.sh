@@ -69,6 +69,7 @@ declare -A packages=( \
 	[qemu_dependencies]="libcap-devel libcap-ng-devel libattr-devel libcap-ng-devel librbd1-devel flex libfdt-devel libpmem-devel ninja-build" \
 	[kernel_dependencies]="elfutils-libelf-devel flex pkgconfig patch" \
 	[crio_dependencies]="glibc-static libseccomp-devel libassuan-devel libgpg-error-devel util-linux libselinux-devel" \
+        [k8s_dependencies]="iproute-tc" \
 	[gperf_dependencies]="gcc-c++" \
 	[bison_binary]="bison" \
 	[libgudev1-dev]="libgudev1-devel" \

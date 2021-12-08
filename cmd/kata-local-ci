@@ -1,0 +1,314 @@
+#!/bin/bash
+#
+# Copyright (c) 2022 Red Hat
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+## Usage: kata-local-ci <options>
+##   Run or setup local CI environment for kata containers using libvirt.
+##
+## Options include:
+##   -d <distro>: Select VM distro (fedora,ubuntu,centos, default:fedora)
+##   -f: force install of the VM (and overwrite disk)
+##   -F: "Faster" by reusing the image without reverting to earlier snapshot
+##   -h: Print help
+##   -i: Install required packages
+##   -j <job>: CI job to run (default: all)
+##   -r <option>: Pass extra option to rsync (e.g. exclude dirs)
+##   -w <dir>: Work directory to test (default $GOPATH/src/github.com/kata-containers)
+##
+## Creation options include:
+##   -c <cpus>: Number of CPUs for the VM (default 4)
+##   -k <ssh_key_file> (default ~/.ssh/id_rsa.pub)
+##   -m <memory>: Memory for the VM in megabytes (default 8192M)
+##   -n network config (optional)
+##   -o <disk-image>: Path and image name for the VM
+##   -s <size>: Disk image size for the VM (default 50G)
+##
+# Remotely inspired by https://github.com/alicefr/kata-local-ci-setup
+# by Alice Frosi (@alicefr), but using a different single-script
+# approach and with a focus on being able to suspend/resume
+#
+
+GOPATH=~/go
+distro=fedora
+size=50G
+memory=8192
+cpus=4
+key=~/.ssh/id_rsa.pub
+vmdir=go/src/github.com/kata-containers
+directory=$GOPATH/src/github.com/kata-containers
+disk=""
+network=""
+job="CRIO_K8S"
+rsync_options="--exclude=kata-containers/src/agent/target"
+kci=~/.kata-containers-ci
+install=false
+revert=true
+ssh_opts="-o StrictHostKeyChecking=no -o UpdateHostKeys=no -o PasswordAuthentication=no -o UserKnownHostsFile=~/.ssh/kata-ci-known-hosts"
+ssh_cmd="ssh $ssh_opts"
+
+script_path=$(dirname "$0")
+source "${script_path}/../lib/common.bash"
+
+function help {
+    sed -E '/^##/s/^##\s?//g;t;d' $0
+}
+
+function progress() {
+    printf "******************************************** [$(date +%H:%M:%S)]\n"
+    printf "*\n"
+    printf "* $1\n"
+    printf "*\n"
+    printf "********************************************\n"
+}
+
+function sys() {
+    echo "# sudo" "$@"
+    sudo "$@"
+}
+
+function run() {
+    echo "%" "$@"
+    "$@"
+}
+
+function ci_cmd() {
+    local cmd="$ssh_cmd kata@$VM_IPADDR \"$@\""
+    echo "\$ $cmd"
+    eval "$cmd"
+}
+
+function ci_root_cmd() {
+    local cmd="$ssh_cmd root@$VM_IPADDR \"$@\""
+    echo "\$ $cmd"
+    eval "$cmd"
+}
+
+function install_dependencies() {
+    # Very crude for now (to be refined for non-Fedora distros)
+    if grep -q fedora /etc/os-release; then
+        sudo dnf install -y virt-install guestfs-tools qemu-kvm libvirt rsync
+    else
+        die "UNIMPLEMENTED: Installing dependencies currenlty only works on Fedora"
+    fi
+}
+
+while getopts c:d:fFhij:k:m:n:o:r:s:w: flag
+do
+    case "${flag}" in
+	c) cpus=$OPTARG;;
+        d) distro=$OPTARG;;
+	f) install=true ;;
+        F) revert=false;;
+        h) help; exit 0 ;;
+        i) install_dependencies;;
+        j) job=$OPTARG;;
+        k) key=$OPTARG;;
+	m) memory=$OPTARG;;
+	n) network=$OPTARG;;
+	o) disk=$OPTARG;;
+        r) rsync_options=(${rsync_options[@]} "$OPTARG");;
+	s) size=$OPTARG;;
+        w) directory=$OPTARG;;
+        *) help; exit 1 ;;
+    esac
+done
+
+if [ ! -d "$kci" ]; then
+    mkdir "$kci"
+fi
+
+if [ ! -f "$kci/"$distro-config ]; then
+    install=true
+fi
+
+if [ -z "$disk" ]; then
+    disk=/var/lib/libvirt/images/kata-$distro-ci.qcow2
+fi
+
+if [ ! -f "$disk" ] ; then
+    install=true
+fi
+
+if [ ! -d "$directory"/kata-containers ]; then
+    die "ERROR: The work directory $directory does not contain a 'kata-containers' subdirectory"
+fi
+if [ ! -d "$directory"/tests ]; then
+    die "ERROR: The work directory $directory does not contain a 'tests' subdirectory"
+fi
+
+
+function vm_install() {
+    distro_commands=""
+    firstboot_cmds=(
+	--firstboot-command 'useradd -m kata -s /bin/bash'
+	--firstboot-command 'echo "kata ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/kata'
+	--firstboot-command "echo 'export PATH=\$PATH:/usr/local/go/bin' >> /home/kata/.bashrc"
+	--firstboot-command 'mkdir -p /home/kata/.ssh && chmod 0700 /home/kata/.ssh'
+	--firstboot-command "echo $(cat $key) > /home/kata/.ssh/authorized_keys && chmod 0600 /home/kata/.ssh/authorized_keys"
+	--firstboot-command 'chown kata:kata -R /home/kata'
+        --firstboot-command "swapoff -a"
+        --firstboot-command "sed -i -e 's/^.*swap.*$/#\0/g' /etc/fstab"
+    )
+    final_firstboot_cmd=()
+    ubuntu_distro_commands=(
+        --firstboot-command 'usermod -a -G sudo kata'
+	--update
+	--firstboot-command 'dhclient'
+	--firstboot-command 'systemctl enable serial-getty@ttyS0'
+	--firstboot-command 'systemctl start serial-getty@ttyS0'
+    )
+    rh_distro_commands=(
+        --selinux-relabel
+        --edit '/etc/selinux/config:s/SELINUX=enforcing/SELINUX=permissive/'
+        --firstboot-command 'systemctl stop firewalld'
+        --firstboot-command 'systemctl disable firewalld'
+    )
+    disable_cgroupv2=(
+        --firstboot-command 'grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"'
+        # The change below is for VFIO tests
+        --firstboot-command 'grubby --update-kernel=ALL --args="intel_iommu=on iommu=pt"'
+        --firstboot-command 'reboot'
+    )
+
+    case "$distro" in
+	ubuntu)
+	    distro_name=ubuntu-18.04
+	    distro_commands=("${ubuntu_distro_commands[@]}")
+	    osvariant=ubuntu18.04
+	    ;;
+	ubuntu*)
+	    distro_name=ubuntu-${distro/ubuntu/}
+	    distro_commands=("${ubuntu_distro_commands[@]}")
+	    osvariant=ubuntu${distro/ubuntu}
+	    ;;
+	centos)
+	    distro_name=centos-8.2
+	    osvariant=centos8
+	    distro_commands=("${rh_distro_commands[@]}")
+	    ;;
+	fedora)
+	    distro_name=fedora-35
+	    osvariant=fedora35
+	    distro_commands=("${rh_distro_commands[@]}")
+	    final_firstboot_cmd=("${disable_cgroupv2[@]}")
+	    ;;
+	fedora*)
+	    distro_name=fedora-${distro/fedora/}
+	    osvariant=fedora${distro/fedora/}
+	    distro_commands=("${rh_distro_commands[@]}")
+	    final_firstboot_cmd=("${disable_cgroupv2[@]}")
+	    ;;
+	*)
+	    die "Distro $1 not recognized. Please choose ubuntu, centos or fedora"
+    esac
+
+    if [  ! -z "$network" ]; then
+	network="--network $network"
+    fi
+
+    VM_NAME=kata-$distro-ci
+    progress "Removing earlier VM $VM_NAME"
+    echo "The script may now ask you for a password to setup the VM named $VM_NAME"
+    echo "You can avoid these prompts by executing:"
+    echo "sudo bash -c \"echo > /etc/sudoers.d/kata-local-ci '"$(whoami) "ALL=(ALL) NOPASSWD: /usr/bin/virsh,/usr/bin/virt-install,/usr/bin/virt-builder'\""
+
+    sys virsh destroy $VM_NAME || true
+    sys virsh undefine $VM_NAME --remove-all-storage  --snapshots-metadata || true
+
+    set -e
+    progress "Launching virt-builder"
+    sys virt-builder $distro_name \
+         -o $disk --format qcow2 --size=$size \
+	 --root-password password:kata \
+	 "${distro_commands[@]}" \
+	 --mkdir /home/kata \
+	 --delete /.autorelabel \
+	 --ssh-inject "root:file:$key" \
+	 --install "git,rsync,curl,make,tar" \
+         "${firstboot_cmds[@]}" \
+         "${final_firstboot_cmd[@]}" \
+	 --password  'kata:password:kata' \
+	 --hostname kata-$distro-ci
+    progress "Launching virt-install"
+    sys virt-install --import --name $VM_NAME  --memory $memory --vcpus $cpus \
+         --disk path=$disk,format=qcow2 \
+         --os-variant=$osvariant --noautoconsole $network
+
+    echo -n "Waiting for guest to get an IP address"
+    while ! sudo virsh domifaddr $VM_NAME | grep -q vnet ; do echo -n .; sleep 1; done
+
+    VM_IPADDR=$(sudo virsh domifaddr $VM_NAME | grep vnet | sed -e 's|^\s*vnet[0-9]*.*ipv4\s*\([0-9.]*\)/[0-9]*|\1|g')
+    echo "Got $VM_IPADDR"
+    progress "Guest IP address is $VM_IPADDR"
+    sed -i -e /$VM_IPADDR/d ~/.ssh/kata-ci-known-hosts
+
+    progress "Waiting for ssh to become available"
+    while ! $ssh_cmd kata@$VM_IPADDR "mkdir -p $vmdir"; do
+        sleep 1
+    done
+
+    progress "Waiting for rsync to become available"
+    while ! rsync -e "$ssh_cmd" -av ${rsync_options[@]} $directory/kata-containers/README.md kata@$VM_IPADDR:$vmdir/ 2>&1 >/dev/null; do
+        sleep 1
+    done
+
+    progress "Initial rsync of kata-containers directory"
+    run rsync -e "$ssh_cmd" -av ${rsync_options[@]} $directory/kata-containers kata@$VM_IPADDR:$vmdir/
+
+    progress "Initial rsync of tests directory"
+    run rsync -e "$ssh_cmd" -av ${rsync_options[@]} $directory/tests kata@$VM_IPADDR:$vmdir/
+
+    progress "Configuring run in ~kata/ci_job_env"
+    cat > $kci/$distro-ci_job_env << EOF
+export GOPATH="\$HOME/go"
+export PATH="/usr/local/go/bin:\$GOPATH/bin:\$PATH"
+export CI="true"
+export CI_JOB="\${CI_JOB:-$job}"
+pushd $vmdir/tests &>/dev/null
+source .ci/ci_job_flags.sh
+popd &>/dev/null
+EOF
+    run scp $ssh_opts $kci/$distro-ci_job_env kata@$VM_IPADDR:ci_job_env
+
+    progress "Launching CI setup in $VM_NAME (this will take a while)"
+    ci_cmd "export CI_JOB=$job; source ci_job_env; cd $vmdir/tests; .ci/setup.sh"
+
+    cat > "$kci"/$distro-config <<EOF
+VM_NAME="$VM_NAME"
+VM_IPADDR=$VM_IPADDR
+VM_DISK=$disk
+EOF
+
+    progress "Taking snapshot of $VM_NAME"
+    ci_root_cmd "sync; sync; sync; sleep 3"
+    sys virsh snapshot-create-as $VM_NAME --name initial-snapshot --description "Initial snapshot of $VM_NAME after Kata CI setup"
+
+}
+
+if $install ; then
+    vm_install
+else
+    source "$kci"/$distro-config
+
+    if $revert ; then
+        progress "Reverting to initial snapshot of $VM_NAME"
+        sys virsh snapshot-revert $VM_NAME initial-snapshot
+    fi
+
+    progress "Updating rsync of kata-containers directory"
+    run rsync -e "$ssh_cmd" -av ${rsync_options[@]} $directory/kata-containers kata@$VM_IPADDR:$vmdir/
+
+    progress "Updating rsync of tests directory"
+    run rsync -e "$ssh_cmd" -av ${rsync_options[@]} $directory/tests kata@$VM_IPADDR:$vmdir/
+
+    progress "Cleanup previous runs"
+    ci_root_cmd "swapoff -a" # Apparently, even if /etc/fstab has no swap entries, swap partitions are activated
+    ci_root_cmd "rm -rf /etc/cni/net.d .kube"
+    ci_root_cmd "hwclock --hctosys"
+fi
+
+
+progress "Launching tests"
+ci_cmd "export CI_JOB=$job; source ci_job_env; cd $vmdir/tests; .ci/run.sh" | tee "$kci/$distro.log"
