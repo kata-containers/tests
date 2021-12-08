@@ -30,24 +30,40 @@ untaint_node() {
 	fi
 }
 
-system_pod_wait_time=120
-sleep_time=5
 wait_pods_ready()
 {
 	# Master components provide the cluster’s control plane, including kube-apisever,
 	# etcd, kube-scheduler, kube-controller-manager, etc.
 	# We need to ensure their readiness before we run any container tests.
 	local pods_status="kubectl get pods --all-namespaces"
-	local apiserver_pod="kube-apiserver.*1/1.*Running"
-	local controller_pod="kube-controller-manager.*1/1.*Running"
-	local etcd_pod="etcd.*1/1.*Running"
-	local scheduler_pod="kube-scheduler.*1/1.*Running"
-	local dns_pod="coredns.*1/1.*Running"
-
+	local apiserver_pod="kube-apiserver"
+	local controller_pod="kube-controller-manager"
+	local etcd_pod="etcd"
+	local scheduler_pod="kube-scheduler"
+	local dns_pod="coredns"
 	local system_pod=($apiserver_pod $controller_pod $etcd_pod $scheduler_pod $dns_pod)
+
+	local system_pod_wait_time=120
+	local sleep_time=5
+	local running_pattern=""
 	for pod_entry in "${system_pod[@]}"
 	do
-		waitForProcess "$system_pod_wait_time" "$sleep_time" "$pods_status | grep $pod_entry"
+		running_pattern="${pod_entry}.*1/1.*Running"
+		if ! waitForProcess "$system_pod_wait_time" "$sleep_time" \
+			"$pods_status | grep "${running_pattern}""; then
+			echo "Some expected Pods aren't running after ${system_pod_wait_time} seconds." 1>&2
+			${pods_status} 1>&2
+			# Print debug information for the problematic pods.
+			for pod in $(kubectl get pods --all-namespaces \
+				-o jsonpath='{.items[*].metadata.name}'); do
+				if [[ "$pod" =~ ${pod_entry} ]]; then
+					echo "[DEBUG] Pod ${pod}:" 1>&2
+					kubectl describe -n kube-system \
+						pod $pod 1>&2 || true
+				fi
+			done
+			die "Kubernetes is not fully ready. Bailing out..."
+		fi
 	done
 }
 
@@ -195,6 +211,7 @@ network_plugin_config=${network_plugin_config:-$flannel_url}
 kubectl apply -f "$network_plugin_config"
 
 # we need to ensure a few specific pods ready and running
+info "Wait for system's pods be ready and running"
 wait_pods_ready
 
 echo "Create kata RuntimeClass resource"
