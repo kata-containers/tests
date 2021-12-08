@@ -94,6 +94,22 @@ build_custom_stress_image()
 	fi
 }
 
+# Delete the CNI configuration files and delete the interface.
+# That's needed because `kubeadm reset` (ran on clean up) won't clean up the
+# CNI configuration and we must ensure a fresh environment before starting
+# Kubernetes.
+cleanup_cni_configuration() {
+	# Remove existing CNI configurations:
+	local cni_config_dir="/etc/cni"
+	local cni_interface="cni0"
+	sudo rm -rf /var/lib/cni/networks/*
+	sudo rm -rf "${cni_config_dir}"/*
+	if ip a show "$cni_interface"; then
+		sudo ip link set dev "$cni_interface" down
+		sudo ip link del "$cni_interface"
+	fi
+}
+
 cri_runtime="${CRI_RUNTIME:-crio}"
 kubernetes_version=$(get_version "externals.kubernetes.version")
 
@@ -127,15 +143,8 @@ check_processes
 # Build and store custom stress image
 build_custom_stress_image
 
-# Remove existing CNI configurations:
-cni_config_dir="/etc/cni"
-cni_interface="cni0"
-sudo rm -rf /var/lib/cni/networks/*
-sudo rm -rf "${cni_config_dir}"/*
-if ip a show "$cni_interface"; then
-	sudo ip link set dev "$cni_interface" down
-	sudo ip link del "$cni_interface"
-fi
+info "Clean up any leftover CNI configuration"
+cleanup_cni_configuration
 
 echo "Start ${cri_runtime} service"
 # stop containerd first and then restart it
