@@ -15,6 +15,8 @@ source "${SCRIPT_PATH}/../../.ci/lib.sh"
 source "${SCRIPT_PATH}/../../lib/common.bash"
 source "/etc/os-release" || source "/usr/lib/os-release"
 
+# Whether running on bare-metal mode or not.
+BAREMETAL="${BAREMETAL:-false}"
 CI=${CI:-""}
 RUNTIME=${RUNTIME:-containerd-shim-kata-v2}
 RUNTIME_PATH=${RUNTIME_PATH:-$(command -v $RUNTIME)}
@@ -110,17 +112,30 @@ cleanup_cni_configuration() {
 	fi
 }
 
-cri_runtime="${CRI_RUNTIME:-crio}"
-kubernetes_version=$(get_version "externals.kubernetes.version")
+# Save the current iptables configuration.
+#
+# Global variables:
+# 	KATA_TESTS_DATADIR - directory where to save the configuration (mandatory).
+#
+save_iptables() {
+	[ -n "${KATA_TESTS_DATADIR:-}" ] || \
+		die "\$KATA_TESTS_DATADIR is empty, unable to save the iptables configuration"
 
-# store iptables if CI running on bare-metal
-BAREMETAL="${BAREMETAL:-false}"
-iptables_cache="${KATA_TESTS_DATADIR}/iptables_cache"
-if [ "${BAREMETAL}" == true ]; then
+	local iptables_cache="${KATA_TESTS_DATADIR}/iptables_cache"
 	[ -d "${KATA_TESTS_DATADIR}" ] || sudo mkdir -p "${KATA_TESTS_DATADIR}"
 	# cleanup iptables before save
 	iptables -F && iptables -t nat -F && iptables -t mangle -F && iptables -X
 	iptables-save > "$iptables_cache"
+}
+
+cri_runtime="${CRI_RUNTIME:-crio}"
+kubernetes_version=$(get_version "externals.kubernetes.version")
+
+# store iptables if CI running on bare-metal. The configuration should be
+# restored afterwards the tests finish.
+if [ "${BAREMETAL}" == true ]; then
+	info "Save the iptables configuration"
+	save_iptables
 fi
 
 case "${cri_runtime}" in
