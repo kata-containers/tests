@@ -172,7 +172,7 @@ possible tests.
 
 ## Write a new Unit Test
 
-See the [unit test advice documentation](Unit-Test-Advice.md).
+See the [unit test advice documentation](https://github.com/kata-containers/kata-containers/blob/main/docs/Unit-Test-Advice.md).
 
 ## Run the Kata Containers tests
 
