@@ -19,6 +19,17 @@ CI=${CI:-""}
 RUNTIME=${RUNTIME:-containerd-shim-kata-v2}
 RUNTIME_PATH=${RUNTIME_PATH:-$(command -v $RUNTIME)}
 
+untaint_node() {
+	# Enable the master node to be able to schedule pods.
+	local node_name="$(hostname)"
+	local get_taints="kubectl get 'node/${node_name}' -o jsonpath='{.spec.taints}'"
+	if eval $get_taints | grep -q 'NoSchedule'; then
+		info "Taint 'NoSchedule' is found. Untaint the node so pods can be scheduled."
+		kubectl taint nodes "${node_name}" \
+			node-role.kubernetes.io/master:NoSchedule-
+	fi
+}
+
 system_pod_wait_time=120
 sleep_time=5
 wait_pods_ready()
@@ -189,5 +200,4 @@ wait_pods_ready
 echo "Create kata RuntimeClass resource"
 kubectl create -f "${runtimeclass_files_path}/kata-runtimeclass.yaml"
 
-# Enable the master node to be able to schedule pods.
-kubectl taint nodes "$(hostname)" node-role.kubernetes.io/master:NoSchedule-
+untaint_node
