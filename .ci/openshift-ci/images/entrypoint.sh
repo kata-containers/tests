@@ -60,13 +60,48 @@ update_kernel_path()
 	sed -i 's#^kernel = ".*"#kernel = "'${kernel_path}'"#g' "$toml"
 }
 
+# In case the initrd was not created in a build root which kernel version
+# mismatch with the one of the OpenShift worker node, this function will
+# update the initrd accordingly.
+update_initrd_kernel_modules()
+{
+	local initrd_path="${SRC}/opt/kata/share/kata-containers/kata-containers-initrd.img"
+	local moddir="${HOST_MOUNT}/lib/modules"
+	# Modules directory relative to initrd root directory.
+	local initrd_moddir="usr/lib/modules"
+	local kernel=$(ls ${moddir} | head -1)
+	local rootfs_dir="${PWD}/rootfs"
+
+	if lsinitrd "${initrd_path}" | grep -q "${initrd_moddir}/${kernel}"; then
+		echo "initrd contain ${kernel} modules. Nothing to do."
+		return
+	fi
+
+	echo "Going to update ${initrd_path} for kernel ${kernel}"
+	rm -rf "${rootfs_dir}"
+	mkdir -p "${rootfs_dir}"
+
+	cat "${initrd_path}" | cpio --extract --preserve-modification-time \
+		--make-directories --directory="${rootfs_dir}"
+	cp -ar "${moddir}/${kernel}" "${rootfs_dir}/${initrd_moddir}" || true
+
+	# Make a copy of the old initrd just in case debug is needed.
+	cp ${initrd_path} ${initrd_path}.old.$$
+	( cd "${rootfs_dir}" && find . | cpio -H newc -o | gzip -9 ) > ${initrd_path}
+}
+
 if [ "$(id -u)" -ne 0 ]; then
 	echo "ERROR: $0 must be executed by privileged user"
 	terminate
 fi
 
 [ -n "$QEMU_PATH" ] && update_qemu_path
-[ "$USE_HOST_KERNEL" == "yes" ] && update_kernel_path
+
+# Configure to use the host kernel.
+if [ "$USE_HOST_KERNEL" == "yes" ]; then
+	update_kernel_path
+	update_initrd_kernel_modules
+fi
 
 # Some files are copied over /usr which on Red Hat CoreOS (rhcos) is mounted
 # read-only by default. So re-mount it as read-write, otherwise files won't
