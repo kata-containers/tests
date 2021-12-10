@@ -128,6 +128,39 @@ save_iptables() {
 	iptables-save > "$iptables_cache"
 }
 
+# Start the CRI runtime service.
+#
+# Arguments:
+#	$1 - the CRI service name (mandatory).
+#	$2 - the expected service socket path (mandatory).
+#
+start_cri_runtime_service() {
+	local cri=$1
+	local socket_path=$2
+	# Number of check tentatives.
+	local max_cri_socket_check=5
+	# Sleep time between checks.
+	local wait_time_cri_socket_check=5
+
+	# stop containerd first and then restart it
+	if systemctl is-active --quiet containerd; then
+		info "Stop containerd service"
+		sudo systemctl stop containerd
+	fi
+
+	sudo systemctl enable --now ${cri}
+
+	for i in $(seq ${max_cri_socket_check}); do
+		#when the test runs two times in the CI, the second time crio takes some time to be ready
+		sleep "${wait_time_cri_socket_check}"
+		[ -e "${socket_path}" ] && break
+		echo "Waiting for cri socket ${socket_path} (try ${i})"
+	done
+
+	sudo systemctl status "${cri}" --no-pager || \
+		die "Unable to start the ${cri} service"
+}
+
 cri_runtime="${CRI_RUNTIME:-crio}"
 kubernetes_version=$(get_version "externals.kubernetes.version")
 
@@ -161,25 +194,8 @@ build_custom_stress_image
 info "Clean up any leftover CNI configuration"
 cleanup_cni_configuration
 
-echo "Start ${cri_runtime} service"
-# stop containerd first and then restart it
-info "Stop containerd service"
-systemctl is-active --quiet containerd && sudo systemctl stop containerd
-sudo systemctl enable --now ${cri_runtime}
-max_cri_socket_check=5
-wait_time_cri_socket_check=5
-
-for i in $(seq ${max_cri_socket_check}); do
-	#when the test runs two times in the CI, the second time crio takes some time to be ready
-	sleep "${wait_time_cri_socket_check}"
-	if [ -e "${cri_runtime_socket}" ]; then
-		break
-	fi
-
-	echo "Waiting for cri socket ${cri_runtime_socket} (try ${i})"
-done
-
-sudo systemctl status "${cri_runtime}" --no-pager
+info "Start ${cri_runtime} service"
+start_cri_runtime_service "${cri_runtime}" "${cri_runtime_socket}"
 
 echo "Init cluster using ${cri_runtime_socket}"
 kubeadm_config_template="${SCRIPT_PATH}/kubeadm/config.yaml"
