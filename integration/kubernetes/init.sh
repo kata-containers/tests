@@ -18,6 +18,9 @@ source "/etc/os-release" || source "/usr/lib/os-release"
 # Whether running on bare-metal mode or not.
 BAREMETAL="${BAREMETAL:-false}"
 CI=${CI:-""}
+# Path to the cluster network configuration file. Some architectures will
+# overwritten that variable.
+network_plugin_config="${network_plugin_config:-}"
 RUNTIME=${RUNTIME:-containerd-shim-kata-v2}
 RUNTIME_PATH=${RUNTIME_PATH:-$(command -v $RUNTIME)}
 
@@ -110,6 +113,26 @@ cleanup_cni_configuration() {
 		sudo ip link set dev "$cni_interface" down
 		sudo ip link del "$cni_interface"
 	fi
+}
+
+# Configure the cluster network.
+#
+# Parameters:
+#	$1 - path to the network plugin configuration file (Optional).
+#	     Defaults to flannel.
+#
+configure_network() {
+	local network_plugin_config="${1:-}"
+
+	if [ -z "${network_plugin_config}" ]; then
+		# default network plugin should be flannel, and its config file is taken from k8s 1.12 documentation
+		local flannel_version="$(get_test_version "externals.flannel.version")"
+		local flannel_url="$(get_test_version "externals.flannel.kube-flannel_url")"
+		echo "Use flannel ${flannel_version}"
+		network_plugin_config="$flannel_url"
+	fi
+	echo "Use configuration file from ${network_plugin_config}"
+	kubectl apply -f "$network_plugin_config"
 }
 
 # Save the current iptables configuration.
@@ -260,18 +283,12 @@ start_cri_runtime_service "${cri_runtime}" "${cri_runtime_socket}"
 info "Start Kubernetes"
 start_kubernetes "${kubernetes_version}" "${cri_runtime_socket}" "${cgroup_driver}"
 
-# default network plugin should be flannel, and its config file is taken from k8s 1.12 documentation
-flannel_version="$(get_test_version "externals.flannel.version")"
-flannel_url="https://raw.githubusercontent.com/coreos/flannel/${flannel_version}/Documentation/kube-flannel.yml"
-
 #Load arch-specific configure file
 if [ -f "${SCRIPT_PATH}/../../.ci/${arch}/kubernetes/init.sh" ]; then
         source "${SCRIPT_PATH}/../../.ci/${arch}/kubernetes/init.sh"
 fi
-
-network_plugin_config=${network_plugin_config:-$flannel_url}
-
-kubectl apply -f "$network_plugin_config"
+info "Configure the cluster network"
+configure_network "${network_plugin_config}"
 
 # we need to ensure a few specific pods ready and running
 info "Wait for system's pods be ready and running"
