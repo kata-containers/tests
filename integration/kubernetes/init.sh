@@ -128,6 +128,66 @@ save_iptables() {
 	iptables-save > "$iptables_cache"
 }
 
+# Start Kubernetes
+#
+# Parameters:
+#	$1 - Kubernetes version as in versions.yaml (mandatory).
+#	$2 - CRI runtime socket path (mandatory).
+#	$3 - cgroup driver name (mandatory).
+# Global variables:
+#	SCRIPT_PATH - path to this script.
+#	kubeadm_config_file - the kubeadmin configuration file created in
+#			      this function.
+#	KUBECONFIG - exported by this function.
+#
+start_kubernetes() {
+	local k8s_version="$1"
+	local cri_socket_path="$2"
+	local cgroup_driver="$3"
+	local kubeadm_config_template="${SCRIPT_PATH}/kubeadm/config.yaml"
+
+	echo "Init cluster using ${cri_socket_path}"
+
+	# This should be global otherwise the clean up fails.
+	kubeadm_config_file="$(mktemp --tmpdir kubeadm_config.XXXXXX.yaml)"
+	trap 'sudo -E sh -c "rm -r "${kubeadm_config_file}""' EXIT
+
+	sed -e "s|CRI_RUNTIME_SOCKET|${cri_socket_path}|" "${kubeadm_config_template}" > "${kubeadm_config_file}"
+	sed -i "s|KUBERNETES_VERSION|v${k8s_version/-*}|" "${kubeadm_config_file}"
+	sed -i "s|CGROUP_DRIVER|${cgroup_driver}|" "${kubeadm_config_file}"
+
+	if [ "${CI}" == true ] && [[ $(wc -l /proc/swaps | awk '{print $1}') -gt 1 ]]; then
+		grep -q zram /proc/swaps && echo "# zram swap disabled"  | sudo tee /etc/systemd/zram-generator.conf
+		sudo swapoff -a || true
+	fi
+
+	#reinstall kubelet to do deep cleanup
+	if [ "${BAREMETAL}" == true -a "$(command -v kubelet)" != "" ]; then
+		info "reinstall kubeadm, kubelet before initialize k8s"
+		bash -f "${SCRIPT_PATH}/../../.ci/install_kubernetes.sh"
+	fi
+
+	sudo -E kubeadm init --config "${kubeadm_config_file}"
+
+	mkdir -p "$HOME/.kube"
+	sudo cp "/etc/kubernetes/admin.conf" "$HOME/.kube/config"
+	sudo chown $(id -u):$(id -g) "$HOME/.kube/config"
+	export KUBECONFIG="$HOME/.kube/config"
+
+	# enable debug log for kubelet
+	sudo sed -i 's/.$/ --v=4"/' /var/lib/kubelet/kubeadm-flags.env
+	echo "Kubelet options:"
+	sudo cat /var/lib/kubelet/kubeadm-flags.env
+	sudo systemctl daemon-reload && sudo systemctl restart kubelet
+
+	for i in $(seq 4)
+	do
+		kubectl get nodes && break || sleep $i
+	done
+	kubectl get pods
+
+}
+
 # Start the CRI runtime service.
 #
 # Arguments:
@@ -197,45 +257,8 @@ cleanup_cni_configuration
 info "Start ${cri_runtime} service"
 start_cri_runtime_service "${cri_runtime}" "${cri_runtime_socket}"
 
-echo "Init cluster using ${cri_runtime_socket}"
-kubeadm_config_template="${SCRIPT_PATH}/kubeadm/config.yaml"
-kubeadm_config_file="$(mktemp --tmpdir kubeadm_config.XXXXXX.yaml)"
-
-sed -e "s|CRI_RUNTIME_SOCKET|${cri_runtime_socket}|" "${kubeadm_config_template}" > "${kubeadm_config_file}"
-sed -i "s|KUBERNETES_VERSION|v${kubernetes_version/-*}|" "${kubeadm_config_file}"
-sed -i "s|CGROUP_DRIVER|${cgroup_driver}|" "${kubeadm_config_file}"
-
-trap 'sudo -E sh -c "rm -r "${kubeadm_config_file}""' EXIT
-
-if [ "${CI}" == true ] && [[ $(wc -l /proc/swaps | awk '{print $1}') -gt 1 ]]; then
-	grep -q zram /proc/swaps && echo "# zram swap disabled"  | sudo tee /etc/systemd/zram-generator.conf
-	sudo swapoff -a || true
-fi
-
-#reinstall kubelet to do deep cleanup
-if [ "${BAREMETAL}" == true -a "$(command -v kubelet)" != "" ]; then
-	info "reinstall kubeadm, kubelet before initialize k8s"
-	bash -f "${SCRIPT_PATH}/../../.ci/install_kubernetes.sh"
-fi
-
-sudo -E kubeadm init --config "${kubeadm_config_file}"
-
-mkdir -p "$HOME/.kube"
-sudo cp "/etc/kubernetes/admin.conf" "$HOME/.kube/config"
-sudo chown $(id -u):$(id -g) "$HOME/.kube/config"
-export KUBECONFIG="$HOME/.kube/config"
-
-# enable debug log for kubelet
-sudo sed -i 's/.$/ --v=4"/' /var/lib/kubelet/kubeadm-flags.env
-echo "Kubelet options:"
-sudo cat /var/lib/kubelet/kubeadm-flags.env
-sudo systemctl daemon-reload && sudo systemctl restart kubelet
-
-for i in $(seq 4)
-do
-        kubectl get nodes && break || sleep $i
-done
-kubectl get pods
+info "Start Kubernetes"
+start_kubernetes "${kubernetes_version}" "${cri_runtime_socket}" "${cgroup_driver}"
 
 # default network plugin should be flannel, and its config file is taken from k8s 1.12 documentation
 flannel_version="$(get_test_version "externals.flannel.version")"
