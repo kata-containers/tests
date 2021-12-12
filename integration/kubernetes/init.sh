@@ -23,6 +23,7 @@ CI=${CI:-""}
 network_plugin_config="${network_plugin_config:-}"
 RUNTIME=${RUNTIME:-containerd-shim-kata-v2}
 RUNTIME_PATH=${RUNTIME_PATH:-$(command -v $RUNTIME)}
+CRI_RUNTIME="${CRI_RUNTIME:-crio}"
 
 untaint_node() {
 	# Enable the master node to be able to schedule pods.
@@ -244,57 +245,64 @@ start_cri_runtime_service() {
 		die "Unable to start the ${cri} service"
 }
 
-cri_runtime="${CRI_RUNTIME:-crio}"
-kubernetes_version=$(get_version "externals.kubernetes.version")
+main() {
+	local arch="$("${SCRIPT_PATH}/../../.ci/kata-arch.sh")"
+	local kubernetes_version=$(get_version "externals.kubernetes.version")
+	local cri_runtime_socket=""
+	local cgroup_driver=""
 
-# store iptables if CI running on bare-metal. The configuration should be
-# restored afterwards the tests finish.
-if [ "${BAREMETAL}" == true ]; then
-	info "Save the iptables configuration"
-	save_iptables
-fi
+	case "${CRI_RUNTIME}" in
+	containerd)
+		cri_runtime_socket="/run/containerd/containerd.sock"
+		cgroup_driver="cgroupfs"
+		;;
+	crio)
+		cri_runtime_socket="/var/run/crio/crio.sock"
+		cgroup_driver="systemd"
+		;;
+	*)
+		echo "Runtime ${CRI_RUNTIME} not supported"
+		;;
+	esac
 
-case "${cri_runtime}" in
-containerd)
-	cri_runtime_socket="/run/containerd/containerd.sock"
-	cgroup_driver="cgroupfs"
-	;;
-crio)
-	cri_runtime_socket="/var/run/crio/crio.sock"
-	cgroup_driver="systemd"
-	;;
-*)
-	echo "Runtime ${cri_runtime} not supported"
-	;;
-esac
+        #Load arch-specific configure file
+	if [ -f "${SCRIPT_PATH}/../../.ci/${arch}/kubernetes/init.sh" ]; then
+		source "${SCRIPT_PATH}/../../.ci/${arch}/kubernetes/init.sh"
+	fi
 
-# Check no there are no kata processes from previous tests.
-check_processes
+	# store iptables if CI running on bare-metal. The configuration should be
+	# restored afterwards the tests finish.
+	if [ "${BAREMETAL}" == true ]; then
+		info "Save the iptables configuration"
+		save_iptables
+	fi
 
-# Build and store custom stress image
-build_custom_stress_image
+	info "Check there aren't dangling processes from previous tests"
+	check_processes
 
-info "Clean up any leftover CNI configuration"
-cleanup_cni_configuration
+	# Build and store custom stress image
+	build_custom_stress_image
 
-info "Start ${cri_runtime} service"
-start_cri_runtime_service "${cri_runtime}" "${cri_runtime_socket}"
+	info "Clean up any leftover CNI configuration"
+	cleanup_cni_configuration
 
-info "Start Kubernetes"
-start_kubernetes "${kubernetes_version}" "${cri_runtime_socket}" "${cgroup_driver}"
+	info "Start ${CRI_RUNTIME} service"
+	start_cri_runtime_service "${CRI_RUNTIME}" "${cri_runtime_socket}"
 
-#Load arch-specific configure file
-if [ -f "${SCRIPT_PATH}/../../.ci/${arch}/kubernetes/init.sh" ]; then
-        source "${SCRIPT_PATH}/../../.ci/${arch}/kubernetes/init.sh"
-fi
-info "Configure the cluster network"
-configure_network "${network_plugin_config}"
+	info "Start Kubernetes"
+	start_kubernetes "${kubernetes_version}" "${cri_runtime_socket}" "${cgroup_driver}"
 
-# we need to ensure a few specific pods ready and running
-info "Wait for system's pods be ready and running"
-wait_pods_ready
+	info "Configure the cluster network"
+	configure_network "${network_plugin_config}"
 
-echo "Create kata RuntimeClass resource"
-kubectl create -f "${runtimeclass_files_path}/kata-runtimeclass.yaml"
+	# we need to ensure a few specific pods ready and running
+	info "Wait for system's pods be ready and running"
+	wait_pods_ready
 
-untaint_node
+	info "Create kata RuntimeClass resource"
+	kubectl create -f "${runtimeclass_files_path}/kata-runtimeclass.yaml"
+
+	untaint_node
+}
+
+main $@
