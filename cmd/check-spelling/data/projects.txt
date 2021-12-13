@@ -5,6 +5,7 @@
 # Description: Names of projects, companies and services.
 
 Ansible/B
+AppArmor/B
 blogbench/B
 BusyBox/B
 ccloudvm/B

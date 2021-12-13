@@ -42,7 +42,7 @@ HugePage/AB
 hugepage/AB
 Hyp
 hypercall/A
-hypervisor/A
+hypervisor/AB
 implementer/A
 implementor/A
 iodepth/A
