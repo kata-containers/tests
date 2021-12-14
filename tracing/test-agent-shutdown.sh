@@ -765,14 +765,7 @@ setup()
 		exit 0
 	}
 
-	# Ensure rust commands are found
-	local cargo="$HOME/.cargo"
-	[ -d "$cargo" ] && sudo chown -R "${USER}:" \
-		"$cargo" \
-		"$kata_repo_dir"
-
-	local file="${cargo}/env"
-	[ -e "$file" ] || "${SCRIPT_PATH}/../.ci/install_rust.sh" && source "$file"
+	"${SCRIPT_PATH}/../.ci/install_rust.sh" && source "$HOME/.cargo/env"
 
 	trap cleanup EXIT
 
