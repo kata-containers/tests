@@ -174,8 +174,8 @@ popd
 # Run unit tests on non x86_64
 if [ "$arch" != "x86_64" ]; then
 	echo "Running unit tests"
-	cargo_env="$HOME/.cargo/env"
-	[ -e "${cargo_env}" ] || "${ci_dir_name}/install_rust.sh" && source "${cargo_env}"
+	sudo chown -R "$USER" "$HOME/.cargo" || true
+	"$ci_dir_name/install_rust.sh" && source "$HOME/.cargo/env"
 	pushd "${GOPATH}/src/${katacontainers_repo}"
 	echo "Installing libseccomp library from sources"
 	libseccomp_install_dir=$(mktemp -d -t libseccomp.XXXXXXXXXX)
