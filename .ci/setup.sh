@@ -56,11 +56,10 @@ install_container_engine() {
 		# Podman is the primary container engine on Fedora-likes
 		# Remove Docker repo to avoid its runc, see https://github.com/containers/podman/issues/8764
 		sudo rm -f /etc/yum.repos.d/docker-ce.repo
-		# Try reinstalling to fix CNI configuration, allow erasing incompatible containerd
-		sudo dnf reinstall -y podman || sudo dnf install -y --allowerasing podman
-		# runc is not always a dependency, but required for the tests
-		# When it is a dependency, explicitly installing it leads to version conflicts, so use --nobest
-		sudo dnf install -y --nobest runc
+		# Remove crun (cgroups issues) and Podman (reinstall CNI configuration)
+		sudo dnf remove -y crun podman
+		# Use runc instead (also required for some tests), allow erasing and co-existing alongside incompatible containerd
+		sudo dnf install -y --nobest --allowerasing runc podman
 		return
 	fi
 
