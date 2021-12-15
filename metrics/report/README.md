@@ -39,7 +39,6 @@ You can restrict the subset of tests run by `grabdata.sh` via its commandline pa
 | -a | Run all tests (default) |
 | -d | Run the density tests |
 | -h | Print this help |
-| -n | Run the networking tests |
 | -s | Run the storage tests |
 | -t | Run the time tests |
 
