@@ -172,7 +172,7 @@ popd
 "${ci_dir_name}/setup.sh"
 
 # Run unit tests on non x86_64
-if [ "$arch" != "x86_64" ]; then
+if [[ "$arch" == "s390x" || "$arch" == "aarch64" ]]; then
 	echo "Running unit tests"
 	cargo_env="$HOME/.cargo/env"
 	[ -e "${cargo_env}" ] || "${ci_dir_name}/install_rust.sh" && source "${cargo_env}"
