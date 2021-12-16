@@ -43,7 +43,7 @@ set -o errtrace
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 source "${SCRIPT_PATH}/../.ci/lib.sh"
 
-RUNTIME=${RUNTIME:-"io.containerd.kata.v2"}
+CTR_RUNTIME=${CTR_RUNTIME:-"io.containerd.kata.v2"}
 
 # Kata always uses this value
 EXPECTED_VSOCK_PORT="1024"
@@ -949,7 +949,7 @@ start_agent_in_kata_vm()
 		-s \"$KATA_TMUX_VM_SESSION\" \
 		\"sudo ctr run \
 			--snapshotter '$snapshotter' \
-			--runtime '${RUNTIME}' \
+			--runtime '${CTR_RUNTIME}' \
 			--rm \
 			-t '${CTR_IMAGE}' \
 			'$container_id' \
