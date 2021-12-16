@@ -54,6 +54,8 @@ case "${CI_JOB}" in
 		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make pmem"
 		echo "INFO: Running ksm test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make ksm"
+		echo "INFO: Running tracing test"
+		sudo -E PATH="$PATH" bash -c "make tracing"
 		;;
 	"CRI_CONTAINERD_K8S_COMPLETE")
 		echo "INFO: Running e2e kubernetes tests"
@@ -62,8 +64,6 @@ case "${CI_JOB}" in
 	"CRI_CONTAINERD_K8S_MINIMAL")
 		echo "INFO: Running e2e kubernetes tests"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes-e2e"
-		echo "INFO: Running tracing test"
-		sudo -E PATH="$PATH" bash -c "make tracing"
 		;;
 	"CRIO_K8S")
 		echo "INFO: Running kubernetes tests"
