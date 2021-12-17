@@ -109,3 +109,6 @@ do
 	bats "${K8S_TEST_ENTRY}"
 done
 popd
+
+# Allow for pod deletion before running `kubeadm reset`, potentially leaving pods behind
+waitForProcess 30 3 '[ -z "$(kubectl get pods)" ]'
