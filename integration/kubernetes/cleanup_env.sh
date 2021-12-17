@@ -24,7 +24,7 @@ main () {
 		cri_runtime_socket="/var/run/crio/crio.sock"
 		;;
 	*)
-		echo "Runtime ${CRI_RUNTIME} not supported"
+		die "Runtime ${CRI_RUNTIME} not supported"
 		;;
 	esac
 
@@ -41,7 +41,7 @@ main () {
 
 	info "Remove network devices"
 	for dev in cni0 flannel.1; do
-		echo "remove device: $dev"
+		info "remove device: $dev"
 		sudo ip link set dev "$dev" down || true
 		sudo ip link del "$dev" || true
 	done

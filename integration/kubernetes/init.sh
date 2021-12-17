@@ -57,7 +57,7 @@ wait_pods_ready()
 		running_pattern="${pod_entry}.*1/1.*Running"
 		if ! waitForProcess "$system_pod_wait_time" "$sleep_time" \
 			"$pods_status | grep "${running_pattern}""; then
-			echo "Some expected Pods aren't running after ${system_pod_wait_time} seconds." 1>&2
+			info "Some expected Pods aren't running after ${system_pod_wait_time} seconds." 1>&2
 			${pods_status} 1>&2
 			# Print debug information for the problematic pods.
 			for pod in $(kubectl get pods --all-namespaces \
@@ -129,10 +129,10 @@ configure_network() {
 		# default network plugin should be flannel, and its config file is taken from k8s 1.12 documentation
 		local flannel_version="$(get_test_version "externals.flannel.version")"
 		local flannel_url="$(get_test_version "externals.flannel.kube-flannel_url")"
-		echo "Use flannel ${flannel_version}"
+		info "Use flannel ${flannel_version}"
 		network_plugin_config="$flannel_url"
 	fi
-	echo "Use configuration file from ${network_plugin_config}"
+	info "Use configuration file from ${network_plugin_config}"
 	kubectl apply -f "$network_plugin_config"
 }
 
@@ -170,7 +170,7 @@ start_kubernetes() {
 	local cgroup_driver="$3"
 	local kubeadm_config_template="${SCRIPT_PATH}/kubeadm/config.yaml"
 
-	echo "Init cluster using ${cri_socket_path}"
+	info "Init cluster using ${cri_socket_path}"
 
 	# This should be global otherwise the clean up fails.
 	kubeadm_config_file="$(mktemp --tmpdir kubeadm_config.XXXXXX.yaml)"
@@ -200,7 +200,7 @@ start_kubernetes() {
 
 	# enable debug log for kubelet
 	sudo sed -i 's/.$/ --v=4"/' /var/lib/kubelet/kubeadm-flags.env
-	echo "Kubelet options:"
+	info "Kubelet options:"
 	sudo cat /var/lib/kubelet/kubeadm-flags.env
 	sudo systemctl daemon-reload && sudo systemctl restart kubelet
 
@@ -238,7 +238,7 @@ start_cri_runtime_service() {
 		#when the test runs two times in the CI, the second time crio takes some time to be ready
 		sleep "${wait_time_cri_socket_check}"
 		[ -e "${socket_path}" ] && break
-		echo "Waiting for cri socket ${socket_path} (try ${i})"
+		info "Waiting for cri socket ${socket_path} (try ${i})"
 	done
 
 	sudo systemctl status "${cri}" --no-pager || \
@@ -261,7 +261,7 @@ main() {
 		cgroup_driver="systemd"
 		;;
 	*)
-		echo "Runtime ${CRI_RUNTIME} not supported"
+		die "Runtime ${CRI_RUNTIME} not supported"
 		;;
 	esac
 
