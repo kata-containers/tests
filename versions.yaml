@@ -60,6 +60,8 @@ externals:
   flannel:
     url: "https://github.com/coreos/flannel"
     version: "v0.14.0"
+    # yamllint disable-line rule:line-length
+    kube-flannel_url: "https://raw.githubusercontent.com/coreos/flannel/v0.14.0/Documentation/kube-flannel.yml"
 
   xurls:
     description: |

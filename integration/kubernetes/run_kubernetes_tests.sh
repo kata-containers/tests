@@ -16,9 +16,6 @@ arch="$(uname -m)"
 
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 
-# Using trap to ensure the cleanup occurs when the script exists.
-trap '${kubernetes_dir}/cleanup_env.sh' EXIT
-
 K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-block-volume.bats" \
 	"k8s-caps.bats" \
@@ -57,6 +54,11 @@ K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-nginx-connectivity.bats" \
 	"k8s-hugepages.bats")
 
+# Using trap to ensure the cleanup occurs when the script exists.
+trap_on_exit() {
+	trap '${kubernetes_dir}/cleanup_env.sh' EXIT
+}
+
 # we may need to skip a few test cases when running on non-x86_64 arch
 if [ -f "${cidir}/${arch}/configuration_${arch}.yaml" ]; then
 	config_file="${cidir}/${arch}/configuration_${arch}.yaml"
@@ -65,7 +67,25 @@ if [ -f "${cidir}/${arch}/configuration_${arch}.yaml" ]; then
 fi
 
 pushd "$kubernetes_dir"
-./init.sh
+info "Initialize the test environment"
+wait_init_retry="30"
+if ! bash ./init.sh; then
+	info "Environment initialization failed. Clean up and try again."
+	if ! bash ./cleanup_env.sh; then
+		die "Failed on cleanup, it won't retry. Bailing out..."
+	else
+		# trap on exit should be added only if cleanup_env.sh returned
+		# success otherwise it will run twice (thus, fail twice).
+		trap_on_exit
+	fi
+	info "Wait ${wait_init_retry} seconds before retry"
+	sleep "${wait_init_retry}"
+	info "Retry to initialize the test environment..."
+	bash ./init.sh
+fi
+trap_on_exit
+
+info "Run tests"
 for K8S_TEST_ENTRY in ${K8S_TEST_UNION[@]}
 do
 	bats "${K8S_TEST_ENTRY}"
