@@ -116,37 +116,36 @@ based on those labels. Possible labels are listed below:
 ### Running the CI locally
 
 The CI can run on a local VM using the following instructions:
-- Setup a Fedora VM
-  - Create a Fedora VM having at least 4G RAM and a 30GB disk.
+- Setup a Fedora/RHEL/CentOS-Stream VM (recently tested on Fedora 35 and CentOS-Stream 8)
+  - Create a VM having at least 4G RAM and a 30GB disk.
   - Create a `sudo` user that does not require `sudo` password.
-  - Run the bash commands replacing the `fedora` user with the created one and the`CI_JOB` with the desired one:
-    ```sh
-    dnf install -y git vim make wget openssl driverctl pciutils
-    dnf remove -y qemu-guest-agent
-    wget https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_amd64 -O /usr/bin/yq && chmod +x /usr/bin/yq
-    sudo -H -u fedora bash -c 'mkdir -p ~/go/src/github.com/kata-containers'
-    sudo -H -u fedora bash -c 'cd ~/go/src/github.com/kata-containers && git clone https://github.com/kata-containers/tests.git'
-    sudo -H -u fedora bash -c 'echo export GOPATH=/home/fedora/go >> ~/.bashrc'
-    sudo -H -u fedora bash -c 'echo export PATH=/usr/local/go/bin:\$GOPATH/bin:\$PATH >> ~/.bashrc'
-    sudo -H -u fedora bash -c 'echo export USE_DOCKER=true >> ~/.bashrc'
-    sudo -H -u fedora bash -c 'echo export CI_JOB="CRIO_K8S" >> ~/.bashrc'
-    sudo -H -u fedora bash -c 'echo cd ~/go/src/github.com/kata-containers/tests >> ~/.bashrc'
-    sudo -H -u fedora bash -c 'echo source .ci/ci_job_flags.sh >> ~/.bashrc'
-    grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
+  - Run the bash commands replacing the `CI_JOB` with the desired one:
+    ```bash
+    $ sudo dnf install -y git make openssl driverctl pciutils
+    $ sudo dnf remove -y qemu-guest-agent zram-generator-defaults # the latter is installed only in Fedora 33+
+    $ sudo -H -u $USER bash -c 'mkdir -p ~/go/src/github.com/kata-containers'
+    $ sudo -H -u $USER bash -c 'cd ~/go/src/github.com/kata-containers && git clone https://github.com/kata-containers/tests.git'
+    $ sudo -H -u $USER bash -c 'echo export GOPATH=/home/$USER/go >> ~/.bashrc'
+    $ sudo -H -u $USER bash -c 'echo export PATH=/usr/local/go/bin:\$GOPATH/bin:\$PATH >> ~/.bashrc'
+    $ sudo -H -u $USER bash -c 'echo export CI_JOB="CRIO_K8S" >> ~/.bashrc'
+    $ sudo -H -u $USER bash -c 'echo export USE_PODMAN=true >> ~/.bashrc'
+    $ sudo -H -u $USER bash -c 'echo cd ~/go/src/github.com/kata-containers/tests >> ~/.bashrc'
+    $ sudo -H -u $USER bash -c 'echo source .ci/ci_job_flags.sh >> ~/.bashrc'
+    $ (! mount -t cgroup2 | grep "/sys/fs/cgroup\ ") && sudo grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
     ```
-  - Reboot the VM
+  - Reboot the VM (required only if grub updated e.g. in Fedora, otherwise, just `source ~/.bashrc`)
 - Running the tests
   - Run the setup script once
-    ```sh
+    ```bash
     .ci/setup.sh
     ```
   - Run the tests script as many time as needed
-    ```sh
+    ```bash
     .ci/run.sh
     ```
-  - Special configurations in order to run the VFIO test
+  - Special configurations in order to run the VFIO test (Fedora)
     - Edit the VM configuration to include 2 virtio-net device and a `vIOMMU`.
     - Update the kernel command line:
-      ```sh
+      ```bash
       grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0 intel_iommu=on iommu=pt"
       ```
