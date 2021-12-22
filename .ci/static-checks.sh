@@ -773,12 +773,6 @@ static_check_docs()
 		# Google APIs typically require an auth token.
 		echo "$url"|grep -q 'https://www.googleapis.com' && continue
 
-		# Git repo URL check
-		if echo "$url"|grep -q '^https.*git'
-		then
-			timeout "${KATA_NET_TIMEOUT}" git ls-remote "$url" > /dev/null 2>&1 && continue
-		fi
-
 		# Check the URL, saving it if invalid
 		#
 		# Each URL is checked in a separate process as each unique URL
