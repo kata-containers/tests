@@ -510,8 +510,8 @@ static_check_license_headers()
 			--exclude="*.diff" \
 			--exclude="tools/packaging/static-build/qemu.blacklist" \
 			--exclude="tools/packaging/qemu/default-configs/*" \
-			--exclude="src/agent/protocols/protos/gogo/*" \
-			--exclude="src/agent/protocols/protos/google/*" \
+			--exclude="src/libs/protocols/protos/gogo/*.proto" \
+			--exclude="src/libs/protocols/protos/google/*.proto" \
 			-EL $extra_args "\<${pattern}\>" \
 			$files || true)
 
