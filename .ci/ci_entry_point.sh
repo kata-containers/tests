@@ -48,6 +48,9 @@ export GOPATH="${WORKSPACE}/go"
 # Repository where we store all tests
 tests_repo="github.com/kata-containers/tests"
 
+# To avoid clone failing increase post buffer
+git config http.postBuffer 524288000
+
 # Clone as golang would do it with GOPATH
 tests_repo_dir="${GOPATH}/src/${tests_repo}"
 [ -d "$tests_repo_dir" ] || git clone "https://${tests_repo}.git" "${tests_repo_dir}"
