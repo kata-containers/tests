@@ -25,10 +25,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install the extra doc processing parts we need for our Rmarkdown PDF flow.
 RUN apt-get update -qq && \
-  apt-get install -y \
+  apt-get install -y --no-install-recommends \
     texlive-latex-base \
     texlive-fonts-recommended \
-    latex-xcolor
+    latex-xcolor && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists
 
 # Install the extra R packages we need.
 RUN install2.r --error --deps TRUE \

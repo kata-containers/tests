@@ -5,6 +5,7 @@
 # Set up an Ubuntu image with 'web tooling' installed
 
 # Usage: FROM [image name]
+# hadolint ignore=DL3007
 FROM @UBUNTU_REGISTRY@/ubuntu:latest
 
 # Version of the Dockerfile
@@ -15,11 +16,13 @@ ENV WEB_TOOLING_URL "https://github.com/v8/web-tooling-benchmark"
 ENV NODEJS_VERSION "setup_14.x"
 
 RUN apt-get update && \
-	apt-get install -y build-essential git curl sudo && \
+	apt-get install -y --no-install-recommends build-essential git curl sudo && \
 	apt-get remove -y unattended-upgrades && \
 	curl -OkL https://deb.nodesource.com/${NODEJS_VERSION} && chmod +x ${NODEJS_VERSION} && ./${NODEJS_VERSION} && \
-	apt-get install -y nodejs && \
-	git clone ${WEB_TOOLING_URL} && \
-	cd /web-tooling-benchmark/ && npm install --unsafe-perm
+	apt-get install -y --no-install-recommends nodejs && \
+	apt-get clean && rm -rf /var/lib/apt/lists && \
+	git clone ${WEB_TOOLING_URL} /web-tooling-benchmark
+WORKDIR /web-tooling-benchmark/
+RUN npm install --unsafe-perm
 
 CMD ["/bin/bash"]

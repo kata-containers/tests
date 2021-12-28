@@ -3,16 +3,17 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Usage: FROM [image name]
-FROM debian
+FROM debian:bullseye
 
 # Version of the Dockerfile
 LABEL DOCKERFILE_VERSION="1.0"
 
 RUN apt-get update && \
-    apt-get -y install autoconf git bc libacl1-dev libacl1 acl gcc make perl g++ perl-modules && \
-    git clone https://github.com/pjd/pjdfstest.git && \
-    cd pjdfstest && \
-    autoreconf -ifs && \
+    apt-get -y --no-install-recommends install autoconf git bc libacl1-dev libacl1 acl gcc make perl g++ perl-modules && \
+    apt-get clean && rm -rf /var/lib/apt/lists && \
+    git clone https://github.com/pjd/pjdfstest.git /pjdfstest
+WORKDIR /pjdfstest
+RUN autoreconf -ifs && \
     ./configure && \
     make
 
