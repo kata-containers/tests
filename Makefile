@@ -23,19 +23,6 @@ endif
 # union for 'make test'
 UNION := kubernetes
 
-# filter scheme script for docker integration test suites
-FILTER_FILE = .ci/filter/filter_docker_test.sh
-
-# skipped docker integration tests for Firecraker
-# Firecracker configuration file
-FIRECRACKER_CONFIG = .ci/hypervisors/firecracker/configuration_firecracker.yaml
-# Cloud hypervisor configuration file
-CLH_CONFIG = .ci/hypervisors/clh/configuration_clh.yaml
-ifneq ($(wildcard $(FILTER_FILE)),)
-SKIP_FIRECRACKER := $(shell bash -c '$(FILTER_FILE) $(FIRECRACKER_CONFIG)')
-SKIP_CLH := $(shell bash -c '$(FILTER_FILE) $(CLH_CONFIG)')
-endif
-
 # get arch
 ARCH := $(shell bash -c '.ci/kata-arch.sh -d')
 
@@ -65,49 +52,9 @@ spell-check-dictionary:
 check-markdown:
 	make -C cmd/check-markdown
 
-ginkgo:
-	ln -sf . vendor/src
-	GOPATH=$(PWD)/vendor go build ./vendor/github.com/onsi/ginkgo/ginkgo
-	unlink vendor/src
-
-docker: ginkgo
-ifeq ($(RUNTIME),)
-	$(error RUNTIME is not set)
-endif
-
-ifeq ($(KATA_HYPERVISOR),firecracker)
-	./ginkgo -failFast -v -focus "${FOCUS}" -skip "${SKIP_FIRECRACKER}" \
-		./integration/docker/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT} \
-		-hypervisor=$(KATA_HYPERVISOR)
-else ifeq ($(KATA_HYPERVISOR),cloud-hypervisor)
-	./ginkgo -failFast -v -focus "${FOCUS}" -skip "${SKIP_CLH}" \
-		./integration/docker/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT} \
-		-hypervisor=$(KATA_HYPERVISOR)
-else ifeq ($(ARCH),$(filter $(ARCH), aarch64 s390x ppc64le))
-	./ginkgo -failFast -v -focus "${FOCUS}" -skip "${SKIP}" \
-		./integration/docker/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT}
-else ifneq (${FOCUS},)
-	./ginkgo -failFast -v -focus "${FOCUS}" -skip "${SKIP}" \
-		./integration/docker/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT}
-else
-# Run tests in parallel, skip tests that need to be run serialized
-	./ginkgo -failFast -p -stream -v -skip "${SKIP}" -skip "\[Serial Test\]" \
-		./integration/docker/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT}
-# Now run serialized tests
-	./ginkgo -failFast -v -focus "\[Serial Test\]" -skip "${SKIP}" \
-		./integration/docker/ -- -runtime=${RUNTIME} -timeout=${TIMEOUT}
-	bash sanity/check_sanity.sh
-endif
-
 crio:
 	bash .ci/install_bats.sh
 	./integration/cri-o/cri-o.sh
-
-docker-stability:
-	systemctl is-active --quiet docker || sudo systemctl start docker
-	cd integration/stability && \
-	export ITERATIONS=2 && export MAX_CONTAINERS=20 && ./soak_parallel_rm.sh
-	cd integration/stability && ./hypervisor_stability_kill_test.sh
 
 ksm:
 	bash -f integration/ksm/ksm_test.sh
@@ -192,10 +139,7 @@ help:
 	check \
 	checkcommits \
 	crio \
-	docker \
-	docker-stability \
 	filesystem \
-	ginkgo \
 	$(INSTALL_TARGETS) \
 	kubernetes \
 	list-install-targets \

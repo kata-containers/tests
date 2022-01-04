@@ -11,6 +11,9 @@ LABEL DOCKERFILE_VERSION="1.0"
 # Install iperf
 RUN apt-get update && \
     apt-get remove -y unattended-upgrades && \
-    apt-get install -y iperf
+    apt-get install -y --no-install-recommends iperf && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists
+
 
 CMD ["/bin/bash"]

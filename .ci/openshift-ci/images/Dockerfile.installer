@@ -7,16 +7,15 @@
 #
 FROM registry.centos.org/centos:8
 
-RUN yum install -y rsync
+RUN yum install -y rsync && yum clean all
 
 # Load the installation files.
-COPY ./_out ./_out
+COPY ./_out $WORKDIR/_out
 
 # QEMU was built separated from other components (agent, runtime...) so the
 # tarball's content should be merged with the remain of the installation.
-COPY ./kata-static-qemu.tar.gz .
-RUN tar -C ./_out/build_install -xvzf ./kata-static-qemu.tar.gz
+ADD ./kata-static-qemu.tar.gz $WORKDIR/_out/build_install
 
 COPY ./entrypoint.sh /usr/bin
 
-ENTRYPOINT /usr/bin/entrypoint.sh
+ENTRYPOINT ["/usr/bin/entrypoint.sh"]
