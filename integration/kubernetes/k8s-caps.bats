@@ -33,7 +33,15 @@ setup() {
         kubectl create -f "${pod_config_dir}/pod-caps.yaml"
         # Check pod creation
         kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
-        kubectl logs "$pod_name" | grep -q "$expected"
+
+        # Verify expected capabilities for the running container. Add retry to ensure
+        # that the container had time to execute:
+        wait_time=5
+        sleep_time=1
+        cmd="kubectl logs $pod_name | grep -q $expected"
+        waitForProcess "$wait_time" "$sleep_time" "$cmd"
+
+        # Verify expected capabilities from exec context:
         kubectl exec "$pod_name" -- sh -c "cat /proc/self/status" | grep -q "$expected"
 }
 
