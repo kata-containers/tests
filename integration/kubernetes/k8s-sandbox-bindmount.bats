@@ -53,6 +53,8 @@ setup() {
 }
 
 teardown() {
+	sudo ./ro-volume-exp.sh "$pod_id" sandbox-mounts "$TEST_FILE" || true
+	sudo ./ro-volume-exp.sh "$pod_id" sandbox-mounts "$TEST_FILE"
 	kubectl delete pod "$pod_name"
 	cat "$SYSCONFIG_FILE"
 	rm "$TEST_FILE_HOST_PATH"
