@@ -18,11 +18,29 @@ spec:
       - while true; do
           echo -en '\n';
           printenv MY_POD_NAME;
+          printenv HOST_IP;
+          printenv MEMORY_REQUESTS;
+          printenv MEMORY_LIMITS;
           sleep 1;
         done;
+      resources:
+        requests:
+          memory: "32Mi"
       env:
         - name: MY_POD_NAME
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: MEMORY_REQUESTS
+          valueFrom:
+            resourceFieldRef:
+              resource: requests.memory
+        - name: MEMORY_LIMITS
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
   restartPolicy: Never
