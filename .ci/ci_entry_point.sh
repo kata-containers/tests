@@ -74,7 +74,7 @@ if [ "${repo_to_test}" == "${tests_repo}" ]; then
 		pr_branch="PR_${pr_number}"
 		git fetch origin "pull/${pr_number}/head:${pr_branch}"
 		git checkout "${pr_branch}"
-		git rebase "origin/${ghprbTargetBranch}"
+		git rebase --rebase-merges "origin/${ghprbTargetBranch}"
 	fi
 fi
 
