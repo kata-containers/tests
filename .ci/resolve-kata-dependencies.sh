@@ -24,9 +24,9 @@ apply_depends_on() {
 	# and its value is the repository that we are currently testing.
 	pushd "${GOPATH}/src/${kata_repo}"
 	git show
-	git log --format=%b "origin/${branch}.."
-	git log --oneline "origin/${branch}~1..HEAD"
-	label_lines=$(git log --format=%b "origin/${branch}.." | grep "Depends-on:" || true)
+	git log --full-history --format=%b "origin/${branch}.."
+	git log --full-history --oneline "origin/${branch}~1..HEAD"
+	label_lines=$(git log --full-history --format=%b "origin/${branch}.." | grep "Depends-on:" || true)
 	if [ "${label_lines}" == "" ]; then
 		popd
 		return 0
@@ -64,7 +64,7 @@ apply_depends_on() {
 				git checkout "${dependency_branch}" && \
 				git merge "origin/${branch}"
 				# And show what we merged on top of to aid debugging
-				git log --oneline "origin/${branch}~1..HEAD"
+				git log --full-history --oneline "origin/${branch}~1..HEAD"
 			popd
 		fi
 	done
@@ -105,7 +105,7 @@ clone_repos() {
 			echo "... and rebasing with origin/${branch}"
 			git merge "origin/${branch}"
 			# And show what we merged on top of to aid debugging
-			git log --oneline "origin/${branch}~1..HEAD"
+			git log --full-history --oneline "origin/${branch}~1..HEAD"
 		elif [ -n "${branch}" ]
 		then
 			echo "Checking out to ${branch}"
