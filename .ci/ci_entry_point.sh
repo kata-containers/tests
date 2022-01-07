@@ -76,7 +76,7 @@ if [ "${repo_to_test}" == "${tests_repo}" ]; then
 		pr_branch="PR_${pr_number}"
 		git fetch origin "pull/${pr_number}/head:${pr_branch}"
 		git checkout "${pr_branch}"
-		local rebase_merge_flag="--rebase-merges"
+		rebase_merge_flag="--rebase-merges"
 		if [[ ${ID} == "ubuntu" && ${VERSION_ID} == "18.04" ]]; then
 			rebase_merge_flag="--preserve-merges"
 		fi
