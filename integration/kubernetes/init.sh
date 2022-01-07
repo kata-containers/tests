@@ -169,6 +169,8 @@ start_kubernetes() {
 	local cri_socket_path="$2"
 	local cgroup_driver="$3"
 	local kubeadm_config_template="${SCRIPT_PATH}/kubeadm/config.yaml"
+	local kubelet_restart_wait="120"
+	local kubelet_restart_sleep="10"
 
 	info "Init cluster using ${cri_socket_path}"
 
@@ -200,16 +202,13 @@ start_kubernetes() {
 
 	# enable debug log for kubelet
 	sudo sed -i 's/.$/ --v=4"/' /var/lib/kubelet/kubeadm-flags.env
-	info "Kubelet options:"
+	info "Restart Kubelet with options:"
 	sudo cat /var/lib/kubelet/kubeadm-flags.env
 	sudo systemctl daemon-reload && sudo systemctl restart kubelet
 
-	for i in $(seq 4)
-	do
-		kubectl get nodes && break || sleep $i
-	done
-	kubectl get pods
-
+	info "Probing kubelet"
+	waitForProcess "$kubelet_restart_wait" "$kubelet_restart_sleep" \
+		"kubectl get nodes"
 }
 
 # Start the CRI runtime service.
