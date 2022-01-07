@@ -482,7 +482,7 @@ static_check_license_headers()
 			--exclude="*.ipynb" \
 			--exclude="*.jpg" \
 			--exclude="*.json" \
-			--exclude="LICENSE" \
+			--exclude="LICENSE*" \
 			--exclude="*.md" \
 			--exclude="*.pb.go" \
 			--exclude="*pb_test.go" \
@@ -513,6 +513,7 @@ static_check_license_headers()
 			--exclude="tools/packaging/qemu/default-configs/*" \
 			--exclude="src/libs/protocols/protos/gogo/*.proto" \
 			--exclude="src/libs/protocols/protos/google/*.proto" \
+			--exclude="src/libs/*/test/texture/*" \
 			-EL $extra_args "\<${pattern}\>" \
 			$files || true)
 
