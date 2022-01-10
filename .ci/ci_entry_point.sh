@@ -14,6 +14,8 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 
+source /etc/os-release || source /usr/lib/os-release
+
 script_name=${0##*/}
 script_dir=$(dirname "$(readlink -f "$0")")
 CI_JOB="${CI_JOB:-}"
@@ -74,7 +76,11 @@ if [ "${repo_to_test}" == "${tests_repo}" ]; then
 		pr_branch="PR_${pr_number}"
 		git fetch origin "pull/${pr_number}/head:${pr_branch}"
 		git checkout "${pr_branch}"
-		git rebase --rebase-merges "origin/${ghprbTargetBranch}"
+		rebase_merge_flag="--rebase-merges"
+		if [[ ${ID} == "ubuntu" && ${VERSION_ID} == "18.04" ]]; then
+			rebase_merge_flag="--preserve-merges"
+		fi
+		git rebase "${rebase_merge_flag}" "origin/${ghprbTargetBranch}"
 	fi
 fi
 
