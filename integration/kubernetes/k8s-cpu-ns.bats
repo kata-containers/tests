@@ -12,7 +12,6 @@ fc_limitations="https://github.com/kata-containers/documentation/issues/351"
 setup() {
 	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
 
-	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	pod_name="constraints-cpu-test"
 	container_name="first-cpu-container"
 	sharessyspath="/sys/fs/cgroup/cpu/cpu.shares"

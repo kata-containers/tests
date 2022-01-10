@@ -15,7 +15,6 @@ load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 setup() {
-	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	deployment="hello-world"
 	service="my-service"
 	agnhost_name=$(get_test_version "container_images.agnhost.name")

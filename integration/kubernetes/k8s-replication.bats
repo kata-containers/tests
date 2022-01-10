@@ -12,7 +12,6 @@ setup() {
 	nginx_version=$(get_test_version "docker_images.nginx.version")
 	nginx_image="nginx:$nginx_version"
 
-	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	get_pod_config_dir
 }
 

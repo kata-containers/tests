@@ -11,7 +11,6 @@ issue="https://github.com/kata-containers/tests/issues/1746"
 
 setup() {
 	skip "test not working see: ${issue}"
-	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	get_pod_config_dir
 }
 

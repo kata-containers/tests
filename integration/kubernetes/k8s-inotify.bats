@@ -10,7 +10,6 @@ load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 setup() {
 	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
-	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	get_pod_config_dir
 }
 

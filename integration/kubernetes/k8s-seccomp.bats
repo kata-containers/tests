@@ -8,7 +8,6 @@ load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 setup() {
-	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	extract_kata_env
 
 	# Ensure setting seccomp mode is allowed on guest

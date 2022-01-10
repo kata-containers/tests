@@ -13,7 +13,6 @@ issue="https://github.com/kata-containers/runtime/issues/1674"
 setup() {
 	skip "test not working see: ${issue}"
 
-	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	pod_name="footubuntu"
 	config_name="ssh-config-map"
 	get_pod_config_dir
