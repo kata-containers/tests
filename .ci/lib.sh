@@ -28,6 +28,8 @@ export KATA_DOCKER_TIMEOUT=30
 # Number of seconds to wait for a general network operation to complete.
 export KATA_NET_TIMEOUT=30
 
+source /etc/os-release || source /usr/lib/os-release
+
 # Ensure GOPATH set
 if command -v go > /dev/null; then
 	export GOPATH=${GOPATH:-$(go env GOPATH)}
@@ -512,3 +514,244 @@ print_environment() {
 		echo "#########################################"
 	fi
 }
+
+info()
+{
+	local msg="$*"
+	echo "INFO: ${msg}"
+}
+
+# We have a local info func, as many of our funcs return their answers via stdout,
+# and we don't want to either open code a redirect all over the code nor send to
+# the standard stdout (would corrupt our return strings) or stderr (some CIs would
+# take that as a failure case). So, use another file descriptor, mapped back to
+# stdout, that we set up previously.
+local_info() {
+	msg="$*"
+	info "$msg" >&5
+}
+
+# Install jq package
+install_jq() {
+	local cmd="jq"
+	local package="$cmd"
+
+	command -v "$cmd" &>/dev/null && return 0 || true
+
+	case "$ID" in
+		centos|rhel)
+			sudo yum -y install "${package}" 1>&5 2>&1
+			;;
+		ubuntu)
+			sudo apt-get -y install "${package}" 1>&5 2>&1
+			;;
+		opensuse-*|sles)
+			sudo zypper install -y "${package}" 1>&5 2>&1
+			;;
+		fedora)
+			sudo dnf -y install "${package}" 1>&5 2>&1
+			;;
+	esac
+}
+
+# Check if the specified label is set on a PR.
+#
+# Returns on stdout as string:
+#
+#  0 - Label not found.
+#  1 - Label found.
+is_label_set() {
+	local repo="${1:-}"
+	local pr="${2:-}"
+	local label="${3:-}"
+
+	if [ -z "$repo" ]; then
+		local_info "BUG: No repo specified"
+		echo "0"
+		return 0
+	fi
+
+	if [ -z "$pr" ]; then
+		local_info "BUG: No PR specified"
+		echo "0"
+		return 0
+	fi
+
+	if [ -z "$label" ]; then
+		local_info "BUG: No label to check specified"
+		echo "0"
+		return 0
+	fi
+
+	local_info "Checking labels for PR ${repo}/${pr}"
+
+	local testing_mode=0
+
+	# If this function was called by a shunit2 function (with the standard
+	# function name prefix), we're running as part of the unit tests
+	[ "${#FUNCNAME[@]}" -gt 1 ] && grep -q "^\(lib_\)\?test" <<< "${FUNCNAME[1]}" && testing_mode=1
+
+	if [ "$testing_mode" -eq 1 ]
+	then
+		# Always fail
+		echo "1"
+		return 0
+	else
+		# Pull the label list for the PR
+		# Ideally we'd use a github auth token here so we don't get rate limited, but to do that we would
+		# have to expose the token into the CI scripts, which is then potentially a security hole.
+		local json=$(curl -sL "https://api.github.com/repos/${repo}/issues/${pr}/labels")
+
+		install_jq
+
+		# Pull the label list out
+		local labels=$(jq '.[].name' <<< $json)
+
+		# Check if we have the forcing label set
+		for x in $labels; do
+			# Strip off any surrounding '"'s
+			y=$(sed 's/"//g' <<< $x)
+
+			[ "$y" == "$label" ] && echo "1" && return 0
+		done
+
+		echo "0"
+		return 0
+	fi
+}
+
+check_label() {
+	local label="${1:-}"
+
+	if [ -z "$label" ]; then
+		local_info "BUG: No label to check specified"
+		echo "0"
+		return 0
+	fi
+
+	if [ -z "$ghprbGhRepository" ]; then
+		local_info "No ghprbGhRepository set, skip label check"
+		echo "0"
+		return 0
+	fi
+
+	if [ -z "$ghprbPullId" ]; then
+		local_info "No ghprbPullId set, skip label check"
+		echo "0"
+		return 0
+	fi
+
+	repo="$ghprbGhRepository"
+	pr="$ghprbPullId"
+
+	local result=$(is_label_set "$repo" "$pr" "$label")
+	if [ "$result" -eq 1 ]; then
+		local_info "label '$label' found"
+		echo "1"
+		return 0
+	fi
+
+	local_info "label '$label' not found"
+	echo "0"
+	return 0
+
+}
+
+# We don't want to have a main fucntion to trigger unit tests in this library,
+# so prepend these tests with `lib_`, so they can be easily called elsewhere
+testIsLabelSet() {
+	local result=""
+
+	result=$(is_label_set "" "" "")
+	assertEquals "0" "$result"
+
+	result=$(is_label_set "repo" "" "")
+	assertEquals "0" "$result"
+
+	result=$(is_label_set "repo" "pr" "")
+	assertEquals "0" "$result"
+
+	result=$(is_label_set "" "pr" "label")
+	assertEquals "0" "$result"
+
+	result=$(is_label_set "repo" "" "label")
+	assertEquals "0" "$result"
+
+	result=$(is_label_set "repo" "pr" "label")
+	assertEquals "1" "$result"
+}
+
+testCheckLabel() {
+	local result=""
+
+	result=$(check_label "")
+	assertEquals "0" "$result"
+
+	result=$(unset ghprbGhRepository; check_label "label")
+	assertEquals "0" "$result"
+
+	result=$(unset ghprbPullId; check_label "label")
+	assertEquals "0" "$result"
+
+	result=$(unset ghprbGhRepository ghprbPullId; check_label "label")
+	assertEquals "0" "$result"
+
+	# Pretend label not found
+	result=$(is_label_set() { echo "0"; return 0; }; \
+	                ghprbGhRepository="repo"; \
+	                ghprbPullId=123; \
+	                check_label "label")
+	assertEquals "0" "$result"
+
+	# Pretend label found
+	result=$(is_label_set() { echo "1"; return 0; }; \
+	                ghprbGhRepository="repo"; \
+	                ghprbPullId=123; \
+	                check_label "label")
+	assertEquals "1" "$result"
+}
+
+# Run our self tests. Tests are written using the
+# github.com/kward/shunit2 library, and are encoded into functions starting
+# with the string 'test'.
+self_test() {
+	local shunit2_path="github.com/kward/shunit2"
+	local_info "Running self tests"
+
+	local_info "Go get unit test framework from ${shunit2_path}"
+	go get -d "${shunit2_path}" || true
+	local_info "Run the unit tests"
+	# Sourcing the `shunit2` file automatically runs the unit tests in this file.
+	. "${GOPATH}/src/${shunit2_path}/shunit2"
+	# shunit2 call does not return - it exits with its return code.
+}
+
+help()
+{
+	script_name="${0##*/}"
+	cat <<EOF
+Usage: ${script_name} [test]
+
+Passing the argument 'test' to this script will cause it to only
+run its self tests.
+EOF
+
+	exit 0
+}
+
+main() {
+	# Some of our sub-funcs return their results on stdout, but we also want them to be
+	# able to log INFO messages. But, we don't want those going to stderr, as that may
+	# be seen by some CIs as an actual error. Create another file descriptor, mapped
+	# back to stdout, for us to send INFO messages to...
+	exec 5>&1
+
+	if [ "$1" == "test" ]; then
+		self_test
+		# self_test func does not return
+	fi
+
+	[ $# -gt 0 ] && help
+}
+
+[ "$0" == "$BASH_SOURCE" ] && main "$@" || true
