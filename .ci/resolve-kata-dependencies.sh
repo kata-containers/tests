@@ -6,7 +6,6 @@
 #
 
 set -o errexit
-set -o nounset
 set -o pipefail
 set -o errtrace
 
@@ -14,6 +13,13 @@ branch=${branch:-}
 pr_branch=${pr_branch:-}
 pr_number=${pr_number:-}
 kata_repo=${kata_repo:-}
+
+# Name of the label, that if set on a PR, will ignore depends-on lines in commits
+ignore_depends_on_label="ignore-depends-on"
+
+script_name="${0##*/}"
+cidir=$(dirname "$0")
+source "${cidir}/lib.sh"
 
 apply_depends_on() {
 	# kata_repo variable is set by the jenkins_job_build.sh
@@ -108,9 +114,107 @@ clone_repos() {
 	done
 }
 
-main() {
-	clone_repos
-	apply_depends_on
+# Check if we have the 'magic label' that ignored depends-on messages in commits
+# Returns on stdout as string:
+#  0 - No label found,
+#  1 - Label found - should ignore 'Depends-on' messages
+check_ignore_depends_label() {
+	local label="${ignore_depends_on_label}"
+
+	local result=$(check_label "$label")
+	if [ "$result" -eq 1 ]; then
+		local_info "Ignoring all 'Depends-on' labels"
+		echo "1"
+		return 0
+	fi
+
+	local_info "No ignore_depends_on label found"
+	echo "0"
+	return 0
 }
 
-main
+testCheckIgnoreDependsOnLabel() {
+	local result=""
+
+	result=$(unset ghprbGhRepository; check_ignore_depends_label)
+	assertEquals "0" "$result"
+
+	result=$(unset ghprbPullId; check_ignore_depends_label)
+	assertEquals "0" "$result"
+
+	result=$(unset ghprbGhRepository ghprbPullId; check_ignore_depends_label)
+	assertEquals "0" "$result"
+
+	result=$(ghprbGhRepository="repo"; \
+		ghprbPullId=123; \
+		ignore_depends_on_label=""; \
+		check_ignore_depends_label)
+	assertEquals "0" "$result"
+
+	# Pretend label not found
+	result=$(is_label_set() { echo "0"; return 0; }; \
+	                ghprbGhRepository="repo"; \
+	                ghprbPullId=123; \
+	                check_ignore_depends_label "label")
+	assertEquals "0" "$result"
+
+	# Pretend label found
+	result=$(is_label_set() { echo "1"; return 0; }; \
+	                ghprbGhRepository="repo"; \
+	                ghprbPullId=123; \
+	                check_ignore_depends_label "label")
+	assertEquals "1" "$result"
+}
+
+# Run our self tests. Tests are written using the
+# github.com/kward/shunit2 library, and are encoded into functions starting
+# with the string 'test'.
+self_test() {
+	local shunit2_path="github.com/kward/shunit2"
+	local_info "Running self tests"
+
+	local_info "Go get unit test framework from ${shunit2_path}"
+	go get -d "${shunit2_path}" || true
+	local_info "Run the unit tests"
+	# Sourcing the `shunit2` file automatically runs the unit tests in this file.
+	. "${GOPATH}/src/${shunit2_path}/shunit2"
+	# shunit2 call does not return - it exits with its return code.
+}
+
+help()
+{
+	cat <<EOF
+Usage: ${script_name} [test]
+
+Passing the argument 'test' to this script will cause it to only
+run its self tests.
+EOF
+
+	exit 0
+}
+
+main() {
+
+	# Some of our sub-funcs return their results on stdout, but we also want them to be
+	# able to log INFO messages. But, we don't want those going to stderr, as that may
+	# be seen by some CIs as an actual error. Create another file descriptor, mapped
+	# back to stdout, for us to send INFO messages to...
+	exec 5>&1
+
+	if [ "$1" == "test" ]; then
+		self_test
+		# self_test func does not return
+	fi
+
+	[ $# -gt 0 ] && help
+
+	clone_repos
+	local result=$(check_ignore_depends_label)
+	if [ "${result}" -eq 1 ]; then
+		local_info "Not applying depends on due to '${ignore_depends_on_label}' label"
+	else
+		apply_depends_on
+	fi
+}
+
+main "$@"
