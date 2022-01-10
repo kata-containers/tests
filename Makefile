@@ -130,6 +130,8 @@ vfio:
 	bash -f functional/vfio/run.sh -s false -p qemu -m q35 -i image
 	bash -f functional/vfio/run.sh -s true -p qemu -m q35 -i image
 
+agent: bash -f integration/agent/agent_test.sh
+
 help:
 	@echo Subsets of the tests can be run using the following specific make targets:
 	@echo " $(UNION)" | sed 's/ /\n\t/g'
@@ -152,4 +154,5 @@ help:
 	tracing \
 	vcpus \
 	vfio \
-	pmem
+	pmem \
+	agent
