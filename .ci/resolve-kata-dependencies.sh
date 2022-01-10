@@ -39,28 +39,32 @@ apply_depends_on() {
 		repo=$(echo "${label_str}" | tr -d '[:space:]' | cut -d'#' -f1)
 		if [[ "${repos_found[@]}" =~ "${repo}" ]]; then
 			echo "Repository $repo was already defined in a 'Depends-on:' tag."
-			echo "Only one repository per tag is allowed."
-			return 1
-		fi
-		repos_found+=("$repo")
-		pr_id=$(echo "${label_str}" | cut -d'#' -f2)
+			# We routinely merge main into CCv0, so often end up pulling in multiple
+			# commits with depends-on, so we should just ignore all but the latest
+			if [[ "${branch}" != "CCv0" ]]; then
+				echo "Only one repository per tag is allowed."
+				return 1
+			fi
+		else
+			repos_found+=("$repo")
+			pr_id=$(echo "${label_str}" | cut -d'#' -f2)
 
-		echo "This PR depends on repository: ${repo} and pull request: ${pr_id}"
-		if [ ! -d "${GOPATH}/src/${repo}" ]; then
-			go get -d "$repo" || true
-		fi
+			echo "This PR depends on repository: ${repo} and pull request: ${pr_id}"
+			if [ ! -d "${GOPATH}/src/${repo}" ]; then
+				go get -d "$repo" || true
+			fi
 
-		pushd "${GOPATH}/src/${repo}"
-		echo "Fetching pull request: ${pr_id} for repository: ${repo}"
-		dependency_branch="p${pr_id}"
-		git fetch origin "pull/${pr_id}/head:${dependency_branch}" && \
-			git checkout "${dependency_branch}" && \
-			git merge "origin/${branch}"
-			# And show what we merged on top of to aid debugging
-			git log --oneline "origin/${branch}~1..HEAD"
-		popd
+			pushd "${GOPATH}/src/${repo}"
+			echo "Fetching pull request: ${pr_id} for repository: ${repo}"
+			dependency_branch="p${pr_id}"
+			git fetch origin "pull/${pr_id}/head:${dependency_branch}" && \
+				git checkout "${dependency_branch}" && \
+				git merge "origin/${branch}"
+				# And show what we merged on top of to aid debugging
+				git log --oneline "origin/${branch}~1..HEAD"
+			popd
+		fi
 	done
-
 	popd
 }
 
