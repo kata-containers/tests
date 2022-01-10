@@ -13,13 +13,6 @@ endif
 # The time limit in seconds for each test
 TIMEOUT := 120
 
-PODMAN_DEPENDENCY = podman
-ifeq (${CI}, true)
-        ifneq (${TEST_CGROUPSV2}, true)
-                PODMAN_DEPENDENCY =
-        endif
-endif
-
 # union for 'make test'
 UNION := kubernetes
 
