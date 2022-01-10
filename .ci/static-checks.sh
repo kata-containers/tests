@@ -93,6 +93,7 @@ long_options=(
 	[branch]="Specify upstream branch to compare against (default '$branch')"
 	[commits]="Check commits"
 	[docs]="Check document files"
+	[dockerfiles]="Check dockerfiles"
 	[files]="Check files"
 	[force]="Force a skipped test to run"
 	[golang]="Check '.go' files"
@@ -481,7 +482,7 @@ static_check_license_headers()
 			--exclude="*.ipynb" \
 			--exclude="*.jpg" \
 			--exclude="*.json" \
-			--exclude="LICENSE" \
+			--exclude="LICENSE*" \
 			--exclude="*.md" \
 			--exclude="*.pb.go" \
 			--exclude="*pb_test.go" \
@@ -510,8 +511,9 @@ static_check_license_headers()
 			--exclude="*.diff" \
 			--exclude="tools/packaging/static-build/qemu.blacklist" \
 			--exclude="tools/packaging/qemu/default-configs/*" \
-			--exclude="src/agent/protocols/protos/gogo/*" \
-			--exclude="src/agent/protocols/protos/google/*" \
+			--exclude="src/libs/protocols/protos/gogo/*.proto" \
+			--exclude="src/libs/protocols/protos/google/*.proto" \
+			--exclude="src/libs/*/test/texture/*" \
 			-EL $extra_args "\<${pattern}\>" \
 			$files || true)
 
@@ -1102,6 +1104,149 @@ static_check_json()
 	done
 }
 
+# The dockerfile checker relies on the hadolint tool. This function handle its
+# installation if it is not found on PATH.
+# Note that we need a specific version of the tool as it seems to not have
+# backward/forward compatibility between versions.
+has_hadolint_or_install()
+{
+	# Global variable set by the caller. It might be overwritten here.
+	linter_cmd=${linter_cmd:-"hadolint"}
+	local linter_version=$(get_test_version "externals.hadolint.version")
+	local linter_url=$(get_test_version "externals.hadolint.url")
+	local linter_dest="${GOPATH}/bin/hadolint"
+
+	local has_linter=$(command -v "$linter_cmd")
+	if [[ -z "$has_linter" && "$KATA_DEV_MODE" == "yes" ]]; then
+		# Do not install if it is in development mode.
+		die "$linter_cmd command not found. You must have the version $linter_version installed to run this check."
+	elif [ -n "$has_linter" ]; then
+		# Check if the expected linter version
+		if $linter_cmd --version | grep -v "$linter_version" &>/dev/null; then
+			warn "$linter_cmd command found but not the required version $linter_version"
+			has_linter=""
+		fi
+	fi
+
+	if [ -z "$has_linter" ]; then
+		local download_url="${linter_url}/releases/download/v${linter_version}/hadolint-Linux-x86_64"
+		info "Installing $linter_cmd $linter_version at $linter_dest"
+
+		curl -sfL "$download_url" -o "$linter_dest" || \
+			die "Failed to download $download_url"
+		chmod +x "$linter_dest"
+
+		# Overwrite in case it cannot be found in PATH.
+		linter_cmd="$linter_dest"
+	fi
+}
+
+static_check_dockerfiles()
+{
+	local all_files
+	local files
+	local ignore_files
+	# Put here a list of files which should be ignored.
+        local ignore_files=(
+		"tools/osbuilder/rootfs-builder/debian/Dockerfile-aarch64.in"
+		"tools/osbuilder/rootfs-builder/centos/Dockerfile.in"
+		"tools/osbuilder/rootfs-builder/debian/Dockerfile.in"
+		"tools/osbuilder/rootfs-builder/fedora/Dockerfile.in"
+		"tools/osbuilder/rootfs-builder/ubuntu/Dockerfile.in"
+		"tools/osbuilder/rootfs-builder/ubuntu/Dockerfile-aarch64.in"
+		"tools/packaging/tests/Dockerfile/Dockerfile.in"
+		"tools/packaging/tests/Dockerfile/FedoraDockerfile.in"
+        )
+	local linter_cmd="hadolint"
+
+        all_files=$(git ls-files "*/Dockerfile*" | grep -Ev "/(vendor|grpc-rs|target)/" | sort || true)
+
+        if [ "$specific_branch" = "true" ]; then
+                info "Checking all Dockerfiles in $branch branch"
+		files="$all_files"
+        else
+                info "Checking local branch for changed Dockerfiles only"
+
+                local files_status
+		files_status=$(get_pr_changed_file_details || true)
+		files_status=$(echo "$files_status" | grep -E "Dockerfile.*$" || true)
+
+		files=$(echo "$files_status" | awk '{print $NF}')
+        fi
+
+        [ -z "$files" ] && info "No Dockerfiles to check" && return 0
+
+	# As of this writing hadolint is only distributed for x86_64
+	if [ "$(uname -m)" != "x86_64" ]; then
+		info "Skip checking as $linter_cmd is not available for $(uname -m)"
+		return 0
+	fi
+	has_hadolint_or_install
+
+	linter_cmd+=" --no-color"
+
+	# Let's not fail with INFO rules.
+	linter_cmd+=" --failure-threshold warning"
+
+	# Some rules we don't want checked, below we ignore them.
+	#
+	# "DL3008 warning: Pin versions in apt get install"
+	linter_cmd+=" --ignore DL3008"
+	# "DL3041 warning: Specify version with `dnf install -y <package>-<version>`"
+	linter_cmd+=" --ignore DL3041"
+	# "DL3033 warning: Specify version with `yum install -y <package>-<version>`"
+	linter_cmd+=" --ignore DL3033"
+	# "DL3018 warning: Pin versions in apk add. Instead of `apk add <package>` use `apk add <package>=<version>`" 
+	linter_cmd+=" --ignore DL3018"
+	# "DL3003 warning: Use WORKDIR to switch to a directory"
+	# See https://github.com/hadolint/hadolint/issues/70
+	linter_cmd+=" --ignore DL3003"
+	# "DL3048 style: Invalid label key"
+	linter_cmd+=" --ignore DL3048"
+        # DL3037 warning: Specify version with `zypper install -y <package>=<version>`.
+	linter_cmd+=" --ignore DL3037"
+
+	local file
+	for file in $files; do
+		if echo "${ignore_files[@]}" | grep -q $file ; then
+			info "Ignoring Dockerfile '$file'"
+			continue
+		fi
+
+		info "Checking Dockerfile '$file'"
+		local ret
+		# The linter generates an Abstract Syntax Tree (AST) from the
+		# dockerfile. Some of our dockerfiles are actually templates
+		# with special syntax, thus the linter might fail to build
+		# the AST. Here we handle Dockerfile templates.
+		if [[ "$file" =~ Dockerfile.*.in$ ]]; then
+			# In our templates, text with marker as @SOME_NAME@ is
+			# replaceable. Usually it is used to replace in a
+			# FROM command (e.g. `FROM @UBUNTU_REGISTRY@/ubuntu`)
+			# but also to add an entire block of commands. Example
+			# of later:
+			# ```
+			# RUN apt-get install -y package1
+			# @INSTALL_MUSL@
+			# @INSTALL_RUST@
+			# ```
+			# It's known that the linter will fail to parse lines
+			# started with `@`. Also it might give false-positives
+		        # on some cases. Here we remove all markers as a best
+			# effort approach. If the template file is still
+			# unparseable then it should be added in the
+			# `$ignore_files` list.
+			{ sed -e 's/@[A-Z_]*@//' "$file" | $linter_cmd -; ret=$?; }\
+				|| true
+		else
+			# Non-template Dockerfile.
+			{ $linter_cmd "$file"; ret=$?; } || true
+		fi
+
+		[ "$ret" -eq 0 ] || die "failed to check Dockerfile '$file'"
+	done
+}
+
 # Run the specified function (after first checking it is compatible with the
 # users architectural preferences), or simply list the function name if list
 # mode is active.
@@ -1177,6 +1322,7 @@ main()
 			--branch) branch="$2"; shift ;;
 			--commits) func=static_check_commits ;;
 			--docs) func=static_check_docs ;;
+			--dockerfiles) func=static_check_dockerfiles ;;
 			--files) func=static_check_files ;;
 			--force) force="true" ;;
 			--golang) func=static_check_go_arch_specific ;;
