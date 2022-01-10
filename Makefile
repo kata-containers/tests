@@ -70,6 +70,11 @@ stability:
 	ITERATIONS=2 MAX_CONTAINERS=20 ./soak_parallel_rm.sh
 	cd integration/stability && ./hypervisor_stability_kill_test.sh
 
+# Run the static checks on this repository.
+static-checks:
+	PATH="$(GOPATH)/bin:$(PATH)" .ci/static-checks.sh \
+	     "github.com/kata-containers/tests"
+
 shimv2:
 	bash integration/containerd/shimv2/shimv2-tests.sh
 	bash integration/containerd/shimv2/shimv2-factory-tests.sh
@@ -126,6 +131,9 @@ vfio:
 help:
 	@echo Subsets of the tests can be run using the following specific make targets:
 	@echo " $(UNION)" | sed 's/ /\n\t/g'
+	@echo ''
+	@echo "Pull request targets:"
+	@echo "	static-checks	- run the static checks on this repository."
 
 # PHONY in alphabetical order
 .PHONY: \
@@ -141,6 +149,7 @@ help:
 	qat \
 	rootless \
 	sandbox-cgroup \
+	static-checks \
 	test \
 	tracing \
 	vcpus \
