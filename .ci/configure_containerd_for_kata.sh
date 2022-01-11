@@ -18,6 +18,7 @@ cat << EOF | sudo tee /etc/containerd/config.toml
   level = "debug"
 [plugins]
   [plugins.cri]
+    disable_hugetlb_controller = false
     [plugins.cri.containerd]
       [plugins.cri.containerd.runtimes]
         [plugins.cri.containerd.runtimes.runc]
