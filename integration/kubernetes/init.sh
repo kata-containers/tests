@@ -169,8 +169,8 @@ start_kubernetes() {
 	local cri_socket_path="$2"
 	local cgroup_driver="$3"
 	local kubeadm_config_template="${SCRIPT_PATH}/kubeadm/config.yaml"
-	local kubelet_restart_wait="120"
-	local kubelet_restart_sleep="10"
+	local kubelet_wait="240"
+	local kubelet_sleep="10"
 
 	info "Init cluster using ${cri_socket_path}"
 
@@ -200,14 +200,8 @@ start_kubernetes() {
 	sudo chown $(id -u):$(id -g) "$HOME/.kube/config"
 	export KUBECONFIG="$HOME/.kube/config"
 
-	# enable debug log for kubelet
-	sudo sed -i 's/.$/ --v=4"/' /var/lib/kubelet/kubeadm-flags.env
-	info "Restart Kubelet with options:"
-	sudo cat /var/lib/kubelet/kubeadm-flags.env
-	sudo systemctl daemon-reload && sudo systemctl restart kubelet
-
-	info "Probing kubelet"
-	waitForProcess "$kubelet_restart_wait" "$kubelet_restart_sleep" \
+	info "Probing kubelet (timeout=${kubelet_wait}s)"
+	waitForProcess "$kubelet_wait" "$kubelet_sleep" \
 		"kubectl get nodes"
 }
 
