@@ -225,8 +225,8 @@ test_snap_build() {
 	if [[ "${ID}" == "ubuntu" && "$(uname -m)" != "x86_64" ]]; then
 		echo "Test snap build"
 		sudo apt install -y snapcraft
-		[ ! -d "${kata_repo_dir}" ] && go get -d "${kata_repo}" || true
-		pushd "${kata_repo_dir}"
+		[ ! -d "${katacontainers_repo_dir}" ] && go get -d "${katacontainers_repo}" || true
+		pushd "${katacontainers_repo_dir}"
 		sudo snapcraft -d snap --destructive-mode
 		# PREFIX is changed in snap build, change it back
 		PREFIX=

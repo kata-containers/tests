@@ -122,7 +122,7 @@ can_we_skip() {
 
 	# Use just the repo name itself. The YAML does not like having the full
 	# repo path in it.
-	local repo="${kata_repo##*/}"
+	local repo="${katacontainers_repo##*/}"
 
 	if [ -n "$repo" ]; then
 		# Get our repo specific patterns

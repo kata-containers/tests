@@ -23,7 +23,7 @@ QEMU_REPO_URL=$(get_version "assets.hypervisor.qemu.url")
 # Remove 'https://' from the repo url to be able to git clone the repo
 QEMU_REPO=${QEMU_REPO_URL/https:\/\//}
 QEMU_ARCH=$(${cidir}/kata-arch.sh -d)
-PACKAGING_DIR="${kata_repo_dir}/tools/packaging"
+PACKAGING_DIR="${katacontainers_repo_dir}/tools/packaging"
 ARCH=$("${cidir}"/kata-arch.sh -d)
 QEMU_TAR="kata-static-qemu.tar.gz"
 qemu_latest_build_url="${jenkins_url}/job/kata-containers-2.0-qemu-$(uname -m)/${cached_artifacts_path}"
@@ -96,7 +96,7 @@ build_and_install_qemu() {
 
 	mkdir -p "${GOPATH}/src"
 
-	clone_kata_repo
+	clone_katacontainers_repo
 	clone_qemu_repo
 
 	pushd "${GOPATH}/src/${QEMU_REPO}"
