@@ -9,10 +9,6 @@ set -o errexit
 set -o pipefail
 set -o errtrace
 
-# Repositories needed for building the kata containers project.
-katacontainers_repo="${katacontainers_repo:-github.com/kata-containers/kata-containers}"
-tests_repo="${tests_repo:-github.com/kata-containers/tests}"
-
 branch=${branch:-}
 pr_branch=${pr_branch:-}
 pr_number=${pr_number:-}
