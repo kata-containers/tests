@@ -9,7 +9,6 @@ load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 setup() {
-	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	pod_name="busybox"
 	first_container_name="first-test-container"
 	second_container_name="second-test-container"

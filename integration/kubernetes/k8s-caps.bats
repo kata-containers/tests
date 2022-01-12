@@ -9,7 +9,6 @@ load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 setup() {
-        export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
         pod_name="pod-caps"
         get_pod_config_dir
 # We expect the capabilities mask to very per distribution, runtime

@@ -18,6 +18,12 @@ sleep_time=3
 # Note: try to keep timeout and wait_time equal.
 timeout=90s
 
+# Path to the kubeconfig file which is used by kubectl and other tools.
+# Note: the init script sets that variable but if you want to run the tests in
+# your own provisioned cluster and you know what you are doing then you should
+# overwrite it.
+export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
+
 get_pod_config_dir() {
 	pod_config_dir="${BATS_TEST_DIRNAME}/runtimeclass_workloads"
 	info "k8s configured to use runtimeclass"

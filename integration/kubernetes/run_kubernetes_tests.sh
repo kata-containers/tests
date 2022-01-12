@@ -16,7 +16,10 @@ arch="$(uname -m)"
 
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 
-K8S_TEST_UNION=("k8s-attach-handlers.bats" \
+if [ -n "${K8S_TEST_UNION:-}" ]; then
+	K8S_TEST_UNION=($K8S_TEST_UNION)
+else
+	K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-block-volume.bats" \
 	"k8s-caps.bats" \
 	"k8s-configmap.bats" \
@@ -54,6 +57,7 @@ K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-ro-volume.bats" \
 	"k8s-nginx-connectivity.bats" \
 	"k8s-hugepages.bats")
+fi
 
 # Using trap to ensure the cleanup occurs when the script exists.
 trap_on_exit() {
