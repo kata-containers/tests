@@ -9,7 +9,6 @@ load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
 TEST_INITRD="${TEST_INITRD:-no}"
 issue="https://github.com/kata-containers/runtime/issues/1127"
-fc_limitations="https://github.com/kata-containers/documentation/issues/351"
 
 setup() {
 	[ "${TEST_INITRD}" == "yes" ] && skip "test not working see: ${issue}"
