@@ -194,12 +194,12 @@ profile="${profile:-${default_profile}}"
 #-------------------------------------------------------------------------------
 
 export GOPATH=${GOPATH:-${HOME}/go}
-kata_repo_dir="$GOPATH/src/github.com/kata-containers/kata-containers"
-agent_dir="${kata_repo_dir}/src/agent"
+katacontainers_repo_dir="$GOPATH/src/github.com/kata-containers/kata-containers"
+agent_dir="${katacontainers_repo_dir}/src/agent"
 agent_binary="${agent_dir}/target/${triple}/${profile}/${agent_binary_name}"
 
-agent_ctl_dir="${kata_repo_dir}/tools/agent-ctl"
-forwarder_dir="${kata_repo_dir}/src/trace-forwarder"
+agent_ctl_dir="${katacontainers_repo_dir}/src/tools/agent-ctl"
+forwarder_dir="${katacontainers_repo_dir}/src/tools/trace-forwarder"
 
 # Maximum debug level
 default_agent_log_level="trace"
@@ -984,7 +984,7 @@ run_agent_ctl()
 	# since that uses a different build profile compared to the agent.
 	command -v "$agent_ctl_binary_name" &>/dev/null || \
 		(cd "$agent_ctl_dir" && \
-			sudo chown -R "${USER}:" "${kata_repo_dir}" && \
+			sudo chown -R "${USER}:" "${katacontainers_repo_dir}" && \
 			cargo install --path .)
 
 	local agent_ctl_path
