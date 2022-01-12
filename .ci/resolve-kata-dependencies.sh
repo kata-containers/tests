@@ -203,7 +203,7 @@ EOF
 }
 
 main() {
-
+	set -x
 	# Some of our sub-funcs return their results on stdout, but we also want them to be
 	# able to log INFO messages. But, we don't want those going to stderr, as that may
 	# be seen by some CIs as an actual error. Create another file descriptor, mapped
@@ -224,6 +224,7 @@ main() {
 	else
 		apply_depends_on
 	fi
+	set +x
 }
 
 main "$@"
