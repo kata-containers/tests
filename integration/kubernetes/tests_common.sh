@@ -18,6 +18,9 @@ sleep_time=3
 # Note: try to keep timeout and wait_time equal.
 timeout=90s
 
+# issues that can't test yet.
+fc_limitations="https://github.com/kata-containers/documentation/issues/351"
+
 # Path to the kubeconfig file which is used by kubectl and other tools.
 # Note: the init script sets that variable but if you want to run the tests in
 # your own provisioned cluster and you know what you are doing then you should
