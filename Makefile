@@ -85,9 +85,6 @@ cri-containerd:
 log-parser:
 	make -C cmd/log-parser
 
-pentest:
-	bash -f pentest/all.sh
-
 qat:
 	bash integration/qat/qat_test.sh
 
@@ -145,7 +142,6 @@ help:
 	kubernetes \
 	list-install-targets \
 	log-parser \
-	pentest \
 	qat \
 	rootless \
 	sandbox-cgroup \
