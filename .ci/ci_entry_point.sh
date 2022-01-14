@@ -77,7 +77,8 @@ if [ "${repo_to_test}" == "${tests_repo}" ]; then
 		git fetch origin "pull/${pr_number}/head:${pr_branch}"
 		git checkout "${pr_branch}"
 		rebase_merge_flag="--rebase-merges"
-		if [[ ${ID} == "ubuntu" && ${VERSION_ID} == "18.04" ]]; then
+		has_rebase_merges=$(git rebase --help 2>&1|grep -- --rebase-merges || true)
+		if [ -z "${has_rebase_merges}" ]; then
 			rebase_merge_flag="--preserve-merges"
 		fi
 		git rebase "${rebase_merge_flag}" "origin/${ghprbTargetBranch}"
