@@ -24,7 +24,7 @@ export WORKSPACE=$(mktemp -d)
 QEMU_EFI_BUILD_PATH="${WORKSPACE}/Build/ArmVirtQemu-AARCH64/RELEASE_GCC5/FV/QEMU_EFI.fd"
 
 PREFIX="${PREFIX:-/usr}"
-INSTALL_PATH="${DESTDIR:-}${PREFIX}/share/kata-containers/"
+INSTALL_PATH="${DESTDIR:-}${PREFIX}/share/kata-containers"
 
 EFI_NAME="QEMU_EFI.fd"
 EFI_DEFAULT_DIR="/usr/share/qemu-efi-aarch64"
@@ -78,7 +78,10 @@ prepare_default_uefi()
 	else
 		local efi_url="https://releases.linaro.org/components/kernel/uefi-linaro/latest/release/qemu64/QEMU_EFI.fd"
 		sudo mkdir -p "${EFI_DEFAULT_DIR}"
-		sudo curl -LO "${EFI_DEFAULT_DIR}/$efi_url"
+		pushd "${WORKSPACE}" || clean_up_and_die "fail to prepare default uefi."
+		curl -LO ${efi_url}
+		sudo install -o root -g root -m 644 QEMU_EFI.fd ${EFI_DEFAULT_DIR}
+		popd
 	fi
 }
 
