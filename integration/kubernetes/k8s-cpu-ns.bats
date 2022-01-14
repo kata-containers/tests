@@ -9,8 +9,6 @@ load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 setup() {
-	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
-
 	pod_name="constraints-cpu-test"
 	container_name="first-cpu-container"
 	sharessyspath="/sys/fs/cgroup/cpu/cpu.shares"
@@ -19,13 +17,12 @@ setup() {
 	total_cpus=2
 	total_requests=512
 	total_cpu_container=1
+	num_cpus_cmd='grep -e "^processor" /proc/cpuinfo |wc -l'
 
 	get_pod_config_dir
 }
 
 @test "Check CPU constraints" {
-	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
-
 	# Create the pod
 	kubectl create -f "${pod_config_dir}/pod-cpu.yaml"
 
@@ -34,7 +31,6 @@ setup() {
 
 	retries="10"
 
-	num_cpus_cmd='grep -e "^processor" /proc/cpuinfo |wc -l'
 	# Check the total of cpus
 	for _ in $(seq 1 "$retries"); do
 		# Get number of cpus
@@ -67,10 +63,11 @@ setup() {
 }
 
 teardown() {
-	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
-
 	# Debugging information
 	kubectl describe "pod/$pod_name"
+	kubectl describe "pod/$pod_name"
+
+	kubectl exec "$pod_name" -c "$container_name" -- sh -c "$num_cpus_cmd"
 
 	kubectl delete pod "$pod_name"
 }
