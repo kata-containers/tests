@@ -15,7 +15,6 @@ source /etc/os-release || source /usr/lib/os-release
 source "${cidir}/lib.sh"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 experimental_qemu="${experimental_qemu:-false}"
-TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
 
 echo "Install Kata Containers Image"
 echo "rust image is default for Kata 2.0"
