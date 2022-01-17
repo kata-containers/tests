@@ -299,7 +299,7 @@ Your workstation must be capable of running VMs with:
  * ~45GB and ~20GB of disk space for the VM images (Fedora and Ubuntu, respectively) on
    the Libvirt's storage pool
 
-Currently it supports the creation of *Fedora 32* and *Ubuntu 20.04* VM, as shown on the table
+Currently it supports the creation of *Fedora (32 and 35)* and *Ubuntu 20.04* VM, as shown on the table
 below. The `Vagrantfile` was tested on Fedora 33 and Ubuntu 20.04 hosts, and it is
 [known to fail](https://github.com/kata-containers/tests/issues/3942) the boot of Fedora VM on
 Ubuntu host. If you have the need of testing on a different guest or it fails to work
