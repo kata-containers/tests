@@ -4,6 +4,7 @@ nodeRegistration:
   criSocket: CRI_RUNTIME_SOCKET
   kubeletExtraArgs:
     allowed-unsafe-sysctls: kernel.msg*,kernel.shm.*,net.*
+    v: "4"
 ---
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: ClusterConfiguration
