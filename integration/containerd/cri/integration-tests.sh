@@ -128,6 +128,8 @@ create_containerd_config() {
 	runtime="${runtime//./-}"
 
 cat << EOF | sudo tee "${CONTAINERD_CONFIG_FILE}"
+[debug]
+  level = "debug"
 [plugins]
   [plugins.cri]
     [plugins.cri.containerd]
