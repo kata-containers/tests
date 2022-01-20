@@ -101,24 +101,6 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="qemu"
 	[ "${CI_JOB}" == "CRI_CONTAINERD_K8S" ] && export KUBERNETES="yes"
 	;;
-"CRI_CONTAINERD_K8S_INITRD")
-	# This job tests initrd image + containerd + k8s
-	init_ci_flags
-	export CRI_CONTAINERD="yes"
-	export CRI_RUNTIME="containerd"
-	export KATA_HYPERVISOR="qemu"
-	export KUBERNETES="yes"
-	export SHIMV2_TEST="true"
-	export AGENT_INIT=yes
-	export TEST_INITRD=yes
-	;;
-"CRI_CONTAINERD_K8S_COMPLETE")
-	init_ci_flags
-	export CRI_CONTAINERD="yes"
-	export CRI_RUNTIME="containerd"
-	export KATA_HYPERVISOR="qemu"
-	export KUBERNETES="yes"
-	;;
 "CRI_CONTAINERD_K8S_MINIMAL")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
@@ -159,21 +141,6 @@ case "${CI_JOB}" in
 	export KUBERNETES="yes"
 	;;
 "CLOUD-HYPERVISOR-K8S-CONTAINERD")
-	init_ci_flags
-	export CRI_CONTAINERD="yes"
-	export CRI_RUNTIME="containerd"
-	export KATA_HYPERVISOR="cloud-hypervisor"
-	export KUBERNETES="yes"
-	;;
-"CLOUD-HYPERVISOR-K8S-CONTAINERD-MINIMAL")
-	init_ci_flags
-	export CRI_CONTAINERD="yes"
-	export CRI_RUNTIME="containerd"
-	export KATA_HYPERVISOR="cloud-hypervisor"
-	export KUBERNETES="yes"
-	export MINIMAL_K8S_E2E="true"
-	;;
-"CLOUD-HYPERVISOR-K8S-CONTAINERD-FULL")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
