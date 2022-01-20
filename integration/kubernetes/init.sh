@@ -124,6 +124,7 @@ cleanup_cni_configuration() {
 #
 configure_network() {
 	local network_plugin_config="${1:-}"
+	local issue="https://github.com/kata-containers/tests/issues/4381"
 
 	if [ -z "${network_plugin_config}" ]; then
 		# default network plugin should be flannel, and its config file is taken from k8s 1.12 documentation
@@ -136,6 +137,14 @@ configure_network() {
 	kubectl apply -f "$network_plugin_config"
 
 	if [ -n "${flannel_version:-}" ]; then
+		# There is an issue hitting some CI jobs due to a bug on CRI-O that
+		# sometimes doesn't realize a new CNI configuration was installed.
+		# Here we try a simple workaround which consist of rebooting the
+		# CRI-O service.
+		if [ "${CRI_RUNTIME:-}" = "crio" ]; then
+			info "Restart the CRI-O service due to $issue"
+			sudo systemctl restart crio
+		fi
 		local list_pods="kubectl get -n kube-system --selector app=flannel pods"
 		info "Wait for Flannel pods to show up"
 		waitForProcess "30" "10" \
