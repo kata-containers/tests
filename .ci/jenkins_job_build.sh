@@ -127,21 +127,6 @@ fi
 # Resolve kata dependencies
 "${GOPATH}/src/${tests_repo}/.ci/resolve-kata-dependencies.sh"
 
-# Run the static analysis tools
-if [ "${METRICS_CI}" = "false" ]; then
-	# We run static checks on GitHub Actions for x86_64, 
-	# hence run them on Jenkins for non-x86_64 only.	
-	if [ "$arch" != "x86_64" ]; then
-		if [ "${kata_repo}" == "${katacontainers_repo}" ]; then
-			make -C src/runtime pkg/katautils/config-settings.go
-		fi
-		specific_branch=""
-		# If not a PR, we are testing on stable or master branch.
-		[ -z "$pr_number" ] && specific_branch="true"
-		"${ci_dir_name}/static-checks.sh" --only-arch "$kata_repo" "$specific_branch"
-	fi
-fi
-
 # Check if we can fastpath return/skip the CI
 # Specifically do this **after** we have potentially done the static
 # checks, as we always want to run those.
@@ -160,6 +145,21 @@ fi
 if [ "$ret" -eq 0 ]; then
 	echo "Short circuit fast path skipping the rest of the CI."
 	exit 0
+fi
+
+# Run the static analysis tools
+if [ "${METRICS_CI}" = "false" ]; then
+	# We run static checks on GitHub Actions for x86_64,
+	# hence run them on Jenkins for non-x86_64 only.
+	if [ "$arch" != "x86_64" ]; then
+		if [ "${kata_repo}" == "${katacontainers_repo}" ]; then
+			make -C src/runtime pkg/katautils/config-settings.go
+		fi
+		specific_branch=""
+		# If not a PR, we are testing on stable or master branch.
+		[ -z "$pr_number" ] && specific_branch="true"
+		"${ci_dir_name}/static-checks.sh" --only-arch "$kata_repo" "$specific_branch"
+	fi
 fi
 
 # Source the variables needed for setup the system and run the tests
