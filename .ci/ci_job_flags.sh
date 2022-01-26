@@ -101,14 +101,6 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="qemu"
 	[ "${CI_JOB}" == "CRI_CONTAINERD_K8S" ] && export KUBERNETES="yes"
 	;;
-"CRI_CONTAINERD_K8S_MINIMAL")
-	init_ci_flags
-	export CRI_CONTAINERD="yes"
-	export CRI_RUNTIME="containerd"
-	export KATA_HYPERVISOR="qemu"
-	export KUBERNETES="yes"
-	export MINIMAL_K8S_E2E="true"
-	;;
 "CRIO_K8S")
 	init_ci_flags
 	export CRI_RUNTIME="crio"
