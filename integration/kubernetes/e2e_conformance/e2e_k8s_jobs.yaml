@@ -7,10 +7,6 @@
 jobs:
   CRI_CONTAINERD_K8S_MINIMAL:
     passed: 12
-  CRI_CONTAINERD_K8S_COMPLETE:
-    passed: 269
-  CLOUD-HYPERVISOR-K8S-E2E-CONTAINERD-FULL:
-    passed: 274
   minimal:
     focus:
       - ConfigMap should be consumable from pods in volume
