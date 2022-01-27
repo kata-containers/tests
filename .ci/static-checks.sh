@@ -574,12 +574,18 @@ check_url()
 		# - 405: Specifically to handle some sites
 		#   which get upset by "curl -L" when the
 		#   redirection is not required.
-		#
+		# - 429: Let it go as this is a trick of http server
+		#   to protect itself from Dos attacking and it's not
+		#   a fatal error, so, give a warning instead.
 		# Anything else is considered an error.
 		#
 		# See https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
 
-		if ! echo "$status" | grep -qE "^(1[0-9][0-9]|2[0-9][0-9]|3[0-9][0-9]|405)"; then
+		if echo "$status" | grep "429"; then
+			echo "Warning: get \"429 Too Many Requests\" when check URL $url"
+		fi
+
+		if ! echo "$status" | grep -qE "^(1[0-9][0-9]|2[0-9][0-9]|3[0-9][0-9]|405|429)"; then
 			echo "$url" >> "$invalid_file"
 			die "found HTTP error status codes for URL $url ($status)"
 		fi
