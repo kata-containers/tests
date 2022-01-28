@@ -29,6 +29,7 @@ Golang/B
 Grafana/B
 Gramine/B
 Huawei/B
+Inclavare/B
 iPerf/B
 IPerf/B
 Istio/B
@@ -46,6 +47,7 @@ libcontainer/B
 libelf/B
 libvirt/B
 Linkerd/B
+LinuxONE/B
 Logrus/B
 Logstash/B
 Mellanox/B
