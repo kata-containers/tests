@@ -8,8 +8,11 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+source "${SCRIPT_PATH}/../../.ci/lib.sh"
+
 network_plugin_config_file="${SCRIPT_PATH}/../../.ci/${arch}/kubernetes/kube-flannel.yml"
 
+flannel_url="$(get_test_version "externals.flannel.kube-flannel_url")"
 curl -fsL $flannel_url -o $network_plugin_config_file
 
 memory_resource="spec.template.spec.containers[*].resources.*.memory"
