@@ -18,13 +18,12 @@
 # bash ci_crio_entry_point.sh
 
 set -o errexit
-set -o nounset
 set -o pipefail
 set -o errtrace
 
 if [ -z "$PULL_NUMBER" ]; then
-	echo "ERROR: PULL_NUMBER missing"
-	exit 1
+	echo "No pull number given: testing with HEAD"
+	PULL_NUMBER="NONE"
 fi
 
 # set defaults for required variables
@@ -37,7 +36,7 @@ export CI_JOB="EXTERNAL_CRIO"
 export INSTALL_KATA="yes"
 export GO111MODULE=auto
 
-latest_release="1.22"
+latest_release="1.23"
 
 sudo bash -c "cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
@@ -105,14 +104,16 @@ mkdir -p $(dirname "${kata_repo_dir}")
 mkdir -p $(dirname "${crio_repo_dir}")
 [ -d "${crio_repo_dir}" ] || git clone "https://${crio_repo}.git" "${crio_repo_dir}"
 
-# Checkout to the PR commit and rebase with main
-cd "${crio_repo_dir}"
-git fetch origin "pull/${pr_number}/head:${pr_branch}"
-git checkout "${pr_branch}"
-git rebase "origin/${PULL_BASE_REF}"
+if [ "${pr_number}" != "NONE" ]; then
+	# Checkout to the PR commit and rebase with main
+	cd "${crio_repo_dir}"
+	git fetch origin "pull/${pr_number}/head:${pr_branch}"
+	git checkout "${pr_branch}"
+	git rebase "origin/${PULL_BASE_REF}"
 
-# And show what we rebased on top of to aid debugging
-git log --oneline main~1..HEAD
+	# And show what we rebased on top of to aid debugging
+	git log --oneline main~1..HEAD
+fi
 
 # Edit critools & kubernetes versions
 cd "${kata_repo_dir}"

@@ -60,4 +60,5 @@ jobs:
     - name: Static checks
       if: ${{ !contains(github.event.pull_request.labels.*.name, 'force-skip-ci') }}
       run: |
-        cd ${GOPATH}/src/github.com/kata-containers/tests && ./.ci/static-checks.sh github.com/kata-containers/tests
+        cd ${GOPATH}/src/github.com/kata-containers/tests
+        make static-checks

@@ -7,11 +7,9 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
-fc_limitations="https://github.com/kata-containers/documentation/issues/351"
 
 setup() {
 	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
-	export KUBECONFIG="$HOME/.kube/config"
 	pod_name="test-readonly-volume"
 	container_name="busybox-ro-volume-container"
 	tmp_file="ro-volume-test-foobarfoofoo"

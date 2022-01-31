@@ -487,7 +487,7 @@ static_check_license_headers()
 			--exclude="*.ipynb" \
 			--exclude="*.jpg" \
 			--exclude="*.json" \
-			--exclude="LICENSE" \
+			--exclude="LICENSE*" \
 			--exclude="*.md" \
 			--exclude="*.pb.go" \
 			--exclude="*pb_test.go" \
@@ -516,8 +516,9 @@ static_check_license_headers()
 			--exclude="*.diff" \
 			--exclude="tools/packaging/static-build/qemu.blacklist" \
 			--exclude="tools/packaging/qemu/default-configs/*" \
-			--exclude="src/agent/protocols/protos/gogo/*" \
-			--exclude="src/agent/protocols/protos/google/*" \
+			--exclude="src/libs/protocols/protos/gogo/*.proto" \
+			--exclude="src/libs/protocols/protos/google/*.proto" \
+			--exclude="src/libs/*/test/texture/*" \
 			--exclude="*.tar" \
 			--exclude="*.gpg" \
 			-EL $extra_args "\<${pattern}\>" \
@@ -831,9 +832,35 @@ static_check_docs()
 	for doc in $docs
 	do
 		"$cmd" check "$doc" || { info "spell check failed for document $doc" && docs_failed=1; }
+
+		static_check_eof "$doc"
 	done
 
 	[ $docs_failed -eq 0 ] || die "spell check failed, See https://github.com/kata-containers/kata-containers/blob/main/docs/Documentation-Requirements.md#spelling for more information."
+}
+
+static_check_eof()
+{
+	local file="$1"
+	local anchor="EOF"
+
+
+	[ -z "$file" ] && info "No files to check" && return
+
+	# Skip the itself
+	[ "$file" == "$script_name" ] && return
+
+	# Skip the Vagrantfile
+	[ "$file" == "Vagrantfile" ] && return
+
+	local invalid=$(cat "$file" |\
+		egrep -o '<<-* *\w*' |\
+		sed -e 's/^<<-*//g' |\
+		tr -d ' ' |\
+		sort -u |\
+		egrep -v '^$' |\
+		egrep -v "$anchor" || true)
+	[ -z "$invalid" ] || echo "Expected '$anchor' here anchor, in $file found: $invalid"
 }
 
 # Tests to apply to all files.
@@ -1068,6 +1095,8 @@ static_check_shell()
 		{ $chronic bash -n "$script"; ret=$?; } || true
 
 		[ "$ret" -eq 0 ] || die "check for script '$script' failed"
+
+		static_check_eof "$script"
 	done
 }
 

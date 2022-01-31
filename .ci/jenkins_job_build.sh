@@ -133,21 +133,6 @@ fi
 # Resolve kata dependencies
 "${GOPATH}/src/${tests_repo}/.ci/resolve-kata-dependencies.sh"
 
-# Run the static analysis tools
-if [ "${METRICS_CI}" = "false" ]; then
-	# We run static checks on GitHub Actions for x86_64,
-	# hence run them on Jenkins for non-x86_64 only.
-	if [ "$arch" != "x86_64" ]; then
-		if [ "${kata_repo}" == "${katacontainers_repo}" ]; then
-			make -C src/runtime pkg/katautils/config-settings.go
-		fi
-		specific_branch=""
-		# If not a PR, we are testing on stable or master branch.
-		[ -z "$pr_number" ] && specific_branch="true"
-		"${ci_dir_name}/static-checks.sh" "$kata_repo" "$specific_branch"
-	fi
-fi
-
 # Check if we can fastpath return/skip the CI
 # Specifically do this **after** we have potentially done the static
 # checks, as we always want to run those.
@@ -168,6 +153,21 @@ if [ "$ret" -eq 0 ]; then
 	exit 0
 fi
 
+# Run the static analysis tools
+if [ "${METRICS_CI}" = "false" ]; then
+	# We run static checks on GitHub Actions for x86_64,
+	# hence run them on Jenkins for non-x86_64 only.
+	if [ "$arch" != "x86_64" ]; then
+		if [ "${kata_repo}" == "${katacontainers_repo}" ]; then
+			make -C src/runtime pkg/katautils/config-settings.go
+		fi
+		specific_branch=""
+		# If not a PR, we are testing on stable or master branch.
+		[ -z "$pr_number" ] && specific_branch="true"
+		"${ci_dir_name}/static-checks.sh" "$kata_repo" "$specific_branch"
+	fi
+fi
+
 # Source the variables needed for setup the system and run the tests
 # according to the job type.
 pushd "${GOPATH}/src/${tests_repo}"
@@ -176,6 +176,9 @@ source "${cidir}/lib.sh"
 popd
 
 "${ci_dir_name}/setup.sh"
+
+# Use virtio-9p on s390x -- https://github.com/kata-containers/tests/issues/3998 for tracking
+[ "$arch" = s390x ] && sudo -E "${GOPATH}/src/${tests_repo}/${cidir}/set_kata_config.sh" shared_fs virtio-9p
 
 # Run unit tests on non x86_64
 if [[ "$arch" == "s390x" || "$arch" == "aarch64" ]]; then

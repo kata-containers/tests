@@ -13,13 +13,6 @@ endif
 # The time limit in seconds for each test
 TIMEOUT := 120
 
-PODMAN_DEPENDENCY = podman
-ifeq (${CI}, true)
-        ifneq (${TEST_CGROUPSV2}, true)
-                PODMAN_DEPENDENCY =
-        endif
-endif
-
 # union for 'make test'
 UNION := kubernetes
 
@@ -77,6 +70,11 @@ stability:
 	ITERATIONS=2 MAX_CONTAINERS=20 ./soak_parallel_rm.sh
 	cd integration/stability && ./hypervisor_stability_kill_test.sh
 
+# Run the static checks on this repository.
+static-checks:
+	PATH="$(GOPATH)/bin:$(PATH)" .ci/static-checks.sh \
+	     "github.com/kata-containers/tests"
+
 shimv2:
 	bash integration/containerd/shimv2/shimv2-tests.sh
 	bash integration/containerd/shimv2/shimv2-factory-tests.sh
@@ -86,9 +84,6 @@ cri-containerd:
 
 log-parser:
 	make -C cmd/log-parser
-
-pentest:
-	bash -f pentest/all.sh
 
 qat:
 	bash integration/qat/qat_test.sh
@@ -130,9 +125,14 @@ vfio:
 	bash -f functional/vfio/run.sh -s false -p qemu -m q35 -i image
 	bash -f functional/vfio/run.sh -s true -p qemu -m q35 -i image
 
+agent: bash -f integration/agent/agent_test.sh
+
 help:
 	@echo Subsets of the tests can be run using the following specific make targets:
 	@echo " $(UNION)" | sed 's/ /\n\t/g'
+	@echo ''
+	@echo "Pull request targets:"
+	@echo "	static-checks	- run the static checks on this repository."
 
 # PHONY in alphabetical order
 .PHONY: \
@@ -144,12 +144,13 @@ help:
 	kubernetes \
 	list-install-targets \
 	log-parser \
-	pentest \
 	qat \
 	rootless \
 	sandbox-cgroup \
+	static-checks \
 	test \
 	tracing \
 	vcpus \
 	vfio \
-	pmem
+	pmem \
+	agent

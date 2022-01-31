@@ -15,8 +15,12 @@ source "${cidir}/lib.sh"
 arch="$(uname -m)"
 
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
+K8S_TEST_DEBUG="${K8S_TEST_DEBUG:-false}"
 
-K8S_TEST_UNION=("k8s-attach-handlers.bats" \
+if [ -n "${K8S_TEST_UNION:-}" ]; then
+	K8S_TEST_UNION=($K8S_TEST_UNION)
+else
+	K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-block-volume.bats" \
 	"k8s-caps.bats" \
 	"k8s-configmap.bats" \
@@ -54,10 +58,23 @@ K8S_TEST_UNION=("k8s-attach-handlers.bats" \
 	"k8s-ro-volume.bats" \
 	"k8s-nginx-connectivity.bats" \
 	"k8s-hugepages.bats")
+fi
+
+cleanup() {
+	if [ ${K8S_TEST_DEBUG} == "true" ]; then
+		info "Running on debug mode so skip the cleanup routine"
+		info "You can access kubernetes with:\n\tkubectl <command>"
+		info "Run the cleanup routine when you are done debugging:\n\t${kubernetes_dir}/cleanup_env.sh"
+		return
+	fi
+
+	info "Run the cleanup routine"
+	${kubernetes_dir}/cleanup_env.sh
+}
 
 # Using trap to ensure the cleanup occurs when the script exists.
 trap_on_exit() {
-	trap '${kubernetes_dir}/cleanup_env.sh' EXIT
+	trap 'cleanup' EXIT
 }
 
 # we may need to skip a few test cases when running on non-x86_64 arch

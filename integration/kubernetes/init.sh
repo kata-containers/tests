@@ -124,6 +124,7 @@ cleanup_cni_configuration() {
 #
 configure_network() {
 	local network_plugin_config="${1:-}"
+	local issue="https://github.com/kata-containers/tests/issues/4381"
 
 	if [ -z "${network_plugin_config}" ]; then
 		# default network plugin should be flannel, and its config file is taken from k8s 1.12 documentation
@@ -134,6 +135,32 @@ configure_network() {
 	fi
 	info "Use configuration file from ${network_plugin_config}"
 	kubectl apply -f "$network_plugin_config"
+
+	if [ -n "${flannel_version:-}" ]; then
+		# There is an issue hitting some CI jobs due to a bug on CRI-O that
+		# sometimes doesn't realize a new CNI configuration was installed.
+		# Here we try a simple workaround which consist of rebooting the
+		# CRI-O service.
+		if [ "${CRI_RUNTIME:-}" = "crio" ]; then
+			info "Restart the CRI-O service due to $issue"
+			sudo systemctl restart crio
+		fi
+		local list_pods="kubectl get -n kube-system --selector app=flannel pods"
+		info "Wait for Flannel pods to show up"
+		waitForProcess "30" "10" \
+			"[ \$($list_pods 2>/dev/null | wc -l) -gt 0 ]"
+		local flannel_p
+		for flannel_p in $($list_pods \
+			-o jsonpath='{.items[*].metadata.name}'); do
+			info "Wait for pod $flannel_p be ready"
+			if ! kubectl wait -n kube-system --for=condition=Ready \
+				"pod/$flannel_p"; then
+				info "Flannel pod $flannel_p failed to start"
+				echo "[DEBUG] Pod ${flannel_p}:" 1>&2
+				kubectl describe -n kube-system "pod/$flannel_p"
+			fi
+		done
+	fi
 }
 
 # Save the current iptables configuration.
@@ -169,6 +196,8 @@ start_kubernetes() {
 	local cri_socket_path="$2"
 	local cgroup_driver="$3"
 	local kubeadm_config_template="${SCRIPT_PATH}/kubeadm/config.yaml"
+	local kubelet_wait="240"
+	local kubelet_sleep="10"
 
 	info "Init cluster using ${cri_socket_path}"
 
@@ -198,18 +227,9 @@ start_kubernetes() {
 	sudo chown $(id -u):$(id -g) "$HOME/.kube/config"
 	export KUBECONFIG="$HOME/.kube/config"
 
-	# enable debug log for kubelet
-	sudo sed -i 's/.$/ --v=4"/' /var/lib/kubelet/kubeadm-flags.env
-	info "Kubelet options:"
-	sudo cat /var/lib/kubelet/kubeadm-flags.env
-	sudo systemctl daemon-reload && sudo systemctl restart kubelet
-
-	for i in $(seq 4)
-	do
-		kubectl get nodes && break || sleep $i
-	done
-	kubectl get pods
-
+	info "Probing kubelet (timeout=${kubelet_wait}s)"
+	waitForProcess "$kubelet_wait" "$kubelet_sleep" \
+		"kubectl get nodes"
 }
 
 # Start the CRI runtime service.

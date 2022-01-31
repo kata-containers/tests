@@ -13,7 +13,6 @@ setup() {
 	nginx_image="nginx:$nginx_version"
 	busybox_image="busybox"
 	deployment="nginx-deployment"
-	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	# Pull the images before launching workload.
 	crictl_pull "$busybox_image"
 	crictl_pull "$nginx_image"

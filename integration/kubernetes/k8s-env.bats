@@ -9,7 +9,6 @@ load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 setup() {
-	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	pod_name="test-env"
 	get_pod_config_dir
 }
@@ -24,6 +23,13 @@ setup() {
 	# Print environment variables
 	cmd="printenv"
 	kubectl exec $pod_name -- sh -c $cmd | grep "MY_POD_NAME=$pod_name"
+	kubectl exec $pod_name -- sh -c $cmd | \
+		grep "HOST_IP=\([0-9]\+\(\.\|$\)\)\{4\}"
+	# Requested 32Mi of memory
+	kubectl exec $pod_name -- sh -c $cmd | \
+		grep "MEMORY_REQUESTS=$((1024 * 1024 * 32))"
+	# Memory limits allocated by the node
+	kubectl exec $pod_name -- sh -c $cmd | grep "MEMORY_LIMITS=[1-9]\+"
 }
 
 teardown() {
