@@ -171,6 +171,9 @@ popd
 
 "${ci_dir_name}/setup.sh"
 
+# Use virtio-9p on s390x -- https://github.com/kata-containers/tests/issues/3998 for tracking
+[ "$arch" = s390x ] && sudo -E "${GOPATH}/src/${tests_repo}/${cidir}/set_kata_config.sh" shared_fs virtio-9p
+
 # Run unit tests on non x86_64
 if [[ "$arch" == "s390x" || "$arch" == "aarch64" ]]; then
 	echo "Running unit tests"
