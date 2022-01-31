@@ -158,7 +158,7 @@ if [ "${METRICS_CI}" = "false" ]; then
 		specific_branch=""
 		# If not a PR, we are testing on stable or master branch.
 		[ -z "$pr_number" ] && specific_branch="true"
-		"${ci_dir_name}/static-checks.sh" "$kata_repo" "$specific_branch"
+		"${ci_dir_name}/static-checks.sh" --only-arch "$kata_repo" "$specific_branch"
 	fi
 fi
 
