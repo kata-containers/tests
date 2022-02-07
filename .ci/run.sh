@@ -38,6 +38,8 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make qat"
 		;;
 	"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S")
+		echo "INFO: Running nydus test"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make nydus"
 		echo "INFO: Running stability test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
 		echo "INFO: Containerd checks"
