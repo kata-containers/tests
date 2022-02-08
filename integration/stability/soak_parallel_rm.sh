@@ -137,12 +137,12 @@ go() {
 }
 
 kill_all_containers() {
-	present=$(sudo ctr c list -q | wc -l)
-	if ((${present})); then
-		sudo ctr tasks kill $(sudo ctr task ls -q)
-		sudo ctr tasks rm -f $(sudo ctr task list -q)
-		sudo ctr c rm $(sudo ctr c list -q)
-	fi
+	for container in $(sudo ctr containers list -q); do
+		sudo ctr tasks kill "$container"
+		# Give task a second to die if required
+		waitForProcess 1 1 "! (sudo ctr tasks list -q | grep -q $container)"
+		sudo ctr containers delete "$container"
+	done
 }
 
 count_mounts() {
