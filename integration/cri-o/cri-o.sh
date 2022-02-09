@@ -69,29 +69,35 @@ IFS=''
 
 # Skip CRI-O tests that currently are not working
 pushd "${crio_repository_path}/test/"
-cp ctr.bats ctr_kata_integration_tests.bats
-for testName in "${!skipCRIOTests[@]}"
-do
-	sed -i '/'${testName}'/a skip \"'${skipCRIOTests[$testName]}'\"' "ctr_kata_integration_tests.bats"
-done
 
-# selectively skip tests depending on the version of cri-o we're testing with
 CRIO_VERSION=$(echo ${PULL_BASE_REF} | cut -d'-' -f 2)
-echo GOT CRIO VERSION $CRIO_VERSION
-if [ "$CRIO_VERSION" != "main" ]; then
-    if [ -z "$CRIO_VERSION" ]; then
-        echo "Unknown version of cri-o - skipping more tests"
-        CRIO_VERSION="1.21"
-    fi
-
-    for testName in "${!fixedInCrioVersion[@]}"
-    do
-        if [ "$(echo -e "$CRIO_VERSION\n${fixedInCrioVersion[$testName]}" | sort -V | head -n1)" != "${fixedInCrioVersion[$testName]}" ]; then
-            echo "Skipping $testName for cri-o v$CRIO_VERSION"
-            sed -i '/'${testName}'/a skip \"- fixed in cri-o v'${fixedInCrioVersion[$testName]}'\"' "ctr_kata_integration_tests.bats"
-        fi
-    done
+if [ -z "$CRIO_VERSION" ]; then
+    echo "Unknown version of cri-o - skipping more tests"
+    CRIO_VERSION="1.21"
+else
+    echo GOT CRIO VERSION $CRIO_VERSION
 fi
+
+for batsfile in ${bats_files_list[@]}; do
+    testfile=${batsfile%.*}_kata_integration_tests.bats
+    cp ${batsfile} ${testfile}
+    for testName in "${!skipCRIOTests[@]}"
+    do
+        echo "Skipping $testName in $testfile"
+        sed -i '/'${testName}'/a skip \"'${skipCRIOTests[$testName]}'\"' "${testfile}"
+    done
+
+    # selectively skip tests depending on the version of cri-o we're testing with
+    if [ "$CRIO_VERSION" != "main" ]; then
+        for testName in "${!fixedInCrioVersion[@]}"
+        do
+            if [ "$(echo -e "$CRIO_VERSION\n${fixedInCrioVersion[$testName]}" | sort -V | head -n1)" != "${fixedInCrioVersion[$testName]}" ]; then
+                echo "Skipping $testName in $testfile for cri-o v$CRIO_VERSION"
+                sed -i '/'${testName}'/a skip \"- fixed in cri-o v'${fixedInCrioVersion[$testName]}'\"' "${testfile}"
+            fi
+        done
+    fi
+done
 
 IFS=$OLD_IFS
 
@@ -106,7 +112,7 @@ if systemctl is-active --quiet docker; then
 fi
 
 echo "Running cri-o tests with runtime: $CONTAINER_RUNTIME"
-./test_runner.sh ctr_kata_integration_tests.bats
-rm ctr_kata_integration_tests.bats
+./test_runner.sh *_kata_integration_tests.bats
+rm *_kata_integration_tests.bats
 
 popd

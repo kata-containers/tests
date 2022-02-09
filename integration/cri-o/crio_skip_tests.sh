@@ -5,6 +5,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# TODO: the list of files is hardcoded for now, as we don't have listed all tests
+# that need to be skipped, but ultimately we will want to use *.bats
+declare -a bats_files_list=("ctr.bats")
+
 # Currently these are the CRI-O tests that are not working
 
 declare -A skipCRIOTests=(
