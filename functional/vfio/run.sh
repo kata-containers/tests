@@ -117,6 +117,20 @@ check_vfio() {
 	    die "Expected exactly two devices got: ${devs}"
 	fi
 
+	# The bridge device will always sort first, because it is on
+	# bus zero, whereas the NIC will be on a non-zero bus
+	guest_pci=$(echo "${devs}" | tail -1)
+
+	# This is a roundabout way of getting the environment
+	# variable, but to use the more obvious "echo $PCIDEVICE_..."
+	# we would have to escape the '$' enough to not be expanded
+	# before it's injected into the container, but not so much
+	# that it *is* expanded by the shell within the container.
+	# Doing that with another shell function in between is very
+	# fragile, so do it this way instead.
+	guest_env="$(get_ctr_cmd_output "${cid}" env | grep ^PCIDEVICE_VIRTIO_NET | sed s/^[^=]*=//)"
+	if [ "${guest_env}" != "${guest_pci}" ]; then
+	    die "PCIDEVICE variable was \"${guest_env}\" instead of \"${guest_pci}\""
 	fi
 }
 
@@ -218,6 +232,7 @@ run_test_container() {
 	local container_id="$1"
 	local bundle_dir="$2"
 	local config_json_in="$3"
+	local host_pci="$4"
 
 	# generate final config.json
 	sed -e '/^#.*/d' \
@@ -227,6 +242,7 @@ run_test_container() {
 	    -e 's|@VFIO_CTL_MAJOR@|'"${vfio_ctl_major}"'|g' \
 	    -e 's|@VFIO_CTL_MINOR@|'"${vfio_ctl_minor}"'|g' \
 	    -e 's|@ROOTFS@|'"${bundle_dir}/rootfs"'|g' \
+	    -e 's|@HOST_PCI@|'"${host_pci}"'|g' \
 	    "${config_json_in}" > "${script_path}/config.json"
 
 	create_bundle "${bundle_dir}"
@@ -301,7 +317,8 @@ main() {
 	guest_kernel_cid="vfio-guest-kernel-${RANDOM}"
 	run_test_container "${guest_kernel_cid}" \
 			   "${tmp_data_dir}/vfio-guest-kernel" \
-			   "${script_path}/guest-kernel.json.in"
+			   "${script_path}/guest-kernel.json.in" \
+			   "${host_pci}"
 	check_guest_kernel "${guest_kernel_cid}"
 
 	# Remove the container so we can re-use the device for the next test
@@ -311,7 +328,8 @@ main() {
 	vfio_cid="vfio-vfio-${RANDOM}"
 	run_test_container "${vfio_cid}" \
 			   "${tmp_data_dir}/vfio-vfio" \
-			   "${script_path}/vfio.json.in"
+			   "${script_path}/vfio.json.in" \
+			   "${host_pci}"
 	check_vfio "${vfio_cid}"
 }
 
