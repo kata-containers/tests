@@ -29,16 +29,16 @@ cleanup() {
 	clean_env_ctr
 	sudo rm -rf "${tmp_data_dir}"
 
-	[ -n "${addr}" ] && sudo driverctl unset-override "${addr}"
+	[ -n "${host_pci}" ] && sudo driverctl unset-override "${host_pci}"
 }
 
-get_eth_addr() {
+host_pci_addr() {
 	lspci -D | grep "Ethernet controller" | grep "Virtio network device" | tail -1 | cut -d' ' -f1
 }
 
 get_vfio_path() {
 	local addr="$1"
-	echo "/dev/vfio/$(basename $(realpath /sys/bus/pci/drivers/vfio-pci/${addr}/iommu_group))"
+	echo "/dev/vfio/$(basename $(realpath /sys/bus/pci/drivers/vfio-pci/${host_pci}/iommu_group))"
 }
 
 pull_rootfs() {
@@ -267,12 +267,12 @@ main() {
 	sudo modprobe vfio
 	sudo modprobe vfio-pci
 
-	addr=$(get_eth_addr)
-	[ -n "${addr}" ] || die "virtio ethernet controller address not found"
+	host_pci=$(host_pci_addr)
+	[ -n "${host_pci}" ] || die "virtio ethernet controller PCI address not found"
 
-	sudo driverctl set-override "${addr}" vfio-pci
+	sudo driverctl set-override "${host_pci}" vfio-pci
 
-	vfio_device="$(get_vfio_path "${addr}")"
+	vfio_device="$(get_vfio_path "${host_pci}")"
 	[ -n "${vfio_device}" ] || die "vfio device not found"
 	vfio_major="$(printf '%d' $(stat -c '0x%t' ${vfio_device}))"
 	vfio_minor="$(printf '%d' $(stat -c '0x%T' ${vfio_device}))"
