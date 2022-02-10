@@ -109,6 +109,15 @@ check_vfio() {
 	if [ $(echo "${group}" | wc -w) != "1" ] ; then
 	    die "Expected exactly one VFIO group got: ${group}"
 	fi
+
+	# There should be two devices in the IOMMU group: the ethernet
+	# device we care about, plus the PCIe to PCI bridge device
+	devs="$(get_ctr_cmd_output "${cid}" ls /sys/kernel/iommu_groups/"${group}"/devices)"
+	if [ $(echo "${devs}" | wc -w) != "2" ] ; then
+	    die "Expected exactly two devices got: ${devs}"
+	fi
+
+	fi
 }
 
 get_dmesg() {
