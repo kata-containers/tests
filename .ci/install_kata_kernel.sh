@@ -15,7 +15,6 @@ set -o errtrace
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 
-latest_build_url="${jenkins_url}/job/kata-containers-2.0-kernel-vanilla-$(arch)-nightly/${cached_artifacts_path}"
 PREFIX="${PREFIX:-/usr}"
 kernel_dir="${DESTDIR:-}${PREFIX}/share/kata-containers"
 
@@ -29,6 +28,8 @@ exit_handler() {
 trap exit_handler EXIT
 
 build_and_install_kernel() {
+	local kernel_version=${1:-}
+
 	# Always build and install the kernel version found locally
 	info "Install kernel from sources"
 	pushd "${tmp_dir}" >> /dev/null
@@ -41,6 +42,9 @@ build_and_install_kernel() {
 # $1 kernel_binary: binary to install could be vmlinux or vmlinuz
 install_cached_kernel(){
 	local kernel_binary=${1:-}
+	local latest_build_url=${2:-}
+	local cached_kernel_version=${3:-}
+
 	[ -z "${kernel_binary}" ] && die "empty binary format"
 	info "Attempting to download cached ${kernel_binary}"
 	sudo mkdir -p "${kernel_dir}"
@@ -53,8 +57,11 @@ install_cached_kernel(){
 }
 
 install_prebuilt_kernel() {
+	local latest_build_url=${1:-}
+	local cached_kernel_version=${2:-}
+
 	for k in "vmlinux" "vmlinuz"; do
-		install_cached_kernel "${k}" || return 1
+		install_cached_kernel "${k}" "${latest_build_url}" "${cached_kernel_version}" || return 1
 	done
 
 	pushd "${kernel_dir}" >/dev/null
@@ -66,20 +73,26 @@ install_prebuilt_kernel() {
 	info "Installed pre-built kernel"
 }
 
-main() {
-	clone_katacontainers_repo
-	kernel_version=$(get_version "assets.kernel.version")
+install_vanilla_kernel() {
+	local kernel_version=$(get_version "assets.kernel.version")
 	kernel_version=${kernel_version#v}
-	kata_config_version=$(cat "${kernel_packaging_dir}/kata_config_version")
-	kata_kernel_version="${kernel_version}-${kata_config_version}"
-	cached_kernel_version=$(curl -sfL "${latest_build_url}/latest") || cached_kernel_version="none"
+	local kata_config_version=$(cat "${kernel_packaging_dir}/kata_config_version")
+	local kata_kernel_version="${kernel_version}-${kata_config_version}"
+	local latest_build_url="${jenkins_url}/job/kata-containers-2.0-kernel-vanilla-$(arch)-nightly/${cached_artifacts_path}"
+	local cached_kernel_version=$(curl -sfL "${latest_build_url}/latest") || cached_kernel_version="none"
+
 	info "Kata guest kernel : ${kata_kernel_version}"
 	info "cached kernel  : ${cached_kernel_version}"
 
-	if ! install_prebuilt_kernel; then
+	if ! install_prebuilt_kernel ${latest_build_url} ${cached_kernel_version}; then
 	    info "failed to install cached kernel, trying to build from source"
-	    build_and_install_kernel
+	    build_and_install_kernel "${kernel_version}"
 	fi
+}
+
+main() {
+	clone_katacontainers_repo
+	install_vanilla_kernel
 }
 
 main
