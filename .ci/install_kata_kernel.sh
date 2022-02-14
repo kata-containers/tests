@@ -12,6 +12,8 @@ set -o errtrace
 
 [ -z "${DEBUG:-}" ] || set -x
 
+readonly script_name="$(basename "${BASH_SOURCE[0]}")"
+
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 
@@ -91,9 +93,55 @@ install_vanilla_kernel() {
 	fi
 }
 
-main() {
-	clone_katacontainers_repo
-	install_vanilla_kernel
+usage() {
+	exit_code="$1"
+	cat <<EOT
+Overview:
+
+	Build and install a kernel for Kata Containers
+
+Usage:
+
+	$script_name [options]
+
+Options:
+    -d          : Enable bash debug.
+    -h          : Display this help.
+    -t <kernel> : kernel type, such as vanilla.
+EOT
+	exit "$exit_code"
 }
 
-main
+main() {
+	local kernel_type="vanilla"
+
+	while getopts "dht:" opt; do
+		case "$opt" in
+			d)
+				PS4=' Line ${LINENO}: '
+				set -x
+				;;
+			h)
+				usage 0
+				;;
+			t)
+				kernel_type="${OPTARG}"
+				;;
+		esac
+	done
+
+	clone_katacontainers_repo
+
+	case "${kernel_type}" in
+		vanilla)
+			info "Installing vanilla kernel"
+			install_vanilla_kernel
+			;;
+		*)
+			info "kernel type '${kernel_type}' not supported"
+			usage 1
+			;;
+	esac
+}
+
+main $@
