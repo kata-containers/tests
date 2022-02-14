@@ -116,6 +116,7 @@ go() {
 	while true; do {
 		check_all_running
 
+		local i
 		for ((i=1; i<= ${MAX_CONTAINERS}; i++)); do
 			containers+=($(random_name))
 			sudo ctr run --runtime=${CTR_RUNTIME} -d ${nginx_image} ${containers[-1]} sh -c ${COMMAND}
@@ -187,6 +188,7 @@ init() {
 }
 
 spin() {
+	local i
 	for ((i=1; i<= ITERATIONS; i++)); do {
 		echo "Start iteration $i of $ITERATIONS"
 		#spin them up
