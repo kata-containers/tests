@@ -79,21 +79,23 @@ else
 fi
 
 for batsfile in ${bats_files_list[@]}; do
-    testfile=${batsfile%.*}_kata_integration_tests.bats
-    cp ${batsfile} ${testfile}
-    for testName in "${!skipCRIOTests[@]}"
+    testfile=${batsfile}_kata_integration_tests.bats
+    cp ${batsfile}.bats ${testfile}
+    declare -n skip_list=${batsfile}_skipCRIOTests
+    for testName in "${!skip_list[@]}"
     do
         echo "Skipping $testName in $testfile"
-        sed -i '/'${testName}'/a skip \"'${skipCRIOTests[$testName]}'\"' "${testfile}"
+        sed -i '/'${testName}'/a skip \"'${skip_list[$testName]}'\"' "${testfile}"
     done
 
     # selectively skip tests depending on the version of cri-o we're testing with
     if [ "$CRIO_VERSION" != "main" ]; then
-        for testName in "${!fixedInCrioVersion[@]}"
+	declare -n skip_list=${batsfile}_fixedInCrioVersion
+        for testName in "${!skip_list[@]}"
         do
-            if [ "$(echo -e "$CRIO_VERSION\n${fixedInCrioVersion[$testName]}" | sort -V | head -n1)" != "${fixedInCrioVersion[$testName]}" ]; then
+            if [ "$(echo -e "$CRIO_VERSION\n${skip_list[$testName]}" | sort -V | head -n1)" != "${skip_list[$testName]}" ]; then
                 echo "Skipping $testName in $testfile for cri-o v$CRIO_VERSION"
-                sed -i '/'${testName}'/a skip \"- fixed in cri-o v'${fixedInCrioVersion[$testName]}'\"' "${testfile}"
+                sed -i '/'${testName}'/a skip \"- fixed in cri-o v'${skip_list[$testName]}'\"' "${testfile}"
             fi
         done
     fi
