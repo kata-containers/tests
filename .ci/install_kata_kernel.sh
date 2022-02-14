@@ -84,7 +84,8 @@ install_vanilla_kernel() {
 	info "Kata guest kernel : ${kata_kernel_version}"
 	info "cached kernel  : ${cached_kernel_version}"
 
-	if ! install_prebuilt_kernel ${latest_build_url} ${cached_kernel_version}; then
+	if [[ "${kata_kernel_version}" != "${cached_kernel_version}" ]] ||
+		   ! install_prebuilt_kernel ${latest_build_url} ${cached_kernel_version}; then
 	    info "failed to install cached kernel, trying to build from source"
 	    build_and_install_kernel "${kernel_version}"
 	fi
