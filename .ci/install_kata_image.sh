@@ -24,7 +24,6 @@ TEST_INITRD="${TEST_INITRD:-no}"
 build_method="${BUILD_METHOD:-distro}"
 
 build_rust_image() {
-	export RUST_AGENT="yes"
 	osbuilder_path="${GOPATH}/src/${rust_agent_repo}/tools/osbuilder"
 
 	sudo mkdir -p "${image_path}"
