@@ -97,7 +97,6 @@ long_options=(
 	[files]="Check files"
 	[force]="Force a skipped test to run"
 	[golang]="Check '.go' files"
-	[rust]="Check '.rs' files"
 	[help]="Display usage statement"
 	[json]="Check JSON files"
 	[labels]="Check labels databases"
@@ -282,9 +281,6 @@ EOF
 
 static_check_go_arch_specific()
 {
-	if [ "${RUST_AGENT:-}" == "yes" ]; then
-		return
-	fi
 	local go_packages
 	local submodule_packages
 	local all_packages
@@ -362,17 +358,6 @@ static_check_go_arch_specific()
 		(cd $d && GO111MODULE=auto eval "$linter" "${linter_args}" ".")
 	done
 
-}
-
-static_check_rust_arch_specific()
-{
-	if [ "${RUST_AGENT:-}" != "yes" ]; then
-		return
-	fi
-
-	{ find . -type f -name "*.rs"  | egrep -v "target/|grpc-rs/|protocols/" | xargs rustfmt --check; ret=$?; } || true
-
-	[ $ret -eq 0 ] || die "crate not formatted by rustfmt."
 }
 
 # Install yamllint in the different Linux distributions
@@ -947,9 +932,6 @@ static_check_files()
 # - Ensure vendor metadata is valid.
 static_check_vendor()
 {
-	if [ "${RUST_AGENT:-}" == "yes" ]; then
-		return
-	fi
 	local files
 	local vendor_files
 	local result
@@ -1354,7 +1336,6 @@ main()
 			--files) func=static_check_files ;;
 			--force) force="true" ;;
 			--golang) func=static_check_go_arch_specific ;;
-			--rust) func=static_check_rust_arch_specific ;;
 			-h|--help) usage; exit 0 ;;
 			--json) func=static_check_json ;;
 			--labels) func=static_check_labels;;
