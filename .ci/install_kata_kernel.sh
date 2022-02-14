@@ -30,14 +30,22 @@ exit_handler() {
 trap exit_handler EXIT
 
 build_and_install_kernel() {
-	local kernel_version=${1:-}
+	local kernel_type=${1:-}
+	local kernel_version=${2:-}
+	local extra_opts=""
+
+	case "${kernel_type}" in
+		experimental)
+			extra_opts="-e"
+			;;
+	esac
 
 	# Always build and install the kernel version found locally
 	info "Install kernel from sources"
 	pushd "${tmp_dir}" >> /dev/null
-	"${kernel_packaging_dir}/build-kernel.sh" -v "${kernel_version}" "setup"
-	"${kernel_packaging_dir}/build-kernel.sh" -v "${kernel_version}" "build"
-	sudo -E PATH="$PATH" "${kernel_packaging_dir}/build-kernel.sh" -v "${kernel_version}" "install"
+	"${kernel_packaging_dir}/build-kernel.sh" -v "${kernel_version}" ${extra_opts} "setup"
+	"${kernel_packaging_dir}/build-kernel.sh" -v "${kernel_version}" ${extra_opts} "build"
+	sudo -E PATH="$PATH" "${kernel_packaging_dir}/build-kernel.sh" -v "${kernel_version}" ${extra_opts} "install"
 	popd >> /dev/null
 }
 
@@ -75,21 +83,25 @@ install_prebuilt_kernel() {
 	info "Installed pre-built kernel"
 }
 
-install_vanilla_kernel() {
-	local kernel_version=$(get_version "assets.kernel.version")
+install_kernel() {
+	local kernel_type=${1:-}
+	local kernel_version=${2:-}
+
+	info "Installing '${kernel_type}' kernel"
+
 	kernel_version=${kernel_version#v}
+	local latest_build_url="${jenkins_url}/job/kata-containers-2.0-kernel-${kernel_type}-$(arch)-nightly/${cached_artifacts_path}"
 	local kata_config_version=$(cat "${kernel_packaging_dir}/kata_config_version")
 	local kata_kernel_version="${kernel_version}-${kata_config_version}"
-	local latest_build_url="${jenkins_url}/job/kata-containers-2.0-kernel-vanilla-$(arch)-nightly/${cached_artifacts_path}"
 	local cached_kernel_version=$(curl -sfL "${latest_build_url}/latest") || cached_kernel_version="none"
 
-	info "Kata guest kernel : ${kata_kernel_version}"
+	info "Kata guest experimental kernel : ${kata_kernel_version}"
 	info "cached kernel  : ${cached_kernel_version}"
 
 	if [[ "${kata_kernel_version}" != "${cached_kernel_version}" ]] ||
 		   ! install_prebuilt_kernel ${latest_build_url} ${cached_kernel_version}; then
 	    info "failed to install cached kernel, trying to build from source"
-	    build_and_install_kernel "${kernel_version}"
+	    build_and_install_kernel "${kernel_type}" "${kernel_version}"
 	fi
 }
 
@@ -107,7 +119,7 @@ Usage:
 Options:
     -d          : Enable bash debug.
     -h          : Display this help.
-    -t <kernel> : kernel type, such as vanilla.
+    -t <kernel> : kernel type, such as vanilla, experimental.
 EOT
 	exit "$exit_code"
 }
@@ -133,9 +145,11 @@ main() {
 	clone_katacontainers_repo
 
 	case "${kernel_type}" in
+		experimental)
+			install_kernel "${kernel_type}" $(get_version "assets.kernel-experimental.tag")
+			;;
 		vanilla)
-			info "Installing vanilla kernel"
-			install_vanilla_kernel
+			install_kernel "${kernel_type}" $(get_version "assets.kernel.version")
 			;;
 		*)
 			info "kernel type '${kernel_type}' not supported"
