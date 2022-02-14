@@ -81,8 +81,8 @@ tests_repo="${kata_github}/tests"
 tests_repo_dir="${GOPATH}/src/${tests_repo}"
 
 # Kata Containers repository
-kata_repo="${kata_github}/kata-containers"
-kata_repo_dir="${GOPATH}/src/${kata_repo}"
+katacontainers_repo="${kata_github}/kata-containers"
+katacontainers_repo_dir="${GOPATH}/src/${katacontainers_repo}"
 
 # Print system info and env variables in case we need to debug
 uname -a
@@ -97,8 +97,8 @@ mkdir -p $(dirname "${tests_repo_dir}")
 source ${tests_repo_dir}/.ci/ci_job_flags.sh
 
 # Clone the kata-containers repository
-mkdir -p $(dirname "${kata_repo_dir}")
-[ -d "${kata_repo_dir}" ] || git clone "https://${kata_repo}.git" "${kata_repo_dir}"
+mkdir -p $(dirname "${katacontainers_repo_dir}")
+[ -d "${katacontainers_repo_dir}" ] || git clone "https://${katacontainers_repo}.git" "${katacontainers_repo_dir}"
 
 # Clone the crio repository
 mkdir -p $(dirname "${crio_repo_dir}")
@@ -116,7 +116,7 @@ if [ "${pr_number}" != "NONE" ]; then
 fi
 
 # Edit critools & kubernetes versions
-cd "${kata_repo_dir}"
+cd "${katacontainers_repo_dir}"
 
 # Install yq
 ${GOPATH}/src/${tests_repo}/.ci/install_yq.sh

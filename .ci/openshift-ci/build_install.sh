@@ -73,7 +73,7 @@ sandboxed_containers_image_configs() {
 	# Unlike the kernel installed by the .ci/install_kata_kernel.sh script,
 	# the host kernel doesn't have the needed modules built static. Thus,
 	# we need to package them as loadable modules into the guest image.
-	cp -r "${kata_repo_dir}/tools/osbuilder/dracut/dracut.conf.d"/* \
+	cp -r "${katacontainers_repo_dir}/tools/osbuilder/dracut/dracut.conf.d"/* \
 		"${DRACUT_CONF_DIR}"
 	cat <<-EOF >> "${DRACUT_CONF_DIR}/10-drivers.conf"
 	drivers+="irqbypass "
