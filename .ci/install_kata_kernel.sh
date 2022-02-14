@@ -38,6 +38,9 @@ build_and_install_kernel() {
 		experimental)
 			extra_opts="-e"
 			;;
+		tdx)
+			extra_opts="-s -x tdx"
+			;;
 	esac
 
 	# Always build and install the kernel version found locally
@@ -119,7 +122,7 @@ Usage:
 Options:
     -d          : Enable bash debug.
     -h          : Display this help.
-    -t <kernel> : kernel type, such as vanilla, experimental.
+    -t <kernel> : kernel type, such as vanilla, experimental, tdx.
 EOT
 	exit "$exit_code"
 }
@@ -150,6 +153,9 @@ main() {
 			;;
 		vanilla)
 			install_kernel "${kernel_type}" $(get_version "assets.kernel.version")
+			;;
+		tdx)
+			install_kernel "${kernel_type}" $(get_version "assets.kernel.tdx.tag")
 			;;
 		*)
 			info "kernel type '${kernel_type}' not supported"
