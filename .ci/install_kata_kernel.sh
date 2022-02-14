@@ -101,6 +101,13 @@ install_kernel() {
 	info "Kata guest experimental kernel : ${kata_kernel_version}"
 	info "cached kernel  : ${cached_kernel_version}"
 
+	source /etc/os-release || source /usr/lib/os-release
+	if [[ "${ID}" == "fedora" ]] && [[ "${VERSION_ID}" == "35" ]]; then
+		install_prebuilt_kernel ${latest_build_url} ${cached_kernel_version} ||
+			die "cannot build a kernel in this system. bug: https://github.com/kata-containers/kata-containers/issues/3145"
+		return
+	fi
+
 	if [[ "${kata_kernel_version}" != "${cached_kernel_version}" ]] ||
 		   ! install_prebuilt_kernel ${latest_build_url} ${cached_kernel_version}; then
 	    info "failed to install cached kernel, trying to build from source"
