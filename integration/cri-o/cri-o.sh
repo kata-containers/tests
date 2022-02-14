@@ -72,8 +72,8 @@ pushd "${crio_repository_path}/test/"
 
 CRIO_VERSION=$(echo ${PULL_BASE_REF} | cut -d'-' -f 2)
 if [ -z "$CRIO_VERSION" ]; then
-    echo "Unknown version of cri-o - skipping more tests"
     CRIO_VERSION="1.21"
+    echo "Unknown version of cri-o - assuming v$CRIO_VERSION to skip more tests"
 else
     echo GOT CRIO VERSION $CRIO_VERSION
 fi
