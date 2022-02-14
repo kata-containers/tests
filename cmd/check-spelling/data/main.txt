@@ -19,6 +19,7 @@ codebase
 commandline
 config/AB
 crypto		# Cryptography
+cryptoprocessor/AB
 DaemonSet/AB
 deliverable/AB
 dev
@@ -26,6 +27,7 @@ devicemapper/B
 deploy
 dialer
 dialog/A
+Diffie/B # Diffie–Hellman (cryptography)
 distro/AB
 emptydir/A
 enablement/AB
@@ -48,6 +50,7 @@ implementor/A
 iodepth/A
 ioengine/A
 iptables
+Itanium/AB
 kata
 Kat/AB		# "Kat Herding Team" :)
 keypair/A
@@ -60,6 +63,7 @@ loopback
 memcpy/A
 mergeable
 metadata
+microcontroller/AB
 miniOS
 mmap/AB
 nack/AB

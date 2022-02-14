@@ -18,12 +18,12 @@ build_and_install_qemu() {
         QEMU_REPO_URL=$(get_version "assets.hypervisor.qemu.url")
         # Remove 'https://' from the repo url to be able to clone the repo using 'go get'
         QEMU_REPO=${QEMU_REPO_URL/https:\/\//}
-        PACKAGING_DIR="${kata_repo_dir}/tools/packaging"
+        PACKAGING_DIR="${katacontainers_repo_dir}/tools/packaging"
         QEMU_CONFIG_SCRIPT="${PACKAGING_DIR}/scripts/configure-hypervisor.sh"
 
         git clone --branch "$CURRENT_QEMU_TAG" --depth 1 "$QEMU_REPO_URL" "${GOPATH}/src/${QEMU_REPO}"
 
-        clone_kata_repo
+        clone_katacontainers_repo
 
         pushd "${GOPATH}/src/${QEMU_REPO}"
         git fetch

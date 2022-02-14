@@ -14,7 +14,7 @@ cidir=$(dirname "$0")
 
 source "${cidir}/lib.sh"
 source /etc/os-release || source /usr/lib/os-release
-KATA_REPO=${katacontainers_repo:="github.com/kata-containers/kata-containers"}
+KATACONTAINERS_REPO=${katacontainers_repo:="github.com/kata-containers/kata-containers"}
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 KATA_EXPERIMENTAL_FEATURES="${KATA_EXPERIMENTAL_FEATURES:-}"
 MACHINETYPE="${MACHINETYPE:-q35}"
@@ -44,7 +44,7 @@ export SHAREDIR=${PREFIX}/share
 OPENSHIFT_CI="${OPENSHIFT_CI:-false}"
 
 runtime_config_path="${SYSCONFDIR}/kata-containers/configuration.toml"
-runtime_src_path="${GOPATH}/src/${KATA_REPO}/src/runtime"
+runtime_src_path="${GOPATH}/src/${KATACONTAINERS_REPO}/src/runtime"
 
 PKGDEFAULTSDIR="${DESTDIR}${SHAREDIR}/defaults/kata-containers"
 NEW_RUNTIME_CONFIG="${PKGDEFAULTSDIR}/configuration.toml"
@@ -52,7 +52,7 @@ NEW_RUNTIME_CONFIG="${PKGDEFAULTSDIR}/configuration.toml"
 
 build_install_shim_v2(){
 	if [ ! -d "$runtime_src_path" ]; then
-		go get "$KATA_REPO"
+		go get "$KATACONTAINERS_REPO"
 	fi
 	pushd "$runtime_src_path"
 	make

@@ -164,7 +164,7 @@ if [ "${METRICS_CI}" = "false" ]; then
 		specific_branch=""
 		# If not a PR, we are testing on stable or master branch.
 		[ -z "$pr_number" ] && specific_branch="true"
-		"${ci_dir_name}/static-checks.sh" "$kata_repo" "$specific_branch"
+		"${ci_dir_name}/static-checks.sh" --only-arch "$kata_repo" "$specific_branch"
 	fi
 fi
 
@@ -231,8 +231,8 @@ test_snap_build() {
 	if [[ "${ID}" == "ubuntu" && "$(uname -m)" != "x86_64" ]]; then
 		echo "Test snap build"
 		sudo apt install -y snapcraft
-		[ ! -d "${kata_repo_dir}" ] && go get -d "${kata_repo}" || true
-		pushd "${kata_repo_dir}"
+		[ ! -d "${katacontainers_repo_dir}" ] && go get -d "${katacontainers_repo}" || true
+		pushd "${katacontainers_repo_dir}"
 		sudo snapcraft -d snap --destructive-mode
 		# PREFIX is changed in snap build, change it back
 		PREFIX=

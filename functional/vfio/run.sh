@@ -29,16 +29,16 @@ cleanup() {
 	clean_env_ctr
 	sudo rm -rf "${tmp_data_dir}"
 
-	[ -n "${addr}" ] && sudo driverctl unset-override "${addr}"
+	[ -n "${host_pci}" ] && sudo driverctl unset-override "${host_pci}"
 }
 
-get_eth_addr() {
+host_pci_addr() {
 	lspci -D | grep "Ethernet controller" | grep "Virtio network device" | tail -1 | cut -d' ' -f1
 }
 
 get_vfio_path() {
 	local addr="$1"
-	echo "/dev/vfio/$(basename $(realpath /sys/bus/pci/drivers/vfio-pci/${addr}/iommu_group))"
+	echo "/dev/vfio/$(basename $(realpath /sys/bus/pci/drivers/vfio-pci/${host_pci}/iommu_group))"
 }
 
 pull_rootfs() {
@@ -108,6 +108,29 @@ check_vfio() {
 	group="$(get_ctr_cmd_output "${cid}" ls /dev/vfio | grep -v vfio)"
 	if [ $(echo "${group}" | wc -w) != "1" ] ; then
 	    die "Expected exactly one VFIO group got: ${group}"
+	fi
+
+	# There should be two devices in the IOMMU group: the ethernet
+	# device we care about, plus the PCIe to PCI bridge device
+	devs="$(get_ctr_cmd_output "${cid}" ls /sys/kernel/iommu_groups/"${group}"/devices)"
+	if [ $(echo "${devs}" | wc -w) != "2" ] ; then
+	    die "Expected exactly two devices got: ${devs}"
+	fi
+
+	# The bridge device will always sort first, because it is on
+	# bus zero, whereas the NIC will be on a non-zero bus
+	guest_pci=$(echo "${devs}" | tail -1)
+
+	# This is a roundabout way of getting the environment
+	# variable, but to use the more obvious "echo $PCIDEVICE_..."
+	# we would have to escape the '$' enough to not be expanded
+	# before it's injected into the container, but not so much
+	# that it *is* expanded by the shell within the container.
+	# Doing that with another shell function in between is very
+	# fragile, so do it this way instead.
+	guest_env="$(get_ctr_cmd_output "${cid}" env | grep ^PCIDEVICE_VIRTIO_NET | sed s/^[^=]*=//)"
+	if [ "${guest_env}" != "${guest_pci}" ]; then
+	    die "PCIDEVICE variable was \"${guest_env}\" instead of \"${guest_pci}\""
 	fi
 }
 
@@ -209,6 +232,7 @@ run_test_container() {
 	local container_id="$1"
 	local bundle_dir="$2"
 	local config_json_in="$3"
+	local host_pci="$4"
 
 	# generate final config.json
 	sed -e '/^#.*/d' \
@@ -218,6 +242,7 @@ run_test_container() {
 	    -e 's|@VFIO_CTL_MAJOR@|'"${vfio_ctl_major}"'|g' \
 	    -e 's|@VFIO_CTL_MINOR@|'"${vfio_ctl_minor}"'|g' \
 	    -e 's|@ROOTFS@|'"${bundle_dir}/rootfs"'|g' \
+	    -e 's|@HOST_PCI@|'"${host_pci}"'|g' \
 	    "${config_json_in}" > "${script_path}/config.json"
 
 	create_bundle "${bundle_dir}"
@@ -267,12 +292,12 @@ main() {
 	sudo modprobe vfio
 	sudo modprobe vfio-pci
 
-	addr=$(get_eth_addr)
-	[ -n "${addr}" ] || die "virtio ethernet controller address not found"
+	host_pci=$(host_pci_addr)
+	[ -n "${host_pci}" ] || die "virtio ethernet controller PCI address not found"
 
-	sudo driverctl set-override "${addr}" vfio-pci
+	sudo driverctl set-override "${host_pci}" vfio-pci
 
-	vfio_device="$(get_vfio_path "${addr}")"
+	vfio_device="$(get_vfio_path "${host_pci}")"
 	[ -n "${vfio_device}" ] || die "vfio device not found"
 	vfio_major="$(printf '%d' $(stat -c '0x%t' ${vfio_device}))"
 	vfio_minor="$(printf '%d' $(stat -c '0x%T' ${vfio_device}))"
@@ -292,7 +317,8 @@ main() {
 	guest_kernel_cid="vfio-guest-kernel-${RANDOM}"
 	run_test_container "${guest_kernel_cid}" \
 			   "${tmp_data_dir}/vfio-guest-kernel" \
-			   "${script_path}/guest-kernel.json.in"
+			   "${script_path}/guest-kernel.json.in" \
+			   "${host_pci}"
 	check_guest_kernel "${guest_kernel_cid}"
 
 	# Remove the container so we can re-use the device for the next test
@@ -302,7 +328,8 @@ main() {
 	vfio_cid="vfio-vfio-${RANDOM}"
 	run_test_container "${vfio_cid}" \
 			   "${tmp_data_dir}/vfio-vfio" \
-			   "${script_path}/vfio.json.in"
+			   "${script_path}/vfio.json.in" \
+			   "${host_pci}"
 	check_vfio "${vfio_cid}"
 }
 

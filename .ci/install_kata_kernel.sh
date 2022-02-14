@@ -19,7 +19,7 @@ latest_build_url="${jenkins_url}/job/kata-containers-2.0-kernel-vanilla-$(arch)-
 PREFIX="${PREFIX:-/usr}"
 kernel_dir="${DESTDIR:-}${PREFIX}/share/kata-containers"
 
-kernel_packaging_dir="${kata_repo_dir}/tools/packaging/kernel"
+kernel_packaging_dir="${katacontainers_repo_dir}/tools/packaging/kernel"
 readonly tmp_dir="$(mktemp -d -t install-kata-XXXXXXXXXXX)"
 
 exit_handler() {
@@ -67,7 +67,7 @@ install_prebuilt_kernel() {
 }
 
 main() {
-	clone_kata_repo
+	clone_katacontainers_repo
 	kernel_version=$(get_version "assets.kernel.version")
 	kernel_version=${kernel_version#v}
 	kata_config_version=$(cat "${kernel_packaging_dir}/kata_config_version")

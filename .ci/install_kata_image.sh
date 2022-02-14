@@ -26,7 +26,6 @@ build_method="${BUILD_METHOD:-distro}"
 EXTRA_PKGS="${EXTRA_PKGS:-}"
 
 build_rust_image() {
-	export RUST_AGENT="yes"
 	osbuilder_path="${GOPATH}/src/${rust_agent_repo}/tools/osbuilder"
 
 	sudo mkdir -p "${image_path}"

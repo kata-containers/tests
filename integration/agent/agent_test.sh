@@ -20,7 +20,6 @@ dir_path=$(dirname "$0")
 source "${dir_path}/../../lib/common.bash"
 source "${dir_path}/../../metrics/lib/common.bash"
 
-CTR_RUNTIME="${CTR_RUNTIME:-io.containerd.kata.v2}"
 CONTAINER_NAME="${CONTAINER_NAME:-test}"
 IMAGE="${IMAGE:-quay.io/library/busybox:latest}"
 

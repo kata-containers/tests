@@ -22,7 +22,7 @@ DinD/B # Docker in Docker
 dind/B
 DMA/AB
 DPDK/AB
-FaaS/AB
+FaaS/B  # Function as a Service
 FS/AB
 fs/B	# For terms like "virtio-fs"
 GCE/AB
@@ -32,6 +32,7 @@ GPU/AB
 gRPC/AB
 GSC/AB
 GVT/AB
+IaaS/B  # Infrastructure as a Service
 IOMMU/AB
 IoT/AB	# Internet of Things
 IOV/AB
@@ -51,6 +52,7 @@ NVDIMM/AB
 OCI/AB
 OVMF/AB
 OverlayFS/B
+PaaS/B  # Platform as a Service
 PCDIMM/AB
 PCI/AB
 PCIe/AB
@@ -66,6 +68,7 @@ QEMU/AB
 RBAC/AB
 RDMA/AB
 RNG/AB
+SaaS/B  # Software as a Service
 SCSI/AB
 SDK/AB
 seccomp # secure computing mode
