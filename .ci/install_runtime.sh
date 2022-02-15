@@ -85,6 +85,7 @@ case "${KATA_HYPERVISOR}" in
 		;;
 	"cloud-hypervisor")
 		enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-clh.toml"
+		sudo sed -i 's|/usr/bin/cloud-hypervisor|/opt/kata/bin/cloud-hypervisor|g' "${runtime_config_path}"
 		;;
 	"firecracker")
 		enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-fc.toml"
