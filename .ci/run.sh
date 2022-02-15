@@ -57,6 +57,10 @@ case "${CI_JOB}" in
 		echo "INFO: Running ksm test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make ksm"
 		;;
+	"CC_CRI_CONTAINERD")
+		echo "INFO: Running Confidential Container tests"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-containerd"
+		;;
 	"CRIO_K8S")
 		echo "INFO: Running kubernetes tests"
 		sudo -E PATH="$PATH" bash -c "make kubernetes"
