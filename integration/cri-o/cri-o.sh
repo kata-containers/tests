@@ -80,8 +80,9 @@ fi
 
 for batsfile in ${bats_files_list[@]}; do
     testfile=${batsfile}_kata_integration_tests.bats
+    [ ! -f ${batsfile}.bats ] && continue
     cp ${batsfile}.bats ${testfile}
-    declare -n skip_list=${batsfile}_skipCRIOTests
+    declare -n skip_list=${batsfile//-}_skipCRIOTests
     for testName in "${!skip_list[@]}"
     do
         echo "Skipping $testName in $testfile"
@@ -90,7 +91,7 @@ for batsfile in ${bats_files_list[@]}; do
 
     # selectively skip tests depending on the version of cri-o we're testing with
     if [ "$CRIO_VERSION" != "main" ]; then
-	declare -n skip_list=${batsfile}_fixedInCrioVersion
+        declare -n skip_list=${batsfile//-}_fixedInCrioVersion
         for testName in "${!skip_list[@]}"
         do
             if [ "$(echo -e "$CRIO_VERSION\n${skip_list[$testName]}" | sort -V | head -n1)" != "${skip_list[$testName]}" ]; then
