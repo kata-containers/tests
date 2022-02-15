@@ -13,7 +13,7 @@ set -e
 export GOPATH="${GOPATH:-/go}"
 script_dir="$(realpath $(dirname $0))"
 source "${script_dir}/../lib.sh"
-pkg_dir="${kata_repo_dir}/tools/packaging"
+pkg_dir="${katacontainers_repo_dir}/tools/packaging"
 
 kata_version=${kata_version:-}
 prefix=${PREFIX:-/opt/kata}

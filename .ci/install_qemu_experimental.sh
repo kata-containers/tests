@@ -18,7 +18,7 @@ source /etc/os-release || source /usr/lib/os-release
 KATA_DEV_MODE="${KATA_DEV_MODE:-}"
 
 CURRENT_QEMU_TAG=$(get_version "assets.hypervisor.qemu-experimental.version")
-PACKAGING_DIR="${kata_repo_dir}/tools/packaging"
+PACKAGING_DIR="${katacontainers_repo_dir}/tools/packaging"
 QEMU_TAR="kata-static-qemu-experimental.tar.gz"
 arch=$("${cidir}"/kata-arch.sh -d)
 qemu_experimental_latest_build_url="${jenkins_url}/job/qemu-experimental-nightly-$(uname -m)/${cached_artifacts_path}"
@@ -54,7 +54,7 @@ build_and_install_static_experimental_qemu() {
 
 build_experimental_qemu() {
 	mkdir -p "${GOPATH}/src"
-	clone_kata_repo
+	clone_katacontainers_repo
 	"${PACKAGING_DIR}/static-build/qemu/build-static-qemu-experimental.sh"
 	sudo mkdir -p "${KATA_TESTS_CACHEDIR}"
 	sudo mv "${QEMU_TAR}" "${KATA_TESTS_CACHEDIR}"
