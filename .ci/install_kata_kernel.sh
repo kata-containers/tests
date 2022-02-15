@@ -34,6 +34,9 @@ build_and_install_kernel() {
 	local kernel_version=${2:-}
 	local extra_opts=""
 
+	[ -n "${kernel_type}" ] || die "kernel type is empty"
+	[ -n "${kernel_version}" ] || die "kernel version is empty"
+
 	case "${kernel_type}" in
 		experimental)
 			extra_opts="-e"
@@ -58,6 +61,10 @@ install_cached_kernel(){
 	local latest_build_url=${2:-}
 	local cached_kernel_version=${3:-}
 
+	[ -n "${kernel_binary}" ] || die "kernel binary is empty"
+	[ -n "${latest_build_url}" ] || die "latest build url is empty"
+	[ -n "${cached_kernel_version}" ] || die "cached kernel version is empty"
+
 	[ -z "${kernel_binary}" ] && die "empty binary format"
 	info "Attempting to download cached ${kernel_binary}"
 	sudo mkdir -p "${kernel_dir}"
@@ -72,6 +79,9 @@ install_cached_kernel(){
 install_prebuilt_kernel() {
 	local latest_build_url=${1:-}
 	local cached_kernel_version=${2:-}
+
+	[ -n "${latest_build_url}" ] || die "latest build url is empty"
+	[ -n "${cached_kernel_version}" ] || die "cached kernel version is empty"
 
 	for k in "vmlinux" "vmlinuz"; do
 		install_cached_kernel "${k}" "${latest_build_url}" "${cached_kernel_version}" || return 1
@@ -89,6 +99,9 @@ install_prebuilt_kernel() {
 install_kernel() {
 	local kernel_type=${1:-}
 	local kernel_version=${2:-}
+
+	[ -n "${kernel_type}" ] || die "kernel type is empty"
+	[ -n "${kernel_version}" ] || die "kernel version is empty"
 
 	info "Installing '${kernel_type}' kernel"
 
