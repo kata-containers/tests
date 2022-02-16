@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+[[ "${DEBUG}" != "" ]] && set -o xtrace
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -122,6 +123,8 @@ create_containerd_config() {
 	runtime="${runtime//./-}"
 
 cat << EOF | sudo tee "${CONTAINERD_CONFIG_FILE}"
+[debug]
+  level = "debug"
 [plugins]
   [plugins.cri]
     [plugins.cri.containerd]
@@ -499,8 +502,8 @@ main() {
 			make -e cri-integration
 	done
 
-	TestContainerMemoryUpdate 1
-	TestContainerMemoryUpdate 0
+	#TestContainerMemoryUpdate 1
+	#TestContainerMemoryUpdate 0
 
 	TestKilledVmmCleanup
 
