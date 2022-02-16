@@ -105,9 +105,6 @@ vcpus:
 pmem:
 	bash -f integration/pmem/pmem_test.sh
 
-filesystem:
-	bash -f ./conformance/posixfs/fstests.sh
-
 test: ${UNION}
 
 check: checkcommits log-parser
@@ -142,7 +139,6 @@ help:
 	check \
 	checkcommits \
 	crio \
-	filesystem \
 	$(INSTALL_TARGETS) \
 	kubernetes \
 	list-install-targets \
