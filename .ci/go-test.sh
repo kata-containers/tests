@@ -118,7 +118,7 @@ run_as_user()
 		# use a shell to ensure PATH is correct.
 		sudo -E PATH="$PATH" sh -c "$cmd"
 	else
-		$cmd
+		eval "$cmd"
 	fi
 }
 
@@ -141,7 +141,7 @@ test_go_package()
 	printf "INFO: Running 'go test' as %s user on package '%s' with flags '%s'\n" \
 		"$user" "$pkg" "$go_test_flags"
 
-	eval run_as_user "$user" go test "$go_test_flags" -covermode=atomic -coverprofile="$tmp_coverage_file" "$pkg"
+	run_as_user "$user" go test "$go_test_flags" -covermode=atomic -coverprofile=$tmp_coverage_file "$pkg"
 
 	# Check for the temporary coverage file since if will
 	# not be generated unless a package actually contains
@@ -240,8 +240,11 @@ main()
 
 	[ -z "$test_packages" ] && echo "INFO: no golang code to test" && exit 0
 
+	local go_ldflags
+	[ "$(go env GOARCH)" = s390x ] && go_ldflags="-extldflags -Wl,--s390-pgste"
+
 	# KATA_GO_TEST_FLAGS can be set to change the flags passed to "go test".
-	go_test_flags=${KATA_GO_TEST_FLAGS:-"-v $race -timeout $timeout_value"}
+	go_test_flags=${KATA_GO_TEST_FLAGS:-"-v $race -timeout $timeout_value -ldflags '$go_ldflags'"}
 
 	if [ "$1" = "html-coverage" ]; then
 		test_html_coverage
