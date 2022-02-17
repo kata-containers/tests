@@ -99,7 +99,7 @@ EOF
   config.vm.define "fedora", autostart: false do |fedora|
     fedora.vm.box = "generic/fedora32"
     # Fedora is required to reboot so that the change to cgroups v1
-    # and kernel arguments make effect.
+    # and kernel arguments take effect.
     fedora.vm.provision "shell", reboot: true, inline: <<-SHELL
       # Set the kernel parameter to use cgroups v1.
       sudo grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
@@ -113,8 +113,27 @@ EOF
     fedora.vm.provision "shell", inline: <<-SHELL
       source "#{guest_env_file}"
       cd "${GOPATH}/src/github.com/kata-containers/tests"
-      # Build the osbuilder with same distro as the host.
-      export osbuilder_distro="fedora"
+      sudo -E PATH=$PATH -H -u #{guest_user} bash -c '.ci/setup.sh'
+    SHELL
+  end
+
+  config.vm.define "fedora35", autostart: false do |fedora|
+    fedora.vm.box = "generic/fedora35"
+    # Fedora is required to reboot so that the change to cgroups v1
+    # and kernel arguments take effect.
+    fedora.vm.provision "shell", reboot: true, inline: <<-SHELL
+      # Set the kernel parameter to use cgroups v1.
+      sudo grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
+      # Set iommu's kernel parameters for vfio tests.
+      source "#{guest_env_file}"
+      if [ "${CI_JOB}" == "VFIO" ]; then
+        grubby --update-kernel=ALL --args="intel_iommu=on iommu=pt"
+      fi
+    SHELL
+
+    fedora.vm.provision "shell", inline: <<-SHELL
+      source "#{guest_env_file}"
+      cd "${GOPATH}/src/github.com/kata-containers/tests"
       sudo -E PATH=$PATH -H -u #{guest_user} bash -c '.ci/setup.sh'
     SHELL
   end
@@ -132,8 +151,6 @@ EOF
     ubuntu.vm.provision "shell", inline: <<-SHELL
       source "#{guest_env_file}"
       cd "${GOPATH}/src/github.com/kata-containers/tests"
-      # Build the osbuilder with same distro as the host.
-      export osbuilder_distro="ubuntu"
       sudo -E PATH=$PATH -H -u #{guest_user} bash -c '.ci/setup.sh'
     SHELL
   end

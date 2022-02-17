@@ -7,12 +7,10 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
-fc_limitations="https://github.com/kata-containers/documentation/issues/351"
 
 setup() {
 	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
 
-	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	get_pod_config_dir
 }
 

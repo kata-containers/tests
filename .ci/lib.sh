@@ -518,15 +518,15 @@ print_environment() {
 	fi
 }
 
-warn()
-{
-	echo >&2 "WARNING: $*"
-}
-
 info()
 {
 	local msg="$*"
 	echo "INFO: ${msg}"
+}
+
+warn()
+{
+	echo >&2 "WARNING: $*"
 }
 
 # We have a local info func, as many of our funcs return their answers via stdout,

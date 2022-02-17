@@ -18,7 +18,6 @@ assert_equal() {
 }
 
 setup() {
-	export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 	pod_name="sharevol-kata"
 	get_pod_config_dir
 	pod_logs_file=""

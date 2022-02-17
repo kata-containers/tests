@@ -37,7 +37,9 @@ case "${CI_JOB}" in
 		echo "INFO: Running QAT integration test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make qat"
 		;;
-	"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S"|"CRI_CONTAINERD_K8S_INITRD")
+	"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S")
+		echo "INFO: Running nydus test"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make nydus"
 		echo "INFO: Running stability test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
 		echo "INFO: Containerd checks"
@@ -54,16 +56,6 @@ case "${CI_JOB}" in
 		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make pmem"
 		echo "INFO: Running ksm test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make ksm"
-		;;
-	"CRI_CONTAINERD_K8S_COMPLETE")
-		echo "INFO: Running e2e kubernetes tests"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes-e2e"
-		;;
-	"CRI_CONTAINERD_K8S_MINIMAL")
-		echo "INFO: Running e2e kubernetes tests"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes-e2e"
-		echo "INFO: Running tracing test"
-		sudo -E PATH="$PATH" bash -c "make tracing"
 		;;
 	"CRIO_K8S")
 		echo "INFO: Running kubernetes tests"
@@ -89,14 +81,6 @@ case "${CI_JOB}" in
 
 		echo "INFO: Running kubernetes tests with containerd"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
-		;;
-	"CLOUD-HYPERVISOR-K8S-CONTAINERD-MINIMAL")
-		echo "INFO: Running e2e kubernetes tests"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes-e2e"
-		;;
-	"CLOUD-HYPERVISOR-K8S-CONTAINERD-FULL")
-		echo "INFO: Running complete e2e kubernetes tests"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes-e2e"
 		;;
 	"EXTERNAL_CRIO")
 		echo "INFO: Running tests on cri-o PR"
