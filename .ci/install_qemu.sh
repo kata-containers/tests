@@ -10,6 +10,7 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 
+readonly script_name="$(basename "${BASH_SOURCE[0]}")"
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 source "${cidir}/../lib/common.bash"
@@ -18,15 +19,15 @@ source /etc/os-release || source /usr/lib/os-release
 PREFIX=${PREFIX:-/usr}
 KATA_DEV_MODE="${KATA_DEV_MODE:-}"
 
-CURRENT_QEMU_VERSION=$(get_version "assets.hypervisor.qemu.version")
-QEMU_REPO_URL=$(get_version "assets.hypervisor.qemu.url")
+CURRENT_QEMU_VERSION=""
+QEMU_REPO_URL=""
 # Remove 'https://' from the repo url to be able to git clone the repo
 QEMU_REPO=${QEMU_REPO_URL/https:\/\//}
 QEMU_ARCH=$(${cidir}/kata-arch.sh -d)
 PACKAGING_DIR="${katacontainers_repo_dir}/tools/packaging"
 ARCH=$("${cidir}"/kata-arch.sh -d)
 QEMU_TAR="kata-static-qemu.tar.gz"
-qemu_latest_build_url="${jenkins_url}/job/kata-containers-2.0-qemu-$(uname -m)/${cached_artifacts_path}"
+qemu_latest_build_url=""
 
 # option "--shallow-submodules" was introduced in git v2.9.0
 GIT_SHADOW_VERSION="2.9.0"
@@ -131,7 +132,7 @@ if [ -f "${cidir}/${QEMU_ARCH}/lib_install_qemu_${QEMU_ARCH}.sh" ]; then
 	source "${cidir}/${QEMU_ARCH}/lib_install_qemu_${QEMU_ARCH}.sh"
 fi
 
-main() {
+run() {
 	case "$QEMU_ARCH" in
 		"x86_64")
 			# latest is "version sha256sum"
@@ -170,4 +171,64 @@ main() {
 	esac
 }
 
-main
+usage() {
+	exit_code="$1"
+	cat <<EOT
+Overview:
+
+	Build and install QEMU for Kata Containers
+
+Usage:
+
+	$script_name [options]
+
+Options:
+    -d          : Enable bash debug.
+    -h          : Display this help.
+    -t <qemu> : qemu type, such as tdx, vanilla.
+EOT
+	exit "$exit_code"
+}
+
+main() {
+	local qemu_type="vanilla"
+
+	while getopts "dht:" opt; do
+		case "$opt" in
+			d)
+				PS4=' Line ${LINENO}: '
+				set -x
+				;;
+			h)
+				usage 0
+				;;
+			t)
+				qemu_type="${OPTARG}"
+				;;
+		esac
+	done
+
+	case "${qemu_type}" in
+		tdx)
+			CURRENT_QEMU_VERSION=$(get_version "assets.hypervisor.qemu.tdx.tag")
+			QEMU_REPO_URL=$(get_version "assets.hypervisor.qemu.tdx.url")
+			qemu_latest_build_url="${jenkins_url}/job/kata-containers-2.0-qemu-tdx-$(uname -m)/${cached_artifacts_path}"
+			;;
+		vanilla)
+			CURRENT_QEMU_VERSION=$(get_version "assets.hypervisor.qemu.version")
+			QEMU_REPO_URL=$(get_version "assets.hypervisor.qemu.url")
+			qemu_latest_build_url="${jenkins_url}/job/kata-containers-2.0-qemu-$(uname -m)/${cached_artifacts_path}"
+			;;
+		*)
+			info "qemu type '${qemu_type}' not supported"
+			usage 1
+			;;
+	esac
+
+	# this variables are used by static-build scripts
+	export qemu_version="${CURRENT_QEMU_VERSION}"
+	export qemu_repo="${QEMU_REPO_URL}"
+	run
+}
+
+main $@
