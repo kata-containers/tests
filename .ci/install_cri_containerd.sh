@@ -84,7 +84,7 @@ install_from_static_tarball() {
 }
 
 # For 'CCv0' we are pulling in a branch of our confidential-containers fork of containerd with our custom code
-if [ -n ${containerd_branch} ]; then
+if [ -n "${containerd_branch}" ]; then
   install_from_branch
 else
   install_from_static_tarball || install_from_source
