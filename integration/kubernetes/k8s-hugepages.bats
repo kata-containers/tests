@@ -37,8 +37,6 @@ setup() {
 
 
 @test "Hugepages and sandbox cgroup" {
-	skip "test not working see: https://github.com/kata-containers/tests/issues/4474"
-
 	# Enable sandbox_cgroup_only
 	# And set default memory to a low value that is not smaller then container's request
 	sed -i 's/sandbox_cgroup_only=false/sandbox_cgroup_only=true/g' ${RUNTIME_CONFIG_PATH}
@@ -59,6 +57,9 @@ setup() {
 
 teardown() {
 	echo $old_pages > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
+	kubectl exec $pod_name mount
+	kubectl get pod "$pod_name" -o yaml
+	kubectl describe pod "$pod_name"
 
 	kubectl delete pod "$pod_name"
 

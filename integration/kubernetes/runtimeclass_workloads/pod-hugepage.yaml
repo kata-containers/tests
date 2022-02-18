@@ -20,10 +20,10 @@ spec:
     resources:
       limits:
         hugepages-2Mi: 512Mi
-        memory: 512Mi
+        memory: 1024Mi
       requests:
         hugepages-2Mi: 512Mi
-        memory: 512Mi
+        memory: 1024Mi
   volumes:
   - name: hugepage
     emptyDir:
