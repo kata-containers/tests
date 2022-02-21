@@ -351,6 +351,21 @@ gen_clean_arch() {
 	info "remove containers started by ctr"
 	clean_env_ctr
 
+	# reset k8s service may impact metrics test on x86_64
+	[ $(uname -m) != "x86_64" -a "$(pgrep kubelet)" != "" ] && sudo sh -c 'kubeadm reset -f'
+	info "Remove installed kubernetes packages and configuration"
+	if [ "$ID" == ubuntu ]; then
+		sudo rm -rf /etc/systemd/system/kubelet.service.d
+		sudo systemctl daemon-reload
+		sudo apt-get autoremove -y kubeadm kubelet kubectl
+	fi
+
+	# Remove existing k8s related configurations and binaries.
+	sudo sh -c 'rm -rf /opt/cni/bin/*'
+	sudo sh -c 'rm -rf /etc/cni /etc/kubernetes/'
+	sudo sh -c 'rm -rf /var/lib/cni /var/lib/etcd /var/lib/kubelet'
+	sudo sh -c 'rm -rf /run/flannel'
+
 	if [[ $CI_JOB != "METRICS" ]]; then
 		info "delete stale kata resource under ${stale_kata_dir_union[@]}"
 		delete_stale_kata_resource
@@ -360,28 +375,14 @@ gen_clean_arch() {
 		delete_crio_stale_resource
 		info "Remove installed containerd-cri related binaries and configuration"
 		delete_containerd_cri_stale_resource
-	fi
 
-	if [[ $CI_JOB != "METRICS" ]]; then
-		#reset k8s service may impact metrics test on x86_64, so limit it to arm64
-		[ $(uname -m) == "aarch64" -a "$(pgrep kubelet)" != "" ] && sudo sh -c 'kubeadm reset -f'
-		info "Remove installed kubernetes packages and configuration"
 		if [ "$ID" == ubuntu ]; then
-			sudo rm -rf /etc/systemd/system/kubelet.service.d
-			sudo apt-get autoremove -y kubeadm kubelet kubectl \
-				$(dpkg -l | awk '{print $2}' | grep -E '^(containerd(.\io)?|docker(\.io|-ce(-cli)?))$')
+			sudo apt-get autoremove -y $(dpkg -l | awk '{print $2}' | grep -E '^(containerd(.\io)?|docker(\.io|-ce(-cli)?))$')
 		fi
-		# Remove existing k8s related configurations and binaries.
-		sudo sh -c 'rm -rf /opt/cni/bin/*'
-		sudo sh -c 'rm -rf /etc/cni /etc/kubernetes/'
-		sudo sh -c 'rm -rf /var/lib/cni /var/lib/etcd /var/lib/kubelet'
-		sudo sh -c 'rm -rf /run/flannel'
 
 		info "Clean up stale network interface"
 		cleanup_network_interface
-	fi
 
-	if [[ $CI_JOB != "METRICS" ]]; then
 		info "Remove Kata package repo registrations"
 		delete_kata_repo_registrations
 	fi

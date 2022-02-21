@@ -138,6 +138,7 @@ ${environment}
     export PATH=\${GOPATH}/bin:/usr/local/go/bin:/usr/sbin:\${PATH}
     export GOROOT="/usr/local/go"
     export KUBERNETES="no"
+    export USE_DOCKER="true"
     export ghprbPullId
     export ghprbTargetBranch
 
