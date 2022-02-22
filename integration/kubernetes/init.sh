@@ -27,7 +27,7 @@ CRI_RUNTIME="${CRI_RUNTIME:-crio}"
 
 untaint_node() {
 	# Enable the master node to be able to schedule pods.
-	local node_name="$(hostname)"
+	local node_name="$(hostname | awk '{print tolower($0)}')"
 	local get_taints="kubectl get 'node/${node_name}' -o jsonpath='{.spec.taints}'"
 	if eval $get_taints | grep -q 'NoSchedule'; then
 		info "Taint 'NoSchedule' is found. Untaint the node so pods can be scheduled."

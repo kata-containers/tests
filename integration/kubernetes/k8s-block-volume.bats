@@ -31,7 +31,7 @@ setup() {
 	# Create Persistent Volume
 	tmp_pv_yaml=$(mktemp --tmpdir block_persistent_vol.XXXXX.yaml)
 	sed -e "s|LOOP_DEVICE|${loop_dev}|" volume/block-loop-pv.yaml > "$tmp_pv_yaml"
-	sed -i "s|HOSTNAME|$(hostname)|" "$tmp_pv_yaml"
+	sed -i "s|HOSTNAME|$(hostname | awk '{print tolower($0)}')|" "$tmp_pv_yaml"
 	sed -i "s|CAPACITY|${vol_capacity}|" "$tmp_pv_yaml"
 	kubectl create -f "$tmp_pv_yaml"
 	cmd="kubectl get pv/${volume_name} | grep Available"
