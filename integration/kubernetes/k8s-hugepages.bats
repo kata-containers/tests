@@ -16,10 +16,10 @@ setup() {
 	# Enable hugepages
 	sed -i 's/#enable_hugepages = true/enable_hugepages = true/g' ${RUNTIME_CONFIG_PATH}
 
-	old_pages=`cat /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages`
+	old_pages=`cat /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages`
 
 	# Set hugepage-2Mi to 4G(2Mi*2048)
-	echo 2048 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
+	echo 4 > /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages
 
 	systemctl restart kubelet
 }
@@ -56,7 +56,7 @@ setup() {
 }
 
 teardown() {
-	echo $old_pages > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
+	echo $old_pages > /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages
 	kubectl exec $pod_name mount
 	kubectl get pod "$pod_name" -o yaml
 	kubectl describe pod "$pod_name"
