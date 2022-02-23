@@ -85,6 +85,10 @@ shimv2:
 cri-containerd:
 	bash integration/containerd/cri/integration-tests.sh
 
+# Run the Confidential Containers tests for containerd.
+cc-containerd:
+	bash integration/containerd/confidential/run_tests.sh
+
 log-parser:
 	make -C cmd/log-parser
 
