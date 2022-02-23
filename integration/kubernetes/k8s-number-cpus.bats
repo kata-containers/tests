@@ -30,9 +30,11 @@ setup() {
 		# Get number of cpus
 		number_cpus=$(kubectl exec pod/"$pod_name" -c "$container_name" \
 			-- sh -c "$num_cpus_cmd")
-		# Verify number of cpus
-		[ "$number_cpus" -le "$max_number_cpus" ]
-		[ "$number_cpus" -eq "$max_number_cpus" ] && break
+		if [[ "$number_cpus" =~ ^[0-9]+$ ]]; then
+			# Verify number of cpus
+			[ "$number_cpus" -le "$max_number_cpus" ]
+			[ "$number_cpus" -eq "$max_number_cpus" ] && break
+		fi
 		sleep 1
 	done
 }
