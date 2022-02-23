@@ -19,11 +19,11 @@ spec:
       name: hugepage
     resources:
       limits:
-        hugepages-1Gi: 1Gi
-        memory: 2Gi
+        hugepages-2Mi: 512Mi
+        memory: 1024Mi
       requests:
-        hugepages-1Gi: 1Gi
-        memory: 2Gi
+        hugepages-2Mi: 512Mi
+        memory: 1024Mi
   volumes:
   - name: hugepage
     emptyDir:
