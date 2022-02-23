@@ -502,8 +502,8 @@ main() {
 			make -e cri-integration
 	done
 
-	#TestContainerMemoryUpdate 1
-	#TestContainerMemoryUpdate 0
+	TestContainerMemoryUpdate 1
+	TestContainerMemoryUpdate 0
 
 	TestKilledVmmCleanup
 
