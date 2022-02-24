@@ -99,18 +99,23 @@ case "${CI_JOB}" in
 	"METRICS")
 		export RUNTIME="kata-runtime"
 		export CTR_RUNTIME="io.containerd.run.kata.v2"
-		sudo -E ln -sf "${config_path}/configuration-qemu.toml" "${config_path}/configuration.toml"
-		echo "INFO: Running qemu metrics tests"
-		sudo -E PATH="$PATH" ".ci/run_metrics_PR_ci.sh"
-		export KATA_HYPERVISOR="cloud-hypervisor"
+		export config_path="/usr/share/defaults/kata-containers"
 		tests_repo="github.com/kata-containers/tests"
-		pushd "${GOPATH}/src/${tests_repo}"
+
+		echo "INFO: Running qemu metrics tests"
+		export KATA_HYPERVISOR="qemu"
+		sudo -E ln -sf "${config_path}/configuration-qemu.toml" "${config_path}/configuration.toml"
+		sudo -E PATH="$PATH" ".ci/run_metrics_PR_ci.sh"
+
 		echo "INFO: Install cloud hypervisor"
+		export KATA_HYPERVISOR="cloud-hypervisor"
+		pushd "${GOPATH}/src/${tests_repo}"
 		sudo -E PATH="$PATH" ".ci/install_cloud_hypervisor.sh"
 		popd
+
 		echo "INFO: Use cloud hypervisor configuration"
-		export config_path="/usr/share/defaults/kata-containers"
 		sudo -E ln -sf "${config_path}/configuration-clh.toml" "${config_path}/configuration.toml"
+
 		echo "INFO: Running cloud hypervisor metrics tests"
 		sudo -E PATH="$PATH" ".ci/run_metrics_PR_ci.sh"
 		;;
