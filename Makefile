@@ -127,6 +127,9 @@ vfio:
 
 agent: bash -f integration/agent/agent_test.sh
 
+monitor:
+	bash -f functional/kata-monitor/run.sh
+
 help:
 	@echo Subsets of the tests can be run using the following specific make targets:
 	@echo " $(UNION)" | sed 's/ /\n\t/g'
