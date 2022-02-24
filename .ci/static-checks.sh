@@ -1151,6 +1151,7 @@ static_check_dockerfiles()
 		"tools/osbuilder/rootfs-builder/centos/Dockerfile.in"
 		"tools/osbuilder/rootfs-builder/debian/Dockerfile.in"
 		"tools/osbuilder/rootfs-builder/fedora/Dockerfile.in"
+		"tools/osbuilder/rootfs-builder/template/Dockerfile.template"
 		"tools/osbuilder/rootfs-builder/ubuntu/Dockerfile.in"
 		"tools/osbuilder/rootfs-builder/ubuntu/Dockerfile-aarch64.in"
 		"tools/packaging/tests/Dockerfile/Dockerfile.in"
