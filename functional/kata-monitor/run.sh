@@ -22,7 +22,7 @@ readonly MONITOR_HTTP_ENDPOINT="127.0.0.1:8090"
 # we should collect few hundred metrics, let's put a reasonable minimum
 readonly MONITOR_MIN_METRICS_NUM=200
 CRI_RUNTIME=${CRI_RUNTIME:-"crio"}
-RUNTIME=${RUNTIME:-"containerd-shim-kata-v2"}
+CRICTL_RUNTIME=${CRICTL_RUNTIME:-"kata"}
 KATA_MONITOR_BIN="${KATA_MONITOR_BIN:-$(command -v kata-monitor || true)}"
 KATA_MONITOR_PID=""
 IAM=$(whoami)
@@ -225,8 +225,8 @@ main() {
 	RUNC_CID="$CID"
 	echo_ok "$CURRENT_TASK - POD ID:$POD_ID, CID:$CID"
 
-	CURRENT_TASK="start workload ($RUNTIME)"
-	start_workload "$RUNTIME"
+	CURRENT_TASK="start workload ($CRICTL_RUNTIME)"
+	start_workload "$CRICTL_RUNTIME"
 	echo_ok "$CURRENT_TASK - POD ID:$POD_ID, CID:$CID"
 
 	###########################
@@ -268,7 +268,7 @@ main() {
 	###########################
 	title "remove kata workload"
 
-	CURRENT_TASK="stop workload ($RUNTIME)"
+	CURRENT_TASK="stop workload ($CRICTL_RUNTIME)"
 	stop_workload
 	echo_ok "$CURRENT_TASK"
 
