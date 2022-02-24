@@ -56,6 +56,10 @@ kubernetes:
 	bash -f .ci/install_bats.sh
 	bash -f integration/kubernetes/run_kubernetes_tests.sh
 
+ctr:
+	bash -f .ci/install_bats.sh
+	bats integration/ctr
+
 nydus:
 	bash -f integration/nydus/nydus_tests.sh
 
