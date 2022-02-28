@@ -42,9 +42,6 @@ run() {
 			# Run the memory footprint test - the main test that
 			# KSM affects.
 			bash density/memory_usage.sh 20 300 auto
-
-			# And now ensure KSM is turned off for the rest of the tests
-			disable_ksm
 		fi
 	fi
 
@@ -64,9 +61,10 @@ run() {
 	# Run the time tests
 	bash time/launch_times.sh -i public.ecr.aws/ubuntu/ubuntu:latest -n 20
 
-	# Skip: Issue: https://github.com/kata-containers/tests/issues/3203
-	# Run the cpu statistics test
-	# bash network/cpu_statistics_iperf.sh
+	if [ "${KATA_HYPERVISOR}" = "cloud-hypervisor" ]; then
+		# Run the cpu statistics test
+		bash network/iperf3_kubernetes/k8s-network-metrics-iperf3.sh -b
+	fi
 
 	popd
 }

@@ -5,9 +5,20 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# Currently these are the CRI-O tests that are not working
+# TODO: the list of files is hardcoded for now, as we don't have listed all tests
+# that need to be skipped, but ultimately we will want to use *.bats
+# The file name is provided without its ".bats" extension for easier processing.
+declare -a bats_files_list=("ctr")
 
-declare -A skipCRIOTests=(
+# We keep two lists for each bats file.
+# - [name]_skipCRIOTests for tests that we need to skip because of failures
+# - [name]_fixedInCrioVersion for tests that we need to skip when running
+#   with a version of cri-o that doesn't have the fix
+#
+# In both case, [name] is the basename of the bats file containing the tests.
+
+
+declare -A ctr_skipCRIOTests=(
 ['test "ctr logging"']='This is not working'
 ['test "ctr journald logging"']='Not implemented'
 ['test "ctr logging \[tty=true\]"']='FIXME: See https://github.com/kata-containers/tests/issues/4069'
@@ -32,7 +43,7 @@ declare -A skipCRIOTests=(
 # The following lists tests that should be skipped in specific cri-o versions.
 # When adding a test here, you need to provide the version of cri-o where the
 # bug was fixed. The script will skip this test in all previous versions.
-declare -A fixedInCrioVersion=(
+declare -A ctr_fixedInCrioVersion=(
 ['test "privileged ctr device add"']="1.22"
 ['test "privileged ctr -- check for rw mounts"']="1.22"
 ['test "ctr execsync"']="1.22"

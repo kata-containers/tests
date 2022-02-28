@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+[[ "${DEBUG}" != "" ]] && set -o xtrace
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -55,11 +56,13 @@ readonly CONTAINERD_CONFIG_FILE="${tmp_dir}/test-containerd-config"
 readonly default_containerd_config="/etc/containerd/config.toml"
 readonly default_containerd_config_backup="$CONTAINERD_CONFIG_FILE.backup"
 readonly kata_config="/etc/kata-containers/configuration.toml"
+readonly kata_config_backup="$kata_config.backup"
 readonly default_kata_config="/usr/share/defaults/kata-containers/configuration.toml"
 
 ci_config() {
 	sudo mkdir -p $(dirname "${kata_config}")
-	sudo cp "${default_kata_config}" "${kata_config}"
+	[ -f "$kata_config" ] && sudo cp "$kata_config" "$kata_config_backup" || \
+		sudo cp "$default_kata_config" "$kata_config"
 
 	source /etc/os-release || source /usr/lib/os-release
 	ID=${ID:-""}
@@ -81,7 +84,6 @@ ci_config() {
 
 	echo "enable debug for kata-runtime"
 	sudo sed -i 's/^#enable_debug =/enable_debug =/g' ${kata_config}
-	sudo sed -i 's/^#enable_debug =/enable_debug =/g' ${default_kata_config}
 }
 
 ci_cleanup() {
@@ -98,15 +100,8 @@ ci_cleanup() {
 		sudo cp "$default_containerd_config_backup" "$default_containerd_config"
 	fi
 
-	ID=${ID:-""}
-	if [ "$ID" == ubuntu ]; then
-		if [ -n "${SNAP_CI}" ]; then
-			# restore default configuration
-			sudo cp "${default_kata_config}" "${kata_config}"
-		elif [ -n "${CI}" ] ;then
-			[ -f "${kata_config}" ] && sudo rm "${kata_config}"
-		fi
-	fi
+	[ -f "$kata_config_backup" ] && sudo mv "$kata_config_backup" "$kata_config" || \
+		sudo cp "$default_kata_config" "$kata_config"
 }
 
 create_containerd_config() {
@@ -128,6 +123,8 @@ create_containerd_config() {
 	runtime="${runtime//./-}"
 
 cat << EOF | sudo tee "${CONTAINERD_CONFIG_FILE}"
+[debug]
+  level = "debug"
 [plugins]
   [plugins.cri]
     [plugins.cri.containerd]
@@ -511,8 +508,8 @@ main() {
 			make -e cri-integration
 	done
 
-	TestContainerMemoryUpdate 1
-	TestContainerMemoryUpdate 0
+	#TestContainerMemoryUpdate 1
+	#TestContainerMemoryUpdate 0
 
 	TestKilledVmmCleanup
 

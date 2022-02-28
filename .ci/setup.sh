@@ -62,6 +62,8 @@ install_container_engine() {
 		sudo dnf install -y runc
 		# Try reinstalling to fix CNI configuration, allow erasing incompatible containerd
 		sudo dnf reinstall -y podman || sudo dnf install -y --allowerasing podman
+		# Install docker-podman, so scripts from outside our repo which are not aware of podman don't break
+		sudo dnf -y install podman-docker
 		return
 	fi
 

@@ -1236,7 +1236,7 @@ static_check_dockerfiles()
 		# dockerfile. Some of our dockerfiles are actually templates
 		# with special syntax, thus the linter might fail to build
 		# the AST. Here we handle Dockerfile templates.
-		if [[ "$file" =~ Dockerfile.*.in$ ]]; then
+		if [[ "$file" =~ Dockerfile.*\.(in|template)$ ]]; then
 			# In our templates, text with marker as @SOME_NAME@ is
 			# replaceable. Usually it is used to replace in a
 			# FROM command (e.g. `FROM @UBUNTU_REGISTRY@/ubuntu`)

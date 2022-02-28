@@ -26,6 +26,7 @@ source "${SCRIPT_PATH}/../../../.ci/lib.sh"
 source "${SCRIPT_PATH}/../../lib/common.bash"
 test_repo="${test_repo:-github.com/kata-containers/tests}"
 iperf_file=$(mktemp iperfresults.XXXXXXXXXX)
+TEST_NAME="${TEST_NAME:-IPerf}"
 
 function remove_tmp_file() {
 	rm -rf "${iperf_file}"
@@ -208,6 +209,8 @@ EOF
 }
 
 function main() {
+	init_env
+
 	local OPTIND
 	while getopts ":abcjh:" opt
 	do
