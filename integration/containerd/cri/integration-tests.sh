@@ -175,12 +175,14 @@ check_daemon_setup() {
 	#restart docker service as TestImageLoad depends on it
 	[ -z "${USE_PODMAN:-}" ] && restart_docker_service
 
+	# in some distros(AlibabaCloud), there is no btrfs-devel package available,
+	# so pass GO_BUILDTAGS="no_btrfs" to make to not use btrfs.
 	sudo -E PATH="${PATH}:/usr/local/bin" \
 		REPORT_DIR="${REPORT_DIR}" \
 		FOCUS="TestImageLoad" \
 		RUNTIME="" \
 		CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE" \
-		make -e cri-integration
+		make GO_BUILDTAGS="no_btrfs" -e cri-integration
 }
 
 testContainerStart() {
@@ -492,6 +494,8 @@ main() {
 		passing_test+=("TestContainerListStatsWithSandboxIdFilter")
 	fi
 
+	# in some distros(AlibabaCloud), there is no btrfs-devel package available,
+	# so pass GO_BUILDTAGS="no_btrfs" to make to not use btrfs.
 	for t in "${passing_test[@]}"
 	do
 		sudo -E PATH="${PATH}:/usr/local/bin" \
@@ -499,7 +503,7 @@ main() {
 			FOCUS="${t}" \
 			RUNTIME="" \
 			CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE" \
-			make -e cri-integration
+			make GO_BUILDTAGS="no_btrfs" -e cri-integration
 	done
 
 	TestContainerMemoryUpdate 1
