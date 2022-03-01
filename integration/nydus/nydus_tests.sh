@@ -39,16 +39,26 @@ if [ "$arch" != "x86_64" ]; then
 	exit 0
 fi
 
-function setup_nydus() {
-	# install nydus
-	local nydus_tarball_url=$(get_version "externals.nydus.url")
-	local nydus_version=$(get_version "externals.nydus.version")
-	local tarball_url="${nydus_tarball_url}/releases/download/${nydus_version}/nydus-static-${nydus_version}-x86_64.tgz"
+function install_from_tarball() {
+	local package_name="$1"
+	local binary_name="$2"
+	[ -n "$package_name" ] || die "need package_name"
+	[ -n "$binary_name" ] || die "need package release binary_name"
+
+	local url=$(get_version "externals.${package_name}.url")
+	local version=$(get_version "externals.${package_name}.version")
+	local tarball_url="${url}/releases/download/${version}/${binary_name}-${version}-$arch.tgz"
+
 	echo "Download tarball from ${tarball_url}"
 	curl -Ls "$tarball_url" | sudo tar xfz - -C /usr/local/bin --strip-components=1
+}
 
-	# TODO install nydus-snapshotter from contanierd
-	# see https://github.com/kata-containers/tests/issues/4446
+function setup_nydus() {
+	# install nydus
+	install_from_tarball "nydus" "nydus-static"
+
+	# install nydus-snapshotter
+	install_from_tarball "nydus-snapshotter" "nydus-snapshotter"
 
 	# Config nydus snapshotter
 	sudo -E cp "$dir_path/nydusd-config.json" /etc/
@@ -99,7 +109,7 @@ function config_containerd() {
 [proxy_plugins]
   [proxy_plugins.nydus]
     type = "snapshot"
-    address = "/run/containerd-nydus-grpc/containerd-nydus-grpc.sock"
+    address = "/run/containerd-nydus/containerd-nydus-grpc.sock"
 [plugins]
   [plugins.cri]
     disable_hugetlb_controller = false
