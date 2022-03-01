@@ -101,7 +101,7 @@ ci_cleanup() {
 	fi
 
 	[ -f "$kata_config_backup" ] && sudo mv "$kata_config_backup" "$kata_config" || \
-		sudo cp "$default_kata_config" "$kata_config"
+		sudo rm "$kata_config"
 }
 
 create_containerd_config() {
