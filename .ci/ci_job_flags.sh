@@ -171,16 +171,12 @@ case "${CI_JOB}" in
 	export KUBERNETES="yes"
 	export experimental_qemu="true"
 	;;
-"METRICS"|"METRICS_EXPERIMENTAL")
+"METRICS")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
 	export KUBERNETES="yes"
 	export METRICS_CI=1
-	if [ "$CI_JOB" == "METRICS_EXPERIMENTAL" ]; then
-		export DEFVIRTIOFSCACHESIZE="1024"
-		export experimental_qemu="true"
-	fi
 ;;
 esac

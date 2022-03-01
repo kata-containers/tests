@@ -119,14 +119,6 @@ case "${CI_JOB}" in
 		echo "INFO: Running cloud hypervisor metrics tests"
 		sudo -E PATH="$PATH" ".ci/run_metrics_PR_ci.sh"
 		;;
-	"METRICS_EXPERIMENTAL")
-		sudo -E PATH="$PATH"  bash -c "./integration/kubernetes/e2e_conformance/setup.sh"
-		# Some k8s cli commands have extra output using DEBUG env var.
-		unset DEBUG
-		sudo -E PATH="$PATH"  bash -c 'make -C "./metrics/storage/fio-k8s/" "test"'
-		sudo -E PATH="$PATH"  bash -c 'make -C "./metrics/storage/fio-k8s/" "run"'
-		sudo -E PATH="$PATH"  bash -c "./integration/kubernetes/cleanup_env.sh"
-		;;
 	"VIRTIOFS_EXPERIMENTAL")
 		sudo -E PATH="$PATH" bash -c "make filesystem"
 		;;
