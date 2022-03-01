@@ -9,6 +9,11 @@
 
 set -e
 
+# FIXME c
+# export CI_JOB="CRI_CONTAINERD"
+export USE_DOCKER="true"
+# FIXME temp
+
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 

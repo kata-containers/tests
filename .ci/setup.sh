@@ -34,6 +34,8 @@ setup_distro_env() {
 
 	if [[ "$ID" =~ ^opensuse.*$ ]]; then
 		script="${cidir}/setup_env_opensuse.sh"
+	elif [[ "$ID" == "alinux" ]]; then
+		script="${cidir}/setup_env_alinux.sh"
 	else
 		script="${cidir}/setup_env_${ID}.sh"
 	fi
