@@ -21,8 +21,6 @@ KATA_DEV_MODE="${KATA_DEV_MODE:-}"
 
 CURRENT_QEMU_VERSION=""
 QEMU_REPO_URL=""
-# Remove 'https://' from the repo url to be able to git clone the repo
-QEMU_REPO=${QEMU_REPO_URL/https:\/\//}
 QEMU_ARCH=$(${cidir}/kata-arch.sh -d)
 PACKAGING_DIR="${katacontainers_repo_dir}/tools/packaging"
 ARCH=$("${cidir}"/kata-arch.sh -d)
@@ -82,9 +80,9 @@ clone_qemu_repo() {
         git_shadow_clone=$(check_git_version "${GIT_SHADOW_VERSION}")
 
 	if [ "$git_shadow_clone" == "true" ]; then
-		git clone --branch "${CURRENT_QEMU_VERSION}" --single-branch --depth 1 --shallow-submodules "${QEMU_REPO_URL}" "${GOPATH}/src/${QEMU_REPO}"
+		git clone --branch "${CURRENT_QEMU_VERSION}" --single-branch --depth 1 --shallow-submodules "${QEMU_REPO_URL}" "${GOPATH}/src/${gopath_qemu_repo}"
 	else
-		git clone --branch "${CURRENT_QEMU_VERSION}" --single-branch --depth 1 "${QEMU_REPO_URL}" "${GOPATH}/src/${QEMU_REPO}"
+		git clone --branch "${CURRENT_QEMU_VERSION}" --single-branch --depth 1 "${QEMU_REPO_URL}" "${GOPATH}/src/${gopath_qemu_repo}"
 	fi
 }
 
@@ -100,7 +98,7 @@ build_and_install_qemu() {
 	clone_katacontainers_repo
 	clone_qemu_repo
 
-	pushd "${GOPATH}/src/${QEMU_REPO}"
+	pushd "${GOPATH}/src/${gopath_qemu_repo}"
 	git fetch
 	[ -n "$(ls -A capstone)" ] || git clone https://github.com/qemu/capstone.git capstone
 	[ -n "$(ls -A ui/keycodemapdb)" ] || git clone  https://github.com/qemu/keycodemapdb.git ui/keycodemapdb
@@ -225,7 +223,9 @@ main() {
 			;;
 	esac
 
-	# this variables are used by static-build scripts
+	# Strip "https://" to clone into $GOPATH
+	gopath_qemu_repo=${QEMU_REPO_URL/https:\/\//}
+	# These variables are used by static-build scripts
 	export qemu_version="${CURRENT_QEMU_VERSION}"
 	export qemu_repo="${QEMU_REPO_URL}"
 	run

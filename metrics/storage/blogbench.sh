@@ -119,7 +119,7 @@ EOF
 	metrics_json_add_array_element "$json"
 	metrics_json_end_array "Results"
 	metrics_json_save
-	clean_env
+	clean_env_ctr
 }
 
 main "$@"
