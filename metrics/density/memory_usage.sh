@@ -385,7 +385,7 @@ main(){
 	check_cmds "${SMEM_BIN}" bc
 	check_images "$IMAGE"
 
-	if [ "${CTR_RUNTIME}" == "io.containerd.run.kata.v2" ]; then
+	if [ "${CTR_RUNTIME}" == "io.containerd.kata.v2" ]; then
 		export RUNTIME="kata-runtime"
         elif [ "${CTR_RUNTIME}" == "io.containerd.runc.v2" ]; then
 		export RUNTIME="runc"

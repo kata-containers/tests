@@ -28,7 +28,7 @@ QAT_DEVICE_ID=37c8
 QAT_VENDOR_ID=8086
 QAT_DEV_ADDR=
 SSL_IMAGE_TAG=openssl-qat-engine
-CTR_RUNTIME="${CTR_RUNTIME:-io.containerd.run.kata.v2}"
+CTR_RUNTIME="${CTR_RUNTIME:-io.containerd.kata.v2}"
 
 if [ "${arch}" == "aarch64" ] || [ "${arch}" == "s390x" ] || [ "${arch}" == "ppc64le" ]; then
 	echo "Skip QAT test: $arch doesn't support QAT"
