@@ -193,7 +193,7 @@ function get_test_version(){
 
 kill_stale_process()
 {
-	clean_env
+	clean_env_ctr
 	extract_kata_env
 	stale_process_union=( "${stale_process_union[@]}" "${HYPERVISOR_PATH}" "${SHIM_PATH}" )
 	for stale_process in "${stale_process_union[@]}"; do

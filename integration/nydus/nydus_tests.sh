@@ -20,6 +20,7 @@ need_restore_kata_config=false
 kata_config_backup="/tmp/kata-configuration.toml"
 SYSCONFIG_FILE="/etc/kata-containers/configuration.toml"
 DEFAULT_CONFIG_FILE="/usr/share/defaults/kata-containers/configuration-qemu.toml"
+CLH_CONFIG_FILE="/usr/share/defaults/kata-containers/configuration-clh.toml"
 need_restore_containerd_config=false
 containerd_config="/etc/containerd/config.toml"
 containerd_config_backup="/tmp/containerd.config.toml"
@@ -27,8 +28,8 @@ containerd_config_backup="/tmp/containerd.config.toml"
 # test image for container
 IMAGE="${IMAGE:-ghcr.io/dragonflyoss/image-service/alpine:nydus-latest}"
 
-if [ "$KATA_HYPERVISOR" != "qemu" ]; then
-	echo "Skip nydus test for $KATA_HYPERVISOR, it only works for QEMU now. See https://github.com/kata-containers/kata-containers/issues/3654"
+if [ "$KATA_HYPERVISOR" != "qemu" ] && [ "$KATA_HYPERVISOR" != "cloud-hypervisor" ]; then
+	echo "Skip nydus test for $KATA_HYPERVISOR, it only works for QEMU/CLH now."
 	exit 0
 fi
 
@@ -38,32 +39,42 @@ if [ "$arch" != "x86_64" ]; then
 	exit 0
 fi
 
-function setup_nydus() {
-	# install nydus
-	local nydus_tarball_url=$(get_version "externals.nydus.url")
-	local nydus_version=$(get_version "externals.nydus.version")
-	local tarball_url="${nydus_tarball_url}/releases/download/${nydus_version}/nydus-static-${nydus_version}-x86_64.tgz"
+function install_from_tarball() {
+	local package_name="$1"
+	local binary_name="$2"
+	[ -n "$package_name" ] || die "need package_name"
+	[ -n "$binary_name" ] || die "need package release binary_name"
+
+	local url=$(get_version "externals.${package_name}.url")
+	local version=$(get_version "externals.${package_name}.version")
+	local tarball_url="${url}/releases/download/${version}/${binary_name}-${version}-$arch.tgz"
+
 	echo "Download tarball from ${tarball_url}"
 	curl -Ls "$tarball_url" | sudo tar xfz - -C /usr/local/bin --strip-components=1
+}
 
-	# TODO install nydus-snapshotter from contanierd
-	# see https://github.com/kata-containers/tests/issues/4446
+function setup_nydus() {
+	# install nydus
+	install_from_tarball "nydus" "nydus-static"
+
+	# install nydus-snapshotter
+	install_from_tarball "nydus-snapshotter" "nydus-snapshotter"
 
 	# Config nydus snapshotter
 	sudo -E cp "$dir_path/nydusd-config.json" /etc/
 
 	# start nydus-snapshotter
 	nohup /usr/local/bin/containerd-nydus-grpc \
-	    --config-path /etc/nydusd-config.json \
-	    --shared-daemon \
-	    --log-level debug \
-	    --root /var/lib/containerd/io.containerd.snapshotter.v1.nydus \
-	    --cache-dir /var/lib/nydus/cache \
-	    --nydusd-path /usr/local/bin/nydusd-fusedev \
-	    --nydusimg-path /usr/local/bin/nydus-image \
-	    --disable-cache-manager true \
-	    --enable-nydus-overlayfs true  \
-	    --log-to-stdout > /dev/null 2>&1 &
+		--config-path /etc/nydusd-config.json \
+		--shared-daemon \
+		--log-level debug \
+		--root /var/lib/containerd/io.containerd.snapshotter.v1.nydus \
+		--cache-dir /var/lib/nydus/cache \
+		--nydusd-path /usr/local/bin/nydusd-fusedev \
+		--nydusimg-path /usr/local/bin/nydus-image \
+		--disable-cache-manager true \
+		--enable-nydus-overlayfs true \
+		--log-to-stdout >/dev/null 2>&1 &
 }
 
 function config_kata() {
@@ -71,15 +82,16 @@ function config_kata() {
 	if [ -f "$SYSCONFIG_FILE" ]; then
 		need_restore_kata_config=true
 		sudo cp -a "${SYSCONFIG_FILE}" "${kata_config_backup}"
-	else
+	elif [ "$KATA_HYPERVISOR" == "qemu" ]; then
 		sudo cp -a "${DEFAULT_CONFIG_FILE}" "${SYSCONFIG_FILE}"
+	else
+		sudo cp -a "${CLH_CONFIG_FILE}" "${SYSCONFIG_FILE}"
 	fi
 
 	sudo sed -i 's|^shared_fs.*|shared_fs = "virtio-fs-nydus"|g' "${SYSCONFIG_FILE}"
 	sudo sed -i 's|^virtio_fs_daemon.*|virtio_fs_daemon = "/usr/local/bin/nydusd-virtiofs"|g' "${SYSCONFIG_FILE}"
 	sudo sed -i 's|^virtio_fs_extra_args.*|virtio_fs_extra_args = []|g' "${SYSCONFIG_FILE}"
 }
-
 
 function config_containerd() {
 	readonly runc_path=$(command -v runc)
@@ -91,13 +103,13 @@ function config_containerd() {
 		sudo rm "${containerd_config}"
 	fi
 
-	cat << EOF | sudo tee $containerd_config
+	cat <<EOF | sudo tee $containerd_config
 [debug]
   level = "debug"
 [proxy_plugins]
   [proxy_plugins.nydus]
     type = "snapshot"
-    address = "/run/containerd-nydus-grpc/containerd-nydus-grpc.sock"
+    address = "/run/containerd-nydus/containerd-nydus-grpc.sock"
 [plugins]
   [plugins.cri]
     disable_hugetlb_controller = false
