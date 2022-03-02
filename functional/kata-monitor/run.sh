@@ -21,6 +21,7 @@ set -o pipefail
 readonly MONITOR_HTTP_ENDPOINT="127.0.0.1:8090"
 # we should collect few hundred metrics, let's put a reasonable minimum
 readonly MONITOR_MIN_METRICS_NUM=200
+BAREMETAL=${BAREMETAL:-"false"}
 CRI_RUNTIME=${CRI_RUNTIME:-"crio"}
 CRICTL_RUNTIME=${CRICTL_RUNTIME:-"kata"}
 KATA_MONITOR_BIN="${KATA_MONITOR_BIN:-$(command -v kata-monitor || true)}"
@@ -205,6 +206,15 @@ is_sandbox_missing_iterate() {
 
 main() {
 	local args=""
+
+	# Our baremetal CI enforces cleanups of the environment (e.g., cni plugins):
+	# we here want a ready environment to just do few quick checks. So, let's skip
+	# baremetal environments for now.
+	# (kata-containers-2.0-tests-ubuntu-ARM-PR would fail)
+	if [ "$BAREMETAL" = true ]; then
+		echo "INFO: baremetal environment - skip kata-monitor tests"
+		exit 0
+	fi
 
 	###########################
 	title "pre-checks"
