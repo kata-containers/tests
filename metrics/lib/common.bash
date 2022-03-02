@@ -15,7 +15,7 @@ source /etc/os-release || source /usr/lib/os-release
 # Set variables to reasonable defaults if unset or empty
 CTR_EXE="${CTR_EXE:-ctr}"
 DOCKER_EXE="${DOCKER_EXE:-docker}"
-CTR_RUNTIME="${CTR_RUNTIME:-io.containerd.run.kata.v2}"
+CTR_RUNTIME="${CTR_RUNTIME:-io.containerd.kata.v2}"
 RUNTIME="${RUNTIME:-containerd-shim-kata-v2}"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 
@@ -227,7 +227,7 @@ show_system_ctr_state() {
 }
 
 common_init(){
-	if [ "$CTR_RUNTIME" == "io.containerd.run.kata.v2" ] || [ "$RUNTIME" == "containerd-shim-kata-v2" ]; then
+	if [ "$CTR_RUNTIME" == "io.containerd.kata.v2" ] || [ "$RUNTIME" == "containerd-shim-kata-v2" ]; then
 		extract_kata_env
 	else
 		# We know we have nothing to do for runc or shimv2

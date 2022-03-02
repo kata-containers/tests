@@ -98,7 +98,7 @@ case "${CI_JOB}" in
 		;;
 	"METRICS")
 		export RUNTIME="kata-runtime"
-		export CTR_RUNTIME="io.containerd.run.kata.v2"
+		export CTR_RUNTIME="io.containerd.kata.v2"
 		export config_path="/usr/share/defaults/kata-containers"
 		tests_repo="github.com/kata-containers/tests"
 
