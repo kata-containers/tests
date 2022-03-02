@@ -9,5 +9,31 @@
 # Order in this file is important. Only the last match will be
 # used. See https://help.github.com/articles/about-code-owners/
 
-*.md    @kata-containers/documentation
+# Default rule
+*				@kata-containers/tests
 
+VERSION				@kata-containers/release
+
+# The versions database needs careful handling
+versions.yaml			@kata-containers/ci @kata-containers/release @kata-containers/tests
+
+*.md				@kata-containers/documentation
+
+.ci/				@kata-containers/ci @kata-containers/tests
+
+# FIXME: need to create the "tools" team
+/cmd/				@kata-containers/tools
+
+/lib/				@kata-containers/ci
+
+# FIXME: need to create the "functional-tests" team
+/functional/			@kata-containers/functional-tests
+
+# FIXME: need to create the "integration-tests" team
+/integration/			@kata-containers/integration-tests
+
+# FIXME: need to create the "metrics" team
+/metrics/			@kata-containers/metrics
+
+# FIXME: need to create the "platforms" team (arch is too similar to the AC!)
+**/arch/			@kata-containers/platforms
