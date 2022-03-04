@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 metadata:
-#  name: ${crictl_sandbox_name}
   name: kata-cc-busybox-sandbox
 dns_config:
   servers:
