@@ -106,7 +106,8 @@ install_docker(){
 			repo_url="https://download.docker.com/linux/ubuntu"
 			curl -fsSL "${repo_url}/gpg" | sudo apt-key add -
 			sudo -E add-apt-repository "deb [arch=${arch}] ${repo_url} $(lsb_release -cs) stable"
-			sudo -E apt-get -y install "${pkg_name}"
+			# Keep old configs
+			sudo -E apt-get -y install -o Dpkg::Options::="--force-confold" "${pkg_name}"
 		elif [ "$ID" == "fedora" ]; then
 			repo_url="https://download.docker.com/linux/fedora/docker-ce.repo"
 			sudo -E dnf -y install dnf-plugins-core
