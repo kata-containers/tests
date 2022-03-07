@@ -56,6 +56,8 @@ case "${CI_JOB}" in
 		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make pmem"
 		echo "INFO: Running ksm test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make ksm"
+		echo "INFO: Running kata-monitor test"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make monitor"
 		;;
 	"CC_CRI_CONTAINERD")
 		echo "INFO: Running Confidential Container tests"
@@ -66,6 +68,8 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" bash -c "make kubernetes"
 		echo "INFO: Running rootless tests"
 		sudo -E PATH="$PATH" bash -c "make rootless"
+		echo "INFO: Running kata-monitor test"
+		sudo -E PATH="$PATH" bash -c "make monitor"
 		;;
 	"CRIO_K8S_COMPLETE")
 		echo "INFO: Running kubernetes tests (minimal) with CRI-O"
@@ -102,7 +106,7 @@ case "${CI_JOB}" in
 		;;
 	"METRICS")
 		export RUNTIME="kata-runtime"
-		export CTR_RUNTIME="io.containerd.run.kata.v2"
+		export CTR_RUNTIME="io.containerd.kata.v2"
 		export config_path="/usr/share/defaults/kata-containers"
 		tests_repo="github.com/kata-containers/tests"
 

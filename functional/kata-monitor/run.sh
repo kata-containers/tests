@@ -21,9 +21,11 @@ set -o pipefail
 readonly MONITOR_HTTP_ENDPOINT="127.0.0.1:8090"
 # we should collect few hundred metrics, let's put a reasonable minimum
 readonly MONITOR_MIN_METRICS_NUM=200
+BAREMETAL=${BAREMETAL:-"false"}
 CRI_RUNTIME=${CRI_RUNTIME:-"crio"}
-RUNTIME=${RUNTIME:-"containerd-shim-kata-v2"}
-KATA_MONITOR_BIN=${KATA_MONITOR_BIN:-$(command -v kata-monitor)}
+CRICTL_RUNTIME=${CRICTL_RUNTIME:-"kata"}
+KATA_MONITOR_BIN="${KATA_MONITOR_BIN:-$(command -v kata-monitor || true)}"
+KATA_MONITOR_PID=""
 IAM=$(whoami)
 TMPATH=$(mktemp -d -t kata-monitor-test-XXXXXXXXX)
 METRICS_FILE="${TMPATH}/metrics.txt"
@@ -66,8 +68,10 @@ error_with_msg() {
 
 	trap - ERR
 	echo -e "\nERROR: $msg"
-	echo -e "\nkata-monitor logs:\n----------------"
-	cat "$MONITOR_LOG_FILE"
+	if [ -f "$MONITOR_LOG_FILE" ]; then
+		echo -e "\nkata-monitor logs:\n----------------"
+		cat "$MONITOR_LOG_FILE"
+	fi
 	echo -e "\nkata-monitor testing: FAILED!"
 	cleanup
 	exit 1
@@ -77,7 +81,8 @@ cleanup() {
 	stop_workload
 	stop_workload "$RUNC_CID" "$RUNC_POD_ID"
 
-	[ -d "/proc/$KATA_MONITOR_PID" ] \
+	[ -n "$KATA_MONITOR_PID" ] \
+		&& [ -d "/proc/$KATA_MONITOR_PID" ] \
 		&& kill -9 "$KATA_MONITOR_PID"
 
 	rm -rf "$TMPATH"
@@ -146,6 +151,7 @@ stop_workload() {
 	local pod_id="${2:-$POD_ID}"
 	local check
 
+	[ -z "$pod_id" ] && return
 	check=$(crictl pods -q -id $pod_id)
 	[ -z "$check" ] && return
 
@@ -199,6 +205,17 @@ is_sandbox_missing_iterate() {
 }
 
 main() {
+	local args=""
+
+	# Our baremetal CI enforces cleanups of the environment (e.g., cni plugins):
+	# we here want a ready environment to just do few quick checks. So, let's skip
+	# baremetal environments for now.
+	# (kata-containers-2.0-tests-ubuntu-ARM-PR would fail)
+	if [ "$BAREMETAL" = true ]; then
+		echo "INFO: baremetal environment - skip kata-monitor tests"
+		exit 0
+	fi
+
 	###########################
 	title "pre-checks"
 
@@ -218,8 +235,8 @@ main() {
 	RUNC_CID="$CID"
 	echo_ok "$CURRENT_TASK - POD ID:$POD_ID, CID:$CID"
 
-	CURRENT_TASK="start workload ($RUNTIME)"
-	start_workload "$RUNTIME"
+	CURRENT_TASK="start workload ($CRICTL_RUNTIME)"
+	start_workload "$CRICTL_RUNTIME"
 	echo_ok "$CURRENT_TASK - POD ID:$POD_ID, CID:$CID"
 
 	###########################
@@ -261,7 +278,7 @@ main() {
 	###########################
 	title "remove kata workload"
 
-	CURRENT_TASK="stop workload ($RUNTIME)"
+	CURRENT_TASK="stop workload ($CRICTL_RUNTIME)"
 	stop_workload
 	echo_ok "$CURRENT_TASK"
 

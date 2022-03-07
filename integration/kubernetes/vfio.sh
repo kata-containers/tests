@@ -185,7 +185,7 @@ main() {
 
 	# wait for the virtio_net resource
 	for _ in $(seq 1 30); do
-		v="$(sudo -E kubectl get node $(hostname) -o json | jq '.status.allocatable["intel.com/virtio_net"]')"
+		v="$(sudo -E kubectl get node $(hostname | awk '{print tolower($0)}') -o json | jq '.status.allocatable["intel.com/virtio_net"]')"
 		[ "${v}" == \"1\" ] && break
 		sleep 5
 	done

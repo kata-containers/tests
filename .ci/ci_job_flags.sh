@@ -69,7 +69,7 @@ init_ci_flags() {
 	export METRICS_JOB_BASELINE=""
 	# Configure test to use Kata SHIM V2
 	export SHIMV2_TEST="true"
-	export CTR_RUNTIME="io.containerd.run.kata.v2"
+	export CTR_RUNTIME="io.containerd.kata.v2"
 }
 
 # Setup Kata Containers Environment
