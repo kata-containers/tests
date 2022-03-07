@@ -131,7 +131,7 @@ The CI can run on a local VM using the following instructions:
     $ sudo -H -u $USER bash -c 'echo export USE_PODMAN=true >> ~/.bashrc'
     $ sudo -H -u $USER bash -c 'echo cd ~/go/src/github.com/kata-containers/tests >> ~/.bashrc'
     $ sudo -H -u $USER bash -c 'echo source .ci/ci_job_flags.sh >> ~/.bashrc'
-    $ (! mount -t cgroup2 | grep "/sys/fs/cgroup\ ") && sudo grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
+    $ mount -t cgroup2 | grep -q "/sys/fs/cgroup[^/]" && sudo grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
     ```
   - Reboot the VM (required only if grub updated e.g. in Fedora, otherwise, just `source ~/.bashrc`)
 - Running the tests

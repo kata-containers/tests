@@ -44,7 +44,7 @@ metrics_json_init() {
 EOF
 )"
 
-	if [ "$CTR_RUNTIME" == "io.containerd.run.kata.v2" ]; then
+	if [ "$CTR_RUNTIME" == "io.containerd.kata.v2" ]; then
 		metrics_json_add_fragment "$json"
 
 		local json="$(cat << EOF
@@ -81,7 +81,7 @@ EOF
 EOF
 )"
 
-	if [ "$CTR_RUNTIME" == "io.containerd.run.kata.v2" ]; then
+	if [ "$CTR_RUNTIME" == "io.containerd.kata.v2" ]; then
 		metrics_json_add_fragment "$json"
 
 		# Now add a runtime specific environment section if we can

@@ -36,8 +36,6 @@ export kata_repo="$1"
 
 echo "Setup env for kata repository: $kata_repo"
 
-[ -z "$kata_repo" ] && echo >&2 "kata repo no provided" && exit 1
-
 tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 katacontainers_repo="${katacontainers_repo:-github.com/kata-containers/kata-containers}"
 
@@ -134,8 +132,6 @@ fi
 "${GOPATH}/src/${tests_repo}/.ci/resolve-kata-dependencies.sh"
 
 # Check if we can fastpath return/skip the CI
-# Specifically do this **after** we have potentially done the static
-# checks, as we always want to run those.
 # Work around the 'set -e' dying if the check fails by using a bash
 # '{ group command }' to encapsulate.
 {

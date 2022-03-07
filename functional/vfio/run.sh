@@ -72,7 +72,7 @@ run_container() {
 	local container_id="$1"
 	local bundle_dir="$2"
 
-	sudo -E ctr run -d --runtime io.containerd.run.kata.v2 --config "${bundle_dir}/config.json" "${container_id}"
+	sudo -E ctr run -d --runtime io.containerd.kata.v2 --config "${bundle_dir}/config.json" "${container_id}"
 }
 
 
