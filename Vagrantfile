@@ -138,6 +138,26 @@ EOF
     SHELL
   end
 
+  config.vm.define "centos8stream", autostart: false do |stream8|
+    config.vm.provider :libvirt do |lv|
+      # stream is defined with 10GB disk, increase it
+      lv.machine_virtual_size = 30
+    end
+    stream8.vm.box = "centos/stream8"
+    stream8.vm.provision "shell", reboot: true, inline: <<-SHELL
+      # adapt partition & fs to disk
+      echo "yes 100%" | sudo parted /dev/vda ---pretend-input-tty resizepart 1  && sudo xfs_growfs /dev/vda1
+      # install missing pkgs
+      sudo dnf install git driverctl -y
+      # add missing /usr/local/bin to PATH
+      sudo -E PATH=$PATH -u #{guest_user} \
+      echo "export PATH=\\"\\$PATH:/usr/local/bin\\"" >> #{guest_home_dir}/.bashrc
+      source "#{guest_env_file}"
+      cd "${GOPATH}/src/github.com/kata-containers/tests"
+      sudo -E PATH=$PATH:/usr/local/bin -H -u #{guest_user} bash -c '.ci/setup.sh'
+    SHELL
+  end
+
   config.vm.define "ubuntu", autostart: false do |ubuntu|
     ubuntu.vm.box = "generic/ubuntu2004"
     if job == "VFIO"
