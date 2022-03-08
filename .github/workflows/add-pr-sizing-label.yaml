@@ -1,3 +1,8 @@
+# Copyright (c) 2022 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
 name: Add PR sizing label
 
 on:
@@ -23,6 +28,7 @@ jobs:
           sudo install pr-add-size-label.sh /usr/local/bin
           popd &>/dev/null
 
+      - name: Add PR sizing label
         env:
           GITHUB_TOKEN: ${{ secrets.KATA_GITHUB_ACTIONS_TOKEN }}
         run: |
