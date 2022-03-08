@@ -1,8 +1,5 @@
 # Kata Containers CI scripts
 
-* [Summary](#summary)
-* [Script conventions](#script-conventions)
-
 This directory contains scripts used by the [Kata Containers](https://github.com/kata-containers)
 [CI (Continuous Integration) system](https://github.com/kata-containers/ci).
 

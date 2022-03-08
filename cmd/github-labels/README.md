@@ -1,12 +1,3 @@
-* [Overview](#overview)
-* [Generating the combined labels database](#generating-the-combined-labels-database)
-* [Checking and summarising the labels database](#checking-and-summarising-the-labels-database)
-    * [Show labels](#show-labels)
-    * [Show categories](#show-categories)
-    * [Check only](#check-only)
-    * [Full details](#full-details)
-* [Archive of old GitHub labels](#archive-of-old-github-labels)
-
 # Overview
 
 The Kata Project uses a number of GitHub repositories. To allow issues and PRs

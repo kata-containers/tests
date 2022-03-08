@@ -1,12 +1,5 @@
 # `kata-manager`
 
-* [Overview](#overview)
-    * [For full details](#for-full-details)
-* [Warning](#warning)
-* [How to use it](#how-to-use-it)
-    * [Download](#download)
-    * [Basic use](#basic-use)
-
 ## Overview
 
 The [`kata-manager`](kata-manager.sh) is a tool that can be used to perform
