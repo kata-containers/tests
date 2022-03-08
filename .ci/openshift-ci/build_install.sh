@@ -145,6 +145,9 @@ fi
 # osbuilder's make define a VERSION variable which value might clash with
 # VERSION sourced from /etc/os-release.
 unset VERSION
+# It will be built a dracut-based rootfs so ensure dracut is installed in the
+# build environment.
+yum install -y dracut
 "${cidir}/install_kata_image.sh"
 
 "${cidir}/install_runtime.sh"
