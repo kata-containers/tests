@@ -1,25 +1,6 @@
 # Kata Containers tests
 
-* [Kata Containers tests](#kata-containers-tests)
-    * [Getting the code](#getting-the-code)
-    * [Test Content](#test-content)
-    * [CI Content](#ci-content)
-        * [Centralised scripts](#centralised-scripts)
-        * [CI setup](#ci-setup)
-        * [Controlling the CI](#controlling-the-ci)
-        * [Detecting a CI system](#detecting-a-ci-system)
-        * [Breaking Compatibility](#breaking-compatibility)
-    * [CLI tools](#cli-tools)
-    * [Developer Mode](#developer-mode)
-    * [Write a new Unit Test](#write-a-new-unit-test)
-    * [Run the Kata Containers tests](#run-the-kata-containers-tests)
-        * [Requirements to run Kata Containers tests](#requirements-to-run-kata-containers-tests)
-        * [Prepare an environment](#prepare-an-environment)
-        * [Run the tests](#run-the-tests)
-        * [Running subsets of tests](#running-subsets-of-tests)
-    * [Metrics tests](#metrics-tests)
-    * [Kata Admission controller webhook](#kata-admission-controller-webhook)
-    * [Using Vagrant to test your code changes](#using-vagrant-to-test-your-code-changes)
+foo
 
 This repository contains various types of tests and utilities (called
 "content" from now on) for testing the [Kata Containers](https://github.com/kata-containers)
@@ -365,3 +346,8 @@ is not initialized yet. Also you may want to stop using Vagrant and you want to 
 wipe out all Vagrant control files and resources from your workstation. For those purposes you
 should consider using the `.ci/vagrant-cleaner.sh` script; run `.ci/vagrant-cleaner.sh -h` for
 further information.
+
+hello
+world
+the
+end
