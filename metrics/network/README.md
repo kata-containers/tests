@@ -1,10 +1,5 @@
 # Kata Containers `iperf3` network metrics
 
-* [Performance tools](#performance-tools)
-* [Networking tests](#networking-tests)
-* [Running the tests](#running-the-tests)
-* [Expected results](#expected-results)
-
 Kata Containers provides a series of network performance tests. Running these provides
 a basic reference for measuring  network essentials like bandwidth.
 
