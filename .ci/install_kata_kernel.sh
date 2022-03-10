@@ -130,7 +130,7 @@ install_kernel() {
 
 usage() {
 	exit_code="$1"
-	cat <<EOT
+	cat <<EOF
 Overview:
 
 	Build and install a kernel for Kata Containers
@@ -143,7 +143,7 @@ Options:
     -d          : Enable bash debug.
     -h          : Display this help.
     -t <kernel> : kernel type, such as vanilla, experimental, tdx.
-EOT
+EOF
 	exit "$exit_code"
 }
 

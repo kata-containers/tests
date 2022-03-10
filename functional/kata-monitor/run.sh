@@ -92,7 +92,7 @@ create_sandbox_json() {
 	local uid_name_suffix="$(gen_unique_id)"
 	local sbfile="$TMPATH/sandbox-$uid_name_suffix.json"
 
-	cat <<OEM >$sbfile
+	cat <<EOF >$sbfile
 {
 	"metadata": {
 		"name": "nginx-$uid_name_suffix",
@@ -103,7 +103,7 @@ create_sandbox_json() {
 	"linux": {
 	}
 }
-OEM
+EOF
 	echo "$sbfile"
 }
 
@@ -111,7 +111,7 @@ create_container_json() {
 	local uid_name_suffix="$(gen_unique_id)"
 	local cntfile="$TMPATH/container-$uid_name_suffix.json"
 
-	cat <<OEM >$cntfile
+	cat <<EOF >$cntfile
 {
 	"metadata": {
 		"name": "busybox"
@@ -126,7 +126,7 @@ create_container_json() {
 	"linux": {
 	}
 }
-OEM
+EOF
 	echo "$cntfile"
 }
 
