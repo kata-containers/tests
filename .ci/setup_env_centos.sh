@@ -21,7 +21,9 @@ fi
 [ "$centos_version" == 8 ] || die "This script is for CentOS 8 only"
 
 # Send error when a package is not available in the repositories
-echo "skip_missing_names_on_install=0" | sudo tee -a /etc/yum.conf
+if [ "$(tail -1 /etc/yum.conf | tr -d '\n')" != "skip_missing_names_on_install=0" ]; then
+	echo "skip_missing_names_on_install=0" | sudo tee -a /etc/yum.conf
+fi
 
 # Ensure EPEL repository is configured
 sudo -E dnf -y install epel-release
@@ -37,7 +39,10 @@ for repo_file_path in /etc/yum.repos.d/CentOS-Base.repo \
 	fi
 done
 [ -n "${repo_file:-}" ] || die "Unable to find the CentOS base repository file"
-echo "priority=1" | sudo tee -a "$repo_file"
+
+if [ "$(tail -1 ${repo_file} | tr -d '\n')" != "priority=1" ]; then
+	echo "priority=1" | sudo tee -a "$repo_file"
+fi
 
 sudo -E dnf -y clean all
 
