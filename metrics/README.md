@@ -86,8 +86,6 @@ For further details see the [density tests documentation](density).
 
 Tests relating to networking. General items could include:
 - bandwidth
-- jitter
-- latency
 
 For further details see the [network tests documentation](network).
 
