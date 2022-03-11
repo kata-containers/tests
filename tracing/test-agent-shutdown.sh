@@ -743,22 +743,11 @@ setup()
 		exit 0
 	}
 
-	# For reasons unknown the ss(1) command core dumps when running in the
-	# "jenkins-ci-ubuntu-1804-containerd-k8s-e2e-minimal" job:
-	#
-	#  17:20:06 + ss -Hp --vsock
-	#  17:20:06 tracing/test-agent-shutdown.sh: line 556: 13682 Segmentation fault      (core dumped) agent_addr=$(get_agent_vsock_address || true)
-	#
-	# This is not reproducible locally
-
-	if [ "${CI_JOB:-}" = 'CRI_CONTAINERD_K8S_MINIMAL' ]
-	then
-		local msg=""
-		msg+="FIXME: Exiting due to known problematic CI environment (${CI_JOB:-})"
-		msg+=": see https://github.com/kata-containers/tests/issues/3774"
-		info "$msg"
+	# Do not run on ppc64le for now
+	[ "$(uname -m)" = "ppc64le" ] && {
+		info "Exiting, do not run on ppc64le"
 		exit 0
-	fi
+	}
 
 	[ "${CI_JOB:-}" = "METRICS" ] && {
 		info "Exiting as not running on metrics CI"
