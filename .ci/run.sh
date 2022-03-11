@@ -59,7 +59,7 @@ case "${CI_JOB}" in
 		echo "INFO: Running kata-monitor test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make monitor"
 		;;
-	"CC_CRI_CONTAINERD")
+	"CC_CRI_CONTAINERD"|"CC_SKOPEO_CRI_CONTAINERD")
 		echo "INFO: Running Confidential Container tests"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-containerd"
 		;;
