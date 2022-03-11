@@ -838,7 +838,7 @@ static_check_eof()
 		sort -u |\
 		egrep -v '^$' |\
 		egrep -v "$anchor" || true)
-	[ -z "$invalid" ] || echo "Expected '$anchor' here anchor, in $file found: $invalid"
+	[ -z "$invalid" ] || die "Expected '$anchor' here anchor, in $file found: $invalid"
 }
 
 # Tests to apply to all files.
