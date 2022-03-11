@@ -333,6 +333,25 @@ main()
 {
 	local cmd="${1:-}"
 
+	source /etc/os-release || source /usr/lib/os-release
+
+        # Only run on Ubuntu LTS for now
+        [ "${ID:-}" = ubuntu ] && grep -q LTS <<< "${VERSION:-}" || {
+                info "Exiting as not running on Ubuntu LTS"
+                exit 0
+        }
+
+        # Do not run on ppc64le for now
+        [ "$(uname -m)" = "ppc64le" ] && {
+                info "Exiting, do not run on ppc64le"
+                exit 0
+        }
+
+        [ "${CI_JOB:-}" = "METRICS" ] && {
+                info "Exiting as not running on metrics CI"
+                exit 0
+        }
+
 	case "$cmd" in
 		clean) success="true"; cleanup; exit 0;;
 		help|-h|-help|--help) usage; exit 0;;
