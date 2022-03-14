@@ -36,6 +36,8 @@ setup() {
 
 	old_pages=$(cat "/sys/kernel/mm/hugepages/$hugepages_sysfs_dir/nr_hugepages")
 
+	sync
+	echo 3 > /proc/sys/vm/drop_caches
 	echo "$hugepages_count" > "/sys/kernel/mm/hugepages/$hugepages_sysfs_dir/nr_hugepages"
 
 	systemctl restart kubelet
