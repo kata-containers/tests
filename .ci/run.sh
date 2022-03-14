@@ -61,7 +61,7 @@ case "${CI_JOB}" in
 		echo "INFO: Running tracing test"
 		sudo -E PATH="$PATH" bash -c "make tracing"
 		;;
-	"CC_CRI_CONTAINERD")
+	"CC_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_CLOUD_HYPERVISOR")
 		echo "INFO: Running Confidential Container tests"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-containerd"
 		;;

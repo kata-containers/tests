@@ -123,6 +123,17 @@ case "${CI_JOB}" in
 	export KUBERNETES="yes"
 	export USE_DEVMAPPER="true"
 	;;
+"CC_CRI_CONTAINERD_CLOUD_HYPERVISOR")
+	# This job only tests containerd + k8s
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	# Export any CC specific environment variables
+	export CCV0="yes"
+	export UMOCI=yes
+	export SECCOMP=yes
+	;;
 "CRIO_K8S")
 	init_ci_flags
 	export CRI_RUNTIME="crio"
