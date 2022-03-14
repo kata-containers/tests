@@ -256,7 +256,7 @@ set_ksm_aggressive(){
 
 	if [ "${KATA_HYPERVISOR}" == "qemu" ]; then
 		# Disable virtio-fs and save whether it was enabled previously
-		set_virtio_out=$(sudo -E "${LIB_DIR}/../../.ci/set_kata_config.sh" shared_fs virtio-9p)
+		set_virtio_out=$(sudo -E PATH="$PATH" "${LIB_DIR}/../../.ci/set_kata_config.sh" shared_fs virtio-9p)
 		echo "${set_virtio_out}"
 		grep -q "already" <<< "${set_virtio_out}" || was_virtio_fs=true;
 	fi
@@ -264,7 +264,7 @@ set_ksm_aggressive(){
 
 restore_virtio_fs(){
 	# Re-enable virtio-fs if it was enabled previously
-	[ -n "${was_virtio_fs}" ] && sudo -E "${LIB_DIR}/../../.ci/set_kata_config.sh" shared_fs virtio-fs || \
+	[ -n "${was_virtio_fs}" ] && sudo -E PATH="$PATH" "${LIB_DIR}/../../.ci/set_kata_config.sh" shared_fs virtio-fs || \
 		info "Not restoring virtio-fs since it wasn't enabled previously"
 }
 
