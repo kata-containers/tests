@@ -1,12 +1,3 @@
-* [Overview](#overview)
-* [Tool summary](#tool-summary)
-* [Usage](#usage)
-    * [Basic](#basic)
-    * [Generate a TOC](#generate-a-toc)
-    * [List headings](#list-headings)
-    * [List links](#list-links)
-    * [Full details](#full-details)
-
 # Overview
 
 The Kata Project comprises

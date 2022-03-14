@@ -1,21 +1,5 @@
 # Spell check tool
 
-* [Overview](#overview)
-* [Approach](#approach)
-* [Custom words](#custom-words)
-* [Spell check a document file](#spell-check-a-document-file)
-* [Other options](#other-options)
-* [Technical details](#technical-details)
-    * [Hunspell dictionary format](#hunspell-dictionary-format)
-    * [Source files](#source-files)
-        * [Word list file fragments](#word-list-file-fragments)
-        * [Rules file](#rules-file)
-* [Adding a new word](#adding-a-new-word)
-    * [Update the word list fragment](#update-the-word-list-fragment)
-    * [Optionally update the rules file](#optionally-update-the-rules-file)
-    * [Create the master dictionary files](#create-the-master-dictionary-files)
-    * [Test the changes](#test-the-changes)
-
 ## Overview
 
 The `kata-spell-check.sh` tool is used to check a markdown file for

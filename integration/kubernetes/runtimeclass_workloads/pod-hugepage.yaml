@@ -19,10 +19,10 @@ spec:
       name: hugepage
     resources:
       limits:
-        hugepages-2Mi: 512Mi
+        hugepages-${hugepages_size}: 512Mi
         memory: 512Mi
       requests:
-        hugepages-2Mi: 512Mi
+        hugepages-${hugepages_size}: 512Mi
         memory: 512Mi
   volumes:
   - name: hugepage

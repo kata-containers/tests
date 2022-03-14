@@ -1,11 +1,5 @@
 # Kata Containers density metrics tests
 
-* [Kata Containers density metrics tests](#kata-containers-density-metrics-tests)
-   * [memory_usage](#memory_usage)
-   * [fast_footprint](#fast_footprint)
-   * [footprint_data](#footprint_data)
-   * [memory_usage_inside_container](#memory_usage_inside_container)
-
 This directory contains a number of tests to help measure container
 memory footprint. Some measures are based around the
 [PSS](https://en.wikipedia.org/wiki/Proportional_set_size) of the runtime
