@@ -1,30 +1,5 @@
 # Kata Containers metrics
 
-* [Kata Containers metrics](#kata-containers-metrics)
-    * [Goals](#goals)
-        * [PR regression checks](#pr-regression-checks)
-        * [Developer pre-checking](#developer-pre-checking)
-    * [Stability or Performance?](#stability-or-performance)
-    * [Requirements](#requirements)
-        * [For PR checks](#for-pr-checks)
-    * [Categories](#categories)
-        * [Time (Speed)](#time-speed)
-        * [Density](#density)
-        * [Networking](#networking)
-        * [Storage](#storage)
-    * [Saving Results](#saving-results)
-        * [JSON API](#json-api)
-            * [`metrics_json_init()`](#metrics_json_init)
-            * [`metrics_json_save()`](#metrics_json_save)
-            * [`metrics_json_add_fragment(json)`](#metrics_json_add_fragmentjson)
-            * [`metrics_json_start_array()`](#metrics_json_start_array)
-            * [`metrics_json_add_array_element(json)`](#metrics_json_add_array_elementjson)
-            * [`metrics_json_add_array_fragment(json)`](#metrics_json_add_array_fragmentjson)
-            * [`metrics_json_close_array_element()`](#metrics_json_close_array_element)
-            * [`metrics_json_end_array(name)`](#metrics_json_end_arrayname)
-    * [Preserving results](#preserving-results)
-    * [Report generator](#report-generator)
-
 This directory contains the metrics tests for Kata Containers.
 
 The tests within this directory have a number of potential use cases:
@@ -111,8 +86,6 @@ For further details see the [density tests documentation](density).
 
 Tests relating to networking. General items could include:
 - bandwidth
-- jitter
-- latency
 
 For further details see the [network tests documentation](network).
 

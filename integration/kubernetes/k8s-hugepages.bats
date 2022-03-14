@@ -13,26 +13,45 @@ setup() {
 	pod_name="hugepage-pod"
 	get_pod_config_dir
 
+	hugepages_sysfs_dir=hugepages-2048kB
+	if [ "$(uname -m)" = s390x ]; then
+		# Hugepage size(s) must be set at boot on s390x. Use first that is available.
+		# kvm.hpage=1 must also be set.
+		hugepages_sysfs_dir=$(ls /sys/kernel/mm/hugepages | head -1)
+	fi
+	# Hugepages size in bytes
+	# Pattern substitute only directly supported in gawk, not mawk -- use sed
+	hugepages_size=$(<<< "$hugepages_sysfs_dir" sed -E 's/hugepages-(.+)B/\1/' | awk '{print toupper($0)}' | numfmt --from=iec)
+	# Hugepages size as specified by mount(8) (IEC)
+	hugepages_size_mount=$(<<< "$hugepages_size" numfmt --to=iec --format %.0f)
+	# Hugepages size as asked for by k8s (IEC with `i` suffix)
+	hugepages_size_k8s=$(<<< "$hugepages_size" numfmt --to=iec-i --format %.0f)
+	# 4G of hugepages in total
+	hugepages_count=$(<<< "(4 * 2^30) / $hugepages_size" bc)
+
+	sed "s/\${hugepages_size}/$hugepages_size_k8s/" "$pod_config_dir/pod-hugepage.yaml" > "$pod_config_dir/test_hugepage.yaml"
+
 	# Enable hugepages
 	sed -i 's/#enable_hugepages = true/enable_hugepages = true/g' ${RUNTIME_CONFIG_PATH}
 
-	old_pages=`cat /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages`
+	old_pages=$(cat "/sys/kernel/mm/hugepages/$hugepages_sysfs_dir/nr_hugepages")
 
-	# Set hugepage-2Mi to 4G(2Mi*2048)
-	echo 2048 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
+	sync
+	echo 3 > /proc/sys/vm/drop_caches
+	echo "$hugepages_count" > "/sys/kernel/mm/hugepages/$hugepages_sysfs_dir/nr_hugepages"
 
 	systemctl restart kubelet
 }
 
 @test "Hugepages" {
 	# Create pod
-	kubectl create -f "${pod_config_dir}/pod-hugepage.yaml"
+	kubectl create -f "${pod_config_dir}/test_hugepage.yaml"
 
 	# Check pod creation
 	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
-	# 536870912 = 1024 * 1024 * 512
-	kubectl exec $pod_name mount | grep "nodev on /hugepages type hugetlbfs (rw,relatime,pagesize=2M,size=536870912)"
+	# Some `mount`s will indicate a total size, hence the .*
+	kubectl exec $pod_name mount | grep "nodev on /hugepages type hugetlbfs (rw,relatime,pagesize=$hugepages_size_mount.*)"
 }
 
 
@@ -45,21 +64,21 @@ setup() {
 	sed -i 's|^default_memory.*|default_memory = 512|g' $RUNTIME_CONFIG_PATH
 
 	# Create pod
-	kubectl create -f "${pod_config_dir}/pod-hugepage.yaml"
+	kubectl create -f "${pod_config_dir}/test_hugepage.yaml"
 
 	# Check pod creation
 	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
 
-	# 536870912 = 1024 * 1024 * 512
-	kubectl exec $pod_name mount | grep "nodev on /hugepages type hugetlbfs (rw,relatime,pagesize=2M,size=536870912)"
+	kubectl exec $pod_name mount | grep "nodev on /hugepages type hugetlbfs (rw,relatime,pagesize=$hugepages_size_mount.*)"
 
 	# Disable sandbox_cgroup_only
 	sed -i 's/sandbox_cgroup_only=true/sandbox_cgroup_only=false/g' ${RUNTIME_CONFIG_PATH}
 }
 
 teardown() {
-	echo $old_pages > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
+	echo "$old_pages" > "/sys/kernel/mm/hugepages/$hugepages_sysfs_dir/nr_hugepages"
 
+	rm "$pod_config_dir/test_hugepage.yaml"
 	kubectl delete pod "$pod_name"
 
 	# Disable sandbox_cgroup_only, in case previous test failed.

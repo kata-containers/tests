@@ -1,8 +1,3 @@
-* [Kata Containers metrics report generator](#kata-containers-metrics-report-generator)
-   * [Data gathering](#data-gathering)
-   * [Report generation](#report-generation)
-   * [Debugging and development](#debugging-and-development)
-
 # Kata Containers metrics report generator
 
 The files within this directory can be used to generate a "metrics report"

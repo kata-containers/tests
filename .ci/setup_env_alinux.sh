@@ -1,44 +1,37 @@
 #!/bin/bash
 #
-# Copyright (c) 2018-2019 Intel Corporation
+# Copyright (c) 2022 Ant Group
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+set -o errtrace
+set -o nounset
+set -o pipefail
 
-set -e
+[ -n "${DEBUG:-}" ] && set -o xtrace
 
 cidir=$(dirname "$0")
 source "/etc/os-release" || "source /usr/lib/os-release"
 source "${cidir}/lib.sh"
 
-# Obtain CentOS version
-if [ -f /etc/os-release ]; then
-  centos_version=$(grep VERSION_ID /etc/os-release | cut -d '"' -f2)
-else
-  centos_version=$(grep VERSION_ID /usr/lib/os-release | cut -d '"' -f2)
-fi
-
-[ "$centos_version" == 8 ] || die "This script is for CentOS 8 only"
+# Obtain AlibabaCloud Linux version
+# Either /etc/os-release or /usr/lib/os-release is source´ed
+# so that VERSION_ID is already exported.
+[ "$VERSION_ID" -ge 3 ] || die "This script is for alinux 3 and above only"
 
 # Send error when a package is not available in the repositories
-if [ "$(tail -1 /etc/yum.conf | tr -d '\n')" != "skip_missing_names_on_install=0" ]; then
-	echo "skip_missing_names_on_install=0" | sudo tee -a /etc/yum.conf
+if [ "$(tail -1 /etc/dnf/dnf.conf | tr -d '\n')" != "skip_missing_names_on_install=0" ]; then
+	echo "skip_missing_names_on_install=0" | sudo tee -a /etc/dnf/dnf.conf
 fi
 
 # Ensure EPEL repository is configured
 sudo -E dnf -y install epel-release
 
-# Enable priority to CentOS Base repo in order to
+# Enable priority to AlibabaCloud Linux Base repo in order to
 # avoid perl updating issues
-for repo_file_path in /etc/yum.repos.d/CentOS-Base.repo \
-	/etc/yum.repos.d/CentOS-Linux-BaseOS.repo \
-	/etc/yum.repos.d/CentOS-Stream-BaseOS.repo; do
-	if [ -f "$repo_file_path" ]; then
-		repo_file="$repo_file_path"
-		break
-	fi
-done
-[ -n "${repo_file:-}" ] || die "Unable to find the CentOS base repository file"
+[ -f "/etc/yum.repos.d/AliYun.repo" ] && repo_file="/etc/yum.repos.d/AliYun.repo"
+
+[ -n "${repo_file:-}" ] || die "Unable to find the AlibabaCloud Linux base repository file"
 
 if [ "$(tail -1 ${repo_file} | tr -d '\n')" != "priority=1" ]; then
 	echo "priority=1" | sudo tee -a "$repo_file"
@@ -48,10 +41,6 @@ sudo -E dnf -y clean all
 
 echo "Update repositories"
 sudo -E dnf -y --nobest update
-
-echo "Enable PowerTools repository"
-sudo -E dnf install -y 'dnf-command(config-manager)'
-sudo dnf config-manager --enable powertools
 
 echo "Install chronic"
 sudo -E dnf -y install moreutils
@@ -105,18 +94,11 @@ main()
 		done
 	fi
 
-	# On centos:8 container image the installation of coreutils
+	# On AlibabaCloud Linux:3 container image the installation of coreutils
 	# conflicts with coreutils-single because they mutually
 	# exclusive. Let's pass --allowerasing so that coreutils-single
 	# is replaced.
 	chronic sudo -E dnf -y install --allowerasing $pkgs_to_install
-
-	[ "$setup_type" = "minimal" ] && exit 0
-
-	if [ "$KATA_KSM_THROTTLER" == "yes" ]; then
-		echo "Install ${KATA_KSM_THROTTLER_JOB}"
-		chronic sudo -E dnf install ${KATA_KSM_THROTTLER_JOB}
-	fi
 }
 
 main "$@"

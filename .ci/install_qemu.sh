@@ -171,7 +171,7 @@ run() {
 
 usage() {
 	exit_code="$1"
-	cat <<EOT
+	cat <<EOF
 Overview:
 
 	Build and install QEMU for Kata Containers
@@ -184,7 +184,7 @@ Options:
     -d          : Enable bash debug.
     -h          : Display this help.
     -t <qemu> : qemu type, such as tdx, vanilla.
-EOT
+EOF
 	exit "$exit_code"
 }
 

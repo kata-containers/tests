@@ -381,7 +381,7 @@ cmd_remove_packages()
 	info "removing packages"
 
 	case "$distro" in
-		centos|fedora|opensuse|rhel|sles)
+		alinux|centos|fedora|opensuse|rhel|sles)
 			packages=$(rpm -qa|egrep "${packages_regex}" || true)
 			;;
 

@@ -113,7 +113,7 @@ install_docker(){
 			sudo -E dnf config-manager --add-repo "$repo_url"
 			sudo -E dnf makecache
 			sudo -E dnf -y install "${pkg_name}"
-		elif [ "$ID" == "centos" ] || [ "$ID" == "rhel" ]; then
+		elif [[ "$ID" =~ ^(alinux|centos|rhel)$ ]]; then
 			sudo -E yum install -y yum-utils
 			repo_url="https://download.docker.com/linux/centos/docker-ce.repo"
 			sudo yum-config-manager --add-repo "$repo_url"
