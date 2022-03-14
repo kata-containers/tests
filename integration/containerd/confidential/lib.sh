@@ -131,6 +131,11 @@ crictl_create_cc_container() {
 	container_id=$(crictl create -with-pull "${pod_id}" \
 		"${container_config}" "${pod_config}")
 
+	if [ -z "$container_id" ]; then
+		echo "Failed to create the container"
+		return 1
+	fi
+
 	if ! crictl start ${container_id}; then
 		echo "Failed to start container $container_id"
 		crictl ps -a
@@ -149,9 +154,14 @@ crictl_create_cc_container() {
 # Parameters:
 #	$1: "on" to activate the service, or "off" to turn it off.
 #
+# Environment variables:
+#	RUNTIME_CONFIG_PATH - path to kata's configuration.toml. If it is not
+#			      export then it will figure out the path via
+#			      `kata-runtime env` and export its value.
+#
 switch_image_service_offload() {
 	# Load the RUNTIME_CONFIG_PATH variable.
-	extract_kata_env
+	load_RUNTIME_CONFIG_PATH
 
 	case "$1" in
 		"on")
@@ -208,6 +218,38 @@ crictl_record_cc_pod_console() {
 	# Return here.
 }
 
+# Add parameters to the 'kernel_params' property on kata's configuration.toml
+#
+# Parameters:
+#	$1..$N - list of parameters
+#
+# Environment variables:
+#	RUNTIME_CONFIG_PATH - path to kata's configuration.toml. If it is not
+#			      export then it will figure out the path via
+#			      `kata-runtime env` and export its value.
+#
+add_kernel_params() {
+	local params="$@"
+	load_RUNTIME_CONFIG_PATH
+
+	sed -i -e 's#^\(kernel_params\) = "\(.*\)"#\1 = "\2 '"$params"'"#g' \
+		"$RUNTIME_CONFIG_PATH"
+}
+
+# Clear the 'kernel_params' property on kata's configuration.toml
+#
+# Environment variables:
+#	RUNTIME_CONFIG_PATH - path to kata's configuration.toml. If it is not
+#			      export then it will figure out the path via
+#			      `kata-runtime env` and export its value.
+#
+clear_kernel_params() {
+	load_RUNTIME_CONFIG_PATH
+
+	sed -i -e 's#^\(kernel_params\) = "\(.*\)"#\1 = ""#g' \
+		"$RUNTIME_CONFIG_PATH"
+}
+
 # Toggle agent debug flags on kata's configuration.toml. Also pass the
 # initcall debug flags via Kernel parameters.
 #
@@ -217,12 +259,9 @@ crictl_record_cc_pod_console() {
 #			      `kata-runtime env` and export its value.
 #
 enable_agent_debug() {
-	if [ -z "$RUNTIME_CONFIG_PATH" ]; then
-		extract_kata_env
-	fi
+	load_RUNTIME_CONFIG_PATH
 
-	sed -i -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug initcall_debug"/g' \
-		"$RUNTIME_CONFIG_PATH"
+	add_kernel_params "agent.log=debug" "initcall_debug"
 	# TODO LATER - try and work out why this is so we can replace the 2 lines below and stop it being so brittle sed -i -e 's/^# *\(enable_debug\).*=.*$/\1 = true/g' /etc/kata-containers/configuration.toml
 	sed -z -i 's/\(# If enabled, make the agent display debug-level messages.\)\n\(# (default: disabled)\)\n#\(enable_debug = true\)\n/\1\n\2\n\3\n/' \
 		"$RUNTIME_CONFIG_PATH"
@@ -236,9 +275,8 @@ enable_agent_debug() {
 #			      `kata-runtime env` and export its value.
 #
 enable_agent_console() {
-	if [ -z "$RUNTIME_CONFIG_PATH" ]; then
-		extract_kata_env
-	fi
+	load_RUNTIME_CONFIG_PATH
+
 	sed -i -e 's/^# *\(debug_console_enabled\).*=.*$/\1 = true/g' \
 		"$RUNTIME_CONFIG_PATH"
 }
@@ -251,16 +289,15 @@ enable_agent_console() {
 #                             `kata-runtime env` and export its value.
 #
 enable_runtime_debug() {
-	if [ -z "$RUNTIME_CONFIG_PATH" ]; then
-		extract_kata_env
-	fi
+	load_RUNTIME_CONFIG_PATH
+
 	sed -z -i 's/\(# system log\)\n\(# (default: disabled)\)\n#\(enable_debug = true\)\n/\1\n\2\n\3\n/' \
 		"$RUNTIME_CONFIG_PATH"
 }
 
 enable_full_debug() {
 	# Load the RUNTIME_CONFIG_PATH variable.
-	extract_kata_env
+	load_RUNTIME_CONFIG_PATH
 
 	# Note: if all enable_debug are set to true the agent console doesn't seem to work, so only enable the agent and runtime versions
 	enable_runtime_debug
@@ -309,3 +346,14 @@ configure_cc_containerd() {
 	iptables -P FORWARD ACCEPT
 }
 
+#
+# Auxiliar functions.
+#
+
+# Export the RUNTIME_CONFIG_PATH variable if it not set already.
+#
+load_RUNTIME_CONFIG_PATH() {
+	if [ -z "$RUNTIME_CONFIG_PATH" ]; then
+		extract_kata_env
+	fi
+}
