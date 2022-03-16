@@ -477,26 +477,6 @@ func detectCIEnvironment() (commit, dstBranch, srcBranch string) {
 
 		srcBranch = os.Getenv("TRAVIS_PULL_REQUEST_BRANCH")
 		dstBranch = os.Getenv("TRAVIS_BRANCH")
-
-	} else if os.Getenv("SEMAPHORE") != "" {
-		name = "SemaphoreCI"
-
-		commit = os.Getenv("REVISION")
-
-		dstBranch = os.Getenv("BRANCH_NAME")
-
-		// Semaphore only has a single branch variable. For a PR
-		// branch, it will contain the name of the PR branch,
-		// but for a build of "master", that same variable will
-		// contain "master". Essentially, the variable always
-		// refers to the name of the current branch being built.
-		if os.Getenv("PULL_REQUEST_NUMBER") != "" {
-			srcBranch = dstBranch
-
-			// Oddly, a git checkout for a PR under Semaphore *only*
-			// contains that branch: master doesn't exist.
-			dstBranch = "origin"
-		}
 	} else if os.Getenv("ghprbPullId") != "" {
 		name = "JenkinsCI - github pull request builder"
 
@@ -757,7 +737,7 @@ func main() {
 	app.UsageText += "     source branch that wants to be merged into the specified (destination)\n"
 	app.UsageText += "     branch.\n\n"
 	app.UsageText += "   - If not specified, commit and branch will be set automatically\n"
-	app.UsageText += "     if running in a supported CI environment (Travis or Semaphore).\n\n"
+	app.UsageText += "     if running in a supported CI environment (Travis).\n\n"
 	app.UsageText += "   - If not running under a recognised CI environment, commit will default\n"
 	app.UsageText += fmt.Sprintf("     to %q and branch to %q.", defaultCommit, defaultBranch)
 
