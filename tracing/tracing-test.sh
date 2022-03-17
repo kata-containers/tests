@@ -82,6 +82,8 @@ start_jaeger()
 {
 	local jaeger_docker_image="jaegertracing/all-in-one:latest"
 
+	docker rm -f "${jaeger_docker_container_name}"
+
 	# Defaults - see https://www.jaegertracing.io/docs/getting-started/
 	docker run -d --runtime runc --name "${jaeger_docker_container_name}" \
 		-e COLLECTOR_ZIPKIN_HTTP_PORT=9411 \
