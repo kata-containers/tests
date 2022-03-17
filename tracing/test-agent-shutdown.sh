@@ -743,9 +743,9 @@ setup()
 		exit 0
 	}
 
-	# Do not run on ppc64le for now
-	[ "$(uname -m)" = "ppc64le" ] && {
-		info "Exiting, do not run on ppc64le"
+	# Do not run on ppc64le/s390x for now
+	[ "$(uname -m)" = "ppc64le" -o "$(uname -m)" = "s390x" ] && {
+		info "Exiting, do not run on ppc64le or s390x. For s390x, see https://github.com/kata-containers/tests/issues/4597."
 		exit 0
 	}
 
