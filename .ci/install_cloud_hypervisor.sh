@@ -23,6 +23,7 @@ main() {
 	pushd $katacontainers_repo_dir
 	sudo -E PATH=$PATH make cloud-hypervisor-tarball
 	sudo tar xvJpf build/kata-static-cloud-hypervisor.tar.xz -C /
+	sudo ln -sf /opt/kata/bin/cloud-hypervisor /usr/bin/cloud-hypervisor
 	popd
 }
 
