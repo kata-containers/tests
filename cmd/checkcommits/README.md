@@ -109,8 +109,3 @@ $ checkcommits --verbose --need-fixes --need-sign-offs --body-length 99 --subjec
 $ checkcommits "$TRAVIS_COMMIT" "$TRAVIS_BRANCH"
 ```
 
-### Run under SemaphoreCI
-
-```
-$ checkcommits "$REVISION" "$BRANCH_NAME"
-```
