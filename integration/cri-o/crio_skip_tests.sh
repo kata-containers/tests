@@ -15,7 +15,7 @@ declare -a bats_files_list=(
     "config"
     "config_migrate"
     "crio-wipe"
-    "ctr_seccomp"
+#    "ctr_seccomp" see https://github.com/kata-containers/tests/issues/4587
     "default_mounts"
     "devices"
     "drop_infra"

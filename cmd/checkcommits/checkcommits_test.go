@@ -48,22 +48,6 @@ var travisNonPREnv = map[string]TestEnvVal{
 	"TRAVIS_PULL_REQUEST_BRANCH": {"", true},
 }
 
-var semaphorePREnv = map[string]TestEnvVal{
-	"SEMAPHORE":           {"true", true},
-	"BRANCH_NAME":         {"semaphore-pr", true},
-	"REVISION":            {"semaphore-commit", true},
-	"PULL_REQUEST_NUMBER": {"semaphore-pr", true},
-}
-
-var semaphoreNonPREnv = map[string]TestEnvVal{
-	"SEMAPHORE":   {"true", true},
-	"BRANCH_NAME": {"master", true},
-	"REVISION":    {"semaphore-commit", true},
-
-	// XXX: the odd one out - unset it
-	"PULL_REQUEST_NUMBER": {"", false},
-}
-
 var testCIEnvData = []TestCIEnvData{
 	{
 		name:              "TravisCI PR branch",
@@ -78,20 +62,6 @@ var testCIEnvData = []TestCIEnvData{
 		expectedCommit:    travisNonPREnv["TRAVIS_PULL_REQUEST_SHA"].value,
 		expectedSrcBranch: travisNonPREnv["TRAVIS_PULL_REQUEST_BRANCH"].value,
 		expectedDstBranch: travisNonPREnv["TRAVIS_BRANCH"].value,
-	},
-	{
-		name:              "SemaphoreCI PR branch",
-		env:               semaphorePREnv,
-		expectedCommit:    semaphorePREnv["REVISION"].value,
-		expectedSrcBranch: semaphorePREnv["BRANCH_NAME"].value,
-		expectedDstBranch: "origin",
-	},
-	{
-		name:              "SemaphoreCI non-PR branch",
-		env:               semaphoreNonPREnv,
-		expectedCommit:    semaphoreNonPREnv["REVISION"].value,
-		expectedSrcBranch: "",
-		expectedDstBranch: semaphoreNonPREnv["BRANCH_NAME"].value,
 	},
 }
 
@@ -175,11 +145,6 @@ func clearCIVariables() {
 		"TRAVIS_BRANCH",
 		"TRAVIS_PULL_REQUEST_SHA",
 		"TRAVIS_PULL_REQUEST_BRANCH",
-
-		"SEMAPHORE",
-		"REVISION",
-		"BRANCH_NAME",
-		"PULL_REQUEST_NUMBER",
 
 		"ghprbPullId",
 		"ghprbActualCommit",

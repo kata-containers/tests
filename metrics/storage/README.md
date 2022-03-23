@@ -9,8 +9,6 @@ to perform measurements upon a single test file.
 
 The test configuration used by the script can be modified by setting a number of
 environment variables to change or over-ride the test defaults.
-Please consult the [source](fio.sh) for more details on the
-which variables are available.
 
 ## DAX `virtio-fs` `fio` Kubernetes tests
 
