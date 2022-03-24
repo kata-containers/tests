@@ -106,14 +106,6 @@
   version = "v1.10.3"
 
 [[projects]]
-  digest = "1:57234a321bf1f8f98a8a9a5122a2404cc60d0800516f4ab7a7b2375e4b2d19ea"
-  name = "github.com/opencontainers/specs"
-  packages = ["specs-go"]
-  pruneopts = "NUT"
-  revision = "4e3b9264a330d094b0386c3703c5f379119711e8"
-  version = "v1.0.1"
-
-[[projects]]
   digest = "1:4047c378584616813d610c9f993bf90dd0d07aed8d94bd3bc299cd35ececdcba"
   name = "github.com/pkg/errors"
   packages = ["."]
@@ -211,7 +203,6 @@
     "github.com/montanaflynn/stats",
     "github.com/olekukonko/tablewriter",
     "github.com/onsi/ginkgo",
-    "github.com/opencontainers/specs/specs-go",
     "github.com/pkg/errors",
     "github.com/sirupsen/logrus",
     "github.com/stretchr/testify/assert",
