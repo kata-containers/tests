@@ -43,7 +43,7 @@ set -o errtrace
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 source "${SCRIPT_PATH}/../.ci/lib.sh"
 
-RUNTIME=${RUNTIME:-"io.containerd.kata.v2"}
+CTR_RUNTIME=${CTR_RUNTIME:-"io.containerd.kata.v2"}
 
 # Kata always uses this value
 EXPECTED_VSOCK_PORT="1024"
@@ -743,22 +743,11 @@ setup()
 		exit 0
 	}
 
-	# For reasons unknown the ss(1) command core dumps when running in the
-	# "jenkins-ci-ubuntu-1804-containerd-k8s-e2e-minimal" job:
-	#
-	#  17:20:06 + ss -Hp --vsock
-	#  17:20:06 tracing/test-agent-shutdown.sh: line 556: 13682 Segmentation fault      (core dumped) agent_addr=$(get_agent_vsock_address || true)
-	#
-	# This is not reproducible locally
-
-	if [ "${CI_JOB:-}" = 'CRI_CONTAINERD_K8S_MINIMAL' ]
-	then
-		local msg=""
-		msg+="FIXME: Exiting due to known problematic CI environment (${CI_JOB:-})"
-		msg+=": see https://github.com/kata-containers/tests/issues/3774"
-		info "$msg"
+	# Do not run on ppc64le/s390x for now
+	[ "$(uname -m)" = "ppc64le" -o "$(uname -m)" = "s390x" ] && {
+		info "Exiting, do not run on ppc64le or s390x. For s390x, see https://github.com/kata-containers/tests/issues/4597."
 		exit 0
-	fi
+	}
 
 	[ "${CI_JOB:-}" = "METRICS" ] && {
 		info "Exiting as not running on metrics CI"
@@ -942,7 +931,7 @@ start_agent_in_kata_vm()
 		-s \"$KATA_TMUX_VM_SESSION\" \
 		\"sudo ctr run \
 			--snapshotter '$snapshotter' \
-			--runtime '${RUNTIME}' \
+			--runtime '${CTR_RUNTIME}' \
 			--rm \
 			-t '${CTR_IMAGE}' \
 			'$container_id' \

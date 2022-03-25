@@ -1,10 +1,5 @@
 # GitHub labels archive
 
-* [Overview](#overview)
-* [How the YAML files were created](#how-the-yaml-files-were-created)
-    * [Install and patch the `labeler` tool](#install-and-patch-the-labeler-tool)
-    * [Save GitHub labels for a repository](#save-github-labels-for-a-repository)
-
 ## Overview
 
 This directory contains one YAML file per repository containing the original
