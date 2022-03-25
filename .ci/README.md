@@ -14,7 +14,6 @@ This directory contains scripts used by the [Kata Containers](https://github.com
 | Script(s) | Description |
 | -- | -- |
 | [`ci-fast-return.sh`](#ci-fast-return) | Called by the CI to handle unusual situations. |
-| [`go-test.sh`](go-test.sh) | Central interface to the `golang` `go test` facility. |
 | `install_*` | Install various parts of the system and dependencies. |
 | [`jenkins_job_build.sh`](jenkins_job_build.sh) | Called by the [Jenkins CI](https://github.com/kata-containers/ci) to trigger a CI run. |
 | [`kata-arch.sh`](kata-arch.sh) | Displays architecture name in various formats. |
