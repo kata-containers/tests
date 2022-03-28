@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2019 Intel Corporation
+# Copyright (c) 2019-2022 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -18,6 +18,8 @@ DEBUG=${DEBUG:-}
 
 # If set to any value, do not shut down the Jaeger service.
 DEBUG_KEEP_JAEGER=${DEBUG_KEEP_JAEGER:-}
+# If set to any value, do not shut down the trace forwarder.
+DEBUG_KEEP_FORWARDER=${DEBUG_KEEP_FORWARDER:-}
 
 [ -n "$DEBUG" ] && set -o xtrace
 
@@ -28,6 +30,14 @@ RUNTIME="io.containerd.kata.v2"
 CONTAINER_IMAGE="quay.io/prometheus/busybox:latest"
 
 TRACE_LOG_DIR=${TRACE_LOG_DIR:-${KATA_TESTS_LOGDIR}/traces}
+
+# tmux(1) session to run the trace forwarder in
+KATA_TMUX_FORWARDER_SESSION="kata-trace-forwarder-session"
+
+katacontainers_repo_dir="$GOPATH/src/github.com/kata-containers/kata-containers"
+
+forwarder_dir="${katacontainers_repo_dir}/src/tools/trace-forwarder"
+forwarder_binary_name="kata-trace-forwarder"
 
 jaeger_server=${jaeger_server:-localhost}
 jaeger_ui_port=${jaeger_ui_port:-16686}
@@ -46,6 +56,8 @@ cleanup()
 		result="passed"
 
 		[ -z "$DEBUG_KEEP_JAEGER" ] && stop_jaeger 2>/dev/null || true
+
+		[ -z "$DEBUG_KEEP_FORWARDER" ] && kill_trace_forwarder
 
 		# The tests worked so remove the logs
 		if [ -n "$DEBUG" ]; then
@@ -239,10 +251,46 @@ check_jaeger_status()
 	[ "$errors" -eq 0 ] || die "errors detected"
 }
 
+run_trace_forwarder()
+{
+	source "$HOME/.cargo/env"
+	command -v "$forwarder_binary_name" &>/dev/null || (cd "$forwarder_dir" && cargo install --path .)
+
+	tmux new-session -d -s "$KATA_TMUX_FORWARDER_SESSION" "$forwarder_binary_name -l trace"
+
+	info "Verifying trace forwarder in tmux session $KATA_TMUX_FORWARDER_SESSION"
+
+	local cmd="tmux capture-pane -pt $KATA_TMUX_FORWARDER_SESSION | tr -d '\n' | tr -d '\"' | grep -q \"source:kata-trace-forwarder\""
+	waitForProcess 10 1 "$cmd"
+}
+
+kill_trace_forwarder()
+{
+	tmux kill-session -t "$KATA_TMUX_FORWARDER_SESSION"
+}
+
 setup()
 {
 	# containerd must be running in order to use ctr to generate traces
 	restart_containerd_service
+
+	local cmds=()
+	# For container manager (containerd)
+	cmds+=('ctr')
+	# For jaeger
+	cmds+=('docker')
+	# For launching processes
+	cmds+=('tmux')
+
+	local cmd
+	for cmd in "${cmds[@]}"
+        do
+                local result
+                result=$(command -v "$cmd" || true)
+                [ -n "$result" ] || die "need $cmd"
+        done
+
+	run_trace_forwarder
 
 	start_jaeger
 
@@ -288,7 +336,7 @@ run_tests()
 	#   when create_traces() is called a single time.
 	local -a services
 
-	services+=("kata:50")
+	services+=("kata:125")
 
 	create_traces
 
@@ -324,6 +372,7 @@ Environment variables:
   CI    - if set, save logs of all tests to ${TRACE_LOG_DIR}.
   DEBUG - if set, enable tracing and do not cleanup after tests.
   DEBUG_KEEP_JAEGER - if set, do not shut down the Jaeger service.
+  DEBUG_KEEP_FORWARDER - if set, do not shut down the trace forwarder.
 
 Notes:
   - Runs all test phases if no arguments are specified.
