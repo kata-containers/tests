@@ -29,11 +29,13 @@ install_fc() {
 
 	# Download firecracker and jailer
 	firecracker_binary="firecracker-${firecracker_version}-${arch}"
-	curl -fsL ${firecracker_repo}/releases/download/${firecracker_version}/${firecracker_binary} -o ${firecracker_binary}
-	sudo -E install -m 0755 -D ${firecracker_binary} /usr/bin/firecracker
 	jailer_binary="jailer-${firecracker_version}-${arch}"
-	curl -fsL ${firecracker_repo}/releases/download/${firecracker_version}/${jailer_binary} -o ${jailer_binary}
-	sudo -E install -m 0755 -D ${jailer_binary} /usr/bin/jailer
+	curl -fsL ${firecracker_repo}/releases/download/${firecracker_version}/${firecracker_binary}.tgz -o ${firecracker_binary}.tgz
+	tar -zxf ${firecracker_binary}.tgz
+	firecracker_binary_fullpath=release-${firecracker_version}/${firecracker_binary}
+	jailer_binary_fullpath=release-${firecracker_version}/${jailer_binary}
+	sudo -E install -m 0755 -D ${firecracker_binary_fullpath} /usr/bin/firecracker
+	sudo -E install -m 0755 -D ${jailer_binary_fullpath} /usr/bin/jailer
 }
 
 main() {
