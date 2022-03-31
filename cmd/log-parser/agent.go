@@ -78,7 +78,7 @@ func unpackAgentLogEntry_v1(le LogEntry) (agent LogEntry, err error) {
 
 	reader := strings.NewReader(le.Msg)
 
-	entries, err := parseLogFmtData(reader, file)
+	entries, err := parseLogFmtData(reader, file, false)
 	if err != nil {
 		return LogEntry{}, fmt.Errorf("failed to parse agent log entry %+v: %v", le, err)
 	}
