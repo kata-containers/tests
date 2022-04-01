@@ -19,6 +19,7 @@ FIXTURES_DIR="${BATS_TEST_DIRNAME}/fixtures"
 crictl_delete_cc_pod() {
 	local sandbox_name="$1"
 	local pod_id="$(sudo crictl pods --name ${sandbox_name} -q)"
+	# test
 	local container_ids="$(sudo crictl ps --pod ${pod_id} -q)"
 
 	if [ -n "${container_ids}" ]; then
