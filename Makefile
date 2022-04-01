@@ -87,7 +87,11 @@ cri-containerd:
 
 # Run the Confidential Containers tests for containerd.
 cc-containerd:
-	bash integration/containerd/confidential/run_tests.sh
+# TODO: The Confidential Containers test aren't merged into main yet, so
+# disable their execution. They should be enabled again at the point when
+# https://github.com/kata-containers/tests/issues/4628 is ready to be merged.
+	@echo "No Confidential Containers tests to run yet. Do nothing."
+#	bash integration/containerd/confidential/run_tests.sh
 
 log-parser:
 	make -C cmd/log-parser
