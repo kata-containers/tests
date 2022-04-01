@@ -112,8 +112,6 @@ case "${CI_JOB}" in
 		"CC_CRI_CONTAINERD")
 			# Export any CC specific environment variables
 			export KATA_BUILD_CC="yes"
-			#export SKOPEO=${SKOPEO:-}
-			export UMOCI=yes
 			export SECCOMP=yes
 			;;
 	esac
@@ -134,7 +132,6 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	# Export any CC specific environment variables
 	export KATA_BUILD_CC="yes"
-	export UMOCI=yes
 	export SECCOMP=yes
 	;;
 "CRIO_K8S")
