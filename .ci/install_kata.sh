@@ -13,15 +13,27 @@ cidir=$(dirname "$0")
 tag="${1:-""}"
 source /etc/os-release || source /usr/lib/os-release
 source "${cidir}/lib.sh"
+KATA_BUILD_KERNEL_TYPE="${KATA_BUILD_KERNEL_TYPE:-vanilla}"
+KATA_BUILD_QEMU_TYPE="${KATA_BUILD_QEMU_TYPE:-vanilla}"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 experimental_qemu="${experimental_qemu:-false}"
+TEE_TYPE="${TEE_TYPE:-}"
+
+if [ -n "${TEE_TYPE}" ]; then
+	echo "Install with TEE type: ${TEE_TYPE}"
+fi
+
+if [ "${TEE_TYPE:-}" == "tdx" ]; then
+	KATA_BUILD_KERNEL_TYPE="${KATA_BUILD_KERNEL_TYPE:-tdx}"
+	KATA_BUILD_QEMU_TYPE="${KATA_BUILD_QEMU_TYPE:-tdx}"
+fi
 
 echo "Install Kata Containers Image"
 echo "rust image is default for Kata 2.0"
 "${cidir}/install_kata_image.sh" "${tag}"
 
 echo "Install Kata Containers Kernel"
-"${cidir}/install_kata_kernel.sh" "${tag}"
+"${cidir}/install_kata_kernel.sh" -t "${KATA_BUILD_KERNEL_TYPE}"
 
 install_qemu(){
 	echo "Installing qemu"
@@ -29,7 +41,7 @@ install_qemu(){
 		echo "Install experimental Qemu"
 		"${cidir}/install_qemu_experimental.sh"
 	else
-		"${cidir}/install_qemu.sh"
+		"${cidir}/install_qemu.sh" -t "${KATA_BUILD_QEMU_TYPE}"
 	fi
 }
 
