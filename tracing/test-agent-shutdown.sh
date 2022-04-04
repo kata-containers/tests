@@ -606,6 +606,8 @@ cleanup()
 		return 0
 	fi
 
+	kill_tmux_sessions
+
 	unconfigure_kata
 
 	 [ "$arg" != 'initial' ] && [ -d "$bundle_dir" ] && rm -rf "$bundle_dir"
