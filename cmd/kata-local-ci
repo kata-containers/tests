@@ -45,6 +45,7 @@ rsync_options="--exclude=kata-containers/src/agent/target"
 kci=~/.kata-containers-ci
 install=false
 revert=true
+ubuntu20_workaround=false
 ssh_opts="-o StrictHostKeyChecking=no -o UpdateHostKeys=no -o PasswordAuthentication=no -o UserKnownHostsFile=~/.ssh/kata-ci-known-hosts"
 ssh_cmd="ssh $ssh_opts"
 
@@ -178,6 +179,12 @@ function vm_install() {
 	    distro_commands=("${ubuntu_distro_commands[@]}")
 	    osvariant=ubuntu18.04
 	    ;;
+	ubuntu20*)
+	    distro_name=ubuntu-${distro/ubuntu/}
+	    distro_commands=("${ubuntu_distro_commands[@]}")
+	    osvariant=ubuntu${distro/ubuntu}
+            ubuntu20_workaround=true
+	    ;;
 	ubuntu*)
 	    distro_name=ubuntu-${distro/ubuntu/}
 	    distro_commands=("${ubuntu_distro_commands[@]}")
@@ -212,15 +219,18 @@ function vm_install() {
     progress "Removing earlier VM $VM_NAME"
     echo "The script may now ask you for a password to setup the VM named $VM_NAME"
     echo "You can avoid these prompts by executing:"
-    echo "sudo bash -c \"echo > /etc/sudoers.d/kata-local-ci '"$(whoami) "ALL=(ALL) NOPASSWD: /usr/bin/virsh,/usr/bin/virt-install,/usr/bin/virt-builder'\""
+    echo "sudo bash -c \"echo > /etc/sudoers.d/kata-local-ci '"$(whoami) "ALL=(ALL) NOPASSWD: /usr/bin/virsh,/usr/bin/virt-install,/usr/bin/virt-builder,/usr/bin/qemu-img'\""
 
     sys virsh destroy $VM_NAME || true
     sys virsh undefine $VM_NAME --remove-all-storage  --snapshots-metadata || true
 
     set -e
     progress "Launching virt-builder"
+    if ! $ubuntu20_workaround; then
+        size_arg="--size=$size"
+    fi
     sys virt-builder $distro_name \
-         -o $disk --format qcow2 --size=$size \
+         -o $disk --format qcow2 $size_argument \
 	 --root-password password:kata \
 	 "${distro_commands[@]}" \
 	 --mkdir /home/kata \
@@ -231,6 +241,10 @@ function vm_install() {
          "${final_firstboot_cmd[@]}" \
 	 --password  'kata:password:kata' \
 	 --hostname kata-$distro-ci
+    if $ubuntu20_workaround; then
+        progress "Resizing disk image"
+        sys qemu-img resize $disk $size
+    fi
     progress "Launching virt-install"
     sys virt-install --import --name $VM_NAME  --memory $memory --vcpus $cpus \
          --disk path=$disk,format=qcow2 \
@@ -253,6 +267,22 @@ function vm_install() {
     while ! rsync -e "$ssh_cmd" -av ${rsync_options[@]} $directory/kata-containers/README.md kata@$VM_IPADDR:$vmdir/ 2>&1 >/dev/null; do
         sleep 1
     done
+
+    if $ubuntu20_workaround; then
+        local mbsize=$size
+        case $mbsize in
+            *G) mbsize=$((${size/G/} * 1024)) ;;
+            *g) mbsize=$((${size/g/} * 1024)) ;;
+            *M) mbsize=$((${size/M/} * 1)) ;;
+            *m) mbsize=$((${size/m/} * 1)) ;;
+            *) die "Unknown size $size, expected something like 10G or 20m"
+        esac
+        ci_root_cmd "parted -s /dev/vda resizepart 2 $(($size * 1024))"
+        ci_root_cmd "parted -s /dev/vda resizepart 5 $(($size * 1024))"
+        ci_root_cmd "parted -s /dev/vda resizepart print"
+        ci_root_cmd "resize2fs /dev/vda5"
+        ci_root_cmd "df -h"
+    fi
 
     progress "Initial rsync of kata-containers directory"
     run rsync -e "$ssh_cmd" -av ${rsync_options[@]} $directory/kata-containers kata@$VM_IPADDR:$vmdir/
