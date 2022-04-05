@@ -99,7 +99,7 @@ pushd "${katacontainers_repo_dir}"
 		make generate-client-code && make go-fmt
 	popd
 	pushd src/runtime/
-		make && sudo -E make install
+		make DEFAULT_HYPERVISOR="cloud-hypervisor" && sudo -E make DEFAULT_HYPERVISOR="cloud-hypervisor" install
 	popd
 popd
 
