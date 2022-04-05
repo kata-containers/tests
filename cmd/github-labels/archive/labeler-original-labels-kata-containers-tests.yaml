@@ -17,9 +17,6 @@ labels:
   - name: P4
     color: fef2c0
     description: Noteworthy issue
-  - name: add-to-userguide
-    color: 55bf3d
-    description: https://github.com/kata-containers/documentation/wiki/UserGuide
   - name: backlog
     color: ededed
   - name: bitesize
