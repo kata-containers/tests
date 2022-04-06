@@ -31,7 +31,7 @@ trap cleanup EXIT
 
 setup() {
 	[ "$(uname -m)" == "x86_64" ] || die "Only x86_64 is supported"
-	[ -d "/sys/firmware/tdx_seam" ] || die "Intel TDX is available in this system"
+	[ -d "/sys/firmware/tdx_seam" ] || die "Intel TDX is not available in this system"
 
 	[ -n "${FIRMWARE}" ] || die "FIRMWARE environment variable is not set"
 	[ -n "${FIRMWARE_VOLUME}" ] || warn "FIRMWARE_VOLUME environment variable is not set"
