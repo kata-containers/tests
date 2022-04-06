@@ -26,6 +26,7 @@ container_name=test
 jenkins_job_url="http://jenkins.katacontainers.io/job"
 FIRMWARE="${FIRMWARE:-}"
 FIRMWARE_VOLUME="${FIRMWARE_VOLUME:-}"
+KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 
 trap cleanup EXIT
 
@@ -35,6 +36,8 @@ setup() {
 
 	[ -n "${FIRMWARE}" ] || die "FIRMWARE environment variable is not set"
 	[ -n "${FIRMWARE_VOLUME}" ] || warn "FIRMWARE_VOLUME environment variable is not set"
+
+	[ "${KATA_HYPERVISOR}" == "qemu" ] || die "This test only supports QEMU for now"
 
 	local config_file="$(get_config_file)"
 	sudo cp "${config_file}" "${config_file}.bak"
