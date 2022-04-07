@@ -8,7 +8,10 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+
+	"encoding/json"
 )
 
 const (
@@ -20,16 +23,22 @@ const (
 // agentLogEntry returns true if the specified log entry actually contains
 // an encoded agent log entry.
 func agentLogEntry(le LogEntry) bool {
-	if le.Source != agentSourceField {
+	if le.Source != agentSourceField && le.Source != "virtcontainers" {
 		return false
 	}
 
+	// agent v1 format
 	msg := le.Msg
 	if msg == "" {
 		return false
 	}
 
-	if strings.HasPrefix(msg, "time=") {
+	if msg == "reading guest console" {
+		// v2 format - check if there is actually something on the console
+		if le.Data["vmconsole"] != "" {
+			return true
+		}
+	} else if strings.HasPrefix(msg, "time=") {
 		return true
 	}
 
@@ -40,11 +49,18 @@ func agentLogEntry(le LogEntry) bool {
 // message and returns the agent log entry, discarding the proxy log entry
 // that held it.
 func unpackAgentLogEntry(le LogEntry) (agent LogEntry, err error) {
-	if le.Source != agentSourceField {
-		return LogEntry{}, fmt.Errorf("agent log entry has wrong source (expected %v, got %v): %+v",
-			agentSourceField, le.Source, le)
+	if le.Source == agentSourceField {
+		return unpackAgentLogEntry_v1(le)
+	}
+	if le.Msg == "reading guest console" {
+		return unpackAgentLogEntry_v2(le)
 	}
 
+	return LogEntry{}, fmt.Errorf("agent log entry not found (source: %v - msg: %v): %+v",
+		le.Source, le.Msg, le)
+}
+
+func unpackAgentLogEntry_v1(le LogEntry) (agent LogEntry, err error) {
 	msg := le.Msg
 	if msg == "" {
 		return LogEntry{}, fmt.Errorf("no agent message data (entry %+v", le)
@@ -62,7 +78,7 @@ func unpackAgentLogEntry(le LogEntry) (agent LogEntry, err error) {
 
 	reader := strings.NewReader(le.Msg)
 
-	entries, err := parseLogFmtData(reader, file)
+	entries, err := parseLogFmtData(reader, file, false)
 	if err != nil {
 		return LogEntry{}, fmt.Errorf("failed to parse agent log entry %+v: %v", le, err)
 	}
@@ -81,6 +97,38 @@ func unpackAgentLogEntry(le LogEntry) (agent LogEntry, err error) {
 	agent.Source = agentSourceField
 	agent.Filename = file
 	agent.Line = line
+
+	return agent, nil
+}
+
+func unpackAgentLogEntry_v2(le LogEntry) (agent LogEntry, err error) {
+
+	agent = le
+
+	// we expect the agent's message to be in JSON, under le.Data["vmconsole"]
+	var result map[string]string
+	err = json.Unmarshal([]byte(le.Data["vmconsole"]), &result)
+	if err != nil {
+		// entry is not in JSON format. Use the vmconsole field as the msg, and keep the rest of the log entry unmodified
+		agent.Msg = le.Data["vmconsole"]
+		agent.Source = "vmconsole"
+		return agent, nil
+	}
+
+	pid, err := strconv.Atoi(result["pid"])
+	if err != nil {
+		return LogEntry{}, fmt.Errorf("failed to convert pid")
+	}
+
+	// NOTE: we do not take the agent's timestamp into account, because there is a ~1sec delay
+	// for the agent's log to get through. Using the agent's timestamp would then make its logs
+	// appear out of order compared to other logs from the guest.
+	// The agent's logs timestamp is still visible for reference in the Data section of the logs.
+	agent.Level = strings.ToLower(result["level"])
+	agent.Msg = result["msg"]
+	agent.Source = result["source"]
+	agent.Name = result["name"]
+	agent.Pid = pid
 
 	return agent, nil
 }

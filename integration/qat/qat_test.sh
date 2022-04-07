@@ -57,7 +57,9 @@ build_install_qat_image_and_kernel() {
 	sudo rm -rf output && mkdir -p output
 	sudo docker rmi -f kataqat
 	sudo docker build --rm --label kataqat --tag kataqat:latest .
-	sudo docker run -i --rm --privileged -e "QAT_DRIVER_VER=${QAT_DRIVER_VER}" -e "QAT_DRIVER_URL=${QAT_DRIVER_URL}" -v /dev:/dev -v ${PWD}/output:/output  kataqat
+	sudo docker run -i --rm --privileged \
+		 -e "QAT_DRIVER_VER=${QAT_DRIVER_VER}" -e "QAT_DRIVER_URL=${QAT_DRIVER_URL}" \
+		 -v /dev:/dev -v ${PWD}/output:/output -v ${GOPATH}:/home/qatbuilder/src/go kataqat
 
 	sudo rm -f ${kata_vmlinux_path} ${kata_image_path}
 

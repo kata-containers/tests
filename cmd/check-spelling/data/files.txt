@@ -7,7 +7,7 @@
 # Notes: These *should* strictly be placed in backticks but alas this
 #   doesn't always happen.
 #
-# References: https://github.com/kata-containers/documentation/blob/master/Documentation-Requirements.md#files-and-command-names
+# References: https://github.com/kata-containers/kata-containers/blob/main/docs/Documentation-Requirements.md#files-and-command-names
 
 cgroup/AB
 coredump/A

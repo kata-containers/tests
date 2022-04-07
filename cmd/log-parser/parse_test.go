@@ -63,42 +63,43 @@ func TestParseLogFile(t *testing.T) {
 	}()
 
 	type testData struct {
-		contents string
-		valid    bool
+		contents  string
+		valid     bool
+		ignorable bool
 	}
 
 	data := []testData{
-		{"", false},
+		{"", false, false},
 
 		// Unrecognised/invalid fields
-		{"foo=", false},
-		{"foo=bar", false},
-		{"=bar", false},
+		{"foo=", false, false},
+		{"foo=bar", false, false},
+		{"=bar", false, false},
 
 		// unquoted string value
-		{"msg=hello world foo bar", false},
+		{"msg=hello world foo bar", false, false},
 
 		// No level
-		{"pid=1234 source=source name=name msg=msg time=2018-02-24T12:36:36.115882442Z", false},
-		{"level= pid=1234 source=source name=name msg=msg time=2018-02-24T12:36:36.115882442Z", false},
+		{"pid=1234 source=source name=name msg=msg time=2018-02-24T12:36:36.115882442Z", false, true},
+		{"level= pid=1234 source=source name=name msg=msg time=2018-02-24T12:36:36.115882442Z", false, true},
 
 		// No pid
-		{"level=info source=source name=name msg=msg time=2018-02-24T12:36:36.115882442Z", false},
-		{"level=info pid= source=source name=name msg=msg time=2018-02-24T12:36:36.115882442Z", false},
+		{"level=info source=source name=name msg=msg time=2018-02-24T12:36:36.115882442Z", false, true},
+		{"level=info pid= source=source name=name msg=msg time=2018-02-24T12:36:36.115882442Z", false, true},
 
 		// Invalid pid
-		{"level=info pid=-1 source=source name=name msg=msg time=2018-02-24T12:36:36.115882442Z", false},
+		{"level=info pid=-1 source=source name=name msg=msg time=2018-02-24T12:36:36.115882442Z", false, false},
 
 		// No source
-		{"level=info pid=999 name=name msg=msg time=2018-02-24T12:36:36.115882442Z", false},
-		{"level=info pid=999 name=name source= msg=msg time=2018-02-24T12:36:36.115882442Z", false},
+		{"level=info pid=999 name=name msg=msg time=2018-02-24T12:36:36.115882442Z", false, true},
+		{"level=info pid=999 name=name source= msg=msg time=2018-02-24T12:36:36.115882442Z", false, true},
 
 		// No name
-		{"level=info pid=1234 source=source msg=msg time=2018-02-24T12:36:36.115882442Z", false},
-		{"name= level=info pid=1234 source=source msg=msg time=2018-02-24T12:36:36.115882442Z", false},
+		{"level=info pid=1234 source=source msg=msg time=2018-02-24T12:36:36.115882442Z", false, true},
+		{"name= level=info pid=1234 source=source msg=msg time=2018-02-24T12:36:36.115882442Z", false, true},
 
 		// Valid
-		{"level=info pid=1234 source=source name=name msg=msg time=2018-02-24T12:36:36.115882442Z", true},
+		{"level=info pid=1234 source=source name=name msg=msg time=2018-02-24T12:36:36.115882442Z", true, false},
 	}
 
 	for i, d := range data {
@@ -106,10 +107,19 @@ func TestParseLogFile(t *testing.T) {
 		err := createFile(file, d.contents)
 		assert.NoError(err)
 
-		_, err = parseLogFile(file)
+		// check that an error is raised when expected
+		_, err = parseLogFile(file, false)
 
 		if d.valid {
 			assert.NoErrorf(err, "test[%d]: %+v", i, d)
+		} else {
+			assert.Errorf(err, "test[%d]: %+v", i, d)
+		}
+
+		// check that the error is ignored when asked to
+		_, err = parseLogFile(file, true)
+		if d.valid || d.ignorable {
+			assert.NoError(err, "test[%d]: %+v", i, d)
 		} else {
 			assert.Errorf(err, "test[%d]: %+v", i, d)
 		}
@@ -124,7 +134,7 @@ func TestParseLogFilesENOENT(t *testing.T) {
 
 	files := []string{"does/not/exist"}
 
-	_, err := parseLogFiles(files)
+	_, err := parseLogFiles(files, false)
 	assert.Error(err)
 }
 
@@ -203,7 +213,7 @@ func TestParseLogFiles(t *testing.T) {
 
 	files := []string{"does/not/exist"}
 
-	_, err = parseLogFiles(files)
+	_, err = parseLogFiles(files, false)
 	assert.Error(err)
 
 	for i, d := range data {
@@ -216,7 +226,7 @@ func TestParseLogFiles(t *testing.T) {
 			files = append(files, file)
 		}
 
-		e, err := parseLogFiles(files)
+		e, err := parseLogFiles(files, false)
 		if d.valid {
 			var fooTime time.Time
 			var barTime time.Time
@@ -555,7 +565,7 @@ func TestParseLogFmtDataNoReaderData(t *testing.T) {
 
 	reader := &TestReaderNoData{}
 
-	entries, err := parseLogFmtData(reader, file)
+	entries, err := parseLogFmtData(reader, file, false)
 
 	// reader returns no data, which is invalid
 	assert.Error(err)
@@ -570,7 +580,7 @@ func TestParseLogFmtData(t *testing.T) {
 
 	reader := &TestReaderData{}
 
-	entries, err := parseLogFmtData(reader, file)
+	entries, err := parseLogFmtData(reader, file, false)
 	assert.NoError(err)
 	assert.Equal(entries.Len(), 1)
 }
