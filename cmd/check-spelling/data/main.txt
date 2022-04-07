@@ -69,7 +69,7 @@ mmap/AB
 nack/AB
 namespace/ABCD
 netlink
-Nvidia
+NVIDIA
 onwards
 OpenAPI
 OS/AB
