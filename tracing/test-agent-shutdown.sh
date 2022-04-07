@@ -745,9 +745,11 @@ setup()
 		exit 0
 	}
 
-	# Do not run on ppc64le/s390x for now
-	[ "$(uname -m)" = "ppc64le" -o "$(uname -m)" = "s390x" ] && {
-		info "Exiting, do not run on ppc64le or s390x. For s390x, see https://github.com/kata-containers/tests/issues/4597."
+	# Only run on x86_64 for now
+	[ "$(uname -m)" != "x86_64" ] && {
+		info "Exiting, only run on x86_64 for now. \\
+			For s390x, see https://github.com/kata-containers/tests/issues/4597. \\
+			For aarch64, see https://github.com/kata-containers/tests/issues/4684."
 		exit 0
 	}
 

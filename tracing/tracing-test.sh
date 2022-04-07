@@ -392,9 +392,9 @@ main()
                 exit 0
         }
 
-        # Do not run on ppc64le for now
-        [ "$(uname -m)" = "ppc64le" ] && {
-                info "Exiting, do not run on ppc64le"
+	# Only run on x86_64 for now
+        [ "$(uname -m)" != "x86_64" ] && {
+                info "Exiting, only run on x86_64"
                 exit 0
         }
 
