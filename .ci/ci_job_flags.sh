@@ -52,6 +52,9 @@ init_ci_flags() {
 	export experimental_qemu="false"
 	# Run the kata-check checks
 	export RUN_KATA_CHECK="true"
+	# Use devmapper snapshotter
+	# Only works with containerd
+	export USE_DEVMAPPER="false"
 
 	# METRICS_CI flags
 	# Request to run METRICS_CI
@@ -155,6 +158,7 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="firecracker"
 	export KUBERNETES="yes"
+	export USE_DEVMAPPER="true"
 	;;
 "VFIO")
 	init_ci_flags
