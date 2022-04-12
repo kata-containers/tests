@@ -142,6 +142,21 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
 	;;
+"CLOUD-HYPERVISOR-K8S-CONTAINERD-DEVMAPPER")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	export KUBERNETES="yes"
+	export USE_DEVMAPPER="true"
+	;;
+"EXTERNAL_CLOUD_HYPERVISOR")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	export KUBERNETES="no"
+	;;
 "EXTERNAL_CRIO")
 	init_ci_flags
 	export CRIO="yes"
