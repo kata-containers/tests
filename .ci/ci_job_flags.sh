@@ -104,6 +104,14 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="qemu"
 	[ "${CI_JOB}" == "CRI_CONTAINERD_K8S" ] && export KUBERNETES="yes"
 	;;
+"CRI_CONTAINERD_K8S_DEVMAPPER")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="qemu"
+	export KUBERNETES="yes"
+	export USE_DEVMAPPER="true"
+	;;
 "CRIO_K8S")
 	init_ci_flags
 	export CRI_RUNTIME="crio"
