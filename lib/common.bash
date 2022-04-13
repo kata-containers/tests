@@ -7,6 +7,9 @@
 # This file contains common functions that
 # are being used by our metrics and integration tests
 
+_script_dir=$(dirname "${BASH_SOURCE[0]}")
+source "${_script_dir}/error.sh"
+
 # Place where virtcontainers keeps its active pod info
 VC_POD_DIR="${VC_POD_DIR:-/run/vc/sbs}"
 
@@ -28,9 +31,44 @@ KATA_TESTS_CACHEDIR="${KATA_TESTS_CACHEDIR:-${KATA_TESTS_BASEDIR}/cache}"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 experimental_qemu="${experimental_qemu:-false}"
 
+# Display a message to stderr, a dump of lots of useful debug
+# information (including a full stacktrace) and exit 1.
 die() {
 	local msg="$*"
-	echo -e "[$(basename $0):${BASH_LINENO[0]}] ERROR: $msg" >&2
+
+	if [ -z "${KATA_TEST_VERBOSE:-}" ] && [ -z "${CI:-}" ]
+	then
+		echo -e "[$(basename $0):${BASH_LINENO[0]}] ERROR: $msg" >&2
+		exit 1
+	fi
+
+	echo >&2 "ERROR: $msg"
+
+	# We are running in the CI or the user has requested verbose
+	# failure details, so dump as much information about
+	# the environment that generated the failure as possible.
+
+	# This function is called to indicate a fatal error occurred, so
+	# the caller of this function is the site of the detected error.
+	local error_location
+	error_location=$(caller 0)
+
+	local line
+	local func
+	local file
+
+	line=$(echo "$error_location"|awk '{print $1}')
+	func=$(echo "$error_location"|awk '{print $2}')
+	file=$(echo "$error_location"|awk '{print $3}')
+
+	local path
+	path=$(resolve_path "$file")
+
+	dump_details \
+		"${line}" \
+		"${func}" \
+		"${path}"
+
 	exit 1
 }
 
