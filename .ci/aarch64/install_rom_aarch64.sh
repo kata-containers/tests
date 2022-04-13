@@ -8,6 +8,9 @@ set -e
 
 source /etc/os-release || source /usr/lib/os-release
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${script_dir}/../../lib/common.bash"
+
 EDK2_REPO="https://github.com/tianocore/edk2.git"
 EDK2_PLAT_REPO="https://github.com/tianocore/edk2-platforms.git"
 ACPICA="https://github.com/acpica/acpica.git"
@@ -112,8 +115,7 @@ install_uefi_flash()
 clean_up_and_die()
 {
 	clean_up
-	echo "ERROR: $*" >&2
-	exit 1
+	die "$*"
 }
 
 clean_up()
