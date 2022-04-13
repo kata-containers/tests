@@ -10,12 +10,8 @@ set -o pipefail
 
 readonly script_name=${0##*/}
 
-die()
-{
-    local -r msg="$*"
-    echo >&2 "ERROR: $msg"
-    exit 1
-}
+cidir="$(dirname $(readlink -f "$0"))"
+source "${cidir}/lib.sh"
 
 usage()
 {

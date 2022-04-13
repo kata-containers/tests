@@ -37,20 +37,9 @@ Example:
 EOF
 }
 
-die(){
-	msg="$*"
-	echo "$SCRIPT_NAME - ERROR: $msg" >&2
-	exit 1
-}
-
-warning(){
-	msg="$*"
-	echo "$SCRIPT_NAME - WARNING: $msg" >&2
-}
-
 message(){
 	msg="$*"
-	echo "$SCRIPT_NAME - INFO: $msg" >&2
+	info "$SCRIPT_NAME: $msg"
 }
 
 log_message(){
@@ -204,7 +193,7 @@ info_docker(){
 		message "docker_info: default runtime: $(get_docker_default_runtime)"
 		message "docker_info: package name: $(get_docker_package_name)"
 	else
-		warning "docker is not installed on this system"
+		warn "docker is not installed on this system"
 		return 1
 	fi
 }
@@ -310,7 +299,7 @@ main(){
 			parse_subcommand_options "$@"
 			;;
 		*)
-			warning "container manager \"$ctr_manager\" is not supported."
+			warn "container manager \"$ctr_manager\" is not supported."
 			usage
 			exit 1
 	esac
