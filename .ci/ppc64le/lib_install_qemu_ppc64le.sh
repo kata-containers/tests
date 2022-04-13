@@ -21,21 +21,21 @@ build_and_install_qemu() {
         PACKAGING_DIR="${katacontainers_repo_dir}/tools/packaging"
         QEMU_CONFIG_SCRIPT="${PACKAGING_DIR}/scripts/configure-hypervisor.sh"
 
-        git clone --branch "$CURRENT_QEMU_TAG" --depth 1 "$QEMU_REPO_URL" "${GOPATH}/src/${QEMU_REPO}"
+        sudo -E git clone --branch "$CURRENT_QEMU_TAG" --depth 1 "$QEMU_REPO_URL" "${GOPATH}/src/${QEMU_REPO}"
 
         clone_katacontainers_repo
 
         pushd "${GOPATH}/src/${QEMU_REPO}"
-        git fetch
+        sudo -E git fetch
 
-        [ -d "capstone" ] || git clone https://github.com/qemu/capstone.git capstone
-        [ -d "ui/keycodemapdb" ] || git clone  https://github.com/qemu/keycodemapdb.git ui/keycodemapdb
+        [ -d "capstone" ] || sudo -E git clone https://github.com/qemu/capstone.git capstone
+        [ -d "ui/keycodemapdb" ] || sudo -E git clone  https://github.com/qemu/keycodemapdb.git ui/keycodemapdb
 	
-        ${packaging_dir}/scripts/apply_patches.sh "${packaging_dir}/qemu/patches/${stable_branch}"        
+        sudo -E ${packaging_dir}/scripts/apply_patches.sh "${packaging_dir}/qemu/patches/${stable_branch}"
 	
         echo "Build Qemu"
-        "${QEMU_CONFIG_SCRIPT}" "qemu" | xargs ./configure
-        make -j $(nproc)
+        "${QEMU_CONFIG_SCRIPT}" "qemu" | xargs sudo -E ./configure
+        sudo -E make -j $(nproc)
 
         echo "Install Qemu"
         sudo -E make install
