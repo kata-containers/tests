@@ -77,12 +77,12 @@ install_cached_qemu() {
 
 clone_qemu_repo() {
 	# check if git is capable of shadow cloning
-        git_shadow_clone=$(check_git_version "${GIT_SHADOW_VERSION}")
+	git_shadow_clone=$(check_git_version "${GIT_SHADOW_VERSION}")
 
 	if [ "$git_shadow_clone" == "true" ]; then
-		git clone --branch "${CURRENT_QEMU_VERSION}" --single-branch --depth 1 --shallow-submodules "${QEMU_REPO_URL}" "${GOPATH}/src/${gopath_qemu_repo}"
+		sudo -E git clone --branch "${CURRENT_QEMU_VERSION}" --single-branch --depth 1 --shallow-submodules "${QEMU_REPO_URL}" "${GOPATH}/src/${gopath_qemu_repo}"
 	else
-		git clone --branch "${CURRENT_QEMU_VERSION}" --single-branch --depth 1 "${QEMU_REPO_URL}" "${GOPATH}/src/${gopath_qemu_repo}"
+		sudo -E git clone --branch "${CURRENT_QEMU_VERSION}" --single-branch --depth 1 "${QEMU_REPO_URL}" "${GOPATH}/src/${gopath_qemu_repo}"
 	fi
 }
 
@@ -99,12 +99,12 @@ build_and_install_qemu() {
 	clone_qemu_repo
 
 	pushd "${GOPATH}/src/${gopath_qemu_repo}"
-	git fetch
-	[ -n "$(ls -A capstone)" ] || git clone https://github.com/qemu/capstone.git capstone
-	[ -n "$(ls -A ui/keycodemapdb)" ] || git clone  https://github.com/qemu/keycodemapdb.git ui/keycodemapdb
+	sudo -E git fetch
+	[ -n "$(ls -A capstone)" ] || sudo -E git clone https://github.com/qemu/capstone.git capstone
+	[ -n "$(ls -A ui/keycodemapdb)" ] || sudo -E git clone  https://github.com/qemu/keycodemapdb.git ui/keycodemapdb
 
 	# Apply required patches
-	${PACKAGING_DIR}/scripts/patch_qemu.sh ${CURRENT_QEMU_VERSION} ${PACKAGING_DIR}/qemu/patches
+	sudo -E ${PACKAGING_DIR}/scripts/patch_qemu.sh ${CURRENT_QEMU_VERSION} ${PACKAGING_DIR}/qemu/patches
 
 	echo "Build QEMU"
 	# Not all distros have the libpmem package
@@ -113,8 +113,8 @@ build_and_install_qemu() {
 			sed -e 's/--enable-libpmem/--disable-libpmem/g'
 		else
 			cat
-		fi | xargs ./configure --prefix=${PREFIX}
-	make -j $(nproc)
+		fi | xargs sudo -E ./configure --prefix=${PREFIX}
+	sudo -E make -j $(nproc)
 
 	echo "Install QEMU"
 	sudo -E make install

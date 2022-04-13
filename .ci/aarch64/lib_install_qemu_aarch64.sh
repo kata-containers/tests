@@ -22,16 +22,16 @@ build_and_install_qemu() {
 	clone_katacontainers_repo
 
         pushd "${GOPATH}/src/${QEMU_REPO}"
-        git fetch
-        [ -d "capstone" ] || git clone https://github.com/qemu/capstone.git --depth 1 capstone
-        [ -d "ui/keycodemapdb" ] || git clone  https://github.com/qemu/keycodemapdb.git --depth 1 ui/keycodemapdb
+        sudo -E git fetch
+        [ -d "capstone" ] || sudo -E git clone https://github.com/qemu/capstone.git --depth 1 capstone
+        [ -d "ui/keycodemapdb" ] || sudo -E git clone  https://github.com/qemu/keycodemapdb.git --depth 1 ui/keycodemapdb
 
         # Apply required patches
-	${PACKAGING_DIR}/scripts/patch_qemu.sh ${CURRENT_QEMU_VERSION} ${PACKAGING_DIR}/qemu/patches
+	sudo -E ${PACKAGING_DIR}/scripts/patch_qemu.sh ${CURRENT_QEMU_VERSION} ${PACKAGING_DIR}/qemu/patches
 
         echo "Build Qemu"
-        "${QEMU_CONFIG_SCRIPT}" "qemu" | xargs ./configure
-        make -j $(nproc)
+        "${QEMU_CONFIG_SCRIPT}" "qemu" | xargs sudo -E ./configure
+        sudo -E make -j $(nproc)
 
         echo "Install Qemu"
         sudo -E make install
