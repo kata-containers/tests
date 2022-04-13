@@ -57,6 +57,7 @@ install_from_branch() {
 	(
 		go get -d "${containerd_repo}"
 		cd "${GOPATH}/src/${containerd_repo}" >>/dev/null
+		git config --global --add safe.directory "${GOPATH}/src/${containerd_repo}"
 		git fetch
 		git checkout "${containerd_branch}"
 		sudo -E PATH="$PATH" make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
