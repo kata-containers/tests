@@ -52,6 +52,9 @@ init_ci_flags() {
 	export experimental_qemu="false"
 	# Run the kata-check checks
 	export RUN_KATA_CHECK="true"
+	# Use devmapper snapshotter
+	# Only works with containerd
+	export USE_DEVMAPPER="false"
 
 	# METRICS_CI flags
 	# Request to run METRICS_CI
@@ -101,6 +104,14 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="qemu"
 	[ "${CI_JOB}" == "CRI_CONTAINERD_K8S" ] && export KUBERNETES="yes"
 	;;
+"CRI_CONTAINERD_K8S_DEVMAPPER")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="qemu"
+	export KUBERNETES="yes"
+	export USE_DEVMAPPER="true"
+	;;
 "CRIO_K8S")
 	init_ci_flags
 	export CRI_RUNTIME="crio"
@@ -139,6 +150,14 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
 	;;
+"CLOUD-HYPERVISOR-K8S-CONTAINERD-DEVMAPPER")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	export KUBERNETES="yes"
+	export USE_DEVMAPPER="true"
+	;;
 "EXTERNAL_CLOUD_HYPERVISOR")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
@@ -162,6 +181,7 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="firecracker"
 	export KUBERNETES="yes"
+	export USE_DEVMAPPER="true"
 	;;
 "VFIO")
 	init_ci_flags
