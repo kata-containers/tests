@@ -37,7 +37,7 @@ setup() {
 	pod_name="burstable-test"
 
 	# Create pod
-	kubectl create -f "${pod_config_dir}/pod-burstable.yam"l
+	kubectl create -f "${pod_config_dir}/pod-burstable.yaml"
 
 	# Check pod creation
 	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
@@ -51,7 +51,7 @@ setup() {
 	pod_name="besteffort-test"
 
 	# Create pod
-	kubectl create -f "${pod_config_dir}/pod-besteffort.yam"l
+	kubectl create -f "${pod_config_dir}/pod-besteffort.yaml"
 
 	# Check pod creation
 	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
