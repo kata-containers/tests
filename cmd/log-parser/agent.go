@@ -114,21 +114,35 @@ func unpackAgentLogEntry_v2(le LogEntry) (agent LogEntry, err error) {
 		agent.Source = "vmconsole"
 		return agent, nil
 	}
+	// we were able to unpack agent msg, let's drop previous Data (runtime entries)
+	agent.Data = make(map[string]string)
 
-	pid, err := strconv.Atoi(result["pid"])
-	if err != nil {
-		return LogEntry{}, fmt.Errorf("failed to convert pid")
+	for k, v := range result {
+		switch k {
+		case "container-id", "cid": // better to ensure consistency in the agent
+			agent.Container = v
+		case "level":
+			agent.Level = strings.ToLower(v)
+		case "msg":
+			agent.Msg = v
+		case "name":
+			agent.Name = v
+		case "pid":
+			pid, err := strconv.Atoi(v)
+			if err != nil {
+				return LogEntry{}, fmt.Errorf("failed to convert pid")
+			}
+			agent.Pid = pid
+		case "source":
+			agent.Source = v
+		default:
+			// NOTE: we do not take the agent's timestamp into account, because there is a ~1sec delay
+			// for the agent's log to get through. Using the agent's timestamp would then make its logs
+			// appear out of order compared to other logs from the guest.
+			// The agent's logs timestamp is still visible for reference in the Data section of the logs.
+			agent.Data[k] = v
+		}
 	}
-
-	// NOTE: we do not take the agent's timestamp into account, because there is a ~1sec delay
-	// for the agent's log to get through. Using the agent's timestamp would then make its logs
-	// appear out of order compared to other logs from the guest.
-	// The agent's logs timestamp is still visible for reference in the Data section of the logs.
-	agent.Level = strings.ToLower(result["level"])
-	agent.Msg = result["msg"]
-	agent.Source = result["source"]
-	agent.Name = result["name"]
-	agent.Pid = pid
 
 	return agent, nil
 }

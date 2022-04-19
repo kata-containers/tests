@@ -95,7 +95,7 @@ categories:
   - name: new-contributor
     description: Small, self-contained tasks suitable for newcomers.
     url: |
-      https://github.com/kata-containers/community/blob/master/CONTRIBUTING.md
+      https://github.com/kata-containers/community/blob/main/CONTRIBUTING.md
 
   - name: priority
     description: |
@@ -122,7 +122,7 @@ categories:
 
   - name: security
     description: Potential or actual vulnerability / CVE.
-    url: https://github.com/kata-containers/community/blob/master/VMT/VMT.md
+    url: https://github.com/kata-containers/community/blob/main/VMT/VMT.md
 
   - name: severity
     description: Relative importance (mission-critical).
@@ -145,7 +145,7 @@ categories:
   - name: vendor
     description: Related to handling imported code.
     url: |
-      https://github.com/kata-containers/community/blob/master/CONTRIBUTING.md#re-vendor-prs
+      https://github.com/kata-containers/community/blob/main/CONTRIBUTING.md#re-vendor-prs
 
 repo: REPO_SLUG
 
