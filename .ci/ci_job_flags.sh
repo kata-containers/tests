@@ -107,7 +107,6 @@ case "${CI_JOB}" in
 			# Export any CC specific environment variables
 			export CCV0="yes"
 			export UMOCI=yes
-			export SECCOMP=yes
 			if [ "${CI_JOB}" == "CC_SKOPEO_CRI_CONTAINERD" ]; then
 				export SKOPEO=yes
 			fi
@@ -123,7 +122,6 @@ case "${CI_JOB}" in
 	# Export any CC specific environment variables
 	export CCV0="yes"
 	export UMOCI=yes
-	export SECCOMP=yes
 	if [ "${CI_JOB}" == "CC_SKOPEO_CRI_CONTAINERD_CLOUD_HYPERVISOR" ]; then
 		export SKOPEO=yes
 	fi
