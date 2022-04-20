@@ -34,6 +34,7 @@ build_and_install_qemu() {
         sudo -E make -j $(nproc)
 
         echo "Install Qemu"
+	sudo git config --global --add safe.directory $(pwd)
         sudo -E make install
 
         local qemu_bin=$(command -v qemu-system-${QEMU_ARCH})
