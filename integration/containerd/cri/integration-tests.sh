@@ -26,6 +26,7 @@ SHIMV2_TEST=${SHIMV2_TEST:-""}
 FACTORY_TEST=${FACTORY_TEST:-""}
 KILL_VMM_TEST=${KILL_VMM_TEST:-""}
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
+USE_DEVMAPPER="${USE_DEVMAPPER:-false}"
 ARCH=$(uname -m)
 
 default_runtime_type="io.containerd.runc.v2"
@@ -141,7 +142,7 @@ cat << EOF | sudo tee "${CONTAINERD_CONFIG_FILE}"
        shim = "${containerd_shim_path}"
 EOF
 
-if [ "$KATA_HYPERVISOR" == "firecracker" ]; then
+if [ "$USE_DEVMAPPER" == "true" ]; then
 	sudo sed -i 's|^\(\[plugins\]\).*|\1\n  \[plugins.devmapper\]\n    pool_name = \"contd-thin-pool\"\n    base_image_size = \"4096MB\"|' ${CONTAINERD_CONFIG_FILE}
 	echo "Devicemapper configured"
 	cat "${CONTAINERD_CONFIG_FILE}"
