@@ -5,6 +5,7 @@
 #
 
 load "${BATS_TEST_DIRNAME}/lib.sh"
+load "${BATS_TEST_DIRNAME}/../../confidential/lib.sh"
 
 test_tag="[cc][agent][kubernetes][containerd]"
 
