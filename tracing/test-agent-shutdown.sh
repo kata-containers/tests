@@ -457,7 +457,6 @@ configure_kata()
 		run_cmd sudo crudini --set "${kata_cfg_file}" 'agent.kata' 'enable_tracing' 'false'
 	else
 		run_cmd sudo crudini --set "${kata_cfg_file}" 'agent.kata' 'enable_tracing' 'true'
-		run_cmd sudo crudini --set "${kata_cfg_file}" 'agent.kata' 'trace_mode' '\"static\"'
 	fi
 }
 
