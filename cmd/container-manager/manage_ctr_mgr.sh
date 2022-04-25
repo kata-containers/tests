@@ -75,9 +75,9 @@ install_docker(){
 	# Get system architecture
 	arch=$(go env GOARCH)
 	# Check if docker is present in the system
-	if [ "$(info_docker)" ] && [ ${force} == false ]; then
+	if info_docker && [ ${force} == false ]; then
 		die "Docker is already installed. Please use -f flag to force new installation"
-	elif [ "$(info_docker)" ] && [ ${force} == true ]; then
+	elif info_docker && [ ${force} == true ]; then
 		remove_docker
 	fi
 
@@ -234,7 +234,7 @@ configure_docker(){
 	# Default storage driver is overlay2
 	[ -z "$storage_driver" ] && storage_driver="overlay2"
 
-	if [ ! "$(info_docker)" ]; then
+	if ! info_docker; then
 		die "Docker is not installed. Please install it before configuring the runtime"
 	fi
 
