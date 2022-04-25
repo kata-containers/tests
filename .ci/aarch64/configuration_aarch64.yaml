@@ -19,3 +19,4 @@ kubernetes:
   - k8s-oom
   - k8s-block-volume
   - k8s-inotify
+  - k8s-qos-pods
