@@ -99,7 +99,7 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="qemu"
 	export KUBERNETES="no"
 	;;
-"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S"|"CC_CRI_CONTAINERD"|"CC_SKOPEO_CRI_CONTAINERD")
+"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S"|"CC_CRI_CONTAINERD"|"CC_SKOPEO_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_K8S"|"CC_SKOPEO_CRI_CONTAINERD_K8S")
 	# This job only tests containerd + k8s
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
@@ -109,13 +109,16 @@ case "${CI_JOB}" in
 		"CRI_CONTAINERD_K8S")
 			export KUBERNETES="yes"
 			;;
-		"CC_CRI_CONTAINERD"|"CC_SKOPEO_CRI_CONTAINERD")
+		"CC_CRI_CONTAINERD"|"CC_SKOPEO_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_K8S"|"CC_SKOPEO_CRI_CONTAINERD_K8S")
 			# Export any CC specific environment variables
 			export KATA_BUILD_CC="yes"
 			export CCV0="yes"
 			export UMOCI=yes
-			if [ "${CI_JOB}" == "CC_SKOPEO_CRI_CONTAINERD" ]; then
+			if [ "${CI_JOB}" =~ SKOPEO ]; then
 				export SKOPEO=yes
+			fi
+			if [ "${CI_JOB}" =~ K8S ]; then
+				export KUBERNETES=yes
 			fi
 			;;
 	esac
