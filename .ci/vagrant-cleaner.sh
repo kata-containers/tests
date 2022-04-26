@@ -6,11 +6,9 @@
 #
 cidir="$(dirname $(readlink -f "$0"))"
 
-# Print message to stderr (add the 'ERROR:' prefix) and exit 1.
-die() {
-	echo -e "ERROR: $*" >&2
-	exit 1
-}
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+source "${script_dir}/lib.sh"
 
 usage() {
 	cat <<-EOF
