@@ -115,7 +115,7 @@ func (le LogEntry) Fields() []string {
 }
 
 // Check runs basic checks on the LogEntry to ensure it is valid.
-func (le LogEntry) Check() error {
+func (le LogEntry) Check(ignoreMissingFields bool) error {
 	if le.Filename == "" {
 		return fmt.Errorf("missing filename: %+v", le)
 	}
@@ -134,24 +134,26 @@ func (le LogEntry) Check() error {
 		return fmt.Errorf("missing timestamp: %+v", le)
 	}
 
-	if le.Pid == 0 {
-		return fmt.Errorf("missing pid: %+v", le)
+	if !ignoreMissingFields {
+		if le.Pid == 0 {
+			return fmt.Errorf("missing pid: %+v", le)
+		}
+
+		if le.Level == "" {
+			return fmt.Errorf("missing log level: %+v", le)
+		}
+
+		if le.Source == "" {
+			return fmt.Errorf("missing component source: %+v", le)
+		}
+
+		if le.Name == "" {
+			return fmt.Errorf("missing component name: %+v", le)
+		}
 	}
 
 	if le.Pid < 0 {
 		return fmt.Errorf("invalid pid: %+v", le)
-	}
-
-	if le.Level == "" {
-		return fmt.Errorf("missing log level: %+v", le)
-	}
-
-	if le.Source == "" {
-		return fmt.Errorf("missing component source: %+v", le)
-	}
-
-	if le.Name == "" {
-		return fmt.Errorf("missing component name: %+v", le)
 	}
 
 	// Note: le.Container and le.Sandbox cannot be checked since they are not
@@ -165,7 +167,7 @@ func (le LogEntry) Check() error {
 
 	for k, v := range m {
 		fields := strings.Fields(v)
-		if len(fields) != 1 {
+		if len(fields) > 1 {
 			return fmt.Errorf("field %q cannot be multi-word: %+v", k, le)
 		}
 	}

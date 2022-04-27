@@ -40,12 +40,13 @@ func TestLogEntryCheck(t *testing.T) {
 	assert := assert.New(t)
 
 	type testData struct {
-		le    LogEntry
-		valid bool
+		le        LogEntry
+		valid     bool
+		ignorable bool
 	}
 
 	data := []testData{
-		{LogEntry{}, false},
+		{LogEntry{}, false, false},
 
 		{
 			// No Filename
@@ -57,6 +58,7 @@ func TestLogEntryCheck(t *testing.T) {
 				Source: "source",
 				Name:   "name",
 			},
+			false,
 			false,
 		},
 
@@ -71,6 +73,7 @@ func TestLogEntryCheck(t *testing.T) {
 				Name:     "name",
 			},
 			false,
+			false,
 		},
 
 		{
@@ -83,6 +86,7 @@ func TestLogEntryCheck(t *testing.T) {
 				Source:   "source",
 				Name:     "name",
 			},
+			false,
 			false,
 		},
 
@@ -97,6 +101,7 @@ func TestLogEntryCheck(t *testing.T) {
 				Name:     "name",
 			},
 			false,
+			true,
 		},
 
 		{
@@ -110,6 +115,7 @@ func TestLogEntryCheck(t *testing.T) {
 				Name:     "name",
 			},
 			false,
+			true,
 		},
 
 		{
@@ -123,6 +129,7 @@ func TestLogEntryCheck(t *testing.T) {
 				Name:     "name",
 			},
 			false,
+			true,
 		},
 
 		{
@@ -136,6 +143,7 @@ func TestLogEntryCheck(t *testing.T) {
 				Source:   "source",
 			},
 			false,
+			true,
 		},
 
 		{
@@ -149,6 +157,7 @@ func TestLogEntryCheck(t *testing.T) {
 				Name:     "name",
 			},
 			true,
+			false,
 		},
 
 		{
@@ -162,13 +171,22 @@ func TestLogEntryCheck(t *testing.T) {
 				Name:     "name",
 			},
 			true,
+			false,
 		},
 	}
 
 	for i, d := range data {
-		err := d.le.Check()
-
+		// check that an error is raised when expected
+		err := d.le.Check(false)
 		if d.valid {
+			assert.NoErrorf(err, "test[%d]: %+v", i, d)
+		} else {
+			assert.Errorf(err, "test[%d]: %+v", i, d)
+		}
+
+		// check that the error is ignored when asked to
+		err = d.le.Check(true)
+		if d.valid || d.ignorable {
 			assert.NoErrorf(err, "test[%d]: %+v", i, d)
 		} else {
 			assert.Errorf(err, "test[%d]: %+v", i, d)

@@ -173,7 +173,7 @@ func handleLogFiles(c *cli.Context) (err error) {
 		return err
 	}
 
-	entries, err := parseLogFiles(files)
+	entries, err := parseLogFiles(files, c.GlobalBool("ignore-missing-fields"))
 	if err != nil {
 		return err
 	}
@@ -307,6 +307,10 @@ func main() {
 		cli.BoolFlag{
 			Name:  "error-if-no-records",
 			Usage: "error if all logfiles are empty",
+		},
+		cli.BoolFlag{
+			Name:  "ignore-missing-fields",
+			Usage: "do not make an error for lines with no pid, source, name, or level",
 		},
 		cli.BoolFlag{
 			Name:  "list-output-formats",

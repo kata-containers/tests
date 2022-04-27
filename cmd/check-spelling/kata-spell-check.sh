@@ -28,6 +28,8 @@ fi
 self_dir=$(dirname "$(readlink -f "$0")")
 cidir="${self_dir}/../../.ci"
 
+source "${cidir}/lib.sh"
+
 # Directory containing word lists.
 #
 # Each file in this directory must:
@@ -77,25 +79,6 @@ kata_dict_ref="${KATA_DICT_DIR}/${KATA_DICT_NAME}"
 # "directory and name prefix" and which must also be the first specified
 # dictionary.
 dict_languages="${kata_dict_ref},en_US,en_GB"
-
-die()
-{
-	local msg="$*"
-	echo >&2 "ERROR: $msg"
-	exit 1
-}
-
-info()
-{
-	local msg="$*"
-	echo "INFO: $msg"
-}
-
-warn()
-{
-	local msg="$*"
-	echo >&2 "WARNING: $msg"
-}
 
 make_dictionary()
 {

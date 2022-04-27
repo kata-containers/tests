@@ -12,13 +12,13 @@ set -o pipefail
 cidir=$(dirname "$0")
 source "${cidir}/../lib/common.bash"
 
-KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
+USE_DEVMAPPER="${USE_DEVMAPPER:-false}"
 
 containerd_config_dir="/etc/containerd"
 containerd_config_file="${containerd_config_dir}/config.toml"
 
-if [ "$KATA_HYPERVISOR" != "firecracker" ]; then
-	echo "WARNING: Devicemapper configuration is only for Firecracker. Exiting"
+if [ "$USE_DEVMAPPER" != "true" ]; then
+	echo "WARNING: Devicemapper configuration was not explicitly required. Exiting"
 	exit 0
 fi
 

@@ -9,18 +9,8 @@ FS=""
 MNT_DIR=""
 SIZE=""
 
-die() {
-	echo "ERROR: $*" >&2
-	exit 1
-}
-
-warn() {
-	echo -e "WARNING: $*" >&2
-}
-
-info() {
-	echo -e "INFO: $*"
-}
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${script_dir}/../../lib/common.bash"
 
 help() {
 cat << EOF
