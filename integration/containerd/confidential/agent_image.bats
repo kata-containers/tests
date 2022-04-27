@@ -30,6 +30,12 @@ skip_if_skopeo_not_present () {
 # 	the developer, to decide how to set debug flags.
 #
 create_test_pod() {
+
+# DEbug, check the config before and after setting debug
+	echo "Config before"
+	load_RUNTIME_CONFIG_PATH
+	cat $RUNTIME_CONFIG_PATH
+
 	# On CI mode we only want to enable the agent debug for the case of
 	# the test failure to obtain logs.
 	if [ "${CI:-}" == "true" ]; then
@@ -38,6 +44,10 @@ create_test_pod() {
 		enable_full_debug
 		enable_agent_console
 	fi
+
+	echo "Config after"
+	load_RUNTIME_CONFIG_PATH
+	cat $RUNTIME_CONFIG_PATH
 
 	echo "Create the test sandbox"
 	crictl_create_cc_pod "$pod_config"
