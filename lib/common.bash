@@ -7,6 +7,9 @@
 # This file contains common functions that
 # are being used by our metrics and integration tests
 
+_script_dir=$(dirname "${BASH_SOURCE[0]}")
+source "${_script_dir}/error.sh"
+
 # Place where virtcontainers keeps its active pod info
 VC_POD_DIR="${VC_POD_DIR:-/run/vc/sbs}"
 
@@ -28,9 +31,44 @@ KATA_TESTS_CACHEDIR="${KATA_TESTS_CACHEDIR:-${KATA_TESTS_BASEDIR}/cache}"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 experimental_qemu="${experimental_qemu:-false}"
 
+# Display a message to stderr, a dump of lots of useful debug
+# information (including a full stacktrace) and exit 1.
 die() {
 	local msg="$*"
-	echo -e "[$(basename $0):${BASH_LINENO[0]}] ERROR: $msg" >&2
+
+	if [ -z "${KATA_TEST_VERBOSE:-}" ] && [ -z "${CI:-}" ]
+	then
+		echo -e "[$(basename $0):${BASH_LINENO[0]}] ERROR: $msg" >&2
+		exit 1
+	fi
+
+	echo >&2 "ERROR: $msg"
+
+	# We are running in the CI or the user has requested verbose
+	# failure details, so dump as much information about
+	# the environment that generated the failure as possible.
+
+	# This function is called to indicate a fatal error occurred, so
+	# the caller of this function is the site of the detected error.
+	local error_location
+	error_location=$(caller 0)
+
+	local line
+	local func
+	local file
+
+	line=$(echo "$error_location"|awk '{print $1}')
+	func=$(echo "$error_location"|awk '{print $2}')
+	file=$(echo "$error_location"|awk '{print $3}')
+
+	local path
+	path=$(resolve_path "$file")
+
+	dump_details \
+		"${line}" \
+		"${func}" \
+		"${path}"
+
 	exit 1
 }
 
@@ -52,7 +90,7 @@ handle_error() {
 }
 trap 'handle_error $LINENO' ERR
 
-waitForProcess(){
+waitForProcess() {
 	wait_time="$1"
 	sleep_time="$2"
 	cmd="$3"
@@ -71,7 +109,7 @@ waitForProcess(){
 # Kata runtime. Of course, the end user can choose any name they
 # want in reality, but this function knows the names of the default
 # and recommended Kata docker runtime install names.
-is_a_kata_runtime(){
+is_a_kata_runtime() {
 	if [ "$1" = "containerd-shim-kata-v2" ] || [ "$1" = "io.containerd.kata.v2" ]; then
 		echo "1"
 	else
@@ -81,7 +119,7 @@ is_a_kata_runtime(){
 
 
 # Try to find the real runtime path for the docker runtime passed in $1
-get_docker_kata_path(){
+get_docker_kata_path() {
 	local jpaths=$(sudo docker info --format "{{json .Runtimes}}" || true)
 	local rpath=$(jq .\"$1\".path <<< "$jpaths")
 	# Now we have to de-quote it..
@@ -92,7 +130,7 @@ get_docker_kata_path(){
 
 # Gets versions and paths of all the components
 # list in kata-env
-extract_kata_env(){
+extract_kata_env() {
 	RUNTIME_CONFIG_PATH=$(kata-runtime kata-env --json | jq -r .Runtime.Config.Path)
 	RUNTIME_VERSION=$(kata-runtime kata-env --json | jq -r .Runtime.Version | grep Semver | cut -d'"' -f4)
 	RUNTIME_COMMIT=$(kata-runtime kata-env --json | jq -r .Runtime.Version | grep Commit | cut -d'"' -f4)
