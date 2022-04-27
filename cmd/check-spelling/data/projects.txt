@@ -37,6 +37,7 @@ Jaeger/B
 Jenkins/B
 Jupyter/B
 journald/B
+jq/B
 Kata/B
 Kibana/B
 Kubelet/B
