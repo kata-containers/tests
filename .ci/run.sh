@@ -37,7 +37,7 @@ case "${CI_JOB}" in
 		echo "INFO: Running QAT integration test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make qat"
 		;;
-	"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S"|"CRI_CONTAINERD_K8S_DEVMAPPER"|"CC_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_CLOUD_HYPERVISOR")
+	"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S"|"CRI_CONTAINERD_K8S_DEVMAPPER"|"CC_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_CLOUD_HYPERVISOR"|"CC_SKOPEO_CRI_CONTAINERD"|"CC_SKOPEO_CRI_CONTAINERD_CLOUD_HYPERVISOR")
 		echo "INFO: Running nydus test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make nydus"
 		echo "INFO: Running stability test"
@@ -60,14 +60,10 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make monitor"
 		echo "INFO: Running tracing test"
 		sudo -E PATH="$PATH" bash -c "make tracing"
-		if [[ "${CI_JOB}" =~ CC_CRI_CONTAINERD ]]; then
+		if [[ "${CI_JOB}" =~ CC_CRI_CONTAINERD ]] || [[ "${CI_JOB}" =~ CC_SKOPEO_CRI_CONTAINERD ]]; then
 			echo "INFO: Running Confidential Container tests"
 			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-containerd"
 		fi
-		;;
-	"CC_CRI_CONTAINERD"|"CC_SKOPEO_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_CLOUD_HYPERVISOR"|"CC_SKOPEO_CRI_CONTAINERD_CLOUD_HYPERVISOR")
-		echo "INFO: Running Confidential Container tests"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-containerd"
 		;;
 	"CRIO_K8S")
 		echo "INFO: Running kubernetes tests"
