@@ -31,6 +31,8 @@ CONTAINER_IMAGE="quay.io/prometheus/busybox:latest"
 
 TRACE_LOG_DIR=${TRACE_LOG_DIR:-${KATA_TESTS_LOGDIR}/traces}
 
+KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
+
 # tmux(1) session to run the trace forwarder in
 KATA_TMUX_FORWARDER_SESSION="kata-trace-forwarder-session"
 
@@ -38,6 +40,11 @@ katacontainers_repo_dir="$GOPATH/src/github.com/kata-containers/kata-containers"
 
 forwarder_dir="${katacontainers_repo_dir}/src/tools/trace-forwarder"
 forwarder_binary_name="kata-trace-forwarder"
+
+# path prefix for CLH socket path
+socket_path_prefix="/run/vc/vm/"
+
+container_id="tracing-test"
 
 jaeger_server=${jaeger_server:-localhost}
 jaeger_ui_port=${jaeger_ui_port:-16686}
@@ -87,7 +94,7 @@ cleanup()
 create_traces()
 {
 	sudo ctr image pull "$CONTAINER_IMAGE"
-	sudo ctr run --runtime "$RUNTIME" --rm "$CONTAINER_IMAGE" tracing-test true
+	sudo ctr run --runtime "$RUNTIME" --rm "$CONTAINER_IMAGE" "$container_id" true
 }
 
 start_jaeger()
@@ -256,7 +263,18 @@ run_trace_forwarder()
 	source "$HOME/.cargo/env"
 	command -v "$forwarder_binary_name" &>/dev/null || (cd "$forwarder_dir" && cargo install --path .)
 
-	tmux new-session -d -s "$KATA_TMUX_FORWARDER_SESSION" "$forwarder_binary_name -l trace"
+	if [ $KATA_HYPERVISOR = "qemu" ]; then
+		tmux new-session -d -s "$KATA_TMUX_FORWARDER_SESSION" "$forwarder_binary_name -l trace"
+	elif [ $KATA_HYPERVISOR = "cloud-hypervisor" ]; then
+		# CLH uses hybrid VSOCK which uses a local UNIX socket that we need to specify
+		socket_path_template=$socket_path_prefix$(sudo kata-runtime env --json | jq '.Hypervisor.SocketPath')
+		socket_path=$(echo "$socket_path_template" | sed "s/{ID}/${container_id}/g" | tr -d '"')
+		sudo mkdir -p $(dirname "$socket_path")
+
+		tmux new-session -d -s "$KATA_TMUX_FORWARDER_SESSION" "$forwarder_binary_name -l trace --socket-path $socket_path"
+	else
+		die "Unsupported hypervisor $KATA_HYPERVISOR"
+	fi
 
 	info "Verifying trace forwarder in tmux session $KATA_TMUX_FORWARDER_SESSION"
 
