@@ -8,17 +8,13 @@
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
 TEST_INITRD="${TEST_INITRD:-no}"
-issue="https://github.com/kata-containers/runtime/issues/1127"
-memory_issue="https://github.com/kata-containers/runtime/issues/1249"
 
+# Not working on ARM CI see https://github.com/kata-containers/tests/issues/4727  
 setup() {
-	skip "test not working see: ${issue}, ${memory_issue}"
 	get_pod_config_dir
 }
 
 @test "Guaranteed QoS" {
-	skip "test not working see: ${issue}, ${memory_issue}"
-
 	pod_name="qos-test"
 
 	# Create pod
@@ -32,8 +28,6 @@ setup() {
 }
 
 @test "Burstable QoS" {
-	skip "test not working see: ${issue}, ${memory_issue}"
-
 	pod_name="burstable-test"
 
 	# Create pod
@@ -47,7 +41,6 @@ setup() {
 }
 
 @test "BestEffort QoS" {
-	skip "test not working see: ${issue}, ${memory_issue}"
 	pod_name="besteffort-test"
 
 	# Create pod
@@ -61,6 +54,5 @@ setup() {
 }
 
 teardown() {
-	skip "test not working see: ${issue}, ${memory_issue}"
 	kubectl delete pod "$pod_name"
 }

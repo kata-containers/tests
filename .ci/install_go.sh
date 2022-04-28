@@ -24,15 +24,6 @@ finish() {
 	rm -rf "$tmp_dir"
 }
 
-die() {
-	echo >&2 "ERROR: $*"
-	exit 1
-}
-
-info() {
-	echo "INFO: $*"
-}
-
 usage(){
 	exit_code="$1"
 	cat <<EOF

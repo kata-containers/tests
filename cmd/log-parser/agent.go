@@ -122,7 +122,24 @@ func unpackAgentLogEntry_v2(le LogEntry) (agent LogEntry, err error) {
 		case "container-id", "cid": // better to ensure consistency in the agent
 			agent.Container = v
 		case "level":
-			agent.Level = strings.ToLower(v)
+			switch v {
+			// match agent's slog short version log leveling to the common log levels
+			case "CRIT":
+				agent.Level = "critical"
+			case "DEBG":
+				agent.Level = "debug"
+			case "ERRO":
+				agent.Level = "error"
+			case "INFO":
+				agent.Level = "info"
+			case "TRCE":
+				agent.Level = "trace"
+			case "WARN":
+				agent.Level = "warning"
+			default:
+				agent.Level = v
+			}
+			agent.Data[k] = v // in any case let's leave original level under Data
 		case "msg":
 			agent.Msg = v
 		case "name":
