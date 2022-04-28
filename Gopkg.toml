@@ -44,10 +44,6 @@ ignored = ["github.com/kata-containers/tests/kata-webhook"]
   revision = "a368813c5e648fee92e5f6c30e3944ff9d5e8895"
 
 [[constraint]]
-  name = "github.com/go-logfmt/logfmt"
-  version = "0.3.0"
-
-[[constraint]]
   branch = "v2"
   name = "gopkg.in/yaml.v2"
 

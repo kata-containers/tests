@@ -25,22 +25,6 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:341a7df38da99fe91ed40e4008c13cc5d02dcc98ed1a094360cb7d5df26d6d26"
-  name = "github.com/go-logfmt/logfmt"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "390ab7935ee28ec6b286364bba9b4dd6410cb3d5"
-  version = "v0.3.0"
-
-[[projects]]
-  branch = "main"
-  digest = "1:75fbd1bce89035c6135ff3ff82b54fd2d567f301a7a4c919e3a17a75bbb0b78b"
-  name = "github.com/kr/logfmt"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "19f9bcb100e6bcb308b5db29c682de01e9b3f2e6"
-
-[[projects]]
   digest = "1:bb1047e0027b4e54b050634aa741d3d9fe4f026ccefb5d31f2c07a5f651ae125"
   name = "github.com/mattn/go-runewidth"
   packages = ["."]
@@ -161,7 +145,6 @@
   analyzer-version = 1
   input-imports = [
     "github.com/BurntSushi/toml",
-    "github.com/go-logfmt/logfmt",
     "github.com/montanaflynn/stats",
     "github.com/olekukonko/tablewriter",
     "github.com/pkg/errors",

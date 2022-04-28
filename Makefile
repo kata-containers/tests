@@ -93,9 +93,6 @@ cc-containerd:
 	@echo "No Confidential Containers tests to run yet. Do nothing."
 #	bash integration/containerd/confidential/run_tests.sh
 
-log-parser:
-	make -C cmd/log-parser
-
 qat:
 	bash integration/qat/qat_test.sh
 
@@ -115,7 +112,7 @@ pmem:
 
 test: ${UNION}
 
-check: checkcommits log-parser
+check: checkcommits
 
 $(INSTALL_TARGETS): install-%: .ci/install_%.sh
 	@bash -f $<
@@ -153,7 +150,6 @@ help:
 	$(INSTALL_TARGETS) \
 	kubernetes \
 	list-install-targets \
-	log-parser \
 	qat \
 	rootless \
 	sandbox-cgroup \
