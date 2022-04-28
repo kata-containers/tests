@@ -9,6 +9,14 @@
   revision = "a368813c5e648fee92e5f6c30e3944ff9d5e8895"
 
 [[projects]]
+  digest = "1:7cb4fdca4c251b3ef8027c90ea35f70c7b661a593b9eeae34753c65499098bb1"
+  name = "github.com/cpuguy83/go-md2man"
+  packages = ["md2man"]
+  pruneopts = "NUT"
+  revision = "7762f7e404f8416dfa1d9bb6a8c192aa9acb4d19"
+  version = "v1.0.10"
+
+[[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
@@ -25,28 +33,20 @@
   version = "v0.3.0"
 
 [[projects]]
-  digest = "1:58999a98719fddbac6303cb17e8d85b945f60b72f48e3a2df6b950b97fa926f1"
-  name = "github.com/konsorten/go-windows-terminal-sequences"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "f55edac94c9bbba5d6182a4be46d86a2c9b5b50e"
-  version = "v1.0.2"
-
-[[projects]]
-  branch = "master"
-  digest = "1:f91bb67d051a94cf6ab2cf07eee0550432afc31655838d42cdec258db4b348f0"
+  branch = "main"
+  digest = "1:75fbd1bce89035c6135ff3ff82b54fd2d567f301a7a4c919e3a17a75bbb0b78b"
   name = "github.com/kr/logfmt"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "b84e30acd515aadc4b783ad4ff83aff3299bdfe0"
+  revision = "19f9bcb100e6bcb308b5db29c682de01e9b3f2e6"
 
 [[projects]]
-  digest = "1:70ef8268170621826f8c111ac1674afe75136f526f449453b4a6631c6dba1946"
+  digest = "1:bb1047e0027b4e54b050634aa741d3d9fe4f026ccefb5d31f2c07a5f651ae125"
   name = "github.com/mattn/go-runewidth"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "3ee7d812e62a0804a7d0a324e0249ca2db3476d3"
-  version = "v0.0.4"
+  revision = "df1ff59654317c1b5a3f860ffc47402931932104"
+  version = "v0.0.13"
 
 [[projects]]
   digest = "1:76c75adacf9772de879180a7ede189bd780a9345e64d4919bf09e63d74db0b25"
@@ -58,11 +58,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:9d4ba69e461789bec7792301cd2be0eb1d8378a045503d2fcfaa05d002a3380d"
+  digest = "1:d9525dd067d582d9b12dcb482b39f8e2168d1b78d0e15ed66597366c835b4153"
   name = "github.com/olekukonko/tablewriter"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "cc27d85e17cec9768d2ac401ea5d619a9628f16d"
+  revision = "74c60be0ef6886d331ebc3c91b2ac0a7971715b6"
 
 [[projects]]
   digest = "1:4047c378584616813d610c9f993bf90dd0d07aed8d94bd3bc299cd35ececdcba"
@@ -81,60 +81,80 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:debf1a119378d059b68925f1796851b6855bfc2f55419a50d634ecce3eabd8e8"
-  name = "github.com/shurcooL/sanitized_anchor_name"
+  digest = "1:e644b02192accfca6f351cf2611df249d502ab75f8cebb2e8b3976a3d6ee75f8"
+  name = "github.com/rivo/uniseg"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "7bfe4c7ecddb3666a94b053b422cdd8f5aaa3615"
-  version = "v1.0.0"
+  revision = "75711fccf6a3e85bc74c241e2dddd06a9bc9e53d"
+  version = "v0.2.0"
 
 [[projects]]
-  digest = "1:f4aaa07a6c33f2b354726d0571acbc8ca118837c75709f6353203ae1a3f8eeab"
+  digest = "1:535f9896eaaf22edc433752ef7fa4b14fa95cb660c0515d8d0c78543bd7eb8c3"
+  name = "github.com/russross/blackfriday"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "e96880f42b9343aea6cbfd99693adae0e5fe2b2a"
+  version = "v1.6.0"
+
+[[projects]]
+  digest = "1:646b10bb9a4bdcdfc7e075d7869706db6a0fce6f56c961459070ed0ed2ed8f2f"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "839c75faf7f98a33d445d181f3018b5c3409a45e"
-  version = "v1.4.2"
+  revision = "bdc0db8ead3853c56b7cd1ac2ba4e11b47d7da6b"
+  version = "v1.8.1"
 
 [[projects]]
-  digest = "1:42e8c2456d7ec0f31e182c20022e74324c4da2cb3bd9069ff9b131fe33466308"
+  digest = "1:22f859910f432368b4deb1e8603173a73ed8862440bd1d8b8e32bc0e1d4d2c98"
   name = "github.com/stretchr/testify"
   packages = ["assert"]
   pruneopts = "NUT"
-  revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
-  version = "v1.3.0"
+  revision = "083ff1c0449867d0d8d456483ee5fab8e0c0e1e6"
+  version = "v1.7.1"
 
 [[projects]]
-  digest = "1:5dba68a1600a235630e208cb7196b24e58fcbb77bb7a6bec08fcd23f081b0a58"
+  digest = "1:d80823ed6d6962d7fbbc97153fc99fe9f6c52b043997c6dcb310b0d7d38dc8f7"
   name = "github.com/urfave/cli"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
-  version = "v1.20.0"
+  revision = "bfe2e925cfb6d44b40ad3a779165ea7e8aff9212"
+  version = "v1.22.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:f0e486d15b5a132c07e04667a73b9eddeac7c626b5d9edee36cca1148be9184c"
+  digest = "1:9a8e95be69405447653d193bc537d31fca1f5eda88ab4be67f62e7d49fa146e1"
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = [
+    "internal/unsafeheader",
+    "unix",
+    "windows",
+  ]
   pruneopts = "NUT"
-  revision = "1393eb0183657fb29200106b17a5042ec6e48dbe"
+  revision = "b5fbb4746d327e73f1732c57f1fb31249586f8aa"
 
 [[projects]]
-  digest = "1:926cba3a3c1cddfcfad996917e5d72fb4726536dbdc7264fa936e8c99890e558"
+  digest = "1:aeee68a633075121563e38ff52f5b045f62117db4099e80753e53e8705ff6c29"
   name = "gopkg.in/russross/blackfriday.v2"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "d3b5b032dc8e8927d31a5071b56e14c89f045135"
-  version = "v2.0.1"
+  revision = "4c9bf9512682b995722660a4196c0013228e2049"
+  version = "v2.1.0"
 
 [[projects]]
   branch = "v2"
-  digest = "1:1d7dce90c23a254fb19aeff938f84b86db5ae412c1246d6a15e0b210744524d4"
+  digest = "1:0b74852e34746033bb64ec0b21c16a4952917bdaf344446a1682f101c042e610"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "7b8349ac747c6a24702b762d2c4fd9266cf4f1d6"
+  revision = "7649d4548cb53a614db133b2a8ac1f31859dda8c"
+
+[[projects]]
+  branch = "v3"
+  digest = "1:7f943028086d549b7f99ecad153e416e4726538768d663277f3c272f93ffb1c2"
+  name = "gopkg.in/yaml.v3"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "496545a6307b2a7d7a710fd516e5e16e8ab62dbc"
 
 [solve-meta]
   analyzer-name = "dep"
