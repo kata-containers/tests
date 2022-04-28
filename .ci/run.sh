@@ -44,6 +44,10 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
 		echo "INFO: Containerd checks"
 		sudo -E PATH="$PATH" bash -c "make cri-containerd"
+		if [[ "${CI_JOB}" =~ CC_CRI_CONTAINERD ]] || [[ "${CI_JOB}" =~ CC_SKOPEO_CRI_CONTAINERD ]]; then
+			echo "INFO: Running Confidential Container tests"
+			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-containerd"
+		fi
 		[[ "${CI_JOB}" =~ K8S ]] && \
 			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
 		echo "INFO: Running vcpus test"
@@ -60,10 +64,6 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make monitor"
 		echo "INFO: Running tracing test"
 		sudo -E PATH="$PATH" bash -c "make tracing"
-		if [[ "${CI_JOB}" =~ CC_CRI_CONTAINERD ]] || [[ "${CI_JOB}" =~ CC_SKOPEO_CRI_CONTAINERD ]]; then
-			echo "INFO: Running Confidential Container tests"
-			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-containerd"
-		fi
 		;;
 	"CRIO_K8S")
 		echo "INFO: Running kubernetes tests"
