@@ -7,15 +7,12 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
-issue="https://github.com/kata-containers/tests/issues/1746"
 
 setup() {
-	skip "test not working see: ${issue}"
 	get_pod_config_dir
 }
 
 @test "Run a job to completion" {
-	skip "test not working see: ${issue}"
 	job_name="job-pi-test"
 
 	# Create job
@@ -37,7 +34,6 @@ setup() {
 }
 
 teardown() {
-	skip "test not working see: ${issue}"
 	kubectl delete pod "$pod_name"
 	# Verify that pod is not running
 	run kubectl get pods
