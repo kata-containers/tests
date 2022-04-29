@@ -1063,22 +1063,31 @@ stop_local_agent()
 		"${cmds[@]}"
 }
 
-# Doesn't fail. Instead it will return the empty string on error.
-get_agent_vsock_address_simple()
+get_addresses()
 {
-	local addresses
+	local addresses=
 
 	if [ $configured_hypervisor = "qemu" ]; then
-	        addresses=$(ss -Hp --vsock |\
+                addresses=$(ss -Hp --vsock |\
                         egrep -v "\<socat\>" |\
                         awk '$2 ~ /^ESTAB$/ {print $6}' |\
                         grep ":${EXPECTED_VSOCK_PORT}$")
 	elif [ $configured_hypervisor = "cloud-hypervisor" ]; then
-		# since we preconfigured the socket, we are checking to see if it is reported
-		addresses=$(ss -Hp |\
-			grep "${clh_socket_path}" |\
-			awk '$2 ~ /^ESTAB$/ {print $5}')
+                # since we preconfigured the socket, we are checking to see if it is reported
+                addresses=$(ss -Hp |\
+                        grep "${clh_socket_path}" |\
+                        awk '$2 ~ /^ESTAB$/ {print $5}')
+	else
+		die "Cannot retrieve address, unknown hypervisor: '$configured_hypervisor'"
 	fi
+
+	echo ${addresses}
+}
+
+# Doesn't fail. Instead it will return the empty string on error.
+get_agent_vsock_address_simple()
+{
+	local addresses=$(get_addresses)
 
 	[ -z "$addresses" ] && return 1
 
@@ -1109,19 +1118,7 @@ get_agent_vsock_address_simple()
 
 get_agent_vsock_address()
 {
-	local addresses
-
-	if [ $configured_hypervisor = "qemu" ]; then
-		addresses=$(ss -Hp --vsock |\
-			egrep -v "\<socat\>" |\
-			awk '$2 ~ /^ESTAB$/ {print $6}' |\
-			grep ":${EXPECTED_VSOCK_PORT}$")
-	elif [ $configured_hypervisor = "cloud-hypervisor" ]; then
-		# since we preconfigured the socket, we are checking to see if it is reported
-		addresses=$(ss -Hp |\
-			grep "${clh_socket_path}" |\
-			awk '$2 ~ /^ESTAB$/ {print $5}')
-	fi
+	local addresses=$(get_addresses)
 
 	[ -z "$addresses" ] && die "no VSOCK connections found"
 
@@ -1511,20 +1508,7 @@ run_agent()
 					"$ctl_log_file" \
 					"$agent_log_file"
 
-				local addresses=
-
-				if [ $configured_hypervisor = "qemu" ]; then
-					addresses=$(ss -Hp --vsock |\
-						egrep -v "\<socat\>" |\
-						awk '$2 ~ /^ESTAB$/ {print $6}' |\
-						grep ":${EXPECTED_VSOCK_PORT}$" \
-						|| true)
-				elif [ $configured_hypervisor = "cloud-hypervisor" ]; then
-					addresses=$(ss -Hp |\
-						grep "${clh_socket_path}" |\
-						awk '$2 ~ /^ESTAB$/ {print $5}' \
-						|| true)
-				fi
+				local addresses=$(get_addresses || true)
 
 				[ -z "$addresses" ] || \
 					die "found unexpected vsock addresses: '$addresses'"
