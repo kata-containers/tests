@@ -108,7 +108,7 @@ tracing: agent-shutdown
 	bash tracing/tracing-test.sh
 
 vcpus:
-	bash -f integration/vcpus/default_vcpus_test.sh
+	bash -f functional/vcpus/default_vcpus_test.sh
 
 pmem:
 	bash -f integration/pmem/pmem_test.sh
