@@ -124,7 +124,7 @@ list-install-targets:
 	@echo $(INSTALL_TARGETS) | tr " " "\n"
 
 rootless:
-	bash -f integration/rootless/rootless_test.sh
+	bash -f functional/rootless/rootless_test.sh
 
 vfio:
 #	Skip: Issue: https://github.com/kata-containers/kata-containers/issues/1488
