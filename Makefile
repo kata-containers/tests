@@ -66,7 +66,7 @@ kubernetes-e2e:
 	bash ./run.sh
 
 sandbox-cgroup:
-	bash -f integration/sandbox_cgroup/sandbox_cgroup_test.sh
+	bash -f functional/sandbox_cgroup/sandbox_cgroup_test.sh
 
 stability:
 	cd integration/stability && \
