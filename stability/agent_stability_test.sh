@@ -46,8 +46,10 @@ function exec_loop {
 }
 
 function teardown {
+	echo "Ending stability test"
 	clean_env_ctr
 }
+trap teardown EXIT
 
 echo "Starting stability test"
 setup
@@ -56,6 +58,3 @@ echo "Running stability test"
 while [[ $end_time > $(date +%s) ]]; do
 	exec_loop
 done
-
-echo "Ending stability test"
-teardown
