@@ -133,7 +133,7 @@ vfio:
 	bash -f functional/vfio/run.sh -s false -p qemu -m q35 -i image
 	bash -f functional/vfio/run.sh -s true -p qemu -m q35 -i image
 
-agent: bash -f integration/agent/agent_test.sh
+agent: bash -f functional/agent/agent_test.sh
 
 monitor:
 	bash -f functional/kata-monitor/run.sh
