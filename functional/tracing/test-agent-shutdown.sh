@@ -894,7 +894,7 @@ wait_for_kata_vm_agent_to_start()
 	[ -z "$log_file" ] && die "need container ID"
 
 	# First, check the containerd status of the container
-	local cmd="sudo ctr c list -q | grep -q \"^${cid}\""
+	local cmd="sudo ctr task list | grep \"${cid}\" | grep -q \"RUNNING\""
 
 	info "Waiting for VM to start (cid: '$cid')"
 
