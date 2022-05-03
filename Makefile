@@ -157,6 +157,7 @@ help:
 	qat \
 	rootless \
 	sandbox-cgroup \
+	stability \
 	static-checks \
 	test \
 	tracing \
