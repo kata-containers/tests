@@ -100,12 +100,12 @@ qat:
 	bash integration/qat/qat_test.sh
 
 agent-shutdown:
-	bash tracing/test-agent-shutdown.sh
+	bash functional/tracing/test-agent-shutdown.sh
 
 # Tracing requires the agent to shutdown cleanly,
 # so run the shutdown test first.
 tracing: agent-shutdown
-	bash tracing/tracing-test.sh
+	bash functional/tracing/tracing-test.sh
 
 vcpus:
 	bash -f functional/vcpus/default_vcpus_test.sh

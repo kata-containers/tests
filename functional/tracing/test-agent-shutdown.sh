@@ -41,7 +41,7 @@ set -o pipefail
 set -o errtrace
 
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
-source "${SCRIPT_PATH}/../.ci/lib.sh"
+source "${SCRIPT_PATH}/../../.ci/lib.sh"
 
 CTR_RUNTIME=${CTR_RUNTIME:-"io.containerd.kata.v2"}
 
@@ -757,7 +757,7 @@ setup()
 		exit 0
 	}
 
-	"${SCRIPT_PATH}/../.ci/install_rust.sh" && source "$HOME/.cargo/env"
+	"${SCRIPT_PATH}/../../.ci/install_rust.sh" && source "$HOME/.cargo/env"
 
 	trap cleanup EXIT
 
