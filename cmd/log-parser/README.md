@@ -6,8 +6,8 @@
 system components, sorts them by timestamp, and re-displays the log entries. A
 time delta is added to show how much time has elapsed between each log entry.
 
-The tool also checks the validity of all log records, can re-format the logs,
-and output them in a different format.
+The tool is also able to check the validity of all log records, can re-format the
+logs, and output them in a different format.
 
 For more information on the `kata-log-parser` tool, use the help command:
 
@@ -21,7 +21,8 @@ The tool reads logfiles in the [`logfmt`](https://brandur.org/logfmt) structured
 logging format. For example, a logfile created by the golang
 [Logrus](https://godoc.org/github.com/sirupsen/logrus) package.
 
-The tool requires that the following fields are defined for each log record:
+By default the tool requires that the following fields are defined for each log
+record:
 
 - Log level field (`level`): must be one of the Logrus `LogLevel` values
   in string format (e.g. `debug`, `info`, `error`).
@@ -43,6 +44,8 @@ Additional to the fields above, the tool also expects the following field:
 - Message field (`msg`): a textual message allowing log records to be
   disambiguated.
 
+**Note:** These requirements can be ignored by using the `--ignore-missing-fields` flag
+
 ## Component logfiles
 
 The primary logfiles the tool reads are:
@@ -50,7 +53,8 @@ The primary logfiles the tool reads are:
 - The [runtime](https://github.com/kata-containers/kata-containers/tree/main/src/runtime) log.
 
   This log also includes
-  [virtcontainers](https://github.com/containers/virtcontainers) log entries.
+  [virtcontainers](https://github.com/containers/virtcontainers) log entries and
+  [agent](https://github.com/kata-containers/kata-containers/tree/main/src/agent) best effort logs unpacking (unless `--no-agent-unpack` is specified)
 
 ## Usage
 
@@ -65,15 +69,9 @@ To merge all logs:
    ```
 1. Create a container.
 1. Collect the logs.
-    1. Save the runtime log:
-       ```
-       $ sudo journalctl -q -o cat -a -t kata-runtime > ./runtime.log
-       ```
-    1. Save the throttler logs:
-       ```
-       $ sudo journalctl -q -o cat -a -u kata-vc-throttler | grep ^time= > ./vc-throttler.log
-       $ sudo journalctl -q -o cat -a -u kata-ksm-throttler | grep ^time= > ./ksm-throttler.log
-       ```
+   ```
+   $ sudo journalctl -q -o cat -a -t kata > ./kata.log
+   ```
 1. Ensure the logs are readable:
    ```
    $ sudo chown $USER *.log
@@ -85,5 +83,27 @@ To merge all logs:
    ```
 1. To run the program:
    ```
-   $ kata-log-parser runtime.log vc-throttler.log ksm-throttler.log
+   $ kata-log-parser kata.log
    ```
+
+### Advanced processing using jq
+
+[jq](https://stedolan.github.io/jq/) is a command-line JSON processor which can be combined with `kata-log-parser`
+to filter and fetch specific log entries.
+
+#### Examples
+
+##### Get only the raw guest console output
+```
+$ kata-log-parser --ignore-missing-fields --output-format json --no-agent-unpack kata.log | jq '.Entries[] | select(.Msg=="reading guest console") | .Data.vmconsole'
+```
+##### Get only the agent's unpacked log entries
+This example also demonstrates how to get logs from the journal directly to the parser.
+```
+$ journalctl -q -o cat -a -t kata | kata-log-parser --ignore-missing-fields --output-format json - | jq '.Entries[] | select(.Source=="agent")'
+```
+##### Get only certain `Sandbox` ID logs
+These logs sourced from `containerd-kata-shim-v2` and being printed along with their `Msg` content, `Time` and `Container` ID.
+```
+$ kata-log-parser --ignore-missing-fields --output-format json kata.log  | jq '.Entries[] | select(.Source=="containerd-kata-shim-v2" and .Sandbox=="2fa50251ccc3b9a85350e8fe6836d1875023714153b503b548360946fcec3829") | "\(.Msg) \(.Time) \(.Container)"'
+```
