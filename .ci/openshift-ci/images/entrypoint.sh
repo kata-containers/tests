@@ -130,7 +130,7 @@ rsync -O -a . "$HOST_MOUNT"
 # Ensure the binaries are searcheable via PATH. Notice it expects that
 # kata has been built with PREFIX=/opt/kata.
 #
-chroot "$HOST_MOUNT" sh -c 'for t in /opt/kata/bin/*; do ln -s "$t" /var/usrlocal/bin/; done'
+chroot "$HOST_MOUNT" sh -c 'for t in /opt/kata/bin/*; do ln --force -s "$t" /var/usrlocal/bin/; done'
 
 # Check the installation is good (or not).
 echo "INFO: run kata-check to check the installation is fine"
