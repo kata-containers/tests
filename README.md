@@ -92,6 +92,19 @@ else
 fi
 ```
 
+### Display verbose failure details
+
+By default, when scripts in this repository fail, they display an
+error message to `stderr` and return `1` (failure) to the shell.
+However, when [called by the CI](#detecting-a-ci-system), the scripts
+will also dump a full stack trace and some environment details to `stderr`.
+
+To force this behaviour outside of a CI environment, ensure the variable below is set:
+
+```bash
+export KATA_TEST_VERBOSE=true
+```
+
 ### Breaking Compatibility
 
 In case the patch you submit breaks the CI because it needs to be tested
