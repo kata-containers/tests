@@ -85,6 +85,10 @@ shimv2:
 cri-containerd:
 	bash integration/containerd/cri/integration-tests.sh
 
+# Run confidential guest tests.
+confidential-guest:
+	bash functional/confidential-guest/run.sh
+
 # Run the Confidential Containers tests for containerd.
 cc-containerd:
 # TODO: The Confidential Containers test aren't merged into main yet, so
@@ -149,6 +153,7 @@ help:
 .PHONY: \
 	check \
 	checkcommits \
+	confidential-guest \
 	crio \
 	$(INSTALL_TARGETS) \
 	kubernetes \
