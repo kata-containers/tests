@@ -12,7 +12,7 @@ set -o pipefail
 set -o errtrace
 
 script_path=$(dirname "$0")
-source "${script_path}/../../lib/common.bash"
+source "${script_path}/../../../lib/common.bash"
 source "${script_path}/lib/common-tdx.bash"
 
 tmp_dir=$(mktemp -d)
