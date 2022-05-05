@@ -70,7 +70,7 @@ kubernetes-e2e:
 	bash ./run.sh
 
 sandbox-cgroup:
-	bash -f integration/sandbox_cgroup/sandbox_cgroup_test.sh
+	bash -f functional/sandbox_cgroup/sandbox_cgroup_test.sh
 
 stability:
 	cd integration/stability && \
@@ -89,6 +89,14 @@ shimv2:
 cri-containerd:
 	bash integration/containerd/cri/integration-tests.sh
 
+# Run the Confidential Containers tests for containerd.
+cc-containerd:
+# TODO: The Confidential Containers test aren't merged into main yet, so
+# disable their execution. They should be enabled again at the point when
+# https://github.com/kata-containers/tests/issues/4628 is ready to be merged.
+	@echo "No Confidential Containers tests to run yet. Do nothing."
+#	bash integration/containerd/confidential/run_tests.sh
+
 log-parser:
 	make -C cmd/log-parser
 
@@ -104,7 +112,7 @@ tracing: agent-shutdown
 	bash tracing/tracing-test.sh
 
 vcpus:
-	bash -f integration/vcpus/default_vcpus_test.sh
+	bash -f functional/vcpus/default_vcpus_test.sh
 
 pmem:
 	bash -f integration/pmem/pmem_test.sh
@@ -120,7 +128,7 @@ list-install-targets:
 	@echo $(INSTALL_TARGETS) | tr " " "\n"
 
 rootless:
-	bash -f integration/rootless/rootless_test.sh
+	bash -f functional/rootless/rootless_test.sh
 
 vfio:
 #	Skip: Issue: https://github.com/kata-containers/kata-containers/issues/1488
@@ -129,7 +137,7 @@ vfio:
 	bash -f functional/vfio/run.sh -s false -p qemu -m q35 -i image
 	bash -f functional/vfio/run.sh -s true -p qemu -m q35 -i image
 
-agent: bash -f integration/agent/agent_test.sh
+agent: bash -f functional/agent/agent_test.sh
 
 monitor:
 	bash -f functional/kata-monitor/run.sh

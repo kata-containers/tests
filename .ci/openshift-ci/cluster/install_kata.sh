@@ -35,6 +35,10 @@ export DAEMONSET_NAME="kata-deploy"
 #
 export DAEMONSET_LABEL="kata-deploy"
 
+# The OpenShift Server version.
+#
+ocp_version="$(oc version -o json | jq -r '.openshiftVersion')"
+
 # Wait all worker nodes reboot.
 #
 # Params:
@@ -152,7 +156,16 @@ if [ "${KATA_WITH_SYSTEM_QEMU}" == "yes" ]; then
 	enable_sandboxedcontainers_extension
 	# Export additional information for the installer to deal with
 	# the QEMU path, for example.
-	oc apply -f ${deployments_dir}/configmap_installer_qemu.yaml
+	case $ocp_version in
+		4.10*)
+			oc apply -f ${deployments_dir}/configmap_installer_qemu_4_10.yaml
+			;;
+		4.11*)
+			oc apply -f ${deployments_dir}/configmap_installer_qemu.yaml
+			;;
+		*)
+			die "Unsupported OpenShift version: $ocp_version"
+	esac
 fi
 
 if [ "${KATA_WITH_HOST_KERNEL}" == "yes" ]; then

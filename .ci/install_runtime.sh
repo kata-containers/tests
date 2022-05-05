@@ -23,6 +23,7 @@ PREFIX="${PREFIX:-/usr}"
 DESTDIR="${DESTDIR:-/}"
 TEST_INITRD="${TEST_INITRD:-}"
 USE_VSOCK="${USE_VSOCK:-yes}"
+TEE_TYPE="${TEE_TYPE:-}"
 
 arch=$("${cidir}"/kata-arch.sh -d)
 
@@ -161,4 +162,22 @@ if [ "$arch" == "aarch64" -a "${KATA_HYPERVISOR}" == "qemu" -a "${ENABLE_ARM64_U
 	sudo sed -i 's|pflashes = \[\]|pflashes = ["/usr/share/kata-containers/kata-flash0.img", "/usr/share/kata-containers/kata-flash1.img"]|' "${runtime_config_path}"
 	#enable pflash
 	sudo sed -i 's|#pflashes|pflashes|' "${runtime_config_path}"
+fi
+
+if [ "$TEE_TYPE" == "tdx" ]; then
+        echo "Use tdx enabled guest config in ${runtime_config_path}"
+        sudo sed -i -e 's/vmlinux.container/vmlinuz-tdx.container/' "${runtime_config_path}"
+        sudo sed -i -e 's/^# confidential_guest/confidential_guest/' "${runtime_config_path}"
+        sudo sed -i -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 force_tdx_guest tdx_disable_filter "/g' "${runtime_config_path}"
+
+        case "${KATA_HYPERVISOR}" in
+		"cloud-hypervisor")
+			sudo sed -i -e 's/^firmware = ".*"/firmware = "\/usr\/share\/td-shim\/final-pe.bin"/' "${runtime_config_path}"
+			;;
+
+		"qemu")
+			sudo sed -i -e 's/^firmware = ".*"/firmware = "\/usr\/share\/qemu\/OVMF.fd"/' "${runtime_config_path}"
+			sudo sed -i -e 's/^firmware_volume = ".*"/firmware_volume = "\/usr\/share\/qemu\/OVMF_VARS.fd"/' "${runtime_config_path}"
+			;;
+        esac
 fi

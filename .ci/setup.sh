@@ -23,6 +23,7 @@ CRI_CONTAINERD="${CRI_CONTAINERD:-no}"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 KUBERNETES="${KUBERNETES:-yes}"
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
+USE_DEVMAPPER="${USE_DEVMAPPER:-false}"
 
 setup_distro_env() {
 	local setup_type="$1"
@@ -123,8 +124,8 @@ install_extra_tools() {
 		bash -f "${cidir}/configure_containerd_for_kata.sh"
 	fi
 
-	if [ "${KATA_HYPERVISOR}" == "firecracker" ]; then
-		info "Configure devicemapper for firecracker"
+	if [ "${USE_DEVMAPPER}" == "true" ]; then
+		info "Configure devicemapper"
 		bash -f "${cidir}/containerd_devmapper_setup.sh"
 	fi
 

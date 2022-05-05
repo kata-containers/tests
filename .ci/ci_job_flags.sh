@@ -34,6 +34,9 @@ init_ci_flags() {
 	# Ask runtime to only use cgroup at pod level
 	# Useful for pod overhead
 	export DEFSANDBOXCGROUPONLY="false"
+	# Build Kata for Confidential Containers
+	# Values: "yes|no"
+	export KATA_BUILD_CC="no"
 	# Hypervisor to use
 	export KATA_HYPERVISOR=""
 	# Install k8s
@@ -52,6 +55,9 @@ init_ci_flags() {
 	export experimental_qemu="false"
 	# Run the kata-check checks
 	export RUN_KATA_CHECK="true"
+	# Use devmapper snapshotter
+	# Only works with containerd
+	export USE_DEVMAPPER="false"
 
 	# METRICS_CI flags
 	# Request to run METRICS_CI
@@ -93,13 +99,38 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="qemu"
 	export KUBERNETES="no"
 	;;
-"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S")
+"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S"|"CC_CRI_CONTAINERD")
 	# This job only tests containerd + k8s
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
-	[ "${CI_JOB}" == "CRI_CONTAINERD_K8S" ] && export KUBERNETES="yes"
+	case "${CI_JOB}" in
+		"CRI_CONTAINERD_K8S")
+			export KUBERNETES="yes"
+			;;
+		"CC_CRI_CONTAINERD")
+			# Export any CC specific environment variables
+			export KATA_BUILD_CC="yes"
+			;;
+	esac
+	;;
+"CRI_CONTAINERD_K8S_DEVMAPPER")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="qemu"
+	export KUBERNETES="yes"
+	export USE_DEVMAPPER="true"
+	;;
+"CC_CRI_CONTAINERD_CLOUD_HYPERVISOR")
+	# This job only tests containerd + k8s
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	# Export any CC specific environment variables
+	export KATA_BUILD_CC="yes"
 	;;
 "CRIO_K8S")
 	init_ci_flags
@@ -139,6 +170,14 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
 	;;
+"CLOUD-HYPERVISOR-K8S-CONTAINERD-DEVMAPPER")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	export KUBERNETES="yes"
+	export USE_DEVMAPPER="true"
+	;;
 "EXTERNAL_CLOUD_HYPERVISOR")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
@@ -162,6 +201,7 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="firecracker"
 	export KUBERNETES="yes"
+	export USE_DEVMAPPER="true"
 	;;
 "VFIO")
 	init_ci_flags

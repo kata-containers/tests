@@ -28,10 +28,8 @@ const GoodFileContents = `
 		"RuntimeVersion": "0.1.0",
 		"Hypervisor": "/usr/bin/qemu-lite-system-x86_64",
 		"HypervisorVersion": "  QEMU emulator version 2.7.0, Copyright (c) 2003-2016 Fabrice Bellard and the QEMU Project developers",
-		"Proxy": "/usr/libexec/kata-containers/kata-proxy",
-		"ProxyVersion": "kata-proxy",
-		"Shim": "/usr/libexec/kata-containers/kata-shim",
-		"ShimVersion": "  kata-shim version 0.0.1-23d41fdc500879525b0a6cdf7fa575a5bf352984"
+		"Shim": "/usr/local/bin/containerd-shim-kata-v2",
+		"ShimVersion": "  kata-shim version 2.4.0-rc0"
 	},
 	"date" : {
 		"ns": 1522162042326099526,

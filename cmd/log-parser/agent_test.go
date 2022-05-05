@@ -149,7 +149,7 @@ func TestUnpackAgentLogEntry(t *testing.T) {
 			assert.NoErrorf(err, "test[%d]: %+v", i, d)
 
 			// Ensure the newly unpacked LogEntry is valid
-			err = agent.Check()
+			err = agent.Check(false)
 			assert.NoError(err)
 
 			assert.Equal(d.le.Filename, agent.Filename)
@@ -198,7 +198,7 @@ func TestUnpackAgentLogEntryWithContainerID(t *testing.T) {
 	assert.NoError(err)
 
 	// Ensure the newly unpacked LogEntry is valid
-	err = agent.Check()
+	err = agent.Check(false)
 	assert.NoError(err)
 
 	assert.Equal(containerID, agent.Container)

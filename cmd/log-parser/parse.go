@@ -77,7 +77,7 @@ func init() {
 //
 // Note that the filename specified is not validated - it is added to the
 // returned log entries and also used for returned errors.
-func parseLogFmtData(reader io.Reader, file string) (LogEntries, error) {
+func parseLogFmtData(reader io.Reader, file string, ignoreMissingFields bool) (LogEntries, error) {
 	entries := LogEntries{}
 
 	d := logfmt.NewDecoder(reader)
@@ -139,7 +139,7 @@ func parseLogFmtData(reader io.Reader, file string) (LogEntries, error) {
 			return LogEntries{}, err
 		}
 
-		err = entry.Check()
+		err = entry.Check(ignoreMissingFields)
 		if err != nil {
 			return LogEntries{}, err
 		}
@@ -157,23 +157,23 @@ func parseLogFmtData(reader io.Reader, file string) (LogEntries, error) {
 
 // parseLogFile reads a logfmt format logfile and converts it into log
 // entries.
-func parseLogFile(file string) (LogEntries, error) {
+func parseLogFile(file string, ignoreMissingFields bool) (LogEntries, error) {
 	// logfmt is unhappy attempting to read hex-encoded bytes in strings,
 	// so hide those from it by escaping them.
 	reader := NewHexByteReader(file)
 
-	return parseLogFmtData(reader, file)
+	return parseLogFmtData(reader, file, ignoreMissingFields)
 }
 
 // parseLogFiles parses all log files, sorts the results by timestamp and
 // returns the collated results
-func parseLogFiles(files []string) (LogEntries, error) {
+func parseLogFiles(files []string, ignoreMissingFields bool) (LogEntries, error) {
 	entries := LogEntries{
 		FormatVersion: logEntryFormatVersion,
 	}
 
 	for _, file := range files {
-		e, err := parseLogFile(file)
+		e, err := parseLogFile(file, ignoreMissingFields)
 		if err != nil {
 			return LogEntries{}, err
 		}
@@ -257,9 +257,12 @@ func handleLogEntry(l *LogEntry, key, value string) (err error) {
 		l.Name = value
 
 	case "pid":
-		pid, err := strconv.Atoi(value)
-		if err != nil {
-			return fmt.Errorf("failed to parse pid from value %v (entry: %+v, key: %v): %v", value, l, key, err)
+		pid := 0
+		if value != "" {
+			pid, err = strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("failed to parse pid from value %v (entry: %+v, key: %v): %v", value, l, key, err)
+			}
 		}
 
 		l.Pid = pid

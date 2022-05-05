@@ -37,22 +37,6 @@ public.ecr.aws/lts
 mirror.gcr.io/library
 quay.io/libpod"
 
-# If we fail for any reason, exit through here and we should log that to the correct
-# place and return the correct code to halt the run
-die(){
-	msg="$*"
-	echo "ERROR: $msg" >&2
-	exit 1
-}
-
-# Sometimes we just want to warn about something - let's have a standard
-# method for that, so maybe we can make a standard form that can be searched
-# for in the logs/tooling
-warning(){
-	msg="$*"
-	echo "WARNING: $msg" >&2
-}
-
 # This function checks existence of commands.
 # They can be received standalone or as an array, e.g.
 #
@@ -232,7 +216,7 @@ common_init(){
 	else
 		# We know we have nothing to do for runc or shimv2
 		if [ "$CTR_RUNTIME" != "io.containerd.runc.v2" ] || [ "$RUNTIME" != "runc" ]; then
-			warning "Unrecognised runtime"
+			warn "Unrecognised runtime"
 		fi
 	fi
 }

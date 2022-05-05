@@ -26,8 +26,8 @@ setup() {
 	kubectl create -f "${pod_config_dir}/test-replication-controller.yaml"
 
 	# Check replication controller
-	kubectl describe replicationcontrollers/"$replication_name" | \
-		grep "replication-controller"
+	local cmd="kubectl describe replicationcontrollers/$replication_name | grep replication-controller"
+	waitForProcess "$wait_time" "$sleep_time" "$cmd"
 
 	number_of_replicas=$(kubectl get replicationcontrollers/"$replication_name" \
 		--output=jsonpath='{.spec.replicas}')

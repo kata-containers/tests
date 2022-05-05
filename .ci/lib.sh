@@ -97,6 +97,8 @@ registry_server_teardown() {
 # Clone repo only if $katacontainers_repo_dir is empty
 # Otherwise, we assume $katacontainers_repo is cloned and in correct branch, e.g. a PR or local change
 clone_katacontainers_repo() {
+	add_repo_to_git_safe_directory "${katacontainers_repo_dir}"
+
 	if [ ! -d "${katacontainers_repo_dir}" ]; then
 		go get -d "${katacontainers_repo}" || true
 		pushd "${katacontainers_repo_dir}"
@@ -172,6 +174,25 @@ function get_version(){
 		( cd "${katacontainers_repo_dir}" && git checkout "$kata_default_branch" >&2 )
 	fi
 	get_dep_from_yaml_db "${versions_file}" "${dependency}"
+}
+
+function add_repo_to_git_safe_directory(){
+	local repo="$1"
+	if [ -z "$repo" ]; then
+		local_info "BUG[add_repo_to_git_safe_directory]: No repo specified"
+		return 1
+	fi
+	# Note: git config --global --add safe.directory will always
+	# append the target to .gitconfig without checking the
+	# existence of the target,
+	# so it's better to check it before adding the target repo.
+	local sd="$(git config --global --get safe.directory ${repo} || true)"
+	if [ "${sd}" == "" ]; then
+		echo "Add repo ${repo} to git's safe.directory"
+		git config --global --add safe.directory "${repo}"
+	else
+		echo "Repo ${repo} already in git's safe.directory"
+	fi
 }
 
 function get_test_version(){
