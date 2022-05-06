@@ -170,26 +170,6 @@ popd
 # Use virtio-9p on s390x -- https://github.com/kata-containers/tests/issues/3998 for tracking
 [ "$arch" = s390x ] && sudo -E "${GOPATH}/src/${tests_repo}/${cidir}/set_kata_config.sh" shared_fs virtio-9p
 
-# Run unit tests on non x86_64
-if [[ "$arch" == "s390x" || "$arch" == "aarch64" ]]; then
-	echo "Running unit tests"
-	sudo chown -R "$USER" "$HOME/.cargo" || true
-	"$ci_dir_name/install_rust.sh" && source "$HOME/.cargo/env"
-	pushd "${GOPATH}/src/${katacontainers_repo}"
-	echo "Installing libseccomp library from sources"
-	libseccomp_install_dir=$(mktemp -d -t libseccomp.XXXXXXXXXX)
-	gperf_install_dir=$(mktemp -d -t gperf.XXXXXXXXXX)
-	sudo -E ./ci/install_libseccomp.sh "${libseccomp_install_dir}" "${gperf_install_dir}"
-	echo "Set environment variables for the libseccomp crate to link the libseccomp library statically"
-	export LIBSECCOMP_LINK_TYPE=static
-	export LIBSECCOMP_LIB_PATH="${libseccomp_install_dir}/lib"
-	sudo -E PATH=$PATH make test
-	popd
-else
-	echo "Skip running unit tests because it is assumed to run elsewhere"
-fi
-
-
 if [ "${CI_JOB}" == "VFIO" ]; then
 	pushd "${GOPATH}/src/${tests_repo}"
 	ci_dir_name=".ci"
