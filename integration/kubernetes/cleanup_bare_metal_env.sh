@@ -18,6 +18,9 @@ iptables_cache="${KATA_TESTS_DATADIR}/iptables_cache"
 # Here, we restore the iptables based on the previously cached file.
 sudo iptables-restore < "$iptables_cache"
 
+# All chains were cleared, but we'll need Docker
+sudo iptables -N DOCKER
+
 # The kubeadm reset process does not clean your kubeconfig files.
 # you must remove them manually.
 sudo -E rm -rf "$HOME/.kube"
