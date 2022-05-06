@@ -136,7 +136,8 @@ configure_cc_containerd() {
 
 	# Even if we are not saving the original file it is a good idea to
 	# restart containerd because it might be in an inconsistent state here.
-	waitForProcess 30 5 "sudo systemctl stop containerd"
+	sudo systemctl stop containerd
+	sleep 5
 	[ -n "$saved_containerd_conf_file" ] && \
 		cp -f "$containerd_conf_file" "$saved_containerd_conf_file"
 	waitForProcess 30 5 "sudo systemctl start containerd"
