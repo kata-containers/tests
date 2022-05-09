@@ -208,8 +208,13 @@ $ cd $GOPATH/src/github.com/kata-containers/tests
 
 Execute the setup script:
 ```
+$ export CI=true
+$ export CI_JOB=CRI_CONTAINERD_K8S
 $ .ci/setup.sh
 ```
+In this case we are exporting the environment variables for the CRI_CONTAINERD_K8S Jenkins Job for more information
+of which CI_JOB needs to be used see the following https://github.com/kata-containers/tests/blob/main/.ci/ci_job_flags.sh.
+
 > **Limitation:** If the script fails for a reason and it is re-executed, it will execute
 all steps from the beginning and not from the failed step.
 
