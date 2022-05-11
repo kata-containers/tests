@@ -24,7 +24,7 @@ DEBUG_KEEP_FORWARDER=${DEBUG_KEEP_FORWARDER:-}
 [ -n "$DEBUG" ] && set -o xtrace
 
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
-source "${SCRIPT_PATH}/../lib/common.bash"
+source "${SCRIPT_PATH}/../../lib/common.bash"
 
 RUNTIME="io.containerd.kata.v2"
 CONTAINER_IMAGE="quay.io/prometheus/busybox:latest"
@@ -63,7 +63,7 @@ cleanup()
 		if [ -n "$DEBUG" ]; then
 			eval "$fp" "test $result - logs left in '$dest'"
 		else
-			"${SCRIPT_PATH}/../.ci/configure_tracing_for_kata.sh" disable
+			"${SCRIPT_PATH}/../../.ci/configure_tracing_for_kata.sh" disable
 
 			[ -d "$logdir" ] && rm -rf "$logdir" || true
 		fi
@@ -294,7 +294,7 @@ setup()
 
 	start_jaeger
 
-	"${SCRIPT_PATH}/../.ci/configure_tracing_for_kata.sh" enable
+	"${SCRIPT_PATH}/../../.ci/configure_tracing_for_kata.sh" enable
 }
 
 run_test()
