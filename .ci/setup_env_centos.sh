@@ -84,6 +84,7 @@ declare -A packages=( \
 	[make]="make" \
 	[agent_shutdown_test]="tmux" \
 	[virtiofsd_dependencies]="unzip" \
+	[webhook_dependencies]="openssl" \
 )
 
 main()
