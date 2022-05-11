@@ -10,8 +10,10 @@ package tablewriter
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
+	"reflect"
 	"regexp"
 	"strings"
 )
@@ -48,37 +50,40 @@ type Border struct {
 }
 
 type Table struct {
-	out            io.Writer
-	rows           [][]string
-	lines          [][][]string
-	cs             map[int]int
-	rs             map[int]int
-	headers        [][]string
-	footers        [][]string
-	caption        bool
-	captionText    string
-	autoFmt        bool
-	autoWrap       bool
-	reflowText     bool
-	mW             int
-	pCenter        string
-	pRow           string
-	pColumn        string
-	tColumn        int
-	tRow           int
-	hAlign         int
-	fAlign         int
-	align          int
-	newLine        string
-	rowLine        bool
-	autoMergeCells bool
-	hdrLine        bool
-	borders        Border
-	colSize        int
-	headerParams   []string
-	columnsParams  []string
-	footerParams   []string
-	columnsAlign   []int
+	out                     io.Writer
+	rows                    [][]string
+	lines                   [][][]string
+	cs                      map[int]int
+	rs                      map[int]int
+	headers                 [][]string
+	footers                 [][]string
+	caption                 bool
+	captionText             string
+	autoFmt                 bool
+	autoWrap                bool
+	reflowText              bool
+	mW                      int
+	pCenter                 string
+	pRow                    string
+	pColumn                 string
+	tColumn                 int
+	tRow                    int
+	hAlign                  int
+	fAlign                  int
+	align                   int
+	newLine                 string
+	rowLine                 bool
+	autoMergeCells          bool
+	columnsToAutoMergeCells map[int]bool
+	noWhiteSpace            bool
+	tablePadding            string
+	hdrLine                 bool
+	borders                 Border
+	colSize                 int
+	headerParams            []string
+	columnsParams           []string
+	footerParams            []string
+	columnsAlign            []int
 }
 
 // Start New Table
@@ -225,6 +230,16 @@ func (t *Table) SetAlignment(align int) {
 	t.align = align
 }
 
+// Set No White Space
+func (t *Table) SetNoWhiteSpace(allow bool) {
+	t.noWhiteSpace = allow
+}
+
+// Set Table Padding
+func (t *Table) SetTablePadding(padding string) {
+	t.tablePadding = padding
+}
+
 func (t *Table) SetColumnAlignment(keys []int) {
 	for _, v := range keys {
 		switch v {
@@ -264,6 +279,21 @@ func (t *Table) SetAutoMergeCells(auto bool) {
 	t.autoMergeCells = auto
 }
 
+// Set Auto Merge Cells By Column Index
+// This would enable / disable the merge of cells with identical values for specific columns
+// If cols is empty, it is the same as `SetAutoMergeCells(true)`.
+func (t *Table) SetAutoMergeCellsByColumnIndex(cols []int) {
+	t.autoMergeCells = true
+
+	if len(cols) > 0 {
+		m := make(map[int]bool)
+		for _, col := range cols {
+			m[col] = true
+		}
+		t.columnsToAutoMergeCells = m
+	}
+}
+
 // Set Table Border
 // This would enable / disable line around the table
 func (t *Table) SetBorder(border bool) {
@@ -272,6 +302,95 @@ func (t *Table) SetBorder(border bool) {
 
 func (t *Table) SetBorders(border Border) {
 	t.borders = border
+}
+
+// SetStructs sets header and rows from slice of struct.
+// If something that is not a slice is passed, error will be returned.
+// The tag specified by "tablewriter" for the struct becomes the header.
+// If not specified or empty, the field name will be used.
+// The field of the first element of the slice is used as the header.
+// If the element implements fmt.Stringer, the result will be used.
+// And the slice contains nil, it will be skipped without rendering.
+func (t *Table) SetStructs(v interface{}) error {
+	if v == nil {
+		return errors.New("nil value")
+	}
+	vt := reflect.TypeOf(v)
+	vv := reflect.ValueOf(v)
+	switch vt.Kind() {
+	case reflect.Slice, reflect.Array:
+		if vv.Len() < 1 {
+			return errors.New("empty value")
+		}
+
+		// check first element to set header
+		first := vv.Index(0)
+		e := first.Type()
+		switch e.Kind() {
+		case reflect.Struct:
+			// OK
+		case reflect.Ptr:
+			if first.IsNil() {
+				return errors.New("the first element is nil")
+			}
+			e = first.Elem().Type()
+			if e.Kind() != reflect.Struct {
+				return fmt.Errorf("invalid kind %s", e.Kind())
+			}
+		default:
+			return fmt.Errorf("invalid kind %s", e.Kind())
+		}
+		n := e.NumField()
+		headers := make([]string, n)
+		for i := 0; i < n; i++ {
+			f := e.Field(i)
+			header := f.Tag.Get("tablewriter")
+			if header == "" {
+				header = f.Name
+			}
+			headers[i] = header
+		}
+		t.SetHeader(headers)
+
+		for i := 0; i < vv.Len(); i++ {
+			item := reflect.Indirect(vv.Index(i))
+			itemType := reflect.TypeOf(item)
+			switch itemType.Kind() {
+			case reflect.Struct:
+				// OK
+			default:
+				return fmt.Errorf("invalid item type %v", itemType.Kind())
+			}
+			if !item.IsValid() {
+				// skip rendering
+				continue
+			}
+			nf := item.NumField()
+			if n != nf {
+				return errors.New("invalid num of field")
+			}
+			rows := make([]string, nf)
+			for j := 0; j < nf; j++ {
+				f := reflect.Indirect(item.Field(j))
+				if f.Kind() == reflect.Ptr {
+					f = f.Elem()
+				}
+				if f.IsValid() {
+					if s, ok := f.Interface().(fmt.Stringer); ok {
+						rows[j] = s.String()
+						continue
+					}
+					rows[j] = fmt.Sprint(f)
+				} else {
+					rows[j] = "nil"
+				}
+			}
+			t.Append(rows)
+		}
+	default:
+		return fmt.Errorf("invalid type %T", v)
+	}
+	return nil
 }
 
 // Append row to table
@@ -289,6 +408,33 @@ func (t *Table) Append(row []string) {
 		// Detect String height
 		// Break strings into words
 		out := t.parseDimension(v, i, n)
+
+		// Append broken words
+		line = append(line, out)
+	}
+	t.lines = append(t.lines, line)
+}
+
+// Append row to table with color attributes
+func (t *Table) Rich(row []string, colors []Colors) {
+	rowSize := len(t.headers)
+	if rowSize > t.colSize {
+		t.colSize = rowSize
+	}
+
+	n := len(t.lines)
+	line := [][]string{}
+	for i, v := range row {
+
+		// Detect string  width
+		// Detect String height
+		// Break strings into words
+		out := t.parseDimension(v, i, n)
+
+		if len(colors) > i {
+			color := colors[i]
+			out[0] = format(out[0], color)
+		}
 
 		// Append broken words
 		line = append(line, out)
@@ -411,11 +557,14 @@ func (t *Table) printHeading() {
 	for x := 0; x < max; x++ {
 		// Check if border is set
 		// Replace with space if not set
-		fmt.Fprint(t.out, ConditionString(t.borders.Left, t.pColumn, SPACE))
+		if !t.noWhiteSpace {
+			fmt.Fprint(t.out, ConditionString(t.borders.Left, t.pColumn, SPACE))
+		}
 
 		for y := 0; y <= end; y++ {
 			v := t.cs[y]
 			h := ""
+
 			if y < len(t.headers) && x < len(t.headers[y]) {
 				h = t.headers[y][x]
 			}
@@ -423,15 +572,30 @@ func (t *Table) printHeading() {
 				h = Title(h)
 			}
 			pad := ConditionString((y == end && !t.borders.Left), SPACE, t.pColumn)
-
+			if t.noWhiteSpace {
+				pad = ConditionString((y == end && !t.borders.Left), SPACE, t.tablePadding)
+			}
 			if is_esc_seq {
-				fmt.Fprintf(t.out, " %s %s",
-					format(padFunc(h, SPACE, v),
-						t.headerParams[y]), pad)
+				if !t.noWhiteSpace {
+					fmt.Fprintf(t.out, " %s %s",
+						format(padFunc(h, SPACE, v),
+							t.headerParams[y]), pad)
+				} else {
+					fmt.Fprintf(t.out, "%s %s",
+						format(padFunc(h, SPACE, v),
+							t.headerParams[y]), pad)
+				}
 			} else {
-				fmt.Fprintf(t.out, " %s %s",
-					padFunc(h, SPACE, v),
-					pad)
+				if !t.noWhiteSpace {
+					fmt.Fprintf(t.out, " %s %s",
+						padFunc(h, SPACE, v),
+						pad)
+				} else {
+					// the spaces between breaks the kube formatting
+					fmt.Fprintf(t.out, "%s%s",
+						padFunc(h, SPACE, v),
+						pad)
+				}
 			}
 		}
 		// Next line
@@ -654,9 +818,11 @@ func (t *Table) printRow(columns [][]string, rowIdx int) {
 		for y := 0; y < total; y++ {
 
 			// Check if border is set
-			fmt.Fprint(t.out, ConditionString((!t.borders.Left && y == 0), SPACE, t.pColumn))
+			if !t.noWhiteSpace {
+				fmt.Fprint(t.out, ConditionString((!t.borders.Left && y == 0), SPACE, t.pColumn))
+				fmt.Fprintf(t.out, SPACE)
+			}
 
-			fmt.Fprintf(t.out, SPACE)
 			str := columns[y][x]
 
 			// Embedding escape sequence with column value
@@ -688,11 +854,17 @@ func (t *Table) printRow(columns [][]string, rowIdx int) {
 
 				}
 			}
-			fmt.Fprintf(t.out, SPACE)
+			if !t.noWhiteSpace {
+				fmt.Fprintf(t.out, SPACE)
+			} else {
+				fmt.Fprintf(t.out, t.tablePadding)
+			}
 		}
 		// Check if border is set
 		// Replace with space if not set
-		fmt.Fprint(t.out, ConditionString(t.borders.Left, t.pColumn, SPACE))
+		if !t.noWhiteSpace {
+			fmt.Fprint(t.out, ConditionString(t.borders.Left, t.pColumn, SPACE))
+		}
 		fmt.Fprint(t.out, t.newLine)
 	}
 
@@ -765,9 +937,19 @@ func (t *Table) printRowMergeCells(writer io.Writer, columns [][]string, rowIdx 
 			}
 
 			if t.autoMergeCells {
+				var mergeCell bool
+				if t.columnsToAutoMergeCells != nil {
+					// Check to see if the column index is in columnsToAutoMergeCells.
+					if t.columnsToAutoMergeCells[y] {
+						mergeCell = true
+					}
+				} else {
+					// columnsToAutoMergeCells was not set.
+					mergeCell = true
+				}
 				//Store the full line to merge mutli-lines cells
 				fullLine := strings.TrimRight(strings.Join(columns[y], " "), " ")
-				if len(previousLine) > y && fullLine == previousLine[y] && fullLine != "" {
+				if len(previousLine) > y && fullLine == previousLine[y] && fullLine != "" && mergeCell {
 					// If this cell is identical to the one above but not empty, we don't display the border and keep the cell empty.
 					displayCellBorder = append(displayCellBorder, false)
 					str = ""
@@ -804,7 +986,7 @@ func (t *Table) printRowMergeCells(writer io.Writer, columns [][]string, rowIdx 
 	//The new previous line is the current one
 	previousLine = make([]string, total)
 	for y := 0; y < total; y++ {
-		previousLine[y] = strings.TrimRight(strings.Join(columns[y], " ")," ") //Store the full line for multi-lines cells
+		previousLine[y] = strings.TrimRight(strings.Join(columns[y], " "), " ") //Store the full line for multi-lines cells
 	}
 	//Returns the newly added line and wether or not a border should be displayed above.
 	return previousLine, displayCellBorder

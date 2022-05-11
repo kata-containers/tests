@@ -235,84 +235,6 @@ collect_logs()
 	fi
 }
 
-check_log_files()
-{
-	info "Checking log files"
-
-	make log-parser
-
-	local component
-	local unit
-	local file
-	local args
-	local cmd
-
-	for component in \
-		kata \
-		kata-runtime
-
-	do
-		file="${component}.log"
-		args="--no-pager -q -o cat -a -t \"${component}\""
-
-		cmd="sudo journalctl ${args} > ${file}"
-		eval "$cmd" || true
-	done
-
-	for unit in \
-		kata-ksm-throttler \
-		kata-vc-throttler
-	do
-		file="${unit}.log"
-		args="--no-pager -q -o cat -a -u \"${unit}\""
-
-		cmd="sudo journalctl ${args} |grep ^time= > ${file}"
-		eval "$cmd" || true
-	done
-
-	local -r logs=$(ls "$(pwd)"/*.log || true)
-	local ret
-
-	cmd="kata-log-parser"
-	args="--debug --check-only --error-if-no-records"
-
-	{ $cmd $args $logs; ret=$?; } || true
-
-	local errors=0
-	local log
-
-	for log in $logs
-	do
-		local pattern
-		local results
-
-		# Display *all* errors caused by runtime exceptions and fatal
-		# signals.
-		for pattern in "fatal error" "fatal signal" "segfault at [0-9]"
-		do
-			# Search for pattern and print all subsequent lines with specified log
-			# level.
-			results=$(grep "${pattern}" "$log" || true )
-			if [ -n "$results" ]
-			then
-				errors=1
-				echo >&2 -e "ERROR: detected ${pattern} in '${log}'\n${results}"
-			fi
-		done
-	done
-
-	# Always remove logs since:
-	#
-	# - We don't want to waste disk-space.
-	# - collect_logs() will save the full logs anyway.
-	# - the log parser tool shows full details of what went wrong.
-	rm -f $logs
-
-	[ "$errors" -ne 0 ] && exit 1
-
-	[ $ret -eq 0 ] && true || false
-}
-
 check_collect_script()
 {
 	local -r cmd="kata-collect-data.sh"
@@ -337,7 +259,6 @@ main()
 	# (but only after we've collected the logs).
 	set -e
 
-	check_log_files
 	check_collect_script
 }
 

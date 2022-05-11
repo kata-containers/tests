@@ -12,4 +12,3 @@
 | [`history`](history) | Tool to help extract Git log history. |
 | [`kata-spell-check`](check-spelling) | Tool to spell check a file. |
 | [`kata-manager`](kata-manager) | Tool to install/remove packaged versions of Kata. |
-| [`log-parser`](log-parser) | Tool to parse and convert structured Kata log files. |
