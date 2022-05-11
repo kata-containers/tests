@@ -69,9 +69,9 @@ sandbox-cgroup:
 	bash -f functional/sandbox_cgroup/sandbox_cgroup_test.sh
 
 stability:
-	cd integration/stability && \
+	cd stability && \
 	ITERATIONS=2 MAX_CONTAINERS=20 ./soak_parallel_rm.sh
-	cd integration/stability && ./hypervisor_stability_kill_test.sh
+	cd stability && ./hypervisor_stability_kill_test.sh
 
 # Run the static checks on this repository.
 static-checks:
@@ -153,6 +153,7 @@ help:
 	qat \
 	rootless \
 	sandbox-cgroup \
+	stability \
 	static-checks \
 	test \
 	tracing \

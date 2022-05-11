@@ -13,7 +13,7 @@
 # - catch any hang ups
 
 cidir=$(dirname "$0")
-source "${cidir}/../../metrics/lib/common.bash"
+source "${cidir}/../metrics/lib/common.bash"
 source "/etc/os-release" || source "/usr/lib/os-release"
 
 # How many times will we run the test loop...
@@ -176,7 +176,7 @@ init() {
 		check_kata_components=0
 	fi
 
-	versions_file="${cidir}/../../versions.yaml"
+	versions_file="${cidir}/../versions.yaml"
 	nginx_version=$("${GOPATH}/bin/yq" read "$versions_file" "docker_images.nginx.version")
 	nginx_image="docker.io/library/nginx:$nginx_version"
 

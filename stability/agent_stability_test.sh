@@ -12,7 +12,7 @@ set -e -x
 
 cidir=$(dirname "$0")
 
-source "${cidir}/../../metrics/lib/common.bash"
+source "${cidir}/../metrics/lib/common.bash"
 
 # Environment variables
 IMAGE="${IMAGE:-quay.io/prometheus/busybox:latest}"
@@ -46,8 +46,10 @@ function exec_loop {
 }
 
 function teardown {
+	echo "Ending stability test"
 	clean_env_ctr
 }
+trap teardown EXIT
 
 echo "Starting stability test"
 setup
@@ -56,6 +58,3 @@ echo "Running stability test"
 while [[ $end_time > $(date +%s) ]]; do
 	exec_loop
 done
-
-echo "Ending stability test"
-teardown
