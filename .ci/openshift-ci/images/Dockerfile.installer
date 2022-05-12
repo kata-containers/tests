@@ -5,7 +5,7 @@
 # Build the image which wraps the kata-containers installation along with the
 # install script. It is used on a daemonset to deploy kata on OpenShift.
 #
-FROM registry.centos.org/centos:8
+FROM quay.io/centos/centos:stream8
 
 RUN yum install -y rsync dracut && \
   yum clean all
