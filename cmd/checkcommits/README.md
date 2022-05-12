@@ -82,8 +82,8 @@ $ ./checkcommits -h
 ### Download and Build
 
 ```
-$ repo="github.com/kata-containers/tests/cmd/checkcommits"
-$ go get -d "$repo"
+$ repo="github.com/kata-containers/tests/cmd/checkcommits@latest"
+$ go install "$repo"
 $ (cd "$GOPATH/src/$repo" && make)
 ```
 

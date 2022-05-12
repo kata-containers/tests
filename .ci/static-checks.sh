@@ -587,7 +587,7 @@ static_check_docs()
 		url=$(get_test_version "externals.xurls.url")
 
 		# xurls is very fussy about how it's built.
-		GO111MODULE=on go get "${url}@${version}"
+		GO111MODULE=on go install "${url}@${version}"
 
 		command -v xurls &>/dev/null ||
 			die 'xurls not found. Ensure that "$GOPATH/bin" is in your $PATH'
@@ -974,7 +974,7 @@ static_check_vendor()
 	info "Checking vendoring metadata"
 
 	# Get the vendoring tool
-	go get github.com/golang/dep/cmd/dep
+	go install github.com/golang/dep/cmd/dep@latest
 
 	# Check, but don't touch!
 	dep check

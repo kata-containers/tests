@@ -62,7 +62,7 @@ externals:
   golangci-lint:
     description: "utility to run various golang linters"
     url: "github.com/golangci/golangci-lint"
-    version: "v1.41.1"
+    version: "v1.46.1"
 
   hadolint:
     description: "the dockerfile linter used by static-checks"
