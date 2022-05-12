@@ -69,9 +69,9 @@ sandbox-cgroup:
 	bash -f functional/sandbox_cgroup/sandbox_cgroup_test.sh
 
 stability:
-	cd integration/stability && \
+	cd stability && \
 	ITERATIONS=2 MAX_CONTAINERS=20 ./soak_parallel_rm.sh
-	cd integration/stability && ./hypervisor_stability_kill_test.sh
+	cd stability && ./hypervisor_stability_kill_test.sh
 
 # Run the static checks on this repository.
 static-checks:
@@ -102,12 +102,12 @@ qat:
 	bash integration/qat/qat_test.sh
 
 agent-shutdown:
-	bash tracing/test-agent-shutdown.sh
+	bash functional/tracing/test-agent-shutdown.sh
 
 # Tracing requires the agent to shutdown cleanly,
 # so run the shutdown test first.
 tracing: agent-shutdown
-	bash tracing/tracing-test.sh
+	bash functional/tracing/tracing-test.sh
 
 vcpus:
 	bash -f functional/vcpus/default_vcpus_test.sh
@@ -117,7 +117,7 @@ pmem:
 
 test: ${UNION}
 
-check: checkcommits log-parser
+check: checkcommits
 
 $(INSTALL_TARGETS): install-%: .ci/install_%.sh
 	@bash -f $<
@@ -155,10 +155,10 @@ help:
 	$(INSTALL_TARGETS) \
 	kubernetes \
 	list-install-targets \
-	log-parser \
 	qat \
 	rootless \
 	sandbox-cgroup \
+	stability \
 	static-checks \
 	test \
 	tracing \
