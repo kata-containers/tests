@@ -42,6 +42,7 @@ declare -A packages=( \
 	[libsystemd]="systemd-devel" \
 	[redis]="redis" \
 	[agent_shutdown_test]="tmux" \
+	[virtiofsd_dependencies]="unzip" \
 )
 
 if [ "${arch}" == "x86_64" ] || [ "${arch}" == "ppc64le" ]; then

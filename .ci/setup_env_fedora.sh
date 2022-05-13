@@ -38,6 +38,7 @@ declare -A packages=( \
 	[versionlock]="python3-dnf-plugin-versionlock" \
 	[agent_shutdown_test]="tmux" \
 	[vfio_test]="pciutils driverctl" \
+	[virtiofsd_dependencies]="unzip" \
 )
 
 if [ "$(uname -m)" == "x86_64" ] || ([ "$(uname -m)" == "ppc64le" ] && [ "${VERSION_ID}" -ge "32" ]); then
