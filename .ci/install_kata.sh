@@ -18,6 +18,7 @@ KATA_BUILD_QEMU_TYPE="${KATA_BUILD_QEMU_TYPE:-vanilla}"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 experimental_qemu="${experimental_qemu:-false}"
 TEE_TYPE="${TEE_TYPE:-}"
+arch=$("${cidir}"/kata-arch.sh -d)
 
 if [ -n "${TEE_TYPE}" ]; then
 	echo "Install with TEE type: ${TEE_TYPE}"
@@ -53,12 +54,14 @@ case "${KATA_HYPERVISOR}" in
 		"${cidir}/install_cloud_hypervisor.sh"
 		echo "Installing experimental_qemu to install virtiofsd"
 		install_qemu
+		[ "${arch}" == "x86_64" ] && "${cidir}/install_virtiofsd.sh"
 		;;
 	"firecracker")
 		"${cidir}/install_firecracker.sh"
 		;;
 	"qemu")
 		install_qemu
+		[ "${arch}" == "x86_64" ] && "${cidir}/install_virtiofsd.sh"
 		;;
 	*)
 		die "${KATA_HYPERVISOR} not supported for CI install"
