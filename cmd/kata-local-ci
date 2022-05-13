@@ -133,10 +133,10 @@ if [ ! -f "$disk" ] ; then
 fi
 
 if [ ! -d "$directory"/kata-containers ]; then
-    die "ERROR: The work directory $directory does not contain a 'kata-containers' subdirectory"
+    die "The work directory $directory does not contain a 'kata-containers' subdirectory"
 fi
 if [ ! -d "$directory"/tests ]; then
-    die "ERROR: The work directory $directory does not contain a 'tests' subdirectory"
+    die "The work directory $directory does not contain a 'tests' subdirectory"
 fi
 
 
