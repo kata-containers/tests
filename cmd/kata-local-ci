@@ -15,6 +15,7 @@
 ##   -i: Install required packages
 ##   -j <job>: CI job to run (default: all)
 ##   -r <option>: Pass extra option to rsync (e.g. exclude dirs)
+##   -t <timeout>: Timeout in seconds waiting for the VM to startup (default 60)
 ##   -w <dir>: Work directory to test (default $GOPATH/src/github.com/kata-containers)
 ##
 ## Creation options include:
@@ -42,6 +43,7 @@ disk=""
 network=""
 job="CRIO_K8S"
 rsync_options="--exclude=kata-containers/src/agent/target"
+timeout=60
 kci=~/.kata-containers-ci
 install=false
 revert=true
@@ -95,7 +97,7 @@ function install_dependencies() {
     fi
 }
 
-while getopts c:d:fFhij:k:m:n:o:r:s:w: flag
+while getopts c:d:fFhij:k:m:n:o:r:s:t:w: flag
 do
     case "${flag}" in
 	c) cpus=$OPTARG;;
@@ -111,6 +113,7 @@ do
 	o) disk=$OPTARG;;
         r) rsync_options=(${rsync_options[@]} "$OPTARG");;
 	s) size=$OPTARG;;
+        t) timeout=$OPTARG;;
         w) directory=$OPTARG;;
         *) help; exit 1 ;;
     esac
@@ -137,6 +140,10 @@ if [ ! -d "$directory"/kata-containers ]; then
 fi
 if [ ! -d "$directory"/tests ]; then
     die "The work directory $directory does not contain a 'tests' subdirectory"
+fi
+
+if [[ ! "$timeout" =~ ^[0-9]+$ ]]; then
+    die "Timeout must be numerical"
 fi
 
 
@@ -250,8 +257,8 @@ function vm_install() {
          --disk path=$disk,format=qcow2 \
          --os-variant=$osvariant --noautoconsole $network
 
-    echo -n "Waiting for guest to get an IP address"
-    while ! sudo virsh domifaddr $VM_NAME | grep -q vnet ; do echo -n .; sleep 1; done
+    echo "Waiting for guest to get an IP address"
+    waitForProcess $timeout 1 "sudo virsh domifaddr $VM_NAME | grep -q vnet"
 
     VM_IPADDR=$(sudo virsh domifaddr $VM_NAME | grep vnet | sed -e 's|^\s*vnet[0-9]*.*ipv4\s*\([0-9.]*\)/[0-9]*|\1|g')
     echo "Got $VM_IPADDR"
@@ -259,14 +266,11 @@ function vm_install() {
     sed -i -e /$VM_IPADDR/d ~/.ssh/kata-ci-known-hosts
 
     progress "Waiting for ssh to become available"
-    while ! $ssh_cmd kata@$VM_IPADDR "mkdir -p $vmdir"; do
-        sleep 1
-    done
+    waitForProcess $timeout 1 "$ssh_cmd kata@$VM_IPADDR \"mkdir -p $vmdir\""
 
     progress "Waiting for rsync to become available"
-    while ! rsync -e "$ssh_cmd" -av ${rsync_options[@]} $directory/kata-containers/README.md kata@$VM_IPADDR:$vmdir/ 2>&1 >/dev/null; do
-        sleep 1
-    done
+    cmd="rsync -e \"$ssh_cmd\" -av ${rsync_options[@]} $directory/kata-containers/README.md kata@$VM_IPADDR:$vmdir/ 2>&1 >/dev/null"
+    waitForProcess $timeout 1 "$cmd"
 
     if $ubuntu20_workaround; then
         local mbsize=$size
