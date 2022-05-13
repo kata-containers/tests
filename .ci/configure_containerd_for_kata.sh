@@ -22,7 +22,7 @@ cat << EOF | sudo tee /etc/containerd/config.toml
     [plugins.cri.containerd]
       [plugins.cri.containerd.runtimes]
         [plugins.cri.containerd.runtimes.runc]
-           runtime_type = "io.containerd.runc.v1"
+           runtime_type = "io.containerd.runc.v2"
            [plugins.cri.containerd.runtimes.runc.options]
              BinaryName = "${runc_path}"
              Root = ""
