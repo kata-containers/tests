@@ -51,6 +51,7 @@ declare -A packages=( \
 	[haveged]="haveged" \
 	[libsystemd]="systemd-devel" \
 	[agent_shutdown_test]="tmux" \
+	[virtiofsd_dependencies]="unzip" \
 )
 
 if [ "${arch}" == "x86_64" ] || [ "${arch}" == "ppc64le" ]; then
