@@ -10,10 +10,7 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 
-readonly script_dir=$(dirname $(readlink -f "$0"))
-
 cidir=$(dirname "$0")
-arch=$("${cidir}"/kata-arch.sh -d)
 source "${cidir}/lib.sh"
 
 main() {
