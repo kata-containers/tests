@@ -93,7 +93,7 @@ function install_dependencies() {
     if grep -q fedora /etc/os-release; then
         sudo dnf install -y virt-install guestfs-tools qemu-kvm libvirt rsync
     else
-        die "UNIMPLEMENTED: Installing dependencies currenlty only works on Fedora"
+        die "UNIMPLEMENTED: Installing dependencies currently only works on Fedora"
     fi
 }
 
@@ -253,7 +253,7 @@ function vm_install() {
         sys qemu-img resize $disk $size
     fi
     progress "Launching virt-install"
-    sys virt-install --import --name $VM_NAME  --memory $memory --vcpus $cpus \
+    sys virt-install --import --name $VM_NAME --memory $memory --vcpus $cpus \
          --disk path=$disk,format=qcow2 \
          --os-variant=$osvariant --noautoconsole $network
 
