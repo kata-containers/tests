@@ -53,8 +53,7 @@ case "${KATA_HYPERVISOR}" in
 	"cloud-hypervisor")
 		"${cidir}/install_cloud_hypervisor.sh"
 		echo "Installing experimental_qemu to install virtiofsd"
-		install_qemu
-		[ "${arch}" == "x86_64" ] && "${cidir}/install_virtiofsd.sh"
+		[ "${arch}" == "x86_64" ] && "${cidir}/install_virtiofsd.sh" || install_qemu
 		;;
 	"firecracker")
 		"${cidir}/install_firecracker.sh"
