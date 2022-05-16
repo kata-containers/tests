@@ -23,7 +23,7 @@ source "${script_dir}/lib.sh"
 #Use cri contaienrd tarball format.
 #https://github.com/containerd/containerd/blob/main/docs/cri/installation.md#release-tarball
 CONTAINERD_OS=$(go env GOOS)
-CONTAIENRD_ARCH=$(go env GOARCH)
+CONTAINERD_ARCH=$(go env GOARCH)
 
 containerd_tarball_version=$(get_version "externals.containerd.version")
 
@@ -47,7 +47,7 @@ install_from_source() {
 		git fetch
 		git checkout "${containerd_tarball_version}"
 		make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
-		tarball_name="cri-containerd-cni-${containerd_version}-${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
+		tarball_name="cri-containerd-cni-${containerd_version}-${CONTAINERD_OS}-${CONTAINERD_ARCH}.tar.gz"
 		sudo tar -xvf "./releases/${tarball_name}" -C /
 	)
 }
@@ -56,7 +56,7 @@ install_from_static_tarball() {
 	echo "Trying to install containerd from static tarball"
 	local tarball_url=$(get_version "externals.containerd.tarball_url")
 
-	local tarball_name="cri-containerd-cni-${containerd_version}-${CONTAINERD_OS}-${CONTAIENRD_ARCH}.tar.gz"
+	local tarball_name="cri-containerd-cni-${containerd_version}-${CONTAINERD_OS}-${CONTAINERD_ARCH}.tar.gz"
 	local url="${tarball_url}/${containerd_tarball_version}/${tarball_name}"
 
 	echo "Download tarball from ${url}"
