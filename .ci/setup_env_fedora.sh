@@ -39,6 +39,7 @@ declare -A packages=( \
 	[agent_shutdown_test]="tmux" \
 	[vfio_test]="pciutils driverctl" \
 	[virtiofsd_dependencies]="unzip" \
+	[webhook_dependencies]="openssl" \
 )
 
 if [ "$(uname -m)" == "x86_64" ] || ([ "$(uname -m)" == "ppc64le" ] && [ "${VERSION_ID}" -ge "32" ]); then
