@@ -8,11 +8,7 @@
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
-issue="https://github.com/kata-containers/runtime/issues/1674"
-
 setup() {
-	skip "test not working see: ${issue}"
-
 	pod_name="footubuntu"
 	config_name="ssh-config-map"
 	get_pod_config_dir
@@ -30,8 +26,6 @@ setup() {
 }
 
 @test "Footloose pod" {
-	skip "test not working see: ${issue}"
-
 	cmd="uname -r"
 	sleep_connect="10"
 
@@ -56,8 +50,6 @@ setup() {
 }
 
 teardown() {
-	skip "test not working see: ${issue}"
-
 	kubectl delete pod "$pod_name"
 	kubectl delete configmap "$config_name"
 	sudo rm -rf "$public_key_path"
