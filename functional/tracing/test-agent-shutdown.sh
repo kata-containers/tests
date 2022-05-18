@@ -71,6 +71,8 @@ KATA_TMUX_CONSOLE_SESSION="kata-shutdown-test-console-session"
 # tmux(1) session to run the trace forwarder in
 KATA_TMUX_FORWARDER_SESSION="kata-shutdown-test-trace-forwarder-session"
 
+KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
+
 # List of test types used by configure_kata().
 #
 # Each element contains four colon delimited fields:
@@ -157,6 +159,11 @@ agent_socket_file="kata-agent.socket"
 local_agent_server_addr="unix://${agent_socket_file}"
 local_agent_ctl_server_addr="unix://@${agent_socket_file}"
 
+# Address that is dynamically configured when using CLH before
+# starting trace forwarder or container
+clh_socket_path=
+clh_socket_prefix="/run/vc/vm/"
+
 ctl_log_file="${PWD}/agent-ctl.log"
 
 # Log file that must contain agent output.
@@ -166,8 +173,11 @@ agent_binary_name="kata-agent"
 agent_ctl_binary_name="kata-agent-ctl"
 forwarder_binary_name="kata-trace-forwarder"
 
-# Name of hypervisor in configuration.toml this test supports
-supported_hypervisor="qemu"
+# Set in setup() based on KATA_HYPERVISOR
+# Supported hypervisors are qemu and cloud-hypervisor
+configured_hypervisor=
+# String that would appear in config file (qemu or clh)
+configured_hypervisor_cfg=
 
 # Full path to directory containing an OCI bundle based on "$DOCKER_IMAGE",
 # which is required by the agent control tool.
@@ -209,7 +219,8 @@ agent_log_level=${agent_log_level:-${default_agent_log_level}}
 # Full path to the main configuration file (set by setup()).
 kata_cfg_file=
 
-hypervisor_binary="qemu-system-${arch}"
+# Set in setup() based on KATA_HYPERVISOR
+hypervisor_binary=
 
 #-------------------------------------------------------------------------------
 
@@ -281,7 +292,7 @@ show_procs()
 	local patterns=()
 
 	patterns+=("${agent_ctl_binary_name}")
-	patterns+=("${supported_hypervisor}")
+	patterns+=("${configured_hypervisor}")
 	patterns+=("containerd")
 	patterns+=("ctr")
 
@@ -507,7 +518,9 @@ toggle_debug()
 	# (*) - If enabled, it stops "kata-debug.service" from attaching to
 	# the console and the socat call made on the client hangs until
 	# the VM is shut down!
-	section=$(printf "hypervisor.%s" "$supported_hypervisor")
+	local section
+
+	section=$(printf "hypervisor.%s" "$configured_hypervisor_cfg")
 
 	run_cmd sudo crudini --set "$kata_cfg_file" "$section" \
 		'enable_debug' "$hypervisor_debug_value"
@@ -538,17 +551,23 @@ connect_to_vsock_debug_console()
 		[ -z "$agent_addr" ] && die "cannot determine agent VSOCK address"
 	fi
 
-	local suffix=$(echo "$agent_addr"|sed 's!^vsock://!!g')
-	local cid=$(echo "$suffix"|cut -d: -f1)
-	local port=$(echo "$suffix"|cut -d: -f2)
+	local socat_connect=
+	if [ $configured_hypervisor = "qemu" ]; then
+		socat_connect=$(echo "$agent_addr"|sed 's!^vsock://!vsock-connect:!')
+	elif [ $configured_hypervisor = "cloud-hypervisor" ]; then
+		socat_connect="unix-connect:${clh_socket_path}"
+	else
+		die "Cannot configure address for socat, unknown hypervisor: '$configured_hypervisor'"
+	fi
 
 	run_cmd \
 		"tmux new-session \
 		-d \
 		-s \"$KATA_TMUX_CONSOLE_SESSION\" \
 		\"socat \
-			'vsock-connect:${cid}:${port}' \
+			'${socat_connect}' \
 			stdout\""
+
 }
 
 cleanup()
@@ -623,6 +642,11 @@ cleanup()
 	# XXX: namespaces (in function "setup_shared_namespaces()")
 	sudo umount -f "${sandbox_dir}/uts" "${sandbox_dir}/ipc" &>/dev/null || true
 	sudo rm -rf "${sandbox_dir}" &>/dev/null || true
+
+	# Check that clh socket was deleted
+	if [ $configured_hypervisor = "cloud-hypervisor" ] && [ ! -z $clh_socket_path ]; then
+		[ -f $clh_socket_path ] && die "CLH socket path $clh_socket_path was not properly cleaned up" 
+	fi
 
 	sudo systemctl restart containerd
 }
@@ -727,14 +751,21 @@ install_socat()
 
 setup()
 {
-	if [ "${KATA_HYPERVISOR:-}" != "$supported_hypervisor" ]
-	then
+	configured_hypervisor="${KATA_HYPERVISOR:-}"
+
+	if [ "${KATA_HYPERVISOR:-}" = "qemu" ]; then
+		hypervisor_binary="qemu-system-${arch}"
+		configured_hypervisor_cfg="qemu"
+	elif [ "${KATA_HYPERVISOR:-}" = "cloud-hypervisor" ]; then
+		hypervisor_binary="cloud-hypervisor"
+		configured_hypervisor_cfg="clh"
+	else
 		local msg=""
 		msg+="Exiting as hypervisor test dependency not met"
-		msg+=" (expected '$supported_hypervisor', found '$KATA_HYPERVISOR')"
-		info "$msg"
-		exit 0
+		msg+=" (expected 'qemu' or 'cloud-hypervisor', found '$KATA_HYPERVISOR')"
+		die "$msg"
 	fi
+	info "Configured hypervisor is $configured_hypervisor"
 
 	source /etc/os-release || source /usr/lib/os-release
 
@@ -812,13 +843,15 @@ setup()
 	# Check configured hypervisor
 
 	local hypervisor_section
-	hypervisor_section=$(printf "hypervisor.%s\n" "${supported_hypervisor}")
+
+	hypervisor_section=$(printf "hypervisor.%s\n" "${configured_hypervisor_cfg}")
+
 	local ret
 
 	{ crudini --get "${kata_cfg_file}" "${hypervisor_section}" &>/dev/null; ret=$?; } || true
 
 	[ "$ret" -eq 0 ] || \
-		die "test only supports the ${supported_hypervisor} hypervisor"
+		die "Configured hypervisor ${configured_hypervisor} does not match config file ${kata_cfg_file}"
 
 	setup_containerd
 }
@@ -861,7 +894,7 @@ wait_for_kata_vm_agent_to_start()
 	[ -z "$log_file" ] && die "need container ID"
 
 	# First, check the containerd status of the container
-	local cmd="sudo ctr c list -q | grep -q \"^${cid}\""
+	local cmd="sudo ctr task list | grep \"${cid}\" | grep -q \"RUNNING\""
 
 	info "Waiting for VM to start (cid: '$cid')"
 
@@ -993,16 +1026,25 @@ run_agent_ctl()
 		bundle_dir="FIXME-set-to-OCI-bundle-directory"
 	fi
 
+	local server_address=
+	if [ $configured_hypervisor = "qemu" ]; then
+		server_address="--server-address \"${server_addr}\""
+	elif [ $configured_hypervisor = "cloud-hypervisor" ]; then
+		server_address="--server-address \"${server_addr}\" --hybrid-vsock"
+	else
+		die "Cannot configure server address, unknown hypervisor: '$configured_hypervisor'"
+	fi
+
 	run_cmd \
 		sudo \
 		RUST_BACKTRACE=full \
 		"${agent_ctl_path}" \
 		-l debug \
 		connect \
-		--server-address "${server_addr}" \
+		"${server_address}" \
 		--bundle-dir "${bundle_dir}" \
 		"${cmds}" \
-		$redirect
+		"${redirect}"
 }
 
 # This function "cheats" a little - it gets the agent
@@ -1021,15 +1063,31 @@ stop_local_agent()
 		"${cmds[@]}"
 }
 
+get_addresses()
+{
+	local addresses=
+
+	if [ $configured_hypervisor = "qemu" ]; then
+                addresses=$(ss -Hp --vsock |\
+                        egrep -v "\<socat\>" |\
+                        awk '$2 ~ /^ESTAB$/ {print $6}' |\
+                        grep ":${EXPECTED_VSOCK_PORT}$")
+	elif [ $configured_hypervisor = "cloud-hypervisor" ]; then
+                # since we preconfigured the socket, we are checking to see if it is reported
+                addresses=$(ss -Hp |\
+                        grep "${clh_socket_path}" |\
+                        awk '$2 ~ /^ESTAB$/ {print $5}')
+	else
+		die "Cannot retrieve address, unknown hypervisor: '$configured_hypervisor'"
+	fi
+
+	echo ${addresses}
+}
+
 # Doesn't fail. Instead it will return the empty string on error.
 get_agent_vsock_address_simple()
 {
-	local addresses
-
-	addresses=$(ss -Hp --vsock |\
-		egrep -v "\<socat\>" |\
-		awk '$2 ~ /^ESTAB$/ {print $6}' |\
-		grep ":${EXPECTED_VSOCK_PORT}$")
+	local addresses=$(get_addresses)
 
 	[ -z "$addresses" ] && return 1
 
@@ -1040,25 +1098,27 @@ get_agent_vsock_address_simple()
 
 	[ "$count" -eq "$expected_count" ] || return 1
 
-	local port
-	port=$(echo "$addresses"|cut -d: -f2)
+	if [ $configured_hypervisor = "qemu" ]; then
+		local cid
+		local port
 
-	local cid
-	cid=$(echo "$addresses"|cut -d: -f1)
+		cid=$(echo "$addresses"|cut -d: -f1)
+		port=$(echo "$addresses"|cut -d: -f2)
 
-	echo "vsock://${cid}:${port}"
+		echo "vsock://${cid}:${port}"
+	elif [ $configured_hypervisor = "cloud-hypervisor" ]; then
+		address=$(echo "$addresses" | awk 'NR==1{print $1}')
+		echo "unix://${address}"
+	else
+		die "Cannot get agent vsock address, unknown hypervisor: '$configured_hypervisor'"
+	fi
 
 	return 0
 }
 
 get_agent_vsock_address()
 {
-	local addresses
-
-	addresses=$(ss -Hp --vsock |\
-		egrep -v "\<socat\>" |\
-		awk '$2 ~ /^ESTAB$/ {print $6}' |\
-		grep ":${EXPECTED_VSOCK_PORT}$")
+	local addresses=$(get_addresses)
 
 	[ -z "$addresses" ] && die "no VSOCK connections found"
 
@@ -1067,16 +1127,25 @@ get_agent_vsock_address()
 	local count
 	count=$(echo "$addresses"|wc -l || true)
 
-	[ "$count" -eq "$expected_count" ] \
-		|| die "expected $expected_count VSOCK entry, found $count: '$addresses'"
+	if [ $configured_hypervisor = "qemu" ]; then
+		# For QEMU we always expect 1 result. For Cloud Hypervisor, if a debug console is configured
+		# and running, we will have more than 1 result, so only run this check for QEMU
+		[ "$count" -eq "$expected_count" ] \
+			|| die "expected $expected_count VSOCK entry, found $count: '$addresses'"
 
-	local cid
-	local port
+		local cid
+		local port
 
-	cid=$(echo "$addresses"|cut -d: -f1)
-	port=$(echo "$addresses"|cut -d: -f2)
+		cid=$(echo "$addresses"|cut -d: -f1)
+		port=$(echo "$addresses"|cut -d: -f2)
 
-	echo "vsock://${cid}:${port}"
+		echo "vsock://${cid}:${port}"
+	elif [ $configured_hypervisor = "cloud-hypervisor" ]; then
+		address=$(echo "$addresses" | awk 'NR==1{print $1}')
+		echo "unix://${address}"
+	else
+		die "Cannot get agent vsock address, unknown hypervisor: '$configured_hypervisor'"
+	fi
 }
 
 stop_agent_in_kata_vm()
@@ -1254,11 +1323,18 @@ run_trace_forwarder()
 	command -v "$forwarder_binary_name" &>/dev/null || \
 		(cd "$forwarder_dir" && cargo install --path .)
 
+	local socket_path_tf=""
+
+	# If using CLH, socket path must be passed to trace forwarder
+	if [ $configured_hypervisor = "cloud-hypervisor" ]; then
+		socket_path_tf="--socket-path ${clh_socket_path}"
+	fi
+
 	run_cmd \
 		"tmux new-session \
 		-d \
 		-s \"$KATA_TMUX_FORWARDER_SESSION\" \
-		\"$forwarder_binary_name --dump-only -l trace\""
+		\"$forwarder_binary_name --dump-only -l trace ${socket_path_tf}\""
 }
 
 check_agent_stopped()
@@ -1363,6 +1439,13 @@ run_single_agent()
 
 	setup_agent "$shutdown_test_type"
 
+	if [ $configured_hypervisor = "cloud-hypervisor" ]; then
+		# CLH uses hybrid VSOCK which uses a local UNIX socket that we need to specify
+		socket_path_template=$clh_socket_prefix$(sudo kata-runtime env --json | jq '.Hypervisor.SocketPath')
+		clh_socket_path=$(echo "$socket_path_template" | sed "s/{ID}/${container_id}/g" | tr -d '"')
+		[ "$dry_run" = 'false' ] && sudo mkdir -p $(dirname "$clh_socket_path")
+	fi
+
 	run_trace_forwarder "$shutdown_test_type"
 
 	test_start_time=$(date '+%F %T')
@@ -1425,11 +1508,7 @@ run_agent()
 					"$ctl_log_file" \
 					"$agent_log_file"
 
-				local addresses=$(ss -Hp --vsock |\
-					egrep -v "\<socat\>" |\
-					awk '$2 ~ /^ESTAB$/ {print $6}' |\
-					grep ":${EXPECTED_VSOCK_PORT}$" \
-					|| true)
+				local addresses=$(get_addresses || true)
 
 				[ -z "$addresses" ] || \
 					die "found unexpected vsock addresses: '$addresses'"

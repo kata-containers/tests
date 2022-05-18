@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2019 Intel Corporation
+# Copyright (c) 2022 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -20,9 +20,9 @@ main() {
 	clone_katacontainers_repo
 
 	pushd $katacontainers_repo_dir
-	sudo -E PATH=$PATH bash ${buildscript} --build=cloud-hypervisor
-	sudo tar -xvJpf build/kata-static-cloud-hypervisor.tar.xz -C /
-	sudo ln -sf /opt/kata/bin/cloud-hypervisor /usr/bin/cloud-hypervisor
+	sudo -E PATH=$PATH bash ${buildscript} --build=virtiofsd
+	sudo tar -xvJpf build/kata-static-virtiofsd.tar.xz -C /
+	sudo ln -sf /opt/kata/libexec/virtiofsd /usr/libexec/virtiofsd
 	popd
 }
 

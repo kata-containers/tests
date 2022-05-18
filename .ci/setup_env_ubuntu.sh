@@ -43,6 +43,8 @@ declare -A packages=( \
 	[libsystemd]="libsystemd-dev" \
 	[redis]="redis-server" \
 	[agent_shutdown_test]="tmux" \
+	[virtiofsd_dependencies]="unzip" \
+	[webhook_dependencies]="openssl" \
 )
 
 if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 20.04" | bc -q)" == "1" ]; then

@@ -72,6 +72,7 @@ declare -A packages=( \
 	[redis]="redis" \
 	[make]="make" \
 	[agent_shutdown_test]="tmux" \
+	[virtiofsd_dependencies]="unzip" \
 )
 
 main()
