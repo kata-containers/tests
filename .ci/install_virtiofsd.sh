@@ -14,6 +14,8 @@ cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 
 main() {
+	bash "${cidir}/install_rust.sh" && source "$HOME/.cargo/env"
+
 	local buildscript="${katacontainers_repo_dir}/tools/packaging/kata-deploy/local-build/kata-deploy-binaries.sh"
 
 	# Just in case the kata-containers repo is not cloned yet.
