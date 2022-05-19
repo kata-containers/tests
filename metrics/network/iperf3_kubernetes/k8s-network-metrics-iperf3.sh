@@ -26,7 +26,8 @@ source "${SCRIPT_PATH}/../../../.ci/lib.sh"
 source "${SCRIPT_PATH}/../../lib/common.bash"
 test_repo="${test_repo:-github.com/kata-containers/tests}"
 iperf_file=$(mktemp iperfresults.XXXXXXXXXX)
-TEST_NAME="${TEST_NAME:-IPerf}"
+TEST_NAME="${TEST_NAME:-network-iperf3}"
+COLLECT_ALL="${COLLECT_ALL:-false}"
 
 function remove_tmp_file() {
 	rm -rf "${iperf_file}"
@@ -34,69 +35,84 @@ function remove_tmp_file() {
 
 trap remove_tmp_file EXIT
 
-function iperf3_bandwidth() {
-	iperf3_start_deployment
-	local TEST_NAME="network iperf3 bandwidth"
+function iperf3_all_collect_results() {
 	metrics_json_init
-
-	# Start server
-	local transmit_timeout="30"
-
-	kubectl exec -i "$client_pod_name" -- sh -c "iperf3 -J -c ${server_ip_add} -t ${transmit_timeout}" | jq '.end.sum_received.bits_per_second' > "${iperf_file}"
-	result=$(cat "${iperf_file}")
-
+	metrics_json_start_array
 	local json="$(cat << EOF
 	{
 		"bandwidth": {
-			"Result" : $result,
-			"Units" : "bits per second"
+			"Result" : $bandwidth_result,
+			"Units" : "$bandwidth_units"
+		},
+		"jitter": {
+			"Result" : $jitter_result,
+			"Units" : "$jitter_units"
 		}
 	}
 EOF
 )"
-
 	metrics_json_add_array_element "$json"
 	metrics_json_end_array "Results"
-
-	metrics_json_save
-	iperf3_deployment_cleanup
 }
 
-function iperf3_utc_jitter() {
-	iperf3_start_deployment
-	local TEST_NAME="network iperf3 utc jitter"
-	metrics_json_init
+function iperf3_bandwidth() {
+	# Start server
+	local transmit_timeout="30"
 
+	kubectl exec -i "$client_pod_name" -- sh -c "iperf3 -J -c ${server_ip_add} -t ${transmit_timeout}" | jq '.end.sum_received.bits_per_second' > "${iperf_file}"
+	export bandwidth_result=$(cat "${iperf_file}")
+	export bandwidth_units="bits per second"
+
+	if [ "$COLLECT_ALL" == "true" ]; then
+		iperf3_all_collect_results
+	else
+		metrics_json_init
+		metrics_json_start_array
+
+		local json="$(cat << EOF
+		{
+			"bandwidth": {
+				"Result" : $bandwidth_result,
+				"Units" : "$bandwidth_units"
+			}
+		}
+EOF
+)"
+		metrics_json_add_array_element "$json"
+		metrics_json_end_array "Results"
+	fi
+}
+
+function iperf3_jitter() {
 	# Start server
 	local transmit_timeout="30"
 
 	kubectl exec -i "$client_pod_name" -- sh -c "iperf3 -J -c ${server_ip_add} -u -t ${transmit_timeout}" | jq '.end.sum.jitter_ms' > "${iperf_file}"
 	result=$(cat "${iperf_file}")
+	export jitter_result=$(printf "%0.3f\n" $result)
+	export jitter_units="ms"
 
-	local json="$(cat << EOF
-	{
-		"jitter": {
-			"Result" : $result,
-			"Units" : "ms"
+	if [ "$COLLECT_ALL" == "true" ]; then
+		iperf3_all_collect_results
+	else
+		metrics_json_init
+		metrics_json_start_array
+
+		local json="$(cat << EOF
+		{
+			"jitter": {
+				"Result" : $jitter_result,
+				"Units" : "ms"
+			}
 		}
-	}
 EOF
 )"
-
-	metrics_json_add_array_element "$json"
-	metrics_json_end_array "Results"
-
-	metrics_json_save
-	iperf3_deployment_cleanup
+		metrics_json_add_array_element "$json"
+		metrics_json_end_array "Results"
+	fi
 }
 
 function cpu_metrics_iperf3() {
-	cmd=("awk")
-	check_cmds "${cmds[@]}"
-
-	iperf3_start_deployment
-	local TEST_NAME="cpu metrics running iperf3"
-
 	# Start server
 	local transmit_timeout="80"
 
@@ -119,7 +135,6 @@ EOF
 	metrics_json_end_array "Results"
 
 	metrics_json_save
-	iperf3_deployment_cleanup
 }
 
 function iperf3_start_deployment() {
@@ -210,14 +225,14 @@ EOF
 
 function main() {
 	init_env
+	iperf3_start_deployment
 
 	local OPTIND
 	while getopts ":abcjh:" opt
 	do
 		case "$opt" in
 		a)	# all tests
-			test_bandwidth="1"
-			test_jitter="1"
+			test_all="1"
 			;;
 		b)	# bandwith test
 			test_bandwith="1"
@@ -245,6 +260,7 @@ function main() {
 	[[ -z "$test_bandwith" ]] && \
 	[[ -z "$test_jitter" ]] && \
 	[[ -z "$test_cpu" ]] && \
+	[[ -z "$test_all" ]] && \
 		help && die "Must choose at least one test"
 
 	if [ "$test_bandwith" == "1" ]; then
@@ -258,6 +274,13 @@ function main() {
 	if [ "$test_cpu" == "1" ]; then
 		cpu_metrics_iperf3
 	fi
+
+	if [ "$test_all" == "1" ]; then
+		export COLLECT_ALL=true && iperf3_bandwidth && iperf3_jitter
+	fi
+
+	metrics_json_save
+	iperf3_deployment_cleanup
 }
 
 main "$@"
