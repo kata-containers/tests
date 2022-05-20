@@ -73,6 +73,8 @@ setup() {
 	clear_kernel_params
 	add_kernel_params \
 		"agent.container_policy_file=/etc/containers/quay_verification/quay_policy.json"
+	
+	copy_files_to_guest
 }
 
 # Check the logged messages on host have a given message.
@@ -114,7 +116,6 @@ assert_logs_contain() {
 	assert_pod_fail "$container_config"
 
 	assert_logs_contain 'Signature for identity .* is not accepted'
-
 }
 
 @test "$test_tag Test can pull an unencrypted unsigned image from an unprotected registry" {
@@ -123,7 +124,6 @@ assert_logs_contain() {
 	echo $pod_config
 
 	create_test_pod
-
 }
 
 @test "$test_tag Test unencrypted signed image with unknown signature is rejected" {
