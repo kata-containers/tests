@@ -52,15 +52,16 @@ echo "Install runtime"
 case "${KATA_HYPERVISOR}" in
 	"cloud-hypervisor")
 		"${cidir}/install_cloud_hypervisor.sh"
-		echo "Installing experimental_qemu to install virtiofsd"
-		[ "${arch}" == "x86_64" ] && "${cidir}/install_virtiofsd.sh" || install_qemu
+		echo "Installing virtiofsd"
+		"${cidir}/install_virtiofsd.sh"
 		;;
 	"firecracker")
 		"${cidir}/install_firecracker.sh"
 		;;
 	"qemu")
 		install_qemu
-		[ "${arch}" == "x86_64" ] && "${cidir}/install_virtiofsd.sh"
+		echo "Installing virtiofsd"
+		"${cidir}/install_virtiofsd.sh"
 		;;
 	*)
 		die "${KATA_HYPERVISOR} not supported for CI install"
