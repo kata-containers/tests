@@ -56,9 +56,6 @@ uncompress_static_qemu() {
 	[ -n "$qemu_tar_location" ] || die "provide the location of the QEMU compressed file"
 	sudo tar -xf "${qemu_tar_location}" -C /
 	# verify installed binaries existance
-	if [[ ${ARCH} != "x86_64" ]]; then
-		ls /usr/libexec/kata-qemu/virtiofsd || return 1
-	fi
 	ls /usr/bin/qemu-system-x86_64 || return 1
 }
 
