@@ -482,7 +482,7 @@ get_pr_changed_file_details()
 # Gets a list of files and/or directories to build a SHA-256 from their contents.
 # Returns the SHA-256 hash if succeeded, otherwise an empty string.
 sha256sum_from_files() {
-	local files_in=${1:-}
+	local files_in=${@:-}
 	local files=""
 	local shasum=""
 

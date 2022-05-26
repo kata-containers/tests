@@ -16,11 +16,11 @@ We provide several tests to ensure Kata-Containers run on different scenarios
 and with different container managers.
 
 1. Integration tests to ensure compatibility with:
-   - [Kubernetes](https://github.com/kata-containers/tests/tree/main/integration/kubernetes)
-   - [Containerd](https://github.com/kata-containers/tests/tree/main/integration/containerd)
-2. [Stability tests](https://github.com/kata-containers/tests/tree/main/integration/stability)
-3. [Metrics](https://github.com/kata-containers/tests/tree/main/metrics)
-4. [VFIO](https://github.com/kata-containers/tests/tree/main/functional/vfio)
+   - [Kubernetes](./integration/kubernetes)
+   - [Containerd](./integration/containerd)
+2. [Stability tests](./integration/stability)
+3. [Metrics](./metrics)
+4. [VFIO](./functional/vfio)
 
 ## CI Content
 
