@@ -120,13 +120,6 @@ build_and_install_qemu() {
 
 	echo "Install QEMU"
 	sudo -E make install
-	# qemu by default installs virtiofsd under libexec
-	# x86_64 is using the rust version of QEMU
-	if [[ ${ARCH} != "x86_64" ]]; then
-		sudo mkdir -p /usr/libexec/kata-qemu/
-		sudo ln -sf ${PREFIX}/libexec/qemu/virtiofsd /usr/libexec/kata-qemu/virtiofsd
-		ls -l /usr/libexec/kata-qemu/virtiofsd || return 1
-	fi
 	popd
 }
 
