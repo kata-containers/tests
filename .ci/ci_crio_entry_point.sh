@@ -126,6 +126,7 @@ golang_version="1.18.1"
 yq w -i versions.yaml languages.golang.meta.newest-version "${golang_version}"
 
 critools_version="${branch_release_number}.0"
+[ ${critools_version} == "1.24.0" ] && critools_version="1.24.2"
 echo "Using critools ${critools_version}"
 yq w -i versions.yaml externals.critools.version "${critools_version}"
 yq r versions.yaml externals.critools.version
