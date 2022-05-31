@@ -34,6 +34,11 @@ untaint_node() {
 		kubectl taint nodes "${node_name}" \
 			node-role.kubernetes.io/master:NoSchedule-
 	fi
+	if eval $get_taints | grep -q 'control-plane'; then
+		info "Taint 'control-plane' is found. Untaint the node so pods can be scheduled."
+		kubectl taint nodes "${node_name}" \
+			node-role.kubernetes.io/control-plane-
+	fi
 }
 
 wait_pods_ready()
