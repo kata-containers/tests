@@ -13,6 +13,8 @@ set -o errtrace
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 
+DESTDIR="${DESTDIR:-/}"
+
 main() {
 	bash "${cidir}/install_rust.sh" && source "$HOME/.cargo/env"
 
@@ -23,8 +25,14 @@ main() {
 
 	pushd $katacontainers_repo_dir
 	sudo -E PATH=$PATH bash ${buildscript} --build=virtiofsd
-	sudo tar -xvJpf build/kata-static-virtiofsd.tar.xz -C /
-	sudo ln -sf /opt/kata/libexec/virtiofsd /usr/libexec/virtiofsd
+	sudo tar -xvJpf build/kata-static-virtiofsd.tar.xz -C "${DESTDIR}"
+	# Kata CI requires the link but this isn't true to all scenarios,
+	# for example, on OpenShift CI everything should be installed under
+	# /opt/kata. So do not try to create the link unless the directory
+	# exist.
+	[ -d "${DESTDIR}/usr/libexec" ] && \
+		sudo ln -sf "${DESTDIR}/opt/kata/libexec/virtiofsd" \
+			"${DESTDIR}/usr/libexec/virtiofsd"
 	popd
 }
 
