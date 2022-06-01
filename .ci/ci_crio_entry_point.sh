@@ -36,7 +36,7 @@ export CI_JOB="EXTERNAL_CRIO"
 export INSTALL_KATA="yes"
 export GO111MODULE=auto
 
-latest_release="1.23"
+latest_release="1.24"
 
 sudo bash -c "cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
@@ -126,6 +126,7 @@ golang_version="1.18.1"
 yq w -i versions.yaml languages.golang.meta.newest-version "${golang_version}"
 
 critools_version="${branch_release_number}.0"
+[ ${critools_version} == "1.24.0" ] && critools_version="1.24.2"
 echo "Using critools ${critools_version}"
 yq w -i versions.yaml externals.critools.version "${critools_version}"
 yq r versions.yaml externals.critools.version

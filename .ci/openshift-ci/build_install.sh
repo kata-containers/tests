@@ -152,6 +152,8 @@ yum install -y dracut
 
 "${cidir}/install_runtime.sh"
 
+"${cidir}/install_virtiofsd.sh"
+
 # The resulting kata installation will be merged in rhcos filesystem, and
 # symlinks are troublesome. So instead let's convert them to in-place files.
 for ltarget in $(find ${DESTDIR} -type l); do
