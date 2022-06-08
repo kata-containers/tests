@@ -36,16 +36,37 @@ function cassandra_write_test() {
 	# This is needed to wait that cassandra is up
 	sleep 30
 	kubectl exec -i cassandra-0 -- sh -c "$write_cmd" > "${cassandra_file}"
-	op_rate=$(cat "${cassandra_file}" | grep -e "Op rate" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	write_op_rate=$(cat "${cassandra_file}" | grep -e "Op rate" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	write_latency_mean=$(cat "${cassandra_file}" | grep -e "Latency mean" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	write_latency_95th=$(cat "${cassandra_file}" | grep -e "Latency 95th percentile" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	write_latency_99th=$(cat "${cassandra_file}" | grep -e "Latency 99th percentile" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	write_latency_median=$(cat "${cassandra_file}" | grep -e "Latency median" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+
 	metrics_json_init
 	# Save configuration
 	metrics_json_start_array
 
 	local json="$(cat << EOF
 	{
-		"Op rate": {
-			"Result" : "$op_rate",
+		"Write Op rate": {
+			"Result" : "$write_op_rate",
 			"Units" : "op/s"
+		},
+		"Write Latency Mean": {
+			"Result" : "$write_latency_mean",
+			"Units" : "ms"
+		},
+		"Write Latency 95th percentile": {
+			"Result" : "$write_latency_95th",
+			"Units" : "ms"
+		},
+		"Write Latency 99th percentile": {
+			"Result" : "$write_latency_99th",
+			"Units" : "ms"
+		},
+		"Write Latency Median" : {
+			"Result" : "$write_latency_median",
+			"Units" : "ms"
 		}
 	}
 EOF
