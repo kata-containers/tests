@@ -536,7 +536,8 @@ check_url()
 
 	local ret
 
-	{ curl -sIL --max-time "$url_check_timeout_secs" --retry "$url_check_max_tries" "$url" &>"$curl_out"; ret=$?; } || true
+	{ curl -sIL -H "Accept-Encoding: zstd, br, gzip, deflate" --max-time "$url_check_timeout_secs" \
+		--retry "$url_check_max_tries" "$url" &>"$curl_out"; ret=$?; } || true
 
 	# A transitory error, or the URL is incorrect,
 	# but capture either way.
