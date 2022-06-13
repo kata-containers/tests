@@ -24,7 +24,7 @@ kernel_packaging_dir="${katacontainers_repo_dir}/tools/packaging/kernel"
 readonly tmp_dir="$(mktemp -d -t install-kata-XXXXXXXXXXX)"
 
 exit_handler() {
-	rm -rf "${tmp_dir}"
+	sudo -E PATH="$PATH" rm -rf "${tmp_dir}"
 }
 
 trap exit_handler EXIT
@@ -181,7 +181,7 @@ main() {
 			install_kernel "${kernel_type}" $(get_version "assets.kernel.tdx.tag")
 			;;
 		sev)
-			install_kernel "${kernel_type}" $(get_version "assets.kernel.sev.tag")
+			install_kernel "${kernel_type}" $(get_version "assets.kernel.sev.version")
 			;;
 		*)
 			info "kernel type '${kernel_type}' not supported"

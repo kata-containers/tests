@@ -1,0 +1,44 @@
+# Copyright 2022 Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+aa_kbc_params = "offline_sev_kbc::null"
+[endpoints]
+allowed = [
+"AddARPNeighborsRequest",
+"AddSwapRequest",
+"CloseStdinRequest",
+"CopyFileRequest",
+"CreateContainerRequest",
+"CreateSandboxRequest",
+"DestroySandboxRequest",
+#"ExecProcessRequest",
+"GetMetricsRequest",
+"GetOOMEventRequest",
+"GuestDetailsRequest",
+"ListInterfacesRequest",
+"ListRoutesRequest",
+"MemHotplugByProbeRequest",
+"OnlineCPUMemRequest",
+"PauseContainerRequest",
+"PullImageRequest",
+"ReadStreamRequest",
+"RemoveContainerRequest",
+#"ReseedRandomDevRequest",
+"ResizeVolumeRequest",
+"ResumeContainerRequest",
+"SetGuestDateTimeRequest",
+"SignalProcessRequest",
+"StartContainerRequest",
+"StartTracingRequest",
+"StatsContainerRequest",
+"StopTracingRequest",
+"TtyWinResizeRequest",
+"UpdateContainerRequest",
+"UpdateInterfaceRequest",
+"UpdateRoutesRequest",
+"VolumeStatsRequest",
+"WaitProcessRequest",
+"WriteStreamRequest"
+]
