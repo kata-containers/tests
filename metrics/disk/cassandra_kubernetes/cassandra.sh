@@ -14,9 +14,10 @@ source "${SCRIPT_PATH}/../../lib/common.bash"
 test_repo="${test_repo:-github.com/kata-containers/tests}"
 TEST_NAME="${TEST_NAME:-cassandra}"
 cassandra_file=$(mktemp cassandraresults.XXXXXXXXXX)
+cassandra_read_file=$(mktemp cassandrareadresults.XXXXXXXXXX)
 
 function remove_tmp_file() {
-	rm -rf "${cassandra_file}"
+	rm -rf "${cassandra_file}" "${cassandra_read_file}"
 }
 
 trap remove_tmp_file EXIT
@@ -42,6 +43,14 @@ function cassandra_write_test() {
 	write_latency_99th=$(cat "${cassandra_file}" | grep -e "Latency 99th percentile" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
 	write_latency_median=$(cat "${cassandra_file}" | grep -e "Latency median" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
 
+	export read_cmd="/usr/local/apache-cassandra-3.11.2/tools/bin/cassandra-stress read n=200000 -rate threads=50"
+	kubectl exec -i cassandra-0 -- sh -c "$read_cmd" > "${cassandra_read_file}"
+	read_op_rate=$(cat "${cassandra_read_file}" | grep -e "Op rate" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	read_latency_mean=$(cat "${cassandra_read_file}" | grep -e "Latency mean" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	read_latency_95th=$(cat "${cassandra_read_file}" | grep -e "Latency 95th percentile" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	read_latency_99th=$(cat "${cassandra_read_file}" | grep -e "Latency 99th percentile" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	read_latency_median=$(cat "${cassandra_read_file}" | grep -e "Latency median" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+
 	metrics_json_init
 	# Save configuration
 	metrics_json_start_array
@@ -66,6 +75,26 @@ function cassandra_write_test() {
 		},
 		"Write Latency Median" : {
 			"Result" : "$write_latency_median",
+			"Units" : "ms"
+		},
+		"Read Op rate": {
+			"Result" : "$read_op_rate",
+			"Units" : "op/s"
+		},
+		"Read Latency Mean": {
+			"Result" : "$read_latency_mean",
+			"Units" : "ms"
+		},
+		"Read Latency 95th percentile": {
+			"Result" : "$read_latency_95th",
+			"Units" : "ms"
+		},
+		"Read Latency 99th percentile": {
+			"Result" : "$read_latency_99th",
+			"Units" : "ms"
+		},
+		"Read Latency Median" : {
+			"Result" : "$read_latency_median",
 			"Units" : "ms"
 		}
 	}
