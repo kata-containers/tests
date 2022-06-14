@@ -726,7 +726,7 @@ install_socat()
 	# Required build dependency
 	sudo apt -y install yodl
 
-	local repo='git://repo.or.cz/socat'
+	local repo='https://github.com/3ndG4me/socat'
 
 	pushd "$tmpdir"
 
