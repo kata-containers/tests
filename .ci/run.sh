@@ -58,8 +58,9 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make ksm"
 		echo "INFO: Running kata-monitor test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make monitor"
-		echo "INFO: Running tracing test"
-		sudo -E PATH="$PATH" bash -c "make tracing"
+		echo "INFO: Skiping tracing test and agent shutdown test: Issue: https://github.com/kata-containers/tests/issues/4847"
+		# echo "INFO: Running tracing test"
+		# sudo -E PATH="$PATH" bash -c "make tracing"
 		if [[ "${CI_JOB}" =~ CC_CRI_CONTAINERD ]]; then
 			echo "INFO: Running Confidential Container tests"
 			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-containerd"
