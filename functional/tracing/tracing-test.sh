@@ -421,6 +421,11 @@ main()
                 exit 0
         }
 
+	[ "${CI_JOB:-}" = "CRI_CONTAINERD_K8S_DEVMAPPER" ] && {
+		info "Exiting to limit number of jobs that run tests related to tracing."
+		exit 0
+	}
+
 	case "$cmd" in
 		clean) success="true"; cleanup; exit 0;;
 		help|-h|-help|--help) usage; exit 0;;

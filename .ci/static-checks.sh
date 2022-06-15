@@ -473,6 +473,7 @@ static_check_license_headers()
 			--exclude="*.jpg" \
 			--exclude="*.json" \
 			--exclude="LICENSE*" \
+			--exclude="THIRD-PARTY" \
 			--exclude="*.md" \
 			--exclude="*.pb.go" \
 			--exclude="*pb_test.go" \
