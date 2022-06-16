@@ -73,14 +73,27 @@ minpercent = 10.0
 maxpercent = 10.0
 
 [[metric]]
-name = "network-iperf3-bandwidth"
+name = "network-iperf3"
 type = "json"
 description = "measure container bandwidth using iperf3"
 # Min and Max values to set a 'range' that
 # the median of the CSV Results data must fall
 # within (inclusive)
-checkvar = ".\"network-iperf3-bandwidth\".Results | .[] | .bandwidth.Result"
+checkvar = ".\"network-iperf3\".Results | .[] | .bandwidth.Result"
 checktype = "mean"
 midval = 42241350194.0
 minpercent = 10.0
 maxpercent = 10.0
+
+[[metric]]
+name = "network-iperf3"
+type = "json"
+description = "measure container jitter using iperf3"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"network-iperf3\".Results | .[] | .jitter.Result"
+checktype = "mean"
+midval = 0.023
+minpercent = 40.0
+maxpercent = 40.0

@@ -18,6 +18,7 @@ source "/etc/os-release" || source "/usr/lib/os-release"
 # Whether running on bare-metal mode or not.
 BAREMETAL="${BAREMETAL:-false}"
 CI=${CI:-""}
+CI_JOB=${CI_JOB:-}
 # Path to the cluster network configuration file. Some architectures will
 # overwritten that variable.
 network_plugin_config="${network_plugin_config:-}"
@@ -80,28 +81,33 @@ wait_pods_ready()
 
 build_custom_stress_image()
 {
-	info "Build custom stress image"
-	image_version=$(get_test_version "docker_images.registry.version")
-	registry_image=$(get_test_version "docker_images.registry.registry_url"):"${image_version}"
-	arch=$("${SCRIPT_PATH}/../../.ci/kata-arch.sh")
-	if [[ "${arch}" == "ppc64le" || "${arch}" == "s390x" ]]; then
-		# that image is not built for these architectures
-		image_version=$(get_test_version "docker_images.registry_ibm.version")
-		registry_image=$(get_test_version "docker_images.registry_ibm.registry_url"):"${image_version}"
+	if [ "${CI_JOB}" != "METRICS" ]; then
+		info "Build custom stress image"
+		image_version=$(get_test_version "docker_images.registry.version")
+		registry_image=$(get_test_version "docker_images.registry.registry_url"):"${image_version}"
+		arch=$("${SCRIPT_PATH}/../../.ci/kata-arch.sh")
+		if [[ "${arch}" == "ppc64le" || "${arch}" == "s390x" ]]; then
+			# that image is not built for these architectures
+			image_version=$(get_test_version "docker_images.registry_ibm.version")
+			registry_image=$(get_test_version "docker_images.registry_ibm.registry_url"):"${image_version}"
+		fi
 	fi
 
 	runtimeclass_files_path="${SCRIPT_PATH}/runtimeclass_workloads"
-	pushd "${runtimeclass_files_path}/stress"
-	[ "${container_engine}" == "docker" ] && restart_docker_service
-	sudo -E "${container_engine}" build . -t "${stress_image}"
-	popd
 
-	if [ "${stress_image_pull_policy}" == "Always" ]; then
-		info "Store custom stress image in registry"
-		sudo -E "${container_engine}" run -d -p ${registry_port}:5000 --restart=always --name "${registry_name}" "${registry_image}"
-		# wait for registry container
-		waitForProcess 15 3 "curl http://localhost:${registry_port}"
-		sudo -E "${container_engine}" push "${stress_image}"
+	if [ "${CI_JOB}" != "METRICS" ]; then
+		pushd "${runtimeclass_files_path}/stress"
+		[ "${container_engine}" == "docker" ] && restart_docker_service
+		sudo -E "${container_engine}" build . -t "${stress_image}"
+		popd
+
+		if [ "${stress_image_pull_policy}" == "Always" ]; then
+			info "Store custom stress image in registry"
+			sudo -E "${container_engine}" run -d -p ${registry_port}:5000 --restart=always --name "${registry_name}" "${registry_image}"
+			# wait for registry container
+			waitForProcess 15 3 "curl http://localhost:${registry_port}"
+			sudo -E "${container_engine}" push "${stress_image}"
+		fi
 	fi
 }
 

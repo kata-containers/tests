@@ -58,9 +58,10 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make ksm"
 		echo "INFO: Running kata-monitor test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make monitor"
-		echo "INFO: Running tracing test"
-		sudo -E PATH="$PATH" bash -c "make tracing"
-
+		echo "INFO: Skiping tracing test and agent shutdown test: Issue: https://github.com/kata-containers/tests/issues/4847"
+		# echo "INFO: Running tracing test"
+		# sudo -E PATH="$PATH" bash -c "make tracing"
+		
 		# TODO - one issue #4755 is resolved we can uncomment these and run the CC tests at the end of the run job.
 		# if [[ "${CI_JOB}" =~ CC_CRI_CONTAINERD ]] || [[ "${CI_JOB}" =~ CC_SKOPEO_CRI_CONTAINERD ]]; then
 		# 	echo "INFO: Running Confidential Container tests"

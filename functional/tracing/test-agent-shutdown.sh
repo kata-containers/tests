@@ -788,6 +788,11 @@ setup()
 		exit 0
 	}
 
+	[ "${CI_JOB:-}" = "CRI_CONTAINERD_K8S_DEVMAPPER" ] && {
+		info "Exiting to limit number of jobs that run tests related to tracing."
+		exit 0
+	}
+
 	"${SCRIPT_PATH}/../../.ci/install_rust.sh" && source "$HOME/.cargo/env"
 
 	trap cleanup EXIT

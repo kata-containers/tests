@@ -10,12 +10,6 @@
 source /etc/os-release || source /usr/lib/os-release
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 
-if [ "$ID" == "centos" ] || [ "$ID" == sles ]; then
-	issue="https://github.com/kata-containers/tests/issues/1251"
-	echo "Skip shimv2 on $ID, see: $issue"
-	exit
-fi
-
 ${SCRIPT_PATH}/../../../.ci/install_cri_containerd.sh
 
 cni_bin_path="/opt/cni"

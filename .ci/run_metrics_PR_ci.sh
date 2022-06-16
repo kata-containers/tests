@@ -62,8 +62,7 @@ run() {
 	bash time/launch_times.sh -i public.ecr.aws/ubuntu/ubuntu:latest -n 20
 
 	if [ "${KATA_HYPERVISOR}" = "cloud-hypervisor" ]; then
-		# Run the cpu statistics test
-		bash network/iperf3_kubernetes/k8s-network-metrics-iperf3.sh -b
+		bash network/iperf3_kubernetes/k8s-network-metrics-iperf3.sh -a
 	fi
 
 	popd
