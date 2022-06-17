@@ -31,7 +31,7 @@ jobs:
     - name: Setup GOPATH
       if: ${{ !contains(github.event.pull_request.labels.*.name, 'force-skip-ci') }}
       run: |
-        gopath_org=$(go env GOPATH)/src/github.com/kata-containers/
+        gopath_org=$(go env GOPATH)/src/github.com/kata-tests-testing/
         mkdir -p ${gopath_org}
         ln -s ${PWD} ${gopath_org}
         echo "TRAVIS_BRANCH: ${TRAVIS_BRANCH}"
@@ -56,9 +56,9 @@ jobs:
     - name: Install dependencies
       if: ${{ !contains(github.event.pull_request.labels.*.name, 'force-skip-ci') }}
       run: |
-        cd ${GOPATH}/src/github.com/kata-containers/tests && ./.ci/setup.sh
+        cd ${GOPATH}/src/github.com/kata-tests-testing/tests && ./.ci/setup.sh
     - name: Static checks
       if: ${{ !contains(github.event.pull_request.labels.*.name, 'force-skip-ci') }}
       run: |
-        cd ${GOPATH}/src/github.com/kata-containers/tests
+        cd ${GOPATH}/src/github.com/katat-tests-testing/tests
         make static-checks
