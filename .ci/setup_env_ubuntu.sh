@@ -14,6 +14,10 @@ source "${cidir}/lib.sh"
 echo "Update apt repositories"
 sudo -E apt update
 
+# Removing man-db, workflow's kept failing, fixes: #4480
+echo "Removing man-db, not needed for CI/CD"
+sudo -E apt -y remove --purge man-db
+
 echo "Try to preemptively fix broken dependencies, if any"
 sudo -E apt --fix-broken install -y
 
