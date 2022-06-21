@@ -223,7 +223,7 @@ test_snap_build() {
 		sudo apt install -y snapcraft
 		[ ! -d "${katacontainers_repo_dir}" ] && go get -d "${katacontainers_repo}" || true
 		pushd "${katacontainers_repo_dir}"
-		sudo snapcraft -d snap --destructive-mode
+		sudo snapcraft snap --debug --destructive-mode
 		# PREFIX is changed in snap build, change it back
 		PREFIX=
 		popd
