@@ -99,6 +99,12 @@ Tests relating to the storage (graph, volume) drivers. Measures may include:
 
 For further details see the [storage tests documentation](storage).
 
+### Disk
+
+Test relating to measure reading and writing against clusters.
+
+For further details see the [disk tests documentation](disk).
+
 ## Saving Results
 
 
