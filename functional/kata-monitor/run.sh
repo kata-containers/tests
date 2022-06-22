@@ -96,6 +96,7 @@ create_sandbox_json() {
 {
 	"metadata": {
 		"name": "nginx-$uid_name_suffix",
+		"uid": "$uid_name_suffix",
 		"namespace": "default",
 		"attempt": 1
 	},
