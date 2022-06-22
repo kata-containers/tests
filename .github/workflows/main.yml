@@ -22,6 +22,8 @@ jobs:
       TRAVIS_BRANCH: ${{ github.base_ref }}
       TRAVIS_PULL_REQUEST_BRANCH: ${{ github.head_ref }}
       TRAVIS_PULL_REQUEST_SHA : ${{ github.event.pull_request.head.sha }}
+      GITHUB_USER : ${{ secrets.GITHUB_USER }}
+      GITHUB_TOKEN : ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Install Go
       if: ${{ !contains(github.event.pull_request.labels.*.name, 'force-skip-ci') }}
