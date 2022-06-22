@@ -139,6 +139,8 @@ function setup() {
 
 function run_test() {
 	sudo -E crictl pull "${IMAGE}"
+	# Inject a unique id into pod sandbox
+	sudo sed -i "s/nydus-uid/$(uuidgen)/g" $dir_path/nydus-sandbox.yaml
 	pod=$(sudo -E crictl runp -r kata $dir_path/nydus-sandbox.yaml)
 	echo "Pod $pod created"
 	cnt=$(sudo -E crictl create $pod $dir_path/nydus-container.yaml $dir_path/nydus-sandbox.yaml)
