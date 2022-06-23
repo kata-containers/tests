@@ -76,13 +76,6 @@ ci_config() {
 		fi
 	fi
 
-	if [ -n "${CI}" ]; then
-		(
-		echo "Install cni config"
-		${SCRIPT_PATH}/../../../.ci/configure_cni.sh
-		)
-	fi
-
 	echo "enable debug for kata-runtime"
 	sudo sed -i 's/^#enable_debug =/enable_debug =/g' ${kata_config}
 }

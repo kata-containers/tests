@@ -16,9 +16,7 @@ cni_bin_path="/opt/cni"
 
 # Check if cni plugin binary is already installed, if so skip installation and 
 # simply configure cni.
-if [ -f "${cni_bin_path}/bridge" ]; then
-	${SCRIPT_PATH}/../../../.ci/configure_cni.sh
-else
+if [ ! -f "${cni_bin_path}/bridge" ]; then
 	${SCRIPT_PATH}/../../../.ci/install_cni_plugins.sh
 fi
 
