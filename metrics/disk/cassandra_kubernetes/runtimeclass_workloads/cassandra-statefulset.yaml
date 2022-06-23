@@ -47,15 +47,10 @@ spec:
               value: "Rack1"
             - name: CASSANDRA_ENDPOINT_SNITCH
               value: GossipingPropertyFileSnitch
-          volumeMounts:
-            - name: cassandra-data
-              mountPath: /cassandra/data
-  volumeClaimTemplates:
-    - metadata:
-        name: cassandra-data
-      spec:
-        accessModes: ["ReadWriteOnce"]
-        resources:
-          requests:
-            storage: 1Gi
-
+          volumeDevices:
+            - devicePath: DEVICE_PATH
+              name: my-volume
+      volumes:
+        - name: my-volume
+          persistentVolumeClaim:
+            claimName: block-loop-pvc
