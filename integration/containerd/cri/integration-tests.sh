@@ -198,6 +198,8 @@ testContainerStart() {
 	cat << EOF > "${pod_yaml}"
 metadata:
   name: busybox-sandbox1
+  uid: $(uuidgen)
+  namespace: default
 EOF
 
 	#TestContainerSwap has created its own container_yaml.
