@@ -35,6 +35,7 @@ var (
 	optFioDirect    = "fio.direct"
 	optFioIoDepth   = "fio.iodepth"
 	optFioSize      = "fio.size"
+	optFioNumJobs   = "fio.numjobs"
 )
 
 type RwFioOp struct {
@@ -122,6 +123,7 @@ func (c fioTestConfig) run() (result fioResult, err error) {
 	cmdFio += " --direct=" + directStr
 	cmdFio += " --directory=" + c.directory
 	cmdFio += " --iodepth=" + c.iodepth
+	cmdFio += " --numjobs=" + c.numjobs
 	cmdFio += " --runtime=" + c.runtime
 	cmdFio += " --size=" + c.size
 	cmdFio += " --output-format=json"
@@ -169,6 +171,7 @@ type fioTestConfig struct {
 	blocksize string
 	directory string
 	iodepth   string
+	numjobs   string
 	jobFile   string
 	loops     string
 	runtime   string
@@ -303,6 +306,11 @@ func main() {
 				Value: "16",
 				Usage: "Number of I/O units to keep in flight against the file",
 			},
+			&cli.StringFlag{
+				Name:  optFioNumJobs,
+				Value: "1",
+				Usage: "Number of clones (processes/threads performing the same workload) of this job",
+			},
 		},
 		Action: func(c *cli.Context) error {
 			jobsDir := c.Args().First()
@@ -336,6 +344,7 @@ func main() {
 				directory:        ".",
 				iodepth:          c.String(optFioIoDepth),
 				loops:            "3",
+				numjobs:          c.String(optFioNumJobs),
 				runtime:          "20",
 				size:             c.String(optFioSize),
 				containerRuntime: c.String(optContainerRuntime),
