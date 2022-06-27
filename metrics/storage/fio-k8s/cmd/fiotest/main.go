@@ -84,7 +84,7 @@ func (c fioTestConfig) run() (result fioResult, err error) {
 		}
 	}()
 
-	destDir := "/tmp/fio-jobs"
+	destDir := "/home/fio-jobs"
 	_, err = pod.Exec("mkdir " + destDir)
 	if err != nil {
 		return result, err
