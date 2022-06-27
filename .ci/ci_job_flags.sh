@@ -118,6 +118,7 @@ case "${CI_JOB}" in
 				export SKOPEO=yes
 			fi
 			if [[ "${CI_JOB}" =~ K8S ]]; then
+				export AA_KBC="offline_fs_kbc"
 				export KUBERNETES=yes
 			fi
 			;;

@@ -92,9 +92,9 @@ cc-containerd:
 # Run the Confidential Containers tests for kubernetes.
 cc-kubernetes:
 	bash -f .ci/install_bats.sh
-	K8S_TEST_UNION="confidential/agent_image.bats" \
+	K8S_TEST_UNION="confidential/agent_image.bats confidential/agent_image_encrypted.bats" \
 	bash integration/kubernetes/run_kubernetes_tests.sh
-	
+
 log-parser:
 	make -C cmd/log-parser
 

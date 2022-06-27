@@ -9,22 +9,6 @@ load "${BATS_TEST_DIRNAME}/../../confidential/lib.sh"
 
 test_tag="[cc][agent][kubernetes][containerd]"
 
-# Currently the agent can only check images signature if using skopeo.
-# There isn't a way to probe the agent to determine if skopeo is present
-# or not, so we need to rely on build variables. If we are running under
-# CI then we assume the variables are properly exported, otherwise we
-# should skip testing.
-#
-skip_if_skopeo_not_present () {
-	if [ "${CI:-}" == "true" ]; then
-		if [ "${SKOPEO:-no}" == "no" ]; then
-			skip "Skopeo seems not installed in guest"
-		fi
-	else
-		skip "Cannot determine skopeo is installed in guest"
-	fi
-}
-
 # Create the test pod.
 #
 # Note: the global $sandbox_name, $pod_config should be set
@@ -44,14 +28,6 @@ create_test_pod() {
 	echo "Create the test sandbox"
 	echo "Pod config is: "$pod_config
 	kubernetes_create_cc_pod $pod_config
-}
-
-assert_pod_fail() {
-	local container_config="$1"
-	echo "In assert_pod_fail: "$container_config
-
-	echo "Attempt to create the container but it should fail"
-	! kubernetes_create_cc_pod "$container_config" || /bin/false
 }
 
 setup() {
