@@ -88,6 +88,19 @@ maxpercent = 10.0
 [[metric]]
 name = "network-iperf3"
 type = "json"
+description = "measure container cpu utilization using iperf3"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"network-iperf3\".Results | .[] | .cpu.Result"
+checktype = "mean"
+midval = 99.0
+minpercent = 10.0
+maxpercent = 10.0
+
+[[metric]]
+name = "network-iperf3"
+type = "json"
 description = "measure container jitter using iperf3"
 # Min and Max values to set a 'range' that
 # the median of the CSV Results data must fall

@@ -47,6 +47,10 @@ function iperf3_all_collect_results() {
 		"jitter": {
 			"Result" : $jitter_result,
 			"Units" : "$jitter_units"
+		},
+		"cpu": {
+			"Result" : $cpu_result,
+			"Units"  : "$cpu_units"
 		}
 	}
 EOF
@@ -112,29 +116,33 @@ EOF
 	fi
 }
 
-function cpu_metrics_iperf3() {
+function iperf3_cpu() {
 	# Start server
 	local transmit_timeout="80"
 
 	kubectl exec -i "$client_pod_name" -- sh -c "iperf3 -J -c ${server_ip_add} -t ${transmit_timeout}" | jq '.end.cpu_utilization_percent.host_total' > "${iperf_file}"
-	result=$(cat "${iperf_file}")
+	export cpu_result=$(cat "${iperf_file}")
+	export cpu_units="percent"
 
-	metrics_json_init
+	if [ "$COLLECT_ALL" == "true" ]; then
+		iperf3_all_collect_results
+	else
+		metrics_json_init
+		metrics_json_start_array
 
-	local json="$(cat << EOF
-	{
-		"cpu utilization host total": {
-			"Result" : $result,
-			"Units"  : "percent"
+		local json="$(cat << EOF
+		{
+			"cpu": {
+				"Result" : $cpu_result,
+				"Units"  : "$cpu_units"
+			}
 		}
-	}
 EOF
 )"
 
-	metrics_json_add_array_element "$json"
-	metrics_json_end_array "Results"
-
-	metrics_json_save
+		metrics_json_add_array_element "$json"
+		metrics_json_end_array "Results"
+	fi
 }
 
 function iperf3_start_deployment() {
@@ -272,11 +280,11 @@ function main() {
 	fi
 
 	if [ "$test_cpu" == "1" ]; then
-		cpu_metrics_iperf3
+		iperf3_cpu
 	fi
 
 	if [ "$test_all" == "1" ]; then
-		export COLLECT_ALL=true && iperf3_bandwidth && iperf3_jitter
+		export COLLECT_ALL=true && iperf3_bandwidth && iperf3_jitter && iperf3_cpu
 	fi
 
 	metrics_json_save
