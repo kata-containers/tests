@@ -95,5 +95,5 @@ description = "measure container jitter using iperf3"
 checkvar = ".\"network-iperf3\".Results | .[] | .jitter.Result"
 checktype = "mean"
 midval = 0.023
-minpercent = 40.0
+minpercent = 50.0
 maxpercent = 40.0
