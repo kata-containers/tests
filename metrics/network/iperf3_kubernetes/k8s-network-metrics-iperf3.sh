@@ -51,6 +51,10 @@ function iperf3_all_collect_results() {
 		"cpu": {
 			"Result" : $cpu_result,
 			"Units"  : "$cpu_units"
+		},
+		"parallel": {
+			"Result" : $parallel_result,
+			"Units" : "$parallel_units"
 		}
 	}
 EOF
@@ -107,6 +111,32 @@ function iperf3_jitter() {
 			"jitter": {
 				"Result" : $jitter_result,
 				"Units" : "ms"
+			}
+		}
+EOF
+)"
+		metrics_json_add_array_element "$json"
+		metrics_json_end_array "Results"
+	fi
+}
+
+function iperf3_parallel() {
+	# This will measure four parallel connections with iperf3
+	kubectl exec -i "$client_pod_name" -- sh -c "iperf3 -J -c ${server_ip_add} -P 4" | jq '.end.sum_received.bits_per_second' > "${iperf_file}"
+	export parallel_result=$(cat "${iperf_file}")
+	export parallel_units="bits per second"
+
+	if [ "$COLLECT_ALL" == "true" ]; then
+		iperf3_all_collect_results
+	else
+		metrics_json_init
+		metrics_json_start_array
+
+		local json="$(cat << EOF
+		{
+			"parallel": {
+				"Result" : $parallel_result,
+				"Units" : "$parallel_units"
 			}
 		}
 EOF
@@ -236,7 +266,7 @@ function main() {
 	iperf3_start_deployment
 
 	local OPTIND
-	while getopts ":abcjh:" opt
+	while getopts ":abcjph:" opt
 	do
 		case "$opt" in
 		a)	# all tests
@@ -256,6 +286,10 @@ function main() {
 		j)	# jitter tests
 			test_jitter="1"
 			;;
+		p)
+			# run parallel tests
+			test_parallel="1"
+			;;
 		:)
 			echo "Missing argument for -$OPTARG";
 			help
@@ -268,6 +302,7 @@ function main() {
 	[[ -z "$test_bandwith" ]] && \
 	[[ -z "$test_jitter" ]] && \
 	[[ -z "$test_cpu" ]] && \
+	[[ -z "$test_parallel" ]] && \
 	[[ -z "$test_all" ]] && \
 		help && die "Must choose at least one test"
 
@@ -283,8 +318,12 @@ function main() {
 		iperf3_cpu
 	fi
 
+	if [ "$test_parallel" == "1" ]; then
+		iperf3_parallel
+	fi
+
 	if [ "$test_all" == "1" ]; then
-		export COLLECT_ALL=true && iperf3_bandwidth && iperf3_jitter && iperf3_cpu
+		export COLLECT_ALL=true && iperf3_bandwidth && iperf3_jitter && iperf3_cpu && iperf3_parallel
 	fi
 
 	metrics_json_save
