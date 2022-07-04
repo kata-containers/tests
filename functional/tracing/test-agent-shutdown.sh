@@ -42,6 +42,8 @@ set -o errtrace
 
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 source "${SCRIPT_PATH}/../../.ci/lib.sh"
+source "/etc/os-release" || source "/usr/lib/os-release"
+issue="https://github.com/kata-containers/tests/issues/4922"
 
 CTR_RUNTIME=${CTR_RUNTIME:-"io.containerd.kata.v2"}
 
@@ -221,6 +223,11 @@ kata_cfg_file=
 
 # Set in setup() based on KATA_HYPERVISOR
 hypervisor_binary=
+
+if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 22.04" | bc -q)" == "1" ]; then
+        echo "Skip tracing test is not working with cgroupsv2 see $issue"
+        exit 0
+fi
 
 #-------------------------------------------------------------------------------
 
