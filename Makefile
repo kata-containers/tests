@@ -31,10 +31,7 @@ ifneq ($(wildcard $(ARCH_FILE)),)
 include $(ARCH_FILE)
 endif
 
-default: checkcommits github-labels
-
-checkcommits:
-	make -C cmd/checkcommits
+default: github-labels
 
 github-labels:
 	make -C cmd/github-labels
@@ -112,7 +109,6 @@ pmem:
 
 test: ${UNION}
 
-check: checkcommits
 
 $(INSTALL_TARGETS): install-%: .ci/install_%.sh
 	@bash -f $<
@@ -144,8 +140,6 @@ help:
 
 # PHONY in alphabetical order
 .PHONY: \
-	check \
-	checkcommits \
 	crio \
 	$(INSTALL_TARGETS) \
 	kubernetes \
