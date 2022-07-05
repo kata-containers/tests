@@ -28,7 +28,6 @@ setup() {
 }
 
 @test "$test_tag Test can pull an encrypted image inside the guest with decryption key" {
-    skip_if_skopeo_not_present 
 
     setup_decryption_files_in_guest
     kubernetes_create_ssh_demo_pod
@@ -40,7 +39,6 @@ setup() {
 }
 
 @test "$test_tag Test cannot pull an encrypted image inside the guest without decryption key" {
-    skip_if_skopeo_not_present 
 
     checkout_doc_repo_dir
     assert_pod_fail "k8s-cc-ssh.yaml" 
