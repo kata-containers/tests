@@ -24,10 +24,10 @@ SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 
 source "${SCRIPT_PATH}/../../../.ci/lib.sh"
 source "${SCRIPT_PATH}/../../lib/common.bash"
-test_repo="${test_repo:-github.com/kata-containers/tests}"
 iperf_file=$(mktemp iperfresults.XXXXXXXXXX)
 TEST_NAME="${TEST_NAME:-network-iperf3}"
 COLLECT_ALL="${COLLECT_ALL:-false}"
+CI_JOB="${CI_JOB:-}"
 
 function remove_tmp_file() {
 	rm -rf "${iperf_file}"
@@ -182,8 +182,10 @@ function iperf3_start_deployment() {
 	# Check no processes are left behind
 	check_processes
 
-	# Start kubernetes
-	start_kubernetes
+	if [ -z "${CI_JOB}" ]; then
+		# Start kubernetes
+		start_kubernetes
+	fi
 
 	export KUBECONFIG="$HOME/.kube/config"
 	export service="iperf3-server"
@@ -226,22 +228,10 @@ function iperf3_start_deployment() {
 function iperf3_deployment_cleanup() {
 	kubectl delete deployment "$deployment"
 	kubectl delete service "$deployment"
-	end_kubernetes
-	check_processes
-}
-
-function start_kubernetes() {
-	info "Start k8s"
-	pushd "${GOPATH}/src/${test_repo}/integration/kubernetes"
-	bash ./init.sh
-	popd
-}
-
-function end_kubernetes() {
-	info "End k8s"
-	pushd "${GOPATH}/src/${test_repo}/integration/kubernetes"
-	bash ./cleanup_env.sh
-	popd
+	if [ -z "${CI_JOB}" ]; then
+		end_kubernetes
+		check_processes
+	fi
 }
 
 function help() {
