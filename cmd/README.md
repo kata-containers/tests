@@ -2,7 +2,6 @@
 
 | Tool name | Description |
 |-|-|
-| [`checkcommits`](checkcommits) | Perform checks on Git commits. |
 | [`check-markdown`](check-markdown) | Perform checks on markdown files. |
 | [`checkmetrics`](checkmetrics) | Check a metrics CI results file. |
 | [`checkmetrics/history`](checkmetrics/history) | Generate metrics statistics from Jenkins data. |

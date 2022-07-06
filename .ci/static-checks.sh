@@ -96,7 +96,6 @@ skip_paths(){
 long_options=(
 	[all]="Force checking of all changes, including files in the base branch"
 	[branch]="Specify upstream branch to compare against (default '$branch')"
-	[commits]="Check commits"
 	[docs]="Check document files"
 	[dockerfiles]="Check dockerfiles"
 	[files]="Check files"
@@ -245,43 +244,6 @@ need_chronic() {
 	command -v chronic &>/dev/null || \
 		die "chronic command not found. You must have it installed to run this check." \
 		"Usually it is distributed with the 'moreutils' package of your Linux distribution."
-}
-
-static_check_commits()
-{
-	# Since this script is called from another repositories directory,
-	# ensure the utility is built before running it.
-	# for main branch
-	# (cd "${tests_repo_dir}" && make checkcommits)
-	# for main branch
-	(cd "${tests_repo_dir}" && make checkcommits && git remote set-branches origin ${tests_branch} && git fetch -v)
-
-	command -v checkcommits &>/dev/null || \
-		die 'checkcommits command not found. Ensure that "$GOPATH/bin" is in your $PATH.'
-
-	# Check the commits in the branch
-	{
-		checkcommits \
-			--need-fixes \
-			--need-sign-offs \
-			--ignore-fixes-for-subsystem "release" \
-			--verbose \
-			HEAD \
-			${tests_branch}; \
-			rc="$?";
-	} || true
-
-	if [ "$rc" -ne 0 ]
-	then
-		cat >&2 <<-EOF
-	ERROR: checkcommits failed. See the document below for help on formatting
-	commits for the project.
-
-		https://github.com/kata-containers/community/blob/main/CONTRIBUTING.md#patch-format
-
-EOF
-		exit 1
-	fi
 }
 
 static_check_go_arch_specific()
@@ -1402,15 +1364,6 @@ main()
 
 	for func in $all_check_funcs
 	do
-		if [ "$func" = "static_check_commits" ]; then
-			if [ -n "$TRAVIS_BRANCH" ] && [ "$TRAVIS_BRANCH" != "${branch}" ]
-			then
-				echo "Skipping checkcommits"
-				echo "See issue: https://github.com/kata-containers/tests/issues/632"
-				continue
-			fi
-		fi
-
 		run_or_list_check_function "$func"
 	done
 }
