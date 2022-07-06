@@ -73,6 +73,58 @@ minpercent = 10.0
 maxpercent = 10.0
 
 [[metric]]
+name = "cassandra"
+type = "json"
+description = "measure write op rate with cassandra"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"cassandra\".Results | .[] | .Write-Op-rate.Result"
+checktype = "mean"
+midval = 9293.0
+minpercent = 10.0
+maxpercent = 10.0
+
+[[metric]]
+name = "cassandra"
+type = "json"
+description = "measure latency mean with cassandra"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"cassandra\".Results | .[] | .Write-Latency-Mean.Result"
+checktype = "mean"
+midval = 21.4
+minpercent = 10.0
+maxpercent = 10.0
+
+[[metric]]
+name = "cassandra"
+type = "json"
+description = "measure read op rate with cassandra"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"cassandra\".Results | .[] | .Read-Op-rate.Result"
+checktype = "mean"
+midval = 6135.0
+minpercent = 10.0
+maxpercent = 10.0
+
+[[metric]]
+name = "cassandra"
+type = "json"
+description = "measure read latency mean with cassandra"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"cassandra\".Results | .[] | .Read-Latency-Mean.Result"
+checktype = "mean"
+midval = 8.0
+minpercent = 10.0
+maxpercent = 10.0
+
+[[metric]]
 name = "network-iperf3"
 type = "json"
 description = "measure container bandwidth using iperf3"

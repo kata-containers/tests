@@ -3,7 +3,6 @@
 # Copyright (c) 2022 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
-
 set -e
 set -x
 
@@ -11,7 +10,7 @@ SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 
 source "${SCRIPT_PATH}/../../../.ci/lib.sh"
 source "${SCRIPT_PATH}/../../lib/common.bash"
-test_repo="${test_repo:-github.com/kata-containers/tests}"
+CI_JOB="${CI_JOB:-}"
 TEST_NAME="${TEST_NAME:-cassandra}"
 cassandra_file=$(mktemp cassandraresults.XXXXXXXXXX)
 cassandra_read_file=$(mktemp cassandrareadresults.XXXXXXXXXX)
@@ -26,7 +25,7 @@ function cassandra_write_test() {
 	cassandra_start
 	export pod_name="cassandra-0"
 	export write_cmd="/usr/local/apache-cassandra-3.11.2/tools/bin/cassandra-stress write n=1000000 cl=one -mode native cql3 -schema keyspace="keyspace1" -pop seq=1..1000000 -node cassandra"
- 	number_of_retries="50"
+ 	number_of_retries="300"
 	for _ in $(seq 1 "$number_of_retries"); do
 		if kubectl exec -i cassandra-0 -- sh -c 'nodetool status' | grep Up; then
 			ok="1"
@@ -34,10 +33,21 @@ function cassandra_write_test() {
 		fi
  		sleep 1
 	done
+
+	kubectl exec -i cassandra-0 -- sh -c "/usr/local/apache-cassandra-3.11.2/bin/cassandra -R"
+
 	# This is needed to wait that cassandra is up
 	sleep 30
+	for _ in $(seq 1 "$number_of_retries"); do
+		if kubectl exec -i cassandra-0 -- sh -c "$write_cmd" | grep "Type : write"; then
+			ok="1"
+			break;
+		fi
+		sleep 1
+	done
+
 	kubectl exec -i cassandra-0 -- sh -c "$write_cmd" > "${cassandra_file}"
-	write_op_rate=$(cat "${cassandra_file}" | grep -e "Op rate" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	write_op_rate=$(cat "${cassandra_file}" | grep -e "Op rate" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1 | sed 's/,//g')
 	write_latency_mean=$(cat "${cassandra_file}" | grep -e "Latency mean" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
 	write_latency_95th=$(cat "${cassandra_file}" | grep -e "Latency 95th percentile" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
 	write_latency_99th=$(cat "${cassandra_file}" | grep -e "Latency 99th percentile" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
@@ -45,7 +55,7 @@ function cassandra_write_test() {
 
 	export read_cmd="/usr/local/apache-cassandra-3.11.2/tools/bin/cassandra-stress read n=200000 -rate threads=50"
 	kubectl exec -i cassandra-0 -- sh -c "$read_cmd" > "${cassandra_read_file}"
-	read_op_rate=$(cat "${cassandra_read_file}" | grep -e "Op rate" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	read_op_rate=$(cat "${cassandra_read_file}" | grep -e "Op rate" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1 | sed 's/,//g')
 	read_latency_mean=$(cat "${cassandra_read_file}" | grep -e "Latency mean" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
 	read_latency_95th=$(cat "${cassandra_read_file}" | grep -e "Latency 95th percentile" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
 	read_latency_99th=$(cat "${cassandra_read_file}" | grep -e "Latency 99th percentile" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
@@ -57,43 +67,43 @@ function cassandra_write_test() {
 
 	local json="$(cat << EOF
 	{
-		"Write Op rate": {
+		"Write-Op-rate": {
 			"Result" : "$write_op_rate",
 			"Units" : "op/s"
 		},
-		"Write Latency Mean": {
+		"Write-Latency-Mean": {
 			"Result" : "$write_latency_mean",
 			"Units" : "ms"
 		},
-		"Write Latency 95th percentile": {
+		"Write-Latency-95th-percentile": {
 			"Result" : "$write_latency_95th",
 			"Units" : "ms"
 		},
-		"Write Latency 99th percentile": {
+		"Write-Latency-99th-percentile": {
 			"Result" : "$write_latency_99th",
 			"Units" : "ms"
 		},
-		"Write Latency Median" : {
+		"Write-Latency-Median" : {
 			"Result" : "$write_latency_median",
 			"Units" : "ms"
 		},
-		"Read Op rate": {
+		"Read-Op-rate": {
 			"Result" : "$read_op_rate",
 			"Units" : "op/s"
 		},
-		"Read Latency Mean": {
+		"Read-Latency-Mean": {
 			"Result" : "$read_latency_mean",
 			"Units" : "ms"
 		},
-		"Read Latency 95th percentile": {
+		"Read-Latency-95th-percentile": {
 			"Result" : "$read_latency_95th",
 			"Units" : "ms"
 		},
-		"Read Latency 99th percentile": {
+		"Read-Latency-99th-percentile": {
 			"Result" : "$read_latency_99th",
 			"Units" : "ms"
 		},
-		"Read Latency Median" : {
+		"Read-Latency-Median" : {
 			"Result" : "$read_latency_median",
 			"Units" : "ms"
 		}
@@ -115,8 +125,10 @@ function cassandra_start() {
 	# Check no processes are left behind
 	check_processes
 
-	# Start kubernetes
-	start_kubernetes
+	if [ -z "${CI_JOB}" ]; then
+		# Start kubernetes
+		start_kubernetes
+	fi
 
 	export KUBECONFIG="$HOME/.kube/config"
 	export service_name="cassandra"
@@ -189,22 +201,10 @@ function cassandra_cleanup() {
 	sudo losetup -d "$loop_dev"
 	rm -f "$tmp_disk_image"
 
-	end_kubernetes
-	check_processes
-}
-
-function start_kubernetes() {
-	info "Start k8s"
-	pushd "${GOPATH}/src/${test_repo}/integration/kubernetes"
-	bash ./init.sh
-	popd
-}
-
-function end_kubernetes() {
-	info "End k8s"
-	pushd "${GOPATH}/src/${test_repo}/integration/kubernetes"
-	bash ./cleanup_env.sh
-	popd
+	if [ -z "${CI_JOB}" ]; then
+		end_kubernetes
+		check_processes
+	fi
 }
 
 function main() {
