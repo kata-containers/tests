@@ -18,6 +18,7 @@ DOCKER_EXE="${DOCKER_EXE:-docker}"
 CTR_RUNTIME="${CTR_RUNTIME:-io.containerd.kata.v2}"
 RUNTIME="${RUNTIME:-containerd-shim-kata-v2}"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
+TEST_REPO="${TEST_REPO:-github.com/kata-containers/tests}"
 
 KSM_BASE="/sys/kernel/mm/ksm"
 KSM_ENABLE_FILE="${KSM_BASE}/run"
@@ -344,6 +345,20 @@ wait_ksm_settle(){
 		sleep 1
 	done
 	echo "Timed out after ${1}s waiting for KSM to settle"
+}
+
+function start_kubernetes() {
+	info "Start k8s"
+	pushd "${GOPATH}/src/${TEST_REPO}/integration/kubernetes"
+	bash ./init.sh
+	popd
+}
+
+function end_kubernetes() {
+	info "End k8s"
+	pushd "${GOPATH}/src/${TEST_REPO}/integration/kubernetes"
+	bash ./cleanup_env.sh
+	popd
 }
 
 common_init
