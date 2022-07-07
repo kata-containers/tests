@@ -46,6 +46,7 @@ OPENSHIFT_CI="${OPENSHIFT_CI:-false}"
 runtime_config_path="${SYSCONFDIR}/kata-containers/configuration.toml"
 runtime_src_path="${katacontainers_repo_dir}/src/runtime"
 agent_ctl_path="${katacontainers_repo_dir}/src/tools/agent-ctl"
+runtime_rs_src_path="${katacontainers_repo_dir}/src/runtime-rs"
 
 PKGDEFAULTSDIR="${DESTDIR}${SHAREDIR}/defaults/kata-containers"
 NEW_RUNTIME_CONFIG="${PKGDEFAULTSDIR}/configuration.toml"
@@ -58,6 +59,12 @@ build_install_shim_v2(){
 	make
 	sudo -E PATH=$PATH make install
 	popd
+	if [ "$KATA_HYPERVISOR" == "dragonball" ]; then
+		pushd "$runtime_rs_src_path"
+		make
+		sudo -E PATH=$PATH make install
+		popd
+	fi
 }
 
 build_install_shim_v2
@@ -108,6 +115,9 @@ case "${KATA_HYPERVISOR}" in
 			# see https://github.com/kata-containers/runtime/pull/2355#issuecomment-625469252
 			sudo sed -i 's|^cpu_features="|cpu_features="-vmx-rdseed-exit,|g' "${runtime_config_path}"
 		fi
+		;;
+	"dragonball")
+		enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-dragonball.toml"
 		;;
 	*)
 		die "failed to enable config for '${KATA_HYPERVISOR}', not supported"
