@@ -63,6 +63,9 @@ case "${KATA_HYPERVISOR}" in
 		echo "Installing virtiofsd"
 		"${cidir}/install_virtiofsd.sh"
 		;;
+	"dragonball")
+		echo "Kata Hypervisor is dragonball"
+		;;
 	*)
 		die "${KATA_HYPERVISOR} not supported for CI install"
 		;;
