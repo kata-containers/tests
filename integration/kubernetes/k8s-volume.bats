@@ -8,10 +8,8 @@
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
 TEST_INITRD="${TEST_INITRD:-no}"
-issue="https://github.com/kata-containers/runtime/issues/1127"
 
 setup() {
-	[ "${TEST_INITRD}" == "yes" ] && skip "test not working see: ${issue}"
 	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
 
 	get_pod_config_dir
@@ -26,7 +24,6 @@ setup() {
 }
 
 @test "Create Persistent Volume" {
-	[ "${TEST_INITRD}" == "yes" ] && skip "test not working see: ${issue}"
 	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
 
 	volume_name="pv-volume"
@@ -57,7 +54,6 @@ setup() {
 }
 
 teardown() {
-	[ "${TEST_INITRD}" == "yes" ] && skip "test not working see: ${issue}"
 	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
 
 	# Debugging information
