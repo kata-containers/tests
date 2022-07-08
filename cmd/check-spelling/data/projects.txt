@@ -74,6 +74,8 @@ R/B
 rkt/B/B
 runc/B
 runV/B
+rustlang/B
+Rustlang/B
 SELinux/B
 SemaphoreCI/B
 snapcraft/B
