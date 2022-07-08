@@ -23,6 +23,22 @@ WORKSPACE=${WORKSPACE:-}
 BAREMETAL=${BAREMETAL:-false}
 TMPDIR=${TMPDIR:-}
 
+usage() {
+	cat <<EOF
+Usage: jenkins_job_build.sh REPOSITORY [OPTION]...
+
+REPOSITORY
+	repository name: github.com/kata-containers/(kata-containers|tests)
+
+OPTION:
+	-t, --type      test type: (all|unit|main|snap) (default: all)
+
+	Examples:
+	jenkins_job_build.sh "github.com/kata-containers/tests"
+	jenkins_job_build.sh "github.com/kata-containers/kata-container" -t unit
+EOF
+}
+
 # Run noninteractive on ubuntu
 if [ "$ID" == "ubuntu" ]; then
 	export DEBIAN_FRONTEND=noninteractive
@@ -31,10 +47,43 @@ fi
 # Signify to all scripts that they are running in a CI environment
 [ -z "${KATA_DEV_MODE}" ] && export CI=true
 
+if [ $# -eq 0 ]; then
+	usage >&2
+	exit 1
+fi
+
 # Name of the repo that we are going to test
 export kata_repo="$1"
+if [[ "${kata_repo}" != *"github.com/kata-containers/"* ]]; then
+	echo "Invalid repository name" >&2
+	usage >&2
+	exit 1
+fi
 
 echo "Setup env for kata repository: $kata_repo"
+
+shift
+test_type="all"
+
+while [[ $# -ne 0 ]]; do
+	option=$1
+	case ${option} in
+	-t|--type)
+		if [[ $# -lt 2 ]]; then
+			echo "Missing parameter after ${option}" >&2
+			exit 1
+		fi
+		shift
+		test_type=$1
+		case ${test_type} in
+		all|unit|main|snap) : ;;
+		*) echo "Unknown parameter ${test_type} for the option ${option}" >&2 && exit 1 ;;
+		esac
+		;;
+	*) echo "Unknown option ${option}" >&2 && exit 1 ;;
+	esac
+	shift
+done
 
 tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 katacontainers_repo="${katacontainers_repo:-github.com/kata-containers/kata-containers}"
@@ -170,52 +219,55 @@ popd
 # Use virtio-9p on s390x -- https://github.com/kata-containers/tests/issues/3998 for tracking
 [ "$arch" = s390x ] && sudo -E "${GOPATH}/src/${tests_repo}/${cidir}/set_kata_config.sh" shared_fs virtio-9p
 
-# Run unit tests on non x86_64
-if [[ "$arch" == "s390x" || "$arch" == "aarch64" ]]; then
-	echo "Running unit tests"
-	sudo chown -R "$USER" "$HOME/.cargo" || true
-	"$ci_dir_name/install_rust.sh" && source "$HOME/.cargo/env"
-	pushd "${GOPATH}/src/${katacontainers_repo}"
-	echo "Installing libseccomp library from sources"
-	libseccomp_install_dir=$(mktemp -d -t libseccomp.XXXXXXXXXX)
-	gperf_install_dir=$(mktemp -d -t gperf.XXXXXXXXXX)
-	sudo -E ./ci/install_libseccomp.sh "${libseccomp_install_dir}" "${gperf_install_dir}"
-	echo "Set environment variables for the libseccomp crate to link the libseccomp library statically"
-	export LIBSECCOMP_LINK_TYPE=static
-	export LIBSECCOMP_LIB_PATH="${libseccomp_install_dir}/lib"
-	sudo -E PATH=$PATH make test
-	popd
-else
-	echo "Skip running unit tests because it is assumed to run elsewhere"
-fi
+run_unit_test() {
+	# Run unit tests on non x86_64
+	if [[ "$arch" == "s390x" || "$arch" == "aarch64" ]]; then
+		echo "Running unit tests"
+		sudo chown -R "$USER" "$HOME/.cargo" || true
+		"$ci_dir_name/install_rust.sh" && source "$HOME/.cargo/env"
+		pushd "${GOPATH}/src/${katacontainers_repo}"
+		echo "Installing libseccomp library from sources"
+		libseccomp_install_dir=$(mktemp -d -t libseccomp.XXXXXXXXXX)
+		gperf_install_dir=$(mktemp -d -t gperf.XXXXXXXXXX)
+		sudo -E ./ci/install_libseccomp.sh "${libseccomp_install_dir}" "${gperf_install_dir}"
+		echo "Set environment variables for the libseccomp crate to link the libseccomp library statically"
+		export LIBSECCOMP_LINK_TYPE=static
+		export LIBSECCOMP_LIB_PATH="${libseccomp_install_dir}/lib"
+		sudo -E PATH=$PATH make test
+		popd
+	else
+		echo "Skip running unit tests because it is assumed to run elsewhere"
+	fi
+}
 
+run_main_test() {
+	if [ "${CI_JOB}" == "VFIO" ]; then
+		pushd "${GOPATH}/src/${tests_repo}"
+		ci_dir_name=".ci"
 
-if [ "${CI_JOB}" == "VFIO" ]; then
-	pushd "${GOPATH}/src/${tests_repo}"
-	ci_dir_name=".ci"
+		echo "Installing initrd image"
+		sudo -E AGENT_INIT=yes TEST_INITRD=yes osbuilder_distro=alpine PATH=$PATH "${ci_dir_name}/install_kata_image.sh"
 
-	echo "Installing initrd image"
-	sudo -E AGENT_INIT=yes TEST_INITRD=yes osbuilder_distro=alpine PATH=$PATH "${ci_dir_name}/install_kata_image.sh"
+		echo "Installing kernel"
+		sudo -E PATH=$PATH "${ci_dir_name}/install_kata_kernel.sh"
 
-	echo "Installing kernel"
-	sudo -E PATH=$PATH "${ci_dir_name}/install_kata_kernel.sh"
+		echo "Installing Cloud Hypervisor"
+		sudo -E PATH=$PATH "${ci_dir_name}/install_cloud_hypervisor.sh"
 
-	echo "Installing Cloud Hypervisor"
-	sudo -E PATH=$PATH "${ci_dir_name}/install_cloud_hypervisor.sh"
+		echo "Running VFIO tests"
+		"${ci_dir_name}/run.sh"
 
-	echo "Running VFIO tests"
-	"${ci_dir_name}/run.sh"
-
-	popd
-elif [ "${METRICS_CI}" == "false" ]; then
-	# Run integration tests
-	#
-	# Note: this will run all classes of tests for ${tests_repo}.
-	"${ci_dir_name}/run.sh"
-else
-	echo "Running the metrics tests:"
-	"${ci_dir_name}/run.sh"
-fi
+		popd
+	elif [ "${METRICS_CI}" == "false" ]; then
+		# Run integration tests
+		#
+		# Note: this will run all classes of tests for ${tests_repo}.
+		"${ci_dir_name}/run.sh"
+	else
+		echo "Running the metrics tests:"
+		"${ci_dir_name}/run.sh"
+	fi
+}
 
 test_snap_build() {
 	if [[ "${ID}" == "ubuntu" && "$(uname -m)" != "x86_64" ]]; then
@@ -232,6 +284,22 @@ test_snap_build() {
 	fi
 }
 
-test_snap_build
+case ${test_type} in
+	all)
+		run_unit_test
+		run_main_test
+		test_snap_build
+		;;
+	unit)
+		run_unit_test
+		;;
+	main)
+		run_main_test
+		;;
+	snap)
+		test_snap_build
+		;;
+	*) echo "Unknown test type." >&2 && exit 1 ;;
+esac
 
 popd
