@@ -40,8 +40,8 @@ update_cache() {
 
 build_static_qemu() {
 	info "building static QEMU"
-	# only x86_64 is supported for building static QEMU
-	[ "$ARCH" != "x86_64" ] && return 1
+	# only x86_64 and s390x are supported for building static QEMU
+	[ "$ARCH" != "x86_64" ] && [ "$ARCH" != "s390x" ] && return 1
 
 	(
 	cd "${PACKAGING_DIR}/static-build/qemu"
@@ -56,7 +56,7 @@ uncompress_static_qemu() {
 	[ -n "$qemu_tar_location" ] || die "provide the location of the QEMU compressed file"
 	sudo tar -xf "${qemu_tar_location}" -C /
 	# verify installed binaries existance
-	ls /usr/bin/qemu-system-x86_64 || return 1
+	ls /usr/bin/qemu-system-$(uname -m) || return 1
 }
 
 build_and_install_static_qemu() {
@@ -127,7 +127,7 @@ fi
 
 run() {
 	case "$QEMU_ARCH" in
-		"x86_64")
+		"x86_64"|"s390x")
 			# latest is "version sha256sum"
 			latest=$(curl -sfL "${qemu_latest_build_url}/latest") || latest="none"
 			cached_qemu_version=$(echo $latest | awk '{print $1}')
@@ -155,7 +155,7 @@ run() {
 				build_and_install_static_qemu
 			fi
 			;;
-		"aarch64"|"ppc64le"|"s390x")
+		"aarch64"|"ppc64le")
 			build_and_install_qemu
 			;;
 		*)
