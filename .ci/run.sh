@@ -11,6 +11,7 @@ set -e
 
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
+source "/etc/os-release" || source "/usr/lib/os-release"
 
 export RUNTIME="containerd-shim-kata-v2"
 
@@ -49,9 +50,14 @@ case "${CI_JOB}" in
 		echo "INFO: Running vcpus test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make vcpus"
 		echo "INFO: Skipping pmem test: Issue: https://github.com/kata-containers/tests/issues/3223"
-		echo "INFO: Running stability test with sandbox_cgroup_only"
-		export TEST_SANDBOX_CGROUP_ONLY=true
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
+		if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 22.04" | bc -q)" == "1" ]; then
+			issue="https://github.com/kata-containers/tests/issues/4922"
+			echo "INFO: Skipping stability test with sandbox_cgroup_only as they are not working with cgroupsv2 see $issue"
+		else
+			echo "INFO: Running stability test with sandbox_cgroup_only"
+			export TEST_SANDBOX_CGROUP_ONLY=true
+			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
+		fi
 		# echo "INFO: Running pmem integration test"
 		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make pmem"
 		echo "INFO: Running ksm test"
