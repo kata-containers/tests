@@ -97,7 +97,6 @@ case "${CI_JOB}" in
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
-	export KUBERNETES="no"
 	;;
 "CRI_CONTAINERD"|"CRI_CONTAINERD_K8S"|"CC_CRI_CONTAINERD")
 	# This job only tests containerd + k8s
@@ -208,7 +207,6 @@ case "${CI_JOB}" in
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
-	export KUBERNETES="no"
 	;;
 "VIRTIOFS_EXPERIMENTAL")
 	init_ci_flags
