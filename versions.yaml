@@ -18,7 +18,7 @@ docker_images:
   nginx:
     description: "Proxy server for HTTP, HTTPS, SMTP, POP3 and IMAP protocols"
     url: "https://hub.docker.com/_/nginx/"
-    version: "1.15-alpine"
+    version: "1.17-alpine"
 
   registry:
     description: "Registry component for x86_64 and ARM"
