@@ -25,7 +25,7 @@ and with different container managers.
 ## CI Content
 
 This repository contains a [number of scripts](/.ci)
-that run from under a "CI" (Continuous Integration) system.
+that run from under a "CI" (Continuous Integration) system. 
 
 ### Centralised scripts
 
