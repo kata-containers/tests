@@ -39,9 +39,8 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make qat"
 		;;
 	"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S"|"CRI_CONTAINERD_K8S_DEVMAPPER"|"CC_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_CLOUD_HYPERVISOR")
-		 echo "INFO: Skipping nydus test: Issue: https://github.com/kata-containers/tests/issues/4947"
-		#echo "INFO: Running nydus test"
-		#sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make nydus"
+		echo "INFO: Running nydus test"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make nydus"
 		echo "INFO: Running stability test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
 		echo "INFO: Containerd checks"
