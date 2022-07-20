@@ -39,7 +39,7 @@ function setup() {
 function test_ctr_with_vcpus() {
 	sudo ctr image pull "${IMAGE}"
 	[ $? != 0 ] && die "Unable to get image $IMAGE"
-	sudo ctr run --runtime="${CTR_RUNTIME}" -d "${IMAGE}" \
+	sudo ctr run --runtime="${CTR_RUNTIME}" "${IMAGE}" \
 		"${CONTAINER_NAME}" sh -c "${PAYLOAD_ARGS}" || die "Test failed"
 }
 
