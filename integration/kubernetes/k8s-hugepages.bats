@@ -6,8 +6,11 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
+source "/etc/os-release" || source "/usr/lib/os-release"
+issue="https://github.com/kata-containers/tests/issues/4922"
 
 setup() {
+	[ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 22.04" | bc -q)" == "1" ] && skip "hugepages test is not working with cgroupsv2 see $issue"  
 	extract_kata_env
 
 	pod_name="hugepage-pod"
@@ -44,6 +47,8 @@ setup() {
 }
 
 @test "Hugepages" {
+	[ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 22.04" | bc -q)" == "1" ] && skip "hugepages test is not working with cgroupsv2 see $issue"
+
 	# Create pod
 	kubectl create -f "${pod_config_dir}/test_hugepage.yaml"
 
@@ -76,6 +81,8 @@ setup() {
 }
 
 teardown() {
+	[ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 22.04" | bc -q)" == "1" ] && skip "hugepages test is not working with cgroupsv2 see $issue"
+
 	echo "$old_pages" > "/sys/kernel/mm/hugepages/$hugepages_sysfs_dir/nr_hugepages"
 
 	rm "$pod_config_dir/test_hugepage.yaml"
