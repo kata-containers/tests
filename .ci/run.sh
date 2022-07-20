@@ -136,6 +136,18 @@ case "${CI_JOB}" in
 	"VIRTIOFS_EXPERIMENTAL")
 		sudo -E PATH="$PATH" bash -c "make filesystem"
 		;;
+	"DRAGONBALL")
+		# TODO: currently runtime-rs binary doesn't support nydus, so disable nydus testing.
+		# Please refer to the issue: https://github.com/kata-containers/kata-containers/issues/4690
+		# echo "INFO: Running nydus test"
+		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make nydus"
+		echo "INFO: Running stability test"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make dragonball-stability"
+		echo "INFO: Containerd checks"
+		sudo -E PATH="$PATH" bash -c "make cri-containerd"
+		echo "INFO: Running kubernetes tests"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
+		;;
 	*)
 		echo "INFO: Running checks"
 		sudo -E PATH="$PATH" bash -c "make check"

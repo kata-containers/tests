@@ -507,8 +507,11 @@ main() {
 			make GO_BUILDTAGS="no_btrfs" -e cri-integration
 	done
 
-	TestContainerMemoryUpdate 1
-	TestContainerMemoryUpdate 0
+	# TODO: runtime-rs doesn't support memory update currently
+	if [ "$KATA_HYPERVISOR" != "dragonball" ]; then
+		TestContainerMemoryUpdate 1
+		TestContainerMemoryUpdate 0
+	fi
 
 	TestKilledVmmCleanup
 

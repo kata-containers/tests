@@ -58,6 +58,39 @@ else
 	"k8s-ro-volume.bats" \
 	"k8s-nginx-connectivity.bats" \
 	"k8s-hugepages.bats")
+	# TODO: runtime-rs doesn't support the following test cases, and will be fixed/improved in the future:
+	# k8s-block-volume.bats, k8s-copy-file.bats, k8s-cpu-ns.bats, k8s-empty-dirs.bats, k8s-expose-ip.bats,
+	# k8s-hugepages.bats, k8s-inotify.bats, k8s-liveness-probes.bats, k8s-nginx-connectivity.bats,
+	# k8s-pid-ns.bats, k8s-ro-volume.bats, k8s-seccomp.bats
+	if [ "$KATA_HYPERVISOR" == "dragonball" ]; then
+                K8S_TEST_UNION=("k8s-attach-handlers.bats" \
+                "k8s-caps.bats" \
+                "k8s-configmap.bats" \
+                "k8s-credentials-secrets.bats" \
+                "k8s-custom-dns.bats" \
+                "k8s-env.bats" \
+                "k8s-exec.bats" \
+                "k8s-job.bats" \
+                "k8s-limit-range.bats" \
+                "k8s-memory.bats" \
+                "k8s-nested-configmap-secret.bats" \
+                "k8s-number-cpus.bats" \
+                "k8s-oom.bats" \
+                "k8s-optional-empty-configmap.bats" \
+                "k8s-optional-empty-secret.bats" \
+                "k8s-parallel.bats" \
+                "k8s-pod-quota.bats" \
+                "k8s-port-forward.bats" \
+                "k8s-projected-volume.bats" \
+                "k8s-qos-pods.bats" \
+                "k8s-replication.bats" \
+                "k8s-scale-nginx.bats" \
+                "k8s-sysctls.bats" \
+                "k8s-security-context.bats" \
+                "k8s-shared-volume.bats" \
+                "k8s-volume.bats" \
+                )
+        fi
 fi
 
 cleanup() {
