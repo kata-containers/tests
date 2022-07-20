@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Intel Corporation
+# Copyright (c) 2021-2022 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -19,3 +19,6 @@ gomod:
 	 go mod edit -replace=github.com/kata-containers/tests/metrics/exec=../../pkg/exec
 	 go mod edit -replace=github.com/kata-containers/tests/metrics/env=../../pkg/env
 	 go mod tidy
+
+runci: build
+	$(MKFILE_DIR)/fio-k8s --debug --fio.size 10M --output-dir test-results --test-name kata $(MKFILE_DIR)/../../configs/example-config/
