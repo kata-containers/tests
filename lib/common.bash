@@ -141,7 +141,10 @@ extract_kata_env() {
 	SHIM_VERSION=${RUNTIME_VERSION}
 
 	HYPERVISOR_PATH=$(kata-runtime kata-env --json | jq -r .Hypervisor.Path)
-	HYPERVISOR_VERSION=$(${HYPERVISOR_PATH} --version | head -n1)
+	# TODO: there is no kata-runtime of rust version currently
+	if [ "${KATA_HYPERVISOR}" != "dragonball" ]; then
+		HYPERVISOR_VERSION=$(${HYPERVISOR_PATH} --version | head -n1)
+	fi
 	VIRTIOFSD_PATH=$(kata-runtime kata-env --json | jq -r .Hypervisor.VirtioFSDaemon)
 
 	INITRD_PATH=$(kata-runtime kata-env --json | jq -r .Initrd.Path)
