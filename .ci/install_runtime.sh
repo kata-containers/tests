@@ -62,7 +62,7 @@ build_install_shim_v2(){
 	if [ "$KATA_HYPERVISOR" == "dragonball" ]; then
 		bash "${cidir}/install_rust.sh" && source "$HOME/.cargo/env"
 		pushd "$runtime_rs_src_path"
-		make
+		sudo -E PATH=$PATH make
 		sudo -E PATH=$PATH make install
 		popd
 	fi
