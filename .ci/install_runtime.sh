@@ -14,7 +14,6 @@ cidir=$(dirname "$0")
 
 source "${cidir}/lib.sh"
 source /etc/os-release || source /usr/lib/os-release
-KATACONTAINERS_REPO=${katacontainers_repo:="github.com/kata-containers/kata-containers"}
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 KATA_EXPERIMENTAL_FEATURES="${KATA_EXPERIMENTAL_FEATURES:-}"
 MACHINETYPE="${MACHINETYPE:-q35}"
@@ -45,16 +44,16 @@ export SHAREDIR=${PREFIX}/share
 OPENSHIFT_CI="${OPENSHIFT_CI:-false}"
 
 runtime_config_path="${SYSCONFDIR}/kata-containers/configuration.toml"
-runtime_src_path="${GOPATH}/src/${KATACONTAINERS_REPO}/src/runtime"
+runtime_src_path="${katacontainers_repo_dir}/src/runtime"
+agent_ctl_path="${katacontainers_repo_dir}/src/tools/agent-ctl"
 
 PKGDEFAULTSDIR="${DESTDIR}${SHAREDIR}/defaults/kata-containers"
 NEW_RUNTIME_CONFIG="${PKGDEFAULTSDIR}/configuration.toml"
 # Note: This will also install the config file.
 
+clone_katacontainers_repo
+
 build_install_shim_v2(){
-	if [ ! -d "$runtime_src_path" ]; then
-		go get "$KATACONTAINERS_REPO"
-	fi
 	pushd "$runtime_src_path"
 	make
 	sudo -E PATH=$PATH make install
@@ -62,6 +61,17 @@ build_install_shim_v2(){
 }
 
 build_install_shim_v2
+
+build_install_agent_ctl(){
+	bash "${cidir}/install_rust.sh" && source "$HOME/.cargo/env"
+	pushd "$agent_ctl_path"
+	sudo chown -R "${USER}:" "${katacontainers_repo_dir}"
+	make
+	make install
+	popd
+}
+
+build_install_agent_ctl
 
 experimental_qemu="${experimental_qemu:-false}"
 
