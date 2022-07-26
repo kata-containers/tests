@@ -59,9 +59,12 @@ check_all_running() {
 	local goterror=0
 
 	echo "Checking ${how_many} containers have all relevant components"
+	echo "================"
+        sudo ctr c list
 
 	# check what docker thinks
 	how_many_running=$(count_containers)
+	echo "================ how_many_running: $how_many_running"
 
 	if (( ${how_many_running} != ${how_many} )); then
 		echo "Wrong number of containers running (${how_many_running} != ${how_many}) - stopping"
@@ -114,6 +117,8 @@ get_system_avail() {
 
 go() {
 	echo "Running..."
+	ls -l /usr/local/bin | grep kata
+	ls -l /usr/share/defaults/kata-containers/
 
 	how_many=0
 
@@ -122,9 +127,12 @@ go() {
 
 		local i
 		for ((i=1; i<= ${MAX_CONTAINERS}; i++)); do
+			echo "============== create container $i"
 			containers+=($(random_name))
 			sudo ctr run --runtime=${CTR_RUNTIME} -d ${nginx_image} ${containers[-1]} sh -c ${COMMAND}
 			((how_many++))
+			echo "=============="
+			sudo ctr c ls
 		done
 
 		if (( ${how_many} >= ${MAX_CONTAINERS} )); then
