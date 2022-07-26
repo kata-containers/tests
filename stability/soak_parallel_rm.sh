@@ -119,6 +119,7 @@ go() {
 	echo "Running..."
 	ls -l /usr/local/bin | grep kata
 	ls -l /usr/share/defaults/kata-containers/
+	sudo systemctl status containerd
 
 	how_many=0
 
@@ -127,9 +128,9 @@ go() {
 
 		local i
 		for ((i=1; i<= ${MAX_CONTAINERS}; i++)); do
-			echo "============== create container $i"
 			containers+=($(random_name))
-			sudo ctr run --runtime=${CTR_RUNTIME} -d ${nginx_image} ${containers[-1]} sh -c ${COMMAND}
+			echo "============== sudo ctr --timeout 30s run --runtime=${CTR_RUNTIME} -d ${nginx_image} ${containers[-1]} sh -c ${COMMAND}"
+			sudo ctr --timeout 30s run --runtime=${CTR_RUNTIME} -d ${nginx_image} ${containers[-1]} sh -c ${COMMAND}
 			((how_many++))
 			echo "=============="
 			sudo ctr c ls
