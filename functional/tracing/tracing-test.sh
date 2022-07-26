@@ -34,6 +34,10 @@ TRACE_LOG_DIR=${TRACE_LOG_DIR:-${KATA_TESTS_LOGDIR}/traces}
 
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 
+# files for output
+formatted_traces_file="kata-traces-formatted.json"
+trace_summary_file="span-summary.txt"
+
 # tmux(1) session to run the trace forwarder in
 KATA_TMUX_FORWARDER_SESSION="kata-trace-forwarder-session"
 
@@ -51,6 +55,41 @@ jaeger_server=${jaeger_server:-localhost}
 jaeger_ui_port=${jaeger_ui_port:-16686}
 jaeger_docker_container_name="jaeger"
 
+# Span data for testing:
+#   1. Existence of spans in jaeger output
+#   2. That the relative ordering in the data occurs
+#      in the jaeger output.
+# This is tested to make sure specific spans exist in the output and
+# that the order of spans is preserved.
+# Ordered in latest in sequence to earliest.
+#
+# Fields are all span existing span names in relative order from latest
+# to earliest call in a sequence of calls. Example (pseudocode):
+# func1() {
+#	span = trace("func1")
+#	func2()
+#	end span
+# }
+# func2() {
+#	span = trace("func2")
+#	func3()
+#	end span
+# }
+# func3() {
+#	span = trace("func3")
+#	end span
+# }
+# The following data should result in a passing test:
+#	'func3:func2:func1'
+#	'func3:func2'
+#	'func3:func1'
+#	'func2:func1'
+span_ordering_data=(
+	'StartVM:createSandboxFromConfig:create:rootSpan'
+	'setup_shared_namespaces:StartVM:createSandboxFromConfig:create:rootSpan'
+	'start_container:Start:rootSpan'
+	'stopSandbox:Stop:Start:rootSpan'
+)
 
 # Cleanup will remove Jaeger container and
 # disable tracing.
@@ -184,11 +223,11 @@ get_jaeger_status()
 	[ "$span_count" -eq 0 ] && die "failed to find any trace spans"
 	[ "$span_count" -le 0 ] && die "invalid span count"
 
-	get_trace_summary "$status" > "$logdir/span-summary.txt"
+	get_trace_summary "$status" > "$logdir/$trace_summary_file"
 }
 
 # Check Jaeger spans for the specified service.
-check_jaeger_status()
+check_jaeger_output()
 {
 	local service="$1"
 	local min_spans="$2"
@@ -258,6 +297,91 @@ check_jaeger_status()
 	fi
 
 	[ "$errors" -eq 0 ] || die "errors detected"
+}
+
+# Check output for spans in span_ordering_data
+check_spans()
+{
+	local logdir="$1"
+	[ -z "$logdir" ] && die "need logdir"
+
+	local errors=0
+
+	# Check for existence of spans in output so we do not do the more
+	# time consuming test of checking span ordering if it will fail
+	info "Checking spans: ${span_ordering_data[@]}"
+	local missing_spans=()
+	for span_ordering in "${span_ordering_data[@]}"; do
+		local test_spans=(`echo $span_ordering | tr ':' ' '`)
+		for s in "${test_spans[@]}"; do
+			grep -q \'$s\' "$logdir/$trace_summary_file" || missing_spans+=( "$s" )
+		done
+	done
+	if [ "${#missing_spans[@]}" -gt 0 ]; then
+	       die "Fail: Missing spans: ${missing_spans[@]}"
+	fi
+
+	# Check relative ordering of spans. We are not checking full trace, just
+	# that known calls are not out of order based on the test input.
+	for span_ordering in "${span_ordering_data[@]}"; do # runs maximum length of span_ordering_data
+		local test_spans=(`echo $span_ordering | tr ':' ' '`)
+
+		# create array for span IDs that match span string
+		local span_ids=()
+		for span in "${test_spans[@]}"; do
+			grep -q \'$span\' "$logdir/$trace_summary_file" || die "Fail: Missing span: $span"
+			id=$(cat "$logdir/$formatted_traces_file" | jq ".data[].spans[] | select(.operationName==\"$span\") | .spanID") || die "Fail: error with span $span retrieved from traces"
+			id_formatted=$(echo $id | tr -d '\"' | tr '\n' ':') # format to a string for parsing later, not an array
+			span_ids+=("$id_formatted")
+		done
+
+		# We now have 2 parallel arrays where test_spans[n] is the string name and
+		# span_ids[n] has all possible span IDs for that string separated by a colon
+
+		# Since functions can be called multiple times, we may have multiple results
+		# for span IDs.
+		initial_span_ids=(`echo ${span_ids[0]} | tr ':' ' '`)
+		for initial in "${initial_span_ids[@]}"; do # test parents for all initial spans
+			# construct array of all parents of first span
+			local retrieved_spans=()
+			local current_span="$initial"
+			[ "$current_span" != "" ] || break
+
+			MAX_DEPTH=20 # to prevent infinite loop due to unforeseen errors
+			for i in `seq 1 $MAX_DEPTH`; do
+				retrieved_spans+=("$current_span")
+				current_span=$(cat "$logdir/$formatted_traces_file" | jq ".data[].spans[] | select(.spanID==\"$current_span\") | .references[].spanID") || die "Fail: error with current_span $current_span retrieved from formatted traces"
+				[ "$current_span" != "" ] || break
+				current_span=$(echo $current_span | tr -d '"')
+				[ $i -lt $MAX_DEPTH ] || die "Fail: max depth reached, error in jq or adjust test depth"
+			done
+
+			# Keep track of this index so we can ensure we are testing the constructed array in order
+			# Increment when there is a match between test case and constructed path
+			local retrieved_ids_index=0
+
+			local matches=0
+			local index=0
+
+			# TODO: Optimize
+			for ((index=0; index<${#span_ids[@]}; index++)); do
+				for ((r_index=$retrieved_ids_index; r_index<${#retrieved_spans[@]}; r_index++)); do
+					grep -q "${retrieved_spans[$r_index]}" <<< ${span_ids[$index]} && (( retrieved_ids_index=$r_index+1 )) && (( matches+=1 )) && break
+				done
+			done
+
+			local last_initial_span_index=${#initial_span_ids[@]}-1
+			if [ $matches -eq ${#span_ids[@]} ]; then
+				info "Pass: spans \"${test_spans[@]}\" found in jaeger output"
+				break
+			elif [ $matches -lt ${#span_ids[@]} ] && [ "$initial" = "${initial_span_ids[$last_initial_span_index]}" ]; then
+				die "Fail: spans \"${test_spans[@]}\" NOT in jaeger output"
+			fi
+			# else repeat test for next initial span ID
+		done
+	done
+
+
 }
 
 run_trace_forwarder()
@@ -332,7 +456,8 @@ run_test()
 	logdir="$logdir/$service"
 	mkdir -p "$logdir"
 
-	check_jaeger_status "$service" "$min_spans" "$logdir"
+	check_jaeger_output "$service" "$min_spans" "$logdir"
+	check_spans "$logdir"
 
 	info "test passed"
 }
