@@ -182,7 +182,6 @@ case "${CI_JOB}" in
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="cloud-hypervisor"
-	export KUBERNETES="no"
 	;;
 "EXTERNAL_CRIO")
 	init_ci_flags
