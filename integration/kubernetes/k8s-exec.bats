@@ -30,6 +30,10 @@ setup() {
 	# kubectl exec -it "$pod_name" -- ls -tl /
 	kubectl exec "$pod_name" -- date
 
+	# Test if the exec cmd exit successfully when the exec's stdout/stderr
+	# didn't closed.
+	kubectl exec "$pod_name" -- sh -c 'tail -f /dev/null &'
+
 	## Case for stdin
 	kubectl exec -i "$pod_name" -- sh <<-EOF
 echo abc > /tmp/abc.txt
