@@ -134,6 +134,8 @@ go() {
 			((how_many++))
 			echo "=============="
 			sudo ctr c ls
+			sudo ctr t ls
+			ps -ef | grep kata
 		done
 
 		if (( ${how_many} >= ${MAX_CONTAINERS} )); then
