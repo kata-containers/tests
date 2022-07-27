@@ -71,6 +71,8 @@ case "${KATA_HYPERVISOR}" in
 		;;
 esac
 
-kata-runtime kata-env
-echo "Kata config:"
-cat $(kata-runtime kata-env  --json | jq .Runtime.Config.Path -r)
+if [ "${KATA_HYPERVISOR}" != "dragonball" ]; then
+	kata-runtime kata-env
+	echo "Kata config:"
+	cat $(kata-runtime kata-env  --json | jq .Runtime.Config.Path -r)
+fi

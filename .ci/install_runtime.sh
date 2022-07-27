@@ -56,14 +56,16 @@ build_install_shim_v2(){
 	if [ ! -d "$runtime_src_path" ]; then
 		go get "$KATACONTAINERS_REPO"
 	fi
-	pushd "$runtime_src_path"
-	make
-	sudo -E PATH=$PATH make install
-	popd
+
 	if [ "$KATA_HYPERVISOR" == "dragonball" ]; then
 		bash "${cidir}/install_rust.sh" && source "$HOME/.cargo/env"
 		pushd "$runtime_rs_src_path"
 		sudo -E PATH=$PATH make
+		sudo -E PATH=$PATH make install
+		popd
+	else
+		pushd "$runtime_src_path"
+		make
 		sudo -E PATH=$PATH make install
 		popd
 	fi
@@ -95,6 +97,9 @@ case "${KATA_HYPERVISOR}" in
 	"cloud-hypervisor")
 		enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-clh.toml"
 		;;
+	"dragonball")
+		enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-dragonball.toml"
+		;;
 	"firecracker")
 		enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-fc.toml"
 		;;
@@ -106,9 +111,6 @@ case "${KATA_HYPERVISOR}" in
 			# see https://github.com/kata-containers/runtime/pull/2355#issuecomment-625469252
 			sudo sed -i 's|^cpu_features="|cpu_features="-vmx-rdseed-exit,|g' "${runtime_config_path}"
 		fi
-		;;
-	"dragonball")
-		enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-dragonball.toml"
 		;;
 	*)
 		die "failed to enable config for '${KATA_HYPERVISOR}', not supported"
