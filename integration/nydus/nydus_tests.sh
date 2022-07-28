@@ -29,12 +29,6 @@ containerd_config_backup="/tmp/containerd.config.toml"
 # test image for container
 IMAGE="${IMAGE:-ghcr.io/dragonflyoss/image-service/alpine:nydus-latest}"
 
-issue="https://github.com/kata-containers/tests/issues/4922"
-if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 22.04" | bc -q)" == "1" ]; then
-	echo "Skip nydus tests are not working with cgroupsv2 see $issue"
-	exit 0
-fi
-
 if [ "$KATA_HYPERVISOR" != "qemu" ] && [ "$KATA_HYPERVISOR" != "cloud-hypervisor" ]; then
 	echo "Skip nydus test for $KATA_HYPERVISOR, it only works for QEMU/CLH now."
 	exit 0
