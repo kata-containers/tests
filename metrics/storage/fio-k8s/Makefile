@@ -24,5 +24,5 @@ test: build
 run: build
 	make -C $(MKFILE_DIR)/scripts/dax-compare-test/ run
 
-test-ci:
+test-ci: build
 	make -C $(MKFILE_DIR)/cmd/fiotest/ runci

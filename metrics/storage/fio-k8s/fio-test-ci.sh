@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-set -x
+set -e
 
 # General env
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
@@ -28,7 +28,7 @@ function main() {
 
 	pushd "${FIO_PATH}"
 		echo "INFO: Running K8S FIO test"
-		sudo -E make test-ci
+		make test-ci
 	popd
 
 	test_result_file="${FIO_PATH}/cmd/fiotest/test-results/kata/randrw-sync.job/output.json"
@@ -40,11 +40,11 @@ function main() {
 	metrics_json_start_array
 	local json="$(cat << EOF
 	{
-		"read-io": {
+		"readio": {
 			"Result" : $read_io,
 			"Units" : "bytes"
 		},
-		"read-bw": {
+		"readbw": {
 			"Result" : $read_bw,
 			"Units" : "bytes/sec"
 		}
