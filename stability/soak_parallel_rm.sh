@@ -120,8 +120,8 @@ go() {
 	ls -l /usr/local/bin | grep kata
 	ls -l /usr/share/defaults/kata-containers/
 	ls -l /usr/share/kata-containers/
-	cat /etc/issue
-	/usr/local/bin/containerd
+	sudo cat /etc/issue
+	sudo /usr/local/bin/containerd --version
 	sudo systemctl status containerd
 
 	how_many=0
