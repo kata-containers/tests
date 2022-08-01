@@ -42,12 +42,6 @@ CURRENT_TASK=""
 FALSE=1
 TRUE=0
 
-issue="https://github.com/kata-containers/tests/issues/4922"
-if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 22.04" | bc -q)" == "1" ]; then
-	echo "Skip kata monitor test is not working with cgroupsv2 see $issue"
-	exit 0
-fi
-
 trap error_with_msg ERR
 
 title() {

@@ -24,15 +24,9 @@ PAYLOAD_ARGS="${PAYLOAD_ARGS:-nproc | grep 4}"
 RUNTIME_CONFIG_PATH="${RUNTIME_CONFIG_PATH:-}"
 TEST_INITRD="${TEST_INITRD:-no}"
 issue="github.com/kata-containers/tests/issues/3303"
-second_issue="https://github.com/kata-containers/tests/issues/4922"
 
 if [ "$TEST_INITRD" == "yes" ]; then
 	echo "Skip vcpu test is not working $issue"
-	exit 0
-fi
-
-if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 22.04" | bc -q)" == "1" ]; then
-	echo "Skip vcpu test is not working with cgroupsv2 see $second_issue"
 	exit 0
 fi
 

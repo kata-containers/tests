@@ -21,11 +21,6 @@ PAYLOAD_ARGS="${PAYLOAD_ARGS:-tail -f /dev/null}"
 IMAGE="${IMAGE:-quay.io/prometheus/busybox:latest}"
 WAIT_TIME="60"
 
-issue="https://github.com/kata-containers/tests/issues/4922"
-if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 22.04" | bc -q)" == "1" ]; then
-	echo "Skip ksm test is not working with cgroupsv2 see $issue"
-	exit 0
-fi
 function setup() {
 	restart_containerd_service
 	check_processes

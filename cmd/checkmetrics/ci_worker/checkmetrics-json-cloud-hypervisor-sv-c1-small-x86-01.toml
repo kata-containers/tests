@@ -18,7 +18,7 @@ checkvar = ".\"boot-times\".Results | .[] | .\"to-workload\".Result"
 checktype = "mean"
 midval = 0.60
 minpercent = 25.0
-maxpercent = 15.0
+maxpercent = 25.0
 
 [[metric]]
 name = "memory-footprint"
@@ -73,6 +73,32 @@ minpercent = 10.0
 maxpercent = 10.0
 
 [[metric]]
+name = "fio"
+type = "json"
+description = "measure read-io using fio"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"fio\".Results | .[] | .readio.Result"
+checktype = "mean"
+midval = 7811072.0
+minpercent = 20.0
+maxpercent = 10.0
+
+[[metric]]
+name = "fio"
+type = "json"
+description = "measure read-bw using fio"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"fio\".Results | .[] | .readbw.Result"
+checktype = "mean"
+midval = 88479751.0
+minpercent = 25.0
+maxpercent = 10.0
+
+[[metric]]
 name = "network-iperf3"
 type = "json"
 description = "measure container bandwidth using iperf3"
@@ -122,4 +148,4 @@ checkvar = ".\"network-iperf3\".Results | .[] | .jitter.Result"
 checktype = "mean"
 midval = 0.023
 minpercent = 60.0
-maxpercent = 40.0
+maxpercent = 50.0
