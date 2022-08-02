@@ -32,8 +32,8 @@ install_fc() {
 	jailer_binary="jailer-${firecracker_version}-${arch}"
 	curl -fsL ${firecracker_repo}/releases/download/${firecracker_version}/${firecracker_binary}.tgz -o ${firecracker_binary}.tgz
 	tar -zxf ${firecracker_binary}.tgz
-	firecracker_binary_fullpath=release-${firecracker_version}/${firecracker_binary}
-	jailer_binary_fullpath=release-${firecracker_version}/${jailer_binary}
+	firecracker_binary_fullpath=release-${firecracker_version}-${arch}/${firecracker_binary}
+	jailer_binary_fullpath=release-${firecracker_version}-${arch}/${jailer_binary}
 	sudo -E install -m 0755 -D ${firecracker_binary_fullpath} /usr/bin/firecracker
 	sudo -E install -m 0755 -D ${jailer_binary_fullpath} /usr/bin/jailer
 }

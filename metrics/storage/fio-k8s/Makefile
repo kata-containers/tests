@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Intel Corporation
+# Copyright (c) 2021-2022 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -23,3 +23,6 @@ test: build
 
 run: build
 	make -C $(MKFILE_DIR)/scripts/dax-compare-test/ run
+
+test-ci: build
+	make -C $(MKFILE_DIR)/cmd/fiotest/ runci

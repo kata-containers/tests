@@ -11,7 +11,6 @@ set -o errtrace
 
 script_name=${0##*/}
 source "/etc/os-release" || source "/usr/lib/os-release"
-issue="https://github.com/kata-containers/tests/issues/4922"
 
 # Set to true if all tests pass
 success="false"
@@ -52,10 +51,6 @@ jaeger_server=${jaeger_server:-localhost}
 jaeger_ui_port=${jaeger_ui_port:-16686}
 jaeger_docker_container_name="jaeger"
 
-if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 22.04" | bc -q)" == "1" ]; then
-	echo "Skip tracing test is not working with cgroupsv2 see $issue"
-	exit 0
-fi
 
 # Cleanup will remove Jaeger container and
 # disable tracing.
