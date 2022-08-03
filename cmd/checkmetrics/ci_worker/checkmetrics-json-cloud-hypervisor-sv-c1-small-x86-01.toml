@@ -47,6 +47,19 @@ minpercent = 5.0
 maxpercent = 5.0
 
 [[metric]]
+name = "latency"
+type = "json"
+description = "measure network latency"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"latency\".Results | .[] | .latency.Result"
+checktype = "mean"
+midval = 0.73
+minpercent = 10.0
+maxpercent = 10.0
+
+[[metric]]
 name = "blogbench"
 type = "json"
 description = "measure container average of blogbench write"
