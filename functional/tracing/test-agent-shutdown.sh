@@ -42,6 +42,7 @@ set -o errtrace
 
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 source "${SCRIPT_PATH}/../../.ci/lib.sh"
+source "/etc/os-release" || source "/usr/lib/os-release"
 
 CTR_RUNTIME=${CTR_RUNTIME:-"io.containerd.kata.v2"}
 
@@ -221,6 +222,7 @@ kata_cfg_file=
 
 # Set in setup() based on KATA_HYPERVISOR
 hypervisor_binary=
+
 
 #-------------------------------------------------------------------------------
 
@@ -785,6 +787,11 @@ setup()
 
 	[ "${CI_JOB:-}" = "METRICS" ] && {
 		info "Exiting as not running on metrics CI"
+		exit 0
+	}
+
+	[ "${CI_JOB:-}" = "CRI_CONTAINERD_K8S_DEVMAPPER" ] && {
+		info "Exiting to limit number of jobs that run tests related to tracing."
 		exit 0
 	}
 

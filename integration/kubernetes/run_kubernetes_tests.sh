@@ -34,6 +34,7 @@ else
 	"k8s-expose-ip.bats" \
 	"k8s-inotify.bats" \
 	"k8s-job.bats" \
+	"k8s-kill-all-process-in-container.bats" \
 	"k8s-limit-range.bats" \
 	"k8s-liveness-probes.bats" \
 	"k8s-memory.bats" \

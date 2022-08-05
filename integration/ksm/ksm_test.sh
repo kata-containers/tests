@@ -14,6 +14,7 @@ set -e
 dir_path=$(dirname "$0")
 source "${dir_path}/../../lib/common.bash"
 source "${dir_path}/../../metrics/lib/common.bash"
+source "/etc/os-release" || source "/usr/lib/os-release"
 
 KATA_KSM_THROTTLER="${KATA_KSM_THROTTLER:-yes}"
 PAYLOAD_ARGS="${PAYLOAD_ARGS:-tail -f /dev/null}"

@@ -15,6 +15,7 @@ set -o errtrace
 dir_path=$(dirname "$0")
 source "${dir_path}/../../lib/common.bash"
 source "${dir_path}/../../.ci/lib.sh"
+source "/etc/os-release" || source "/usr/lib/os-release"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 name="${name:-default_vcpus}"
 IMAGE="${IMAGE:-quay.io/prometheus/busybox:latest}"

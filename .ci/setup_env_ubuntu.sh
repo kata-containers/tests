@@ -14,6 +14,10 @@ source "${cidir}/lib.sh"
 echo "Update apt repositories"
 sudo -E apt update
 
+# Removing man-db, workflow's kept failing, fixes: #4480
+echo "Removing man-db, not needed for CI/CD"
+sudo -E apt -y remove --purge man-db
+
 echo "Try to preemptively fix broken dependencies, if any"
 sudo -E apt --fix-broken install -y
 
@@ -33,7 +37,7 @@ declare -A packages=( \
 	[crio_dependencies]="libglib2.0-dev libseccomp-dev libapparmor-dev libgpgme11-dev thin-provisioning-tools" \
 	[bison_binary]="bison" \
 	[libudev-dev]="libudev-dev" \
-	[build_tools]="build-essential python pkg-config zlib1g-dev" \
+	[build_tools]="build-essential pkg-config zlib1g-dev" \
 	[crio_dependencies_for_ubuntu]="libdevmapper-dev util-linux" \
 	[metrics_dependencies]="smem jq" \
 	[cri-containerd_dependencies]="btrfs-progs libseccomp-dev libapparmor-dev make gcc pkg-config" \
@@ -53,6 +57,12 @@ if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 20.04" | bc -q)" == 
 	packages[vfio_test]="pciutils driverctl"
 fi
 
+if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 22.04" | bc -q)" == "1" ]; then
+	packages[build_tools]+=" python2"
+else
+	packages[build_tools]+=" python"
+fi
+
 if [ "$(uname -m)" == "x86_64" ] && [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 18.04" | bc -q)" == "1" ]; then
 	packages[qemu_dependencies]+=" libpmem-dev"
 fi
@@ -69,12 +79,17 @@ rust_agent_pkgs+=("automake")
 rust_agent_pkgs+=("autoconf")
 rust_agent_pkgs+=("m4")
 rust_agent_pkgs+=("libc6-dev")
-rust_agent_pkgs+=("libstdc++-8-dev")
 rust_agent_pkgs+=("coreutils")
 rust_agent_pkgs+=("binutils")
 rust_agent_pkgs+=("debianutils")
 rust_agent_pkgs+=("gcc")
 rust_agent_pkgs+=("git")
+
+if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 22.04" | bc -q)" == "1" ]; then
+	rust_agent_pkgs+=("libstdc++-10-dev")
+else
+	rust_agent_pkgs+=("libstdc++-8-dev")
+fi
 
 # ppc64le and s390x have no musl targets in Rust, hence, do not install musl there
 [ "$(arch)" != "ppc64le" ] && [ "$(arch)" != "s390x" ] && rust_agent_pkgs+=("musl" "musl-dev" "musl-tools")

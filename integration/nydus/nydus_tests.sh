@@ -14,6 +14,7 @@ set -o errtrace
 dir_path=$(dirname "$0")
 source "${dir_path}/../../lib/common.bash"
 source "${dir_path}/../../.ci/lib.sh"
+source "/etc/os-release" || source "/usr/lib/os-release"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 
 need_restore_kata_config=false
@@ -48,7 +49,10 @@ function install_from_tarball() {
 	local url=$(get_version "externals.${package_name}.url")
 	local version=$(get_version "externals.${package_name}.version")
 	local tarball_url="${url}/releases/download/${version}/${binary_name}-${version}-$arch.tgz"
-
+	if [ "${package_name}" == "nydus" ]; then
+		local goarch="$(${dir_path}/../../.ci/kata-arch.sh --golang)"
+		tarball_url="${url}/releases/download/${version}/${binary_name}-${version}-linux-$goarch.tgz"
+	fi
 	echo "Download tarball from ${tarball_url}"
 	curl -Ls "$tarball_url" | sudo tar xfz - -C /usr/local/bin --strip-components=1
 }
@@ -87,6 +91,10 @@ function config_kata() {
 	else
 		sudo cp -a "${CLH_CONFIG_FILE}" "${SYSCONFIG_FILE}"
 	fi
+
+	echo "Enabling all debug options in file ${SYSCONFIG_FILE}"
+	sudo sed -i -e 's/^#\(enable_debug\).*=.*$/\1 = true/g' "${SYSCONFIG_FILE}"
+	sudo sed -i -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug"/g' "${SYSCONFIG_FILE}"
 
 	sudo sed -i 's|^shared_fs.*|shared_fs = "virtio-fs-nydus"|g' "${SYSCONFIG_FILE}"
 	sudo sed -i 's|^virtio_fs_daemon.*|virtio_fs_daemon = "/usr/local/bin/nydusd-virtiofs"|g' "${SYSCONFIG_FILE}"

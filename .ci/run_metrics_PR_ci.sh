@@ -62,7 +62,11 @@ run() {
 	bash time/launch_times.sh -i public.ecr.aws/ubuntu/ubuntu:latest -n 20
 
 	if [ "${KATA_HYPERVISOR}" = "cloud-hypervisor" ]; then
+		start_kubernetes
 		bash network/iperf3_kubernetes/k8s-network-metrics-iperf3.sh -a
+		bash storage/fio-k8s/fio-test-ci.sh
+		end_kubernetes
+		check_processes
 	fi
 
 	popd

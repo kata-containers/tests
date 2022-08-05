@@ -15,6 +15,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+source "/etc/os-release" || source "/usr/lib/os-release"
+
 [ -n "${BASH_VERSION:-}" ] && set -o errtrace
 [ -n "${DEBUG:-}" ] && set -o xtrace
 

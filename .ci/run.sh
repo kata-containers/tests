@@ -11,6 +11,7 @@ set -e
 
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
+source "/etc/os-release" || source "/usr/lib/os-release"
 
 export RUNTIME="containerd-shim-kata-v2"
 
@@ -64,6 +65,8 @@ case "${CI_JOB}" in
 			echo "INFO: Running Confidential Container tests"
 			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-containerd"
 		fi
+		echo "INFO: Running runk test"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make runk"
 		;;
 	"CRIO_K8S")
 		echo "INFO: Running kubernetes tests"

@@ -6,6 +6,7 @@
 
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
+source "/etc/os-release" || source "/usr/lib/os-release"
 
 setup() {
 	extract_kata_env

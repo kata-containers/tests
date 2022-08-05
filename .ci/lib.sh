@@ -56,8 +56,6 @@ tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 lib_script="${GOPATH}/src/${tests_repo}/lib/common.bash"
 source "${lib_script}"
 
-export KATA_OBS_REPO_BASE="http://download.opensuse.org/repositories/home:/katacontainers:/releases:/$(arch):/master"
-
 # Jenkins master URL
 jenkins_url="http://jenkins.katacontainers.io"
 # Path where cached artifacts are found.

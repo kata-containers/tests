@@ -17,6 +17,7 @@ DevStack/B
 Django/B
 Docker/B
 dracut/B
+Dragonball/B
 Facebook/B
 fio/B
 Fluentd/B
@@ -74,6 +75,8 @@ R/B
 rkt/B/B
 runc/B
 runV/B
+rustlang/B
+Rustlang/B
 SELinux/B
 SemaphoreCI/B
 snapcraft/B

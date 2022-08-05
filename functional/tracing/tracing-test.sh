@@ -10,6 +10,7 @@ set -o pipefail
 set -o errtrace
 
 script_name=${0##*/}
+source "/etc/os-release" || source "/usr/lib/os-release"
 
 # Set to true if all tests pass
 success="false"
@@ -49,6 +50,7 @@ container_id="tracing-test"
 jaeger_server=${jaeger_server:-localhost}
 jaeger_ui_port=${jaeger_ui_port:-16686}
 jaeger_docker_container_name="jaeger"
+
 
 # Cleanup will remove Jaeger container and
 # disable tracing.
@@ -420,6 +422,11 @@ main()
                 info "Exiting as not running on metrics CI"
                 exit 0
         }
+
+	[ "${CI_JOB:-}" = "CRI_CONTAINERD_K8S_DEVMAPPER" ] && {
+		info "Exiting to limit number of jobs that run tests related to tracing."
+		exit 0
+	}
 
 	case "$cmd" in
 		clean) success="true"; cleanup; exit 0;;

@@ -91,7 +91,6 @@ skip_paths(){
 long_options=(
 	[all]="Force checking of all changes, including files in the base branch"
 	[branch]="Specify upstream branch to compare against (default '$branch')"
-	[commits]="Check commits"
 	[docs]="Check document files"
 	[dockerfiles]="Check dockerfiles"
 	[files]="Check files"
@@ -242,42 +241,6 @@ need_chronic() {
 		"Usually it is distributed with the 'moreutils' package of your Linux distribution."
 }
 
-static_check_commits()
-{
-	# Since this script is called from another repositories directory,
-	# ensure the utility is built before running it.
-	# for main branch
-	# (cd "${tests_repo_dir}" && make checkcommits)
-	# for main branch
-	(cd "${tests_repo_dir}" && make checkcommits && git remote set-branches origin 'main' && git fetch -v)
-
-	command -v checkcommits &>/dev/null || \
-		die 'checkcommits command not found. Ensure that "$GOPATH/bin" is in your $PATH.'
-
-	# Check the commits in the branch
-	{
-		checkcommits \
-			--need-fixes \
-			--need-sign-offs \
-			--ignore-fixes-for-subsystem "release" \
-			--verbose \
-			HEAD \
-			main; \
-			rc="$?";
-	} || true
-
-	if [ "$rc" -ne 0 ]
-	then
-		cat >&2 <<-EOF
-	ERROR: checkcommits failed. See the document below for help on formatting
-	commits for the project.
-
-		https://github.com/kata-containers/community/blob/main/CONTRIBUTING.md#patch-format
-
-EOF
-		exit 1
-	fi
-}
 
 static_check_go_arch_specific()
 {
@@ -529,8 +492,9 @@ check_url()
 	local invalid_file=$(printf "%s/%d" "$invalid_urls_dir" "$$")
 
 	local ret
+	local user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
 
-	{ curl -sIL -H "Accept-Encoding: zstd, br, gzip, deflate" --max-time "$url_check_timeout_secs" \
+	{ curl -sIL -A "$user_agent" -H "Accept-Encoding: zstd, br, gzip, deflate" --max-time "$url_check_timeout_secs" \
 		--retry "$url_check_max_tries" "$url" &>"$curl_out"; ret=$?; } || true
 
 	# A transitory error, or the URL is incorrect,
@@ -1395,15 +1359,6 @@ main()
 
 	for func in $all_check_funcs
 	do
-		if [ "$func" = "static_check_commits" ]; then
-			if [ -n "$TRAVIS_BRANCH" ] && [ "$TRAVIS_BRANCH" != "main" ]
-			then
-				echo "Skipping checkcommits"
-				echo "See issue: https://github.com/kata-containers/tests/issues/632"
-				continue
-			fi
-		fi
-
 		run_or_list_check_function "$func"
 	done
 }

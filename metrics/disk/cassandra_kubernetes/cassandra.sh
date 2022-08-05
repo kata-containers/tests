@@ -14,9 +14,10 @@ source "${SCRIPT_PATH}/../../lib/common.bash"
 test_repo="${test_repo:-github.com/kata-containers/tests}"
 TEST_NAME="${TEST_NAME:-cassandra}"
 cassandra_file=$(mktemp cassandraresults.XXXXXXXXXX)
+cassandra_read_file=$(mktemp cassandrareadresults.XXXXXXXXXX)
 
 function remove_tmp_file() {
-	rm -rf "${cassandra_file}"
+	rm -rf "${cassandra_file}" "${cassandra_read_file}"
 }
 
 trap remove_tmp_file EXIT
@@ -36,16 +37,65 @@ function cassandra_write_test() {
 	# This is needed to wait that cassandra is up
 	sleep 30
 	kubectl exec -i cassandra-0 -- sh -c "$write_cmd" > "${cassandra_file}"
-	op_rate=$(cat "${cassandra_file}" | grep -e "Op rate" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	write_op_rate=$(cat "${cassandra_file}" | grep -e "Op rate" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	write_latency_mean=$(cat "${cassandra_file}" | grep -e "Latency mean" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	write_latency_95th=$(cat "${cassandra_file}" | grep -e "Latency 95th percentile" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	write_latency_99th=$(cat "${cassandra_file}" | grep -e "Latency 99th percentile" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	write_latency_median=$(cat "${cassandra_file}" | grep -e "Latency median" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+
+	export read_cmd="/usr/local/apache-cassandra-3.11.2/tools/bin/cassandra-stress read n=200000 -rate threads=50"
+	kubectl exec -i cassandra-0 -- sh -c "$read_cmd" > "${cassandra_read_file}"
+	read_op_rate=$(cat "${cassandra_read_file}" | grep -e "Op rate" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	read_latency_mean=$(cat "${cassandra_read_file}" | grep -e "Latency mean" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	read_latency_95th=$(cat "${cassandra_read_file}" | grep -e "Latency 95th percentile" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	read_latency_99th=$(cat "${cassandra_read_file}" | grep -e "Latency 99th percentile" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+	read_latency_median=$(cat "${cassandra_read_file}" | grep -e "Latency median" | cut -d':' -f2  | sed -e 's/^[ \t]*//' | cut -d ' ' -f1)
+
 	metrics_json_init
 	# Save configuration
 	metrics_json_start_array
 
 	local json="$(cat << EOF
 	{
-		"Op rate": {
-			"Result" : "$op_rate",
+		"Write Op rate": {
+			"Result" : "$write_op_rate",
 			"Units" : "op/s"
+		},
+		"Write Latency Mean": {
+			"Result" : "$write_latency_mean",
+			"Units" : "ms"
+		},
+		"Write Latency 95th percentile": {
+			"Result" : "$write_latency_95th",
+			"Units" : "ms"
+		},
+		"Write Latency 99th percentile": {
+			"Result" : "$write_latency_99th",
+			"Units" : "ms"
+		},
+		"Write Latency Median" : {
+			"Result" : "$write_latency_median",
+			"Units" : "ms"
+		},
+		"Read Op rate": {
+			"Result" : "$read_op_rate",
+			"Units" : "op/s"
+		},
+		"Read Latency Mean": {
+			"Result" : "$read_latency_mean",
+			"Units" : "ms"
+		},
+		"Read Latency 95th percentile": {
+			"Result" : "$read_latency_95th",
+			"Units" : "ms"
+		},
+		"Read Latency 99th percentile": {
+			"Result" : "$read_latency_99th",
+			"Units" : "ms"
+		},
+		"Read Latency Median" : {
+			"Result" : "$read_latency_median",
+			"Units" : "ms"
 		}
 	}
 EOF
@@ -75,20 +125,50 @@ function cassandra_start() {
 	wait_time=20
  	sleep_time=2
 
+	vol_capacity="3Gi"
+	volume_name="block-loop-pv"
+	volume_claim="block-loop-pvc"
+
+	# Create Loop Device
+	export tmp_disk_image=$(mktemp --tmpdir disk.XXXXXX.img)
+	truncate "$tmp_disk_image" --size "3GB"
+	export loop_dev=$(sudo losetup -f)
+	sudo losetup "$loop_dev" "$tmp_disk_image"
+
+	# Create Storage Class
+	kubectl create -f "${SCRIPT_PATH}/volume/block-local-storage.yaml"
+
+	# Create Persistent Volume
+	export tmp_pv_yaml=$(mktemp --tmpdir block_persistent_vol.XXXXX.yaml)
+	sed -e "s|LOOP_DEVICE|${loop_dev}|" "${SCRIPT_PATH}/volume/block-loop-pv.yaml" > "$tmp_pv_yaml"
+	sed -i "s|HOSTNAME|$(hostname | awk '{print tolower($0)}')|" "$tmp_pv_yaml"
+	sed -i "s|CAPACITY|${vol_capacity}|" "$tmp_pv_yaml"
+
+	kubectl create -f "$tmp_pv_yaml"
+	cmd="kubectl get pv/${volume_name} | grep Available"
+	waitForProcess "$wait_time" "$sleep_time" "$cmd"
+
+	# Create Persistent Volume Claim
+	export tmp_pvc_yaml=$(mktemp --tmpdir block_persistent_vol.XXXXX.yaml)
+	sed -e "s|CAPACITY|${vol_capacity}|" "${SCRIPT_PATH}/volume/block-loop-pvc.yaml" > "$tmp_pvc_yaml"
+	kubectl create -f "$tmp_pvc_yaml"
+
 	# Create service
 	kubectl create -f "${SCRIPT_PATH}/runtimeclass_workloads/cassandra-service.yaml"
 
 	# Check service
 	kubectl get svc | grep "$service_name"
 
-	# Create local volumes
-	kubectl create -f "${SCRIPT_PATH}/runtimeclass_workloads/local-volumes.yaml"
-
-	# Create statefulset
-	kubectl create -f "${SCRIPT_PATH}/runtimeclass_workloads/cassandra-statefulset.yaml"
-
+	# Create workload using volume
+	ctr_dev_path="/dev/xda"
+	export tmp_pod_yaml=$(mktemp --tmpdir pod-pv.XXXXX.yaml)
+	sed -e "s|DEVICE_PATH|${ctr_dev_path}|" "${SCRIPT_PATH}/runtimeclass_workloads/cassandra-statefulset.yaml" > "$tmp_pod_yaml"
+	kubectl create -f "$tmp_pod_yaml"
 	cmd="kubectl rollout status --watch --timeout=120s statefulset/$app_name"
  	waitForProcess "$wait_time" "$sleep_time" "$cmd"
+
+	# Verify persistent volume claim is bound
+	kubectl get pvc | grep "Bound"
 
 	# Check pods are running
 	cmd="kubectl get pods -o jsonpath='{.items[*].status.phase}' | grep Running"
@@ -98,6 +178,17 @@ function cassandra_start() {
 function cassandra_cleanup() {
 	kubectl delete svc "$service_name"
 	kubectl delete pod -l app="$app_name"
+	kubectl delete storageclass block-local-storage
+
+	# Delete temporary yaml files
+	rm -f "$tmp_pv_yaml"
+	rm -f "$tmp_pvc_yaml"
+	rm -f "$tmp_pod_yaml"
+
+	# Remove image and loop device
+	sudo losetup -d "$loop_dev"
+	rm -f "$tmp_disk_image"
+
 	end_kubernetes
 	check_processes
 }

@@ -31,10 +31,7 @@ ifneq ($(wildcard $(ARCH_FILE)),)
 include $(ARCH_FILE)
 endif
 
-default: checkcommits github-labels
-
-checkcommits:
-	make -C cmd/checkcommits
+default: github-labels
 
 github-labels:
 	make -C cmd/github-labels
@@ -117,7 +114,6 @@ pmem:
 
 test: ${UNION}
 
-check: checkcommits
 
 $(INSTALL_TARGETS): install-%: .ci/install_%.sh
 	@bash -f $<
@@ -140,6 +136,9 @@ agent: bash -f functional/agent/agent_test.sh
 monitor:
 	bash -f functional/kata-monitor/run.sh
 
+runk:
+	bash -f integration/containerd/runk/runk-tests.sh
+
 help:
 	@echo Subsets of the tests can be run using the following specific make targets:
 	@echo " $(UNION)" | sed 's/ /\n\t/g'
@@ -149,8 +148,6 @@ help:
 
 # PHONY in alphabetical order
 .PHONY: \
-	check \
-	checkcommits \
 	crio \
 	$(INSTALL_TARGETS) \
 	kubernetes \
