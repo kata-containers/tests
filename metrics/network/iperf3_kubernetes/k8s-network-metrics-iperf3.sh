@@ -226,6 +226,7 @@ function iperf3_start_deployment() {
 }
 
 function iperf3_deployment_cleanup() {
+	kubectl delete pod "$server_pod_name" "$client_pod_name"
 	kubectl delete deployment "$deployment"
 	kubectl delete service "$deployment"
 	if [ -z "${CI_JOB}" ]; then
