@@ -56,7 +56,7 @@ description = "measure network latency"
 checkvar = ".\"latency\".Results | .[] | .latency.Result"
 checktype = "mean"
 midval = 0.73
-minpercent = 10.0
+minpercent = 20.0
 maxpercent = 10.0
 
 [[metric]]
@@ -96,7 +96,7 @@ checkvar = ".\"fio\".Results | .[] | .readio.Result"
 checktype = "mean"
 midval = 7811072.0
 minpercent = 20.0
-maxpercent = 10.0
+maxpercent = 20.0
 
 [[metric]]
 name = "fio"
@@ -109,7 +109,34 @@ checkvar = ".\"fio\".Results | .[] | .readbw.Result"
 checktype = "mean"
 midval = 88479751.0
 minpercent = 25.0
+maxpercent = 25.0
+
+[[metric]]
+name = "fio"
+type = "json"
+description = "measure write-io using fio"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"fio\".Results | .[] | .writeio.Result"
+checktype = "mean"
+midval = 2674688.0
+minpercent = 20.0
 maxpercent = 10.0
+
+[[metric]]
+name = "fio"
+type = "json"
+description = "measure write-bw using fio"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"fio\".Results | .[] | .writebw.Result"
+checktype = "mean"
+midval = 35543338.0
+minpercent = 40.0
+maxpercent = 30.0
+
 
 [[metric]]
 name = "network-iperf3"
@@ -135,7 +162,7 @@ checkvar = ".\"fio\".Results | .[] | .read90percentile.Result"
 checktype = "mean"
 midval = 56668.0
 minpercent = 50.0
-maxpercent = 50.0
+maxpercent = 60.0
 
 [[metric]]
 name = "fio"
@@ -148,7 +175,7 @@ checkvar = ".\"fio\".Results | .[] | .read95percentile.Result"
 checktype = "mean"
 midval = 84454.0
 minpercent = 50.0
-maxpercent = 50.0
+maxpercent = 60.0
 
 [[metric]]
 name = "network-iperf3"
