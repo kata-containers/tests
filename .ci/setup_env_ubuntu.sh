@@ -93,8 +93,8 @@ fi
 
 # ppc64le and s390x have no musl targets in Rust, hence, do not install musl there
 [ "$(arch)" != "ppc64le" ] && [ "$(arch)" != "s390x" ] && rust_agent_pkgs+=("musl" "musl-dev" "musl-tools")
-# ppc64le and s390x require a system installation of protobuf-compiler
-[ "$(arch)" == "ppc64le" ] || [ "$(arch)" == "s390x" ] && rust_agent_pkgs+=("protobuf-compiler")
+# building ocricrypt-rs requires a system installation of protobuf-compiler & libprotobuf-dev
+rust_agent_pkgs+=("protobuf-compiler" "libprotobuf-dev")
 
 main()
 {
