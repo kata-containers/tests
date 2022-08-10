@@ -346,8 +346,7 @@ EOF
 	metrics_json_add_array_element "$json"
 	metrics_json_end_array "Results"
 
-	${CTR_EXE} t rm -f ${containers[@]}
-	${CTR_EXE} c rm ${containers[@]}
+	clean_env_ctr
 }
 
 save_config(){

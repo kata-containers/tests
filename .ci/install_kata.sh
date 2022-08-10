@@ -29,6 +29,10 @@ if [ "${TEE_TYPE:-}" == "tdx" ]; then
 	KATA_BUILD_QEMU_TYPE="${KATA_BUILD_QEMU_TYPE:-tdx}"
 fi
 
+if [ "${TEE_TYPE:-}" == "sev" ]; then
+	KATA_BUILD_KERNEL_TYPE=sev
+fi
+
 echo "Install Kata Containers Image"
 echo "rust image is default for Kata 2.0"
 "${cidir}/install_kata_image.sh" "${tag}"

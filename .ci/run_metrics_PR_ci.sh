@@ -63,6 +63,7 @@ run() {
 
 	if [ "${KATA_HYPERVISOR}" = "cloud-hypervisor" ]; then
 		start_kubernetes
+		bash network/latency_kubernetes/latency-network.sh
 		bash network/iperf3_kubernetes/k8s-network-metrics-iperf3.sh -a
 		bash storage/fio-k8s/fio-test-ci.sh
 		end_kubernetes

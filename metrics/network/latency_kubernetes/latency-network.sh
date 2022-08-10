@@ -4,14 +4,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-set -x
+set -e
 
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 
 source "${SCRIPT_PATH}/../../../.ci/lib.sh"
 source "${SCRIPT_PATH}/../../lib/common.bash"
 latency_file=$(mktemp latencyresults.XXXXXXXXXX)
-TEST_NAME="${TEST_NAME:-network-latency}"
+TEST_NAME="${TEST_NAME:-latency}"
 CI_JOB="${CI_JOB:-}"
 
 function remove_tmp_file() {
@@ -41,7 +41,7 @@ function main() {
 	kubectl create -f "${SCRIPT_PATH}/runtimeclass_workloads/latency-server.yaml"
 
 	# Get the names of the server pod
-	export server_pod_name=$(kubectl get pods -o name | grep server | cut -d '/' -f2)
+	export server_pod_name="latency-server"
 
 	# Verify the server pod is working
 	local cmd="kubectl get pod $server_pod_name -o yaml | grep 'phase: Running'"
@@ -51,7 +51,7 @@ function main() {
 	kubectl create -f "${SCRIPT_PATH}/runtimeclass_workloads/latency-client.yaml"
 
 	# Get the names of the client pod
-	export client_pod_name=$(kubectl get pods -o name | grep client | cut -d '/' -f2)
+	export client_pod_name="latency-client"
 
 	# Verify the client pod is working
 	local cmd="kubectl get pod $client_pod_name -o yaml | grep 'phase: Running'"
@@ -65,7 +65,7 @@ function main() {
 
 	local client_command="ping -c ${number} ${server_ip_add}"
 
-	kubectl exec -i "$client_pod_name" -- sh -c "$client_command" > "$latency_file"
+	kubectl exec "$client_pod_name" -- sh -c "$client_command" > "$latency_file"
 
 	metrics_json_init
 
@@ -75,7 +75,7 @@ function main() {
 
 	local json="$(cat << EOF
 	{
-		"network-latency": {
+		"latency": {
 			"Result" : $latency,
 			"Units" : "ms"
 		}
@@ -94,4 +94,3 @@ EOF
 	fi
 }
 main "$@"
-

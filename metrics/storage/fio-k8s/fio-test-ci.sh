@@ -36,6 +36,8 @@ function main() {
 	metrics_json_init
 	local read_io=$(cat $test_result_file | grep io_bytes | head -1 | sed 's/[[:blank:]]//g' | cut -f2 -d ':' | cut -f1 -d ',')
 	local read_bw=$(cat $test_result_file | grep bw_bytes | head -1 | sed 's/[[:blank:]]//g' | cut -f2 -d ':' | cut -f1 -d ',')
+ 	local read_90_percentile=$(cat $test_result_file | grep 90.000000 | head -1 | sed 's/[[:blank:]]//g' | cut -f2 -d ':' | cut -f1 -d ',')
+	local read_95_percentile=$(cat $test_result_file | grep 95.000000 | head -1 | sed 's/[[:blank:]]//g' | cut -f2 -d ':' | cut -f1 -d ',')
 
 	metrics_json_start_array
 	local json="$(cat << EOF
@@ -47,6 +49,14 @@ function main() {
 		"readbw": {
 			"Result" : $read_bw,
 			"Units" : "bytes/sec"
+		},
+		"read90percentile": {
+			"Result" : $read_90_percentile,
+			"Units" : "ns"
+		},
+		"read95percentile": {
+			"Result" : $read_95_percentile,
+			"Units" : "ns"
 		}
 	}
 EOF
