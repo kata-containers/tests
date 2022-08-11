@@ -23,6 +23,7 @@ TOOLCHAIN_PREFIX="${TOOLCHAIN_ARCHIVE_PREFIX}/bin/aarch64-none-elf-"
 TOOLCHAIN_SOURCE_URL="https://developer.arm.com/-/media/Files/downloads/gnu-a/${TOOLCHAIN_VERSION}/binrel/${TOOLCHAIN_ARCHIVE}"
 
 export EDK2_WORKSPACE=$(mktemp -d)
+BACKUP_EFI_DIR=$HOME/backup
 
 #tag or commit id of source code
 EDK2_REPO_TAG_ID="edk2-stable202202"
@@ -36,6 +37,7 @@ INSTALL_PATH="${DESTDIR:-}${PREFIX}/share/kata-containers"
 EFI_NAME="QEMU_EFI.fd"
 EFI_DEFAULT_DIR="${EDK2_WORKSPACE}/qemu-efi-aarch64"
 EFI_DEFAULT_PATH="${EFI_DEFAULT_DIR}/${EFI_NAME}"
+BACKUP_EFI="${BACKUP_EFI_DIR}/${EFI_NAME}"
 
 FLASH0_NAME="kata-flash0.img"
 FLASH1_NAME="kata-flash1.img"
@@ -130,6 +132,11 @@ main()
 		exit 0
 	fi
 
+        if [ -f "${BACKUP_EFI}" ]; then
+		[ ! -d "${EFI_DEFAULT_DIR}" ] && mkdir -p "${EFI_DEFAULT_DIR}"
+		cp "${BACKUP_EFI}" "${EFI_DEFAULT_PATH}"
+	fi
+
 	#There maybe something wrong with the qemu efi download from linaro
 	#Just build it from source code until the issue is fixed
 	if [ ! -e "${EFI_DEFAULT_PATH}" ]; then
@@ -142,6 +149,10 @@ main()
 
 	prepare_uefi_flash
 	install_uefi_flash "${EDK2_WORKSPACE}/${FLASH0_NAME}" "${EDK2_WORKSPACE}/${FLASH1_NAME}"
+
+	# Save EFI file to backup dir
+	[ ! -d "${BACKUP_EFI_DIR}" ] && mkdir -p "${BACKUP_EFI_DIR}"
+	[ ! -f "${BACKUP_EFI}" ] && cp "${QEMU_EFI_BUILD_PATH}" "${BACKUP_EFI_DIR}"
 
 	echo "Info: install uefi rom image successfully"
 	clean_up
