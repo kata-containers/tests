@@ -222,5 +222,12 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="qemu"
 	export KUBERNETES="yes"
 	export METRICS_CI=1
-;;
+	;;
+"DRAGONBALL")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="dragonball"
+	export KUBERNETES="yes"
+	;;
 esac
