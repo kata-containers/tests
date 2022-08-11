@@ -234,6 +234,7 @@ clean_env_ctr()
 	for i in "${containers[@]}"; do
 		task="$(sudo ctr task ls | grep -E "\<${i}\>" | cut -f1 -d" " || true)"
 		[ -n "${task}" ] && sudo ctr task kill "${task}"
+		[ -n "${task}" ] && sudo ctr tasks kill -s SIGKILL "${task}"
 	done
 
 	# do not stop if the command fails, it will be evaluated by waitForProcess

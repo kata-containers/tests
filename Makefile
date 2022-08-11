@@ -136,6 +136,9 @@ agent: bash -f functional/agent/agent_test.sh
 monitor:
 	bash -f functional/kata-monitor/run.sh
 
+runk:
+	bash -f integration/containerd/runk/runk-tests.sh
+
 help:
 	@echo Subsets of the tests can be run using the following specific make targets:
 	@echo " $(UNION)" | sed 's/ /\n\t/g'

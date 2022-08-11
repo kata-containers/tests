@@ -52,7 +52,7 @@ func (p *Pod) Run() (err error) {
 
 func (p *Pod) Delete() (err error) {
 	log.Debugf("Delete pod %s", p.YamlPath)
-	_, err = exec.ExecCmd(" kubectl delete --ignore-not-found -f "+p.YamlPath, Debug)
+	_, err = exec.ExecCmd("kubectl delete --ignore-not-found -f "+p.YamlPath, Debug)
 	return errors.Wrapf(err, "Failed to delete pod %s", p.YamlPath)
 }
 
