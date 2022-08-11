@@ -73,6 +73,32 @@ minpercent = 10.0
 maxpercent = 10.0
 
 [[metric]]
+name = "fio"
+type = "json"
+description = "measure write 90 percentile using fio"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"fio\".Results | .[] | .write90percentile.Result"
+checktype = "mean"
+midval = 80384.0
+minpercent = 50.0
+maxpercent = 50.0
+
+[[metric]]
+name = "fio"
+type = "json"
+description = "measure write 95 percentile using fio"
+# Min and Max values to set a 'range' that
+# the median of the CSV Results data must fall
+# within (inclusive)
+checkvar = ".\"fio\".Results | .[] | .write95percentile.Result"
+checktype = "mean"
+midval = 84480.0
+minpercent = 50.0
+maxpercent = 50.0
+
+[[metric]]
 name = "blogbench"
 type = "json"
 description = "measure container average of blogbench read"
