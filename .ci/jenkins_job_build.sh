@@ -214,17 +214,13 @@ source ".ci/ci_job_flags.sh"
 source "${cidir}/lib.sh"
 popd
 
-"${ci_dir_name}/setup.sh"
-
-# Use virtio-9p on s390x -- https://github.com/kata-containers/tests/issues/3998 for tracking
-[ "$arch" = s390x ] && sudo -E "${GOPATH}/src/${tests_repo}/${cidir}/set_kata_config.sh" shared_fs virtio-9p
-
 run_unit_test() {
 	# Run unit tests on non x86_64
 	if [[ "$arch" == "s390x" || "$arch" == "aarch64" ]]; then
 		echo "Running unit tests"
 		sudo chown -R "$USER" "$HOME/.cargo" || true
 		"$ci_dir_name/install_rust.sh" && source "$HOME/.cargo/env"
+		[ ! -d "${katacontainers_repo_dir}" ] && go get -d "${katacontainers_repo}" || true
 		pushd "${GOPATH}/src/${katacontainers_repo}"
 		echo "Installing libseccomp library from sources"
 		libseccomp_install_dir=$(mktemp -d -t libseccomp.XXXXXXXXXX)
@@ -241,6 +237,10 @@ run_unit_test() {
 }
 
 run_main_test() {
+	"${ci_dir_name}/setup.sh"
+	# Use virtio-9p on s390x -- https://github.com/kata-containers/tests/issues/3998 for tracking
+	[ "$arch" = s390x ] && sudo -E "${GOPATH}/src/${tests_repo}/${cidir}/set_kata_config.sh" shared_fs virtio-9p
+
 	if [ "${CI_JOB}" == "VFIO" ]; then
 		pushd "${GOPATH}/src/${tests_repo}"
 		ci_dir_name=".ci"
@@ -286,8 +286,8 @@ test_snap_build() {
 
 case ${test_type} in
 	all)
-		run_unit_test
 		run_main_test
+		run_unit_test
 		test_snap_build
 		;;
 	unit)
