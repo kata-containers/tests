@@ -414,6 +414,16 @@ gen_clean_arch() {
 
 	info "Clean transient test data and logs which has been stored under ${KATA_TESTS_BASEDIR}"
 	[ -d "${KATA_TESTS_BASEDIR}" ] && sudo rm -rf ${KATA_TESTS_BASEDIR}/*
+
+	info "Clean rust environment"
+	[ -f "${HOME}/.cargo/env" ] && source "${HOME}/.cargo/env"
+	if command -v rustup > /dev/null; then
+		info "uninstall rust using rustup"
+		sudo -E env PATH="${HOME}/.cargo/bin":$PATH rustup self uninstall -y
+	fi
+	# make sure cargo and rustup home dir are removed
+	info "remove cargo and rustup home dir"
+	sudo rm -rf ~/.cargo ~/.rustup
 }
 
 check_git_version() {
