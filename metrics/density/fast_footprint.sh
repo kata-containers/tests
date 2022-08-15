@@ -39,7 +39,6 @@ PARALLELISM="${PARALLELISM:-10}"
 #  Default is we run busybox, as a 'small' workload
 PAYLOAD="${PAYLOAD:-quay.io/prometheus/busybox:latest}"
 PAYLOAD_ARGS="${PAYLOAD_ARGS:-tail -f /dev/null}"
-PAYLOAD_RUNTIME_ARGS="${PAYLOAD_RUNTIME_ARGS:---memory-limit 5120}"
 
 ###
 # which RUNTIME we use is picked up from the env in
@@ -48,7 +47,7 @@ PAYLOAD_RUNTIME_ARGS="${PAYLOAD_RUNTIME_ARGS:---memory-limit 5120}"
 ###
 # Define the cutoff checks for when we stop running the test
   # Run up to this many containers
-NUM_CONTAINERS="${NUM_CONTAINERS:-200}"
+NUM_CONTAINERS="${NUM_CONTAINERS:-100}"
   # Run until we have consumed this much memory (from MemFree)
 MAX_MEMORY_CONSUMED="${MAX_MEMORY_CONSUMED:-256*1024*1024*1024}"
   # Run until we have this much MemFree left
@@ -107,7 +106,6 @@ save_config(){
 		"testname": "${TEST_NAME}",
 		"payload": "${PAYLOAD}",
 		"payload_args": "${PAYLOAD_ARGS}",
-		"payload_runtime_args": "${PAYLOAD_RUNTIME_ARGS}",
 		"payload_sleep": ${PAYLOAD_SLEEP},
 		"ksm_settle_time": ${KSM_WAIT_TIME},
 		"num_containers": ${NUM_CONTAINERS},
@@ -305,7 +303,7 @@ launch_containers() {
 		echo "Launch iteration ${iter}"
 		for n in $(seq 1 $PARALLELISM); do
 			containers+=($(random_name))
-			sudo ctr run $PAYLOAD_RUNTIME_ARGS -d --runtime=$CTR_RUNTIME $PAYLOAD ${containers[-1]} sh -c $PAYLOAD_ARGS &
+			sudo ctr run -d --runtime=$CTR_RUNTIME $PAYLOAD ${containers[-1]} sh -c $PAYLOAD_ARGS &
 		done
 
 		if [[ $PAYLOAD_SLEEP ]]; then
@@ -321,7 +319,7 @@ launch_containers() {
 
 	for n in $(seq 1 $leftovers); do
 		containers+=($(random_name))
-		sudo ctr run $PAYLOAD_RUNTIME_ARGS -d --runtime=$CTR_RUNTIME $PAYLOAD ${containers[-1]} sh -c $PAYLOAD_ARGS &
+		sudo ctr run -d --runtime=$CTR_RUNTIME $PAYLOAD ${containers[-1]} sh -c $PAYLOAD_ARGS &
 	done
 }
 
@@ -377,8 +375,6 @@ function show_vars()
 	echo -e "\tPAYLOAD (${PAYLOAD})"
 	echo -e "\t\tThe ctr image to run"
 	echo -e "\tPAYLOAD_ARGS (${PAYLOAD_ARGS})"
-	echo -e "\t\tAny arguments passed into the ctr image"
-	echo -e "\tPAYLOAD_RUNTIME_ARGS (${PAYLOAD_RUNTIME_ARGS})"
 	echo -e "\t\tAny extra arguments passed into the docker 'run' command"
 	echo -e "\tPAYLOAD_SLEEP (${PAYLOAD_SLEEP})"
 	echo -e "\t\tSeconds to sleep between launch and measurement, to allow settling"
