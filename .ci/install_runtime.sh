@@ -16,7 +16,6 @@ source "${cidir}/lib.sh"
 source /etc/os-release || source /usr/lib/os-release
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 KATA_EXPERIMENTAL_FEATURES="${KATA_EXPERIMENTAL_FEATURES:-}"
-MACHINETYPE="${MACHINETYPE:-q35}"
 METRICS_CI="${METRICS_CI:-}"
 PREFIX="${PREFIX:-/usr}"
 DESTDIR="${DESTDIR:-/}"
@@ -156,11 +155,6 @@ if [ "$USE_VSOCK" == "yes" ]; then
 			sudo modprobe "${vsock_module}"
 		fi
 	fi
-fi
-
-if [ "$MACHINETYPE" == "q35" ]; then
-	echo "Use machine_type q35"
-	sudo sed -i -e 's|machine_type = "pc"|machine_type = "q35"|' "${runtime_config_path}"
 fi
 
 # Enable experimental features if KATA_EXPERIMENTAL_FEATURES is set to true
