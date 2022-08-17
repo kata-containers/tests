@@ -119,12 +119,6 @@ export TEST_INITRD="yes"
 # Build a dracut-based image.
 export BUILD_METHOD="dracut"
 
-# Configure to use vsock.
-export USE_VSOCK="yes"
-
-# Configure the QEMU machine type.
-export MACHINETYPE="q35"
-
 # Enable SELinux.
 export FEATURE_SELINUX="yes"
 
