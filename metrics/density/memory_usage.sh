@@ -50,37 +50,10 @@ Usage: $0 <count> <wait_time> [auto]
 EOF
 }
 
-# This function measures the PSS average
-# memory about the child process of each
-# docker-containerd-shim instance in the
-# system.
+
 get_runc_pss_memory(){
-        avg=0
-        docker_shim="docker-containerd-shim"
-        mem_amount=0
-        count=0
-
-        shim_instances=$(pgrep  -f "^$docker_shim")
-        for shim in $shim_instances; do
-                child_pid="$(pgrep -P $shim)"
-                child_mem=$(sudo "$SMEM_BIN" -c "pid pss" | \
-                                awk "/^$child_pid / {print \$2}")
-
-		# Getting all individual results
-		echo $child_mem >> $MEM_TMP_FILE
-
-                if (( $child_mem > 0 ));then
-                        mem_amount=$(( $child_mem + $mem_amount ))
-                        (( count++ ))
-                fi
-        done
-
-        # Calculate average
-        if (( $count > 0 )); then
-                avg=$(bc -l <<< "scale=2; $mem_amount / $count")
-        fi
-
-        echo "$avg"
+	ctr_runc_shim_path="/usr/local/bin/containerd-shim-runc-v2"
+	get_pss_memory "$ctr_runc_shim_path"
 }
 
 get_runc_individual_memory() {
