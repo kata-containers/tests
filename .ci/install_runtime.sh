@@ -139,20 +139,6 @@ else
 	echo "Metrics run - do not enable all debug options in file ${runtime_config_path}"
 fi
 
-# Ensure vhost_vsock module is loaded as it is required for vsock
-# agent <-> runtime communication.
-# On OpenShift CI the vhost module should not be loaded on build time.
-if [ "$OPENSHIFT_CI" == "false" ]; then
-	vsock_module="vhost_vsock"
-	echo "Check if ${vsock_module} is loaded"
-	if lsmod | grep -q "\<${vsock_module}\>" ; then
-		echo "Module ${vsock_module} is already loaded"
-	else
-		echo "Load ${vsock_module} module"
-		sudo modprobe "${vsock_module}"
-	fi
-fi
-
 # Enable experimental features if KATA_EXPERIMENTAL_FEATURES is set to true
 if [ "$KATA_EXPERIMENTAL_FEATURES" = true ]; then
 	echo "Enable runtime experimental features"
