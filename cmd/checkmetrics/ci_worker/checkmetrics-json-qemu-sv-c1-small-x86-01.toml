@@ -29,7 +29,7 @@ description = "measure container average footprint"
 # within (inclusive)
 checkvar = ".\"memory-footprint\".Results | .[] | .average.Result"
 checktype = "mean"
-midval = 118601.0
+midval = 120053.0
 minpercent = 5.0
 maxpercent = 5.0
 
@@ -42,7 +42,7 @@ description = "measure container average footprint with KSM"
 # within (inclusive)
 checkvar = ".\"memory-footprint-ksm\".Results | .[] | .average.Result"
 checktype = "mean"
-midval = 54538.11
+midval = 55538.11
 minpercent = 15.0
 maxpercent = 15.0
 

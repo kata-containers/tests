@@ -80,19 +80,23 @@ check_all_running() {
 		fi
 
 		# check we have the right number of vm's
-		how_many_vms=$(pgrep -a $(basename ${HYPERVISOR_PATH} | cut -d '-' -f1) | wc -l)
-		if (( ${how_many_running} != ${how_many_vms} )); then
-			echo "Wrong number of $KATA_HYPERVISOR running (${how_many_running} != ${how_many_vms}) - stopping"
-			((goterror++))
+		if [[ "$KATA_HYPERVISOR" != "dragonball" ]]; then
+			how_many_vms=$(pgrep -a $(basename ${HYPERVISOR_PATH} | cut -d '-' -f1) | wc -l)
+			if (( ${how_many_running} != ${how_many_vms} )); then
+				echo "Wrong number of $KATA_HYPERVISOR running (${how_many_running} != ${how_many_vms}) - stopping"
+				((goterror++))
+			fi
 		fi
 
 		# if this is kata-runtime, check how many pods virtcontainers thinks we have
 		if [[ "$RUNTIME" == "containerd-shim-kata-v2" ]]; then
-			num_vc_pods=$(sudo ls -1 ${VC_POD_DIR} | wc -l)
+			if [ -d "${VC_POD_DIR}" ]; then
+				num_vc_pods=$(sudo ls -1 ${VC_POD_DIR} | wc -l)
 
-			if (( ${how_many_running} != ${num_vc_pods} )); then
-				echo "Wrong number of pods in $VC_POD_DIR (${how_many_running} != ${num_vc_pods}) - stopping)"
-				((goterror++))
+				if (( ${how_many_running} != ${num_vc_pods} )); then
+					echo "Wrong number of pods in $VC_POD_DIR (${how_many_running} != ${num_vc_pods}) - stopping)"
+					((goterror++))
+				fi
 			fi
 		fi
 	fi
