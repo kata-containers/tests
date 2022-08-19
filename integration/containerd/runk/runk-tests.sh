@@ -52,7 +52,7 @@ test_runk() {
     sudo ctr run --pid-file ${PID_FILE} --rm -d --runc-binary ${RUNK_BIN_PATH} ${TEST_IMAGE} ${CONTAINER_ID}
     read CID PID STATUS <<< $(sudo ctr t ls | grep ${CONTAINER_ID})
     [ ${PID} == $(cat ${PID_FILE}) ] || die "pid is not consistent"
-    [ ${STATUS} == "RUNNING" ] || die "contianer status is not RUNNING"
+    [ ${STATUS} == "RUNNING" ] || die "container status is not RUNNING"
 
     echo "exec process in a container"
     sudo ctr t exec --exec-id id1 ${CONTAINER_ID} sh -c "echo hello > /tmp/foo"
