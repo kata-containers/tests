@@ -98,7 +98,7 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
 	;;
-"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S"|"CC_CRI_CONTAINERD"|"CC_SKOPEO_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_K8S"|"CC_SKOPEO_CRI_CONTAINERD_K8S")
+"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S")
 	# This job only tests containerd + k8s
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
@@ -108,33 +108,27 @@ case "${CI_JOB}" in
 		"CRI_CONTAINERD_K8S")
 			export KUBERNETES="yes"
 			;;
-		"CC_CRI_CONTAINERD"|"CC_SKOPEO_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_K8S"|"CC_SKOPEO_CRI_CONTAINERD_K8S")
-			# Export any CC specific environment variables
-			export KATA_BUILD_CC="yes"
-			export CCV0="yes"
-			export UMOCI=yes
-			if [[ "${CI_JOB}" =~ SKOPEO ]]; then
-				export SKOPEO=yes
-			fi
-			if [[ "${CI_JOB}" =~ K8S ]]; then
-				export AA_KBC="offline_fs_kbc"
-				export KUBERNETES=yes
-			fi
-			;;
 	esac
 	;;
-"CC_CRI_CONTAINERD_CLOUD_HYPERVISOR"|"CC_SKOPEO_CRI_CONTAINERD_CLOUD_HYPERVISOR")
+"CC_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_CLOUD_HYPERVISOR"|"CC_SKOPEO_CRI_CONTAINERD"|"CC_SKOPEO_CRI_CONTAINERD_CLOUD_HYPERVISOR"|"CC_CRI_CONTAINERD_K8S"|"CC_SKOPEO_CRI_CONTAINERD_K8S")
 	# This job only tests containerd + k8s
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
-	export KATA_HYPERVISOR="cloud-hypervisor"
+	export KATA_HYPERVISOR="qemu"
 	# Export any CC specific environment variables
 	export KATA_BUILD_CC="yes"
 	export CCV0="yes"
 	export UMOCI=yes
-	if [ "${CI_JOB}" == "CC_SKOPEO_CRI_CONTAINERD_CLOUD_HYPERVISOR" ]; then
+	if [[ "${CI_JOB}" =~ CLOUD_HYPERVISOR ]]; then
+		export KATA_HYPERVISOR="cloud-hypervisor"
+	fi
+	if [[ "${CI_JOB}" =~ SKOPEO ]]; then
 		export SKOPEO=yes
+	fi
+	if [[ "${CI_JOB}" =~ K8S ]]; then
+		export AA_KBC="offline_fs_kbc"
+		export KUBERNETES=yes
 	fi
 	;;
 "CRI_CONTAINERD_K8S_DEVMAPPER")
