@@ -67,6 +67,7 @@ if [ -f "$containerd_config_file" ]
 then
 	sudo sed -i 's|^\(\[plugins\]\).*|\1\n  \[plugins.devmapper\]\n    pool_name = \"contd-thin-pool\"\n    base_image_size = \"4096MB\"|' "$containerd_config_file"
 	sudo sed -i 's|\(\[plugins.cri.containerd\]\).*|\1\n      snapshotter = \"devmapper\"|' "$containerd_config_file"
+	sudo cat ${containerd_config_file}
 else
 	cat<<EOF | sudo tee $containerd_config_file
 [plugins]
