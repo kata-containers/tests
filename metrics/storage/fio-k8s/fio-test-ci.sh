@@ -40,6 +40,8 @@ function main() {
 	local read_95_percentile=$(cat $test_result_file | grep 95.000000 | head -1 | sed 's/[[:blank:]]//g' | cut -f2 -d ':' | cut -f1 -d ',')
 	local write_io=$(cat $test_result_file | grep io_bytes | head -2 | tail -1 | sed 's/[[:blank:]]//g' | cut -f2 -d ':' | cut -f1 -d ',')
 	local write_bw=$(cat $test_result_file | grep bw_bytes | head -2 | tail -1 | sed 's/[[:blank:]]//g' | cut -f2 -d ':' | cut -f1 -d ',')
+	local write_90_percentile=$(cat $test_result_file | grep 90.000000 | head -2 | tail -1 | sed 's/[[:blank:]]//g' | cut -f2 -d ':' | cut -f1 -d ',')
+	local write_95_percentile=$(cat $test_result_file | grep 95.000000 | head -2 | tail -1 | sed 's/[[:blank:]]//g' | cut -f2 -d ':' | cut -f1 -d ',')
 
 	metrics_json_start_array
 	local json="$(cat << EOF
@@ -67,6 +69,14 @@ function main() {
 		"writebw": {
 			"Result" : $write_bw,
 			"Units" : "bytes/sec"
+		},
+		"write90percentile": {
+			"Result" : $write_90_percentile,
+			"Units" : "ns"
+		},
+		"write95percentile": {
+			"Result" : $write_95_percentile,
+			"Units" : "ns"
 		}
 	}
 EOF
