@@ -23,6 +23,8 @@ DESTDIR="${DESTDIR:-/}"
 TEST_INITRD="${TEST_INITRD:-}"
 USE_VSOCK="${USE_VSOCK:-yes}"
 TEE_TYPE="${TEE_TYPE:-}"
+USER="${USER:-$(id -u)}"
+GID="${GID:-$(id -g)}"
 
 arch=$("${cidir}"/kata-arch.sh -d)
 
@@ -62,7 +64,7 @@ build_install_shim_v2(){
 	if [ "$KATA_HYPERVISOR" == "dragonball" ]; then
 		bash "${cidir}/install_rust.sh" && source "$HOME/.cargo/env"
 		pushd "$runtime_rs_src_path"
-		sudo chown -R "${USER}:" "${katacontainers_repo_dir}"
+		sudo chown -R "${USER}:${GID}" "${katacontainers_repo_dir}"
 		make
 		sudo -E PATH=$PATH make install
 		popd
@@ -74,7 +76,7 @@ build_install_shim_v2
 build_install_agent_ctl(){
 	bash "${cidir}/install_rust.sh" && source "$HOME/.cargo/env"
 	pushd "$agent_ctl_path"
-	sudo chown -R "${USER}:" "${katacontainers_repo_dir}"
+	sudo chown -R "${USER}:${GID}" "${katacontainers_repo_dir}"
 	make
 	make install
 	popd
