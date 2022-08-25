@@ -20,7 +20,7 @@ tag=""
 usage(){
 	cat << EOF
 This script helps you install the correct version of docker
-to use with Clear Containers.
+to use with Kata Containers.
 WARNING: Using this tool with -f flag, will overwrite any docker configuration that you may
 have modified.
 Usage: $SCRIPT_NAME [docker] [configure|info|install|remove] <options>
