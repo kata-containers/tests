@@ -129,6 +129,17 @@ case "${CI_JOB}" in
 			;;
 	esac
 	;;
+"CC_CRI_CONTAINERD_TDX_QEMU")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="qemu"
+	export KATA_BUILD_CC="yes"
+	export TEE_TYPE="tdx"
+	export KATA_BUILD_KERNEL_TYPE="tdx"
+	export KATA_BUILD_QEMU_TYPE="tdx"
+	export UMOCI="yes"
+	;;
 "CC_CRI_CONTAINERD_CLOUD_HYPERVISOR"|"CC_SKOPEO_CRI_CONTAINERD_CLOUD_HYPERVISOR")
 	# This job only tests containerd + k8s
 	init_ci_flags
