@@ -118,7 +118,7 @@ export PATH=${GOPATH}/bin:/usr/local/go/bin:/usr/sbin:/sbin:${PATH}
 export GO111MODULE="auto"
 
 if [ ${ghprbTargetBranch} == "CCv0" ] || [ ${GIT_BRANCH} == "CCv0" ]; then
-	export CCV0="yes"
+	export KATA_BUILD_CC="yes"
 	echo "Running CCv0 build"
 	export kata_default_branch="CCv0"
 fi

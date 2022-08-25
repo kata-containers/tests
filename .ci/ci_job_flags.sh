@@ -111,7 +111,6 @@ case "${CI_JOB}" in
 		"CC_CRI_CONTAINERD"|"CC_SKOPEO_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_K8S"|"CC_SKOPEO_CRI_CONTAINERD_K8S")
 			# Export any CC specific environment variables
 			export KATA_BUILD_CC="yes"
-			export CCV0="yes"
 			export UMOCI=yes
 			if [[ "${CI_JOB}" =~ SKOPEO ]]; then
 				export SKOPEO=yes
@@ -131,7 +130,6 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	# Export any CC specific environment variables
 	export KATA_BUILD_CC="yes"
-	export CCV0="yes"
 	export UMOCI=yes
 	if [ "${CI_JOB}" == "CC_SKOPEO_CRI_CONTAINERD_CLOUD_HYPERVISOR" ]; then
 		export SKOPEO=yes
