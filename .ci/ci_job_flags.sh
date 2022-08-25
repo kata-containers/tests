@@ -76,6 +76,13 @@ init_ci_flags() {
 	# Configure test to use Kata SHIM V2
 	export SHIMV2_TEST="true"
 	export CTR_RUNTIME="io.containerd.kata.v2"
+
+	## CCv0 related flags
+	export TEE_TYPE="" # tdx|sev
+	export KATA_BUILD_KERNEL_TYPE="vanilla" # vanilla|tdx|sev
+	export KATA_BUILD_QEMU_TYPE="vanilla" # vanilla|tdx|sev
+	export SKOPEO="no" # yes|no
+	export UMOCI="no" # yes|no
 }
 
 # Setup Kata Containers Environment
