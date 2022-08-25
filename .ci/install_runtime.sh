@@ -198,8 +198,8 @@ if [ "$TEE_TYPE" == "tdx" ]; then
 			;;
 
 		"qemu")
-			sudo sed -i -e 's/^firmware = ".*"/firmware = "\/usr\/share\/qemu\/OVMF.fd"/' "${runtime_config_path}"
-			sudo sed -i -e 's/^firmware_volume = ".*"/firmware_volume = "\/usr\/share\/qemu\/OVMF_VARS.fd"/' "${runtime_config_path}"
+			sudo sed -i -e 's/^firmware = ".*"/firmware = "\/usr\/share\/tdvf\/OVMF.fd"/' "${runtime_config_path}"
+			sudo sed -i -e 's/^firmware_volume = ".*"/firmware_volume = "\/usr\/share\/tdvf\/OVMF_VARS.fd"/' "${runtime_config_path}"
 			;;
         esac
 fi
