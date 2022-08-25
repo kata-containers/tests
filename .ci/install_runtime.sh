@@ -187,19 +187,17 @@ if [ "$arch" == "aarch64" -a "${KATA_HYPERVISOR}" == "qemu" -a "${ENABLE_ARM64_U
 fi
 
 if [ "$TEE_TYPE" == "tdx" ]; then
-        echo "Use tdx enabled guest config in ${runtime_config_path}"
-        sudo sed -i -e 's/vmlinux.container/vmlinuz-tdx.container/' "${runtime_config_path}"
-        sudo sed -i -e 's/^# confidential_guest/confidential_guest/' "${runtime_config_path}"
-        sudo sed -i -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 force_tdx_guest tdx_disable_filter "/g' "${runtime_config_path}"
-
         case "${KATA_HYPERVISOR}" in
 		"cloud-hypervisor")
-			sudo sed -i -e 's/^firmware = ".*"/firmware = "\/usr\/share\/td-shim\/td-shim.bin"/' "${runtime_config_path}"
+			runtime_config_path_clh_tdx="${SYSCONFDIR}/kata-containers/configuration-clh-tdx.toml"
+        		echo "Use tdx enabled guest config in ${runtime_config_path_clh_tdx}"
+			sudo ln -sf ${runtime_config_path_clh_tdx} ${runtime_config_path}
 			;;
 
 		"qemu")
-			sudo sed -i -e 's/^firmware = ".*"/firmware = "\/usr\/share\/tdvf\/OVMF.fd"/' "${runtime_config_path}"
-			sudo sed -i -e 's/^firmware_volume = ".*"/firmware_volume = "\/usr\/share\/tdvf\/OVMF_VARS.fd"/' "${runtime_config_path}"
+			runtime_config_path_qemu_tdx="${SYSCONFDIR}/kata-containers/configuration-qemu-tdx.toml"
+        		echo "Use tdx enabled guest config in ${runtime_config_path_clh_tdx}"
+			sudo ln -sf ${runtime_config_path_clh_tdx} ${runtime_config_path}
 			;;
         esac
 fi
