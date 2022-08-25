@@ -48,7 +48,7 @@ build_rust_image() {
 				[[ -z "${USE_PODMAN:-}" ]] && use_docker="${use_docker:-1}"
 			fi
 			distro="${osbuilder_distro:-ubuntu}"
-			if [ ${CCV0} == "yes" ]; then
+			if [ ${KATA_BUILD_CC} == "yes" ]; then
 				sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" AA_KBC="${AA_KBC:-}" UMOCI=yes make -e "image"
 			else
 				sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" EXTRA_PKGS="${EXTRA_PKGS}" \

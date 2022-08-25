@@ -76,6 +76,13 @@ init_ci_flags() {
 	# Configure test to use Kata SHIM V2
 	export SHIMV2_TEST="true"
 	export CTR_RUNTIME="io.containerd.kata.v2"
+
+	## CCv0 related flags
+	export TEE_TYPE="" # tdx|sev
+	export KATA_BUILD_KERNEL_TYPE="vanilla" # vanilla|tdx|sev
+	export KATA_BUILD_QEMU_TYPE="vanilla" # vanilla|tdx|sev
+	export SKOPEO="no" # yes|no
+	export UMOCI="no" # yes|no
 }
 
 # Setup Kata Containers Environment
@@ -111,7 +118,6 @@ case "${CI_JOB}" in
 		"CC_CRI_CONTAINERD"|"CC_SKOPEO_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_K8S"|"CC_SKOPEO_CRI_CONTAINERD_K8S")
 			# Export any CC specific environment variables
 			export KATA_BUILD_CC="yes"
-			export CCV0="yes"
 			export UMOCI=yes
 			if [[ "${CI_JOB}" =~ SKOPEO ]]; then
 				export SKOPEO=yes
@@ -123,6 +129,20 @@ case "${CI_JOB}" in
 			;;
 	esac
 	;;
+"CC_CRI_CONTAINERD_TDX_QEMU"|"CC_CRI_CONTAINERD_TDX_CLOUD_HYPERVISOR")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="qemu"
+	if [[ "${CI_JOB}" =~ CLOUD_HYPERVISOR ]]; then
+		export KATA_HYPERVISOR="cloud-hypervisor"
+	fi
+	export KATA_BUILD_CC="yes"
+	export TEE_TYPE="tdx"
+	export KATA_BUILD_KERNEL_TYPE="tdx"
+	export KATA_BUILD_QEMU_TYPE="tdx"
+	export UMOCI="yes"
+	;;
 "CC_CRI_CONTAINERD_CLOUD_HYPERVISOR"|"CC_SKOPEO_CRI_CONTAINERD_CLOUD_HYPERVISOR")
 	# This job only tests containerd + k8s
 	init_ci_flags
@@ -131,7 +151,6 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	# Export any CC specific environment variables
 	export KATA_BUILD_CC="yes"
-	export CCV0="yes"
 	export UMOCI=yes
 	if [ "${CI_JOB}" == "CC_SKOPEO_CRI_CONTAINERD_CLOUD_HYPERVISOR" ]; then
 		export SKOPEO=yes
