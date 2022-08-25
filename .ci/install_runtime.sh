@@ -194,7 +194,7 @@ if [ "$TEE_TYPE" == "tdx" ]; then
 
         case "${KATA_HYPERVISOR}" in
 		"cloud-hypervisor")
-			sudo sed -i -e 's/^firmware = ".*"/firmware = "\/usr\/share\/td-shim\/final-pe.bin"/' "${runtime_config_path}"
+			sudo sed -i -e 's/^firmware = ".*"/firmware = "\/usr\/share\/td-shim\/td-shim.bin"/' "${runtime_config_path}"
 			;;
 
 		"qemu")
