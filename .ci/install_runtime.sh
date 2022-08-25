@@ -104,13 +104,22 @@ case "${KATA_HYPERVISOR}" in
 		enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-acrn.toml"
 		;;
 	"cloud-hypervisor")
-		enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-clh.toml"
+		if [ "$TEE_TYPE" == "tdx" ]; then
+			enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-clh-tdx.toml"
+		else
+			enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-clh.toml"
+		fi
 		;;
 	"firecracker")
 		enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-fc.toml"
 		;;
 	"qemu")
+		if [ "$TEE_TYPE" == "tdx" ]; then
+			enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-qemu-tdx.toml"
+		else
 			enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-qemu.toml"
+		fi
+
 		if [ "$arch" == "x86_64" ]; then
 			# Due to a KVM bug, vmx-rdseed-exit must be disabled in QEMU >= 4.2
 			# All CI now uses qemu 5.0+, disabled in the time..
@@ -184,20 +193,4 @@ if [ "$arch" == "aarch64" -a "${KATA_HYPERVISOR}" == "qemu" -a "${ENABLE_ARM64_U
 	sudo sed -i 's|pflashes = \[\]|pflashes = ["/usr/share/kata-containers/kata-flash0.img", "/usr/share/kata-containers/kata-flash1.img"]|' "${runtime_config_path}"
 	#enable pflash
 	sudo sed -i 's|#pflashes|pflashes|' "${runtime_config_path}"
-fi
-
-if [ "$TEE_TYPE" == "tdx" ]; then
-        case "${KATA_HYPERVISOR}" in
-		"cloud-hypervisor")
-			runtime_config_path_clh_tdx="${SYSCONFDIR}/kata-containers/configuration-clh-tdx.toml"
-        		echo "Use tdx enabled guest config in ${runtime_config_path_clh_tdx}"
-			sudo ln -sf ${runtime_config_path_clh_tdx} ${runtime_config_path}
-			;;
-
-		"qemu")
-			runtime_config_path_qemu_tdx="${SYSCONFDIR}/kata-containers/configuration-qemu-tdx.toml"
-        		echo "Use tdx enabled guest config in ${runtime_config_path_clh_tdx}"
-			sudo ln -sf ${runtime_config_path_clh_tdx} ${runtime_config_path}
-			;;
-        esac
 fi
