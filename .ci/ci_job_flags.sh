@@ -143,12 +143,15 @@ case "${CI_JOB}" in
 	export KATA_BUILD_QEMU_TYPE="tdx"
 	export UMOCI="yes"
 	;;
-"CC_CRI_CONTAINERD_K8S_TDX_QEMU")
+"CC_CRI_CONTAINERD_K8S_TDX_QEMU"|"CC_CRI_CONTAINERD_K8S_TDX_CLOUD_HYPERVISOR")
 	# This job only tests containerd + k8s
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
+	if [[ "${CI_JOB}" =~ CLOUD_HYPERVISOR ]]; then
+		export KATA_HYPERVISOR="cloud-hypervisor"
+	fi
 	export KATA_BUILD_CC="yes"
 	export TEE_TYPE="tdx"
 	export KATA_BUILD_KERNEL_TYPE="tdx"
