@@ -97,7 +97,7 @@ kubernetes_create_cc_pod() {
 # Retrieve the sandbox ID 
 #
 retrieve_sandbox_id() {
-	sandbox_id=$(ps -ef | grep containerd-shim-kata-v2 | egrep -o "id [^,][^,].* " | awk '{print $2}')
+	sandbox_id=$(ps -ef | grep containerd-shim-kata-v2 | egrep -o "\s\-id [a-z0-9]+" | awk '{print $2}')
 }
 
 # Check out the doc repo if required
