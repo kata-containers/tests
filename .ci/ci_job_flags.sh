@@ -143,7 +143,7 @@ case "${CI_JOB}" in
 	export KATA_BUILD_QEMU_TYPE="tdx"
 	export UMOCI="yes"
 	;;
-"CC_CRI_CONTAINERD_K8S_TDX_QEMU"|"CC_CRI_CONTAINERD_K8S_TDX_CLOUD_HYPERVISOR")
+"CC_CRI_CONTAINERD_K8S_TDX_QEMU"|"CC_CRI_CONTAINERD_K8S_TDX_CLOUD_HYPERVISOR"|"CC_SKOPEO_CRI_CONTAINERD_K8S_TDX_QEMU")
 	# This job only tests containerd + k8s
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
@@ -160,6 +160,9 @@ case "${CI_JOB}" in
 	export UMOCI=yes
 	export AA_KBC="offline_fs_kbc"
 	export KUBERNETES=yes
+	if [[ "${CI_JOB}" =~ SKOPEO ]]; then
+		export SKOPEO=yes
+	fi
 	;;
 "CC_CRI_CONTAINERD_CLOUD_HYPERVISOR"|"CC_SKOPEO_CRI_CONTAINERD_CLOUD_HYPERVISOR")
 	# This job only tests containerd + k8s
