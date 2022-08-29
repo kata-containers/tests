@@ -9,6 +9,7 @@
 set -e
 
 source "${BATS_TEST_DIRNAME}/../../../lib/common.bash"
+source "${BATS_TEST_DIRNAME}/../../../.ci/lib.sh"
 FIXTURES_DIR="${BATS_TEST_DIRNAME}/fixtures"
 
 # Currently the agent can only check images signature if using skopeo.
@@ -149,8 +150,11 @@ assert_pod_fail() {
 
 setup_decryption_files_in_guest() {
     local rootfs_agent_config="/etc/agent-config.toml"
+
+    clone_katacontainers_repo
+
     sudo -E AA_KBC_PARAMS="offline_fs_kbc::null" HTTPS_PROXY="${HTTPS_PROXY:-${https_proxy:-}}" envsubst < ${katacontainers_repo_dir}/docs/how-to/data/confidential-agent-config.toml.in | sudo tee ${rootfs_agent_config}
-	
+
     cp_to_guest_img "/tests/fixtures" "${rootfs_agent_config}"
     add_kernel_params \
 	    "agent.config_file=/tests/fixtures/$(basename ${rootfs_agent_config})"
