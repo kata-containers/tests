@@ -57,7 +57,6 @@ kubernetes_delete_cc_pod_if_exists() {
 # Parameters:
 #	$1 - the sandbox ID
 #	$2 - wait time in seconds. Defaults to 60. (optional)
-#	$3 - sleep time in seconds between checks. Defaults to 5. (optional)
 #
 kubernetes_wait_cc_pod_be_ready() {
 	local pod_name="$1"
