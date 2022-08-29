@@ -176,6 +176,8 @@ function cassandra_start() {
 }
 
 function cassandra_cleanup() {
+	kubectl patch pvc block-loop-pvc -p '{"metadata":{"finalizers":null}}'
+	kubectl delete pvc block-loop-pvc --force
 	kubectl delete svc "$service_name"
 	kubectl delete pod -l app="$app_name"
 	kubectl delete storageclass block-local-storage
