@@ -150,7 +150,7 @@ assert_pod_fail() {
 
 setup_decryption_files_in_guest() {
     local rootfs_agent_config="/etc/agent-config.toml"
-    sudo -E AA_KBC_PARAMS="offline_fs_kbc::null" envsubst < ${katacontainers_repo_dir}/docs/how-to/data/confidential-agent-config.toml.in | sudo tee ${rootfs_agent_config}
+    sudo -E AA_KBC_PARAMS="offline_fs_kbc::null" HTTPS_PROXY="${HTTPS_PROXY:-${https_proxy:-}}" envsubst < ${katacontainers_repo_dir}/docs/how-to/data/confidential-agent-config.toml.in | sudo tee ${rootfs_agent_config}
 	
     cp_to_guest_img "/tests/fixtures" "${rootfs_agent_config}"
     add_kernel_params \

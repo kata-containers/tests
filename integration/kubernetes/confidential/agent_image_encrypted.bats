@@ -25,6 +25,14 @@ setup() {
     echo "Reconfigure Kata Containers"
     switch_image_service_offload on
     clear_kernel_params
+
+    # In case the tests run behind a firewall where images needed to be fetched
+    # through a proxy.
+    local https_proxy="${HTTPS_PROXY:-${https_proxy:-}}"
+    if [ -n "$https_proxy" ]; then
+        echo "Enable agent https proxy"
+        add_kernel_params "agent.https_proxy=$https_proxy"
+    fi
 }
 
 @test "$test_tag Test can pull an encrypted image inside the guest with decryption key" {
