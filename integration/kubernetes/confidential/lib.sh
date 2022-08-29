@@ -80,7 +80,7 @@ kubernetes_create_cc_pod() {
 		return 1
 	fi
 
-    kubectl apply -f ${config_file}
+	kubectl apply -f ${config_file}
 	if ! pod_name=$(kubectl get pods -o jsonpath='{.items..metadata.name}'); then
 		echo "Failed to create the pod"
 		return 1
