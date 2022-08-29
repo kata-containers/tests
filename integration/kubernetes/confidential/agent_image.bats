@@ -8,6 +8,7 @@ load "${BATS_TEST_DIRNAME}/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../confidential/lib.sh"
 
 test_tag="[cc][agent][kubernetes][containerd]"
+original_kernel_params=$(get_kernel_params)
 
 # Create the test pod.
 #
@@ -47,6 +48,7 @@ setup() {
 	echo "Reconfigure Kata Containers"
 	switch_image_service_offload on
 	clear_kernel_params
+	add_kernel_params "${original_kernel_params}"
 	add_kernel_params \
 		"agent.container_policy_file=/etc/containers/quay_verification/quay_policy.json"
 
@@ -143,6 +145,7 @@ teardown() {
 	kubernetes_delete_cc_pod_if_exists "$sandbox_name" || true
 
 	clear_kernel_params
+	add_kernel_params "${original_kernel_params}"
 	switch_image_service_offload off
 	disable_full_debug
 }
