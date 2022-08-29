@@ -108,11 +108,11 @@ declare -A ctr_seccomp_skipCRIOTests=(
 )
 declare -A devices_skipCRIOTests=(
 ['test "additional devices permissions"']="devices.bats case is not working: see `eval echo $url`"
-['test "annotation devices support"']="devices.bats case is not working: see `eval echo $url`"
-['test "annotation should override configured additional_devices"']="devices.bats case is not working: see `eval echo $url`"
-['test "annotation should not be processed if not allowed in allowed_devices"']="devices.bats case is not working: see `eval echo $url`"
-['test "annotation should configure multiple devices"']="devices.bats case is not working: see `eval echo $url`"
-['test "annotation should fail if one device is invalid"']="devices.bats case is not working: see `eval echo $url`"
+['test "annotation devices support"']="devices.bats case is not working: see https://github.com/cri-o/cri-o/issues/6175"
+['test "annotation should override configured additional_devices"']="devices.bats case is not working: see https://github.com/cri-o/cri-o/issues/6175"
+['test "annotation should not be processed if not allowed in allowed_devices"']="devices.bats case is not working: see https://github.com/cri-o/cri-o/issues/6175"
+['test "annotation should configure multiple devices"']="devices.bats case is not working: see https://github.com/cri-o/cri-o/issues/6175"
+['test "annotation should fail if one device is invalid"']="devices.bats case is not working: see https://github.com/cri-o/cri-o/issues/6175"
 )
 declare -A drop_infra_skipCRIOTests=(
 ['test "test infra ctr dropped"']="drop_infra.bats case is not working: see `eval echo $url`"
@@ -176,7 +176,8 @@ declare -A restore_skipCRIOTests=(
 ['test "crio restore with pod stopped"']="restore.bats case is not working: see `eval echo $url`"
 )
 declare -A shm_size_skipCRIOTests=(
-['test "check \/dev\/shm is changed"']="shm_size.bats case is not working: see `eval echo $url`"
+['test "check \/dev\/shm is changed"']="shm_size.bats case is not working: see https://github.com/cri-o/cri-o/issues/6175"
+['test "check \/dev\/shm fails with incorrect values"']="shm_size.bats case is not working: see https://github.com/cri-o/cri-o/issues/6175"
 )
 declare -A timeout_skipCRIOTests=(
 ['test "should not clean up pod after timeout"']="timeout.bats case is not working: see `eval echo $url`"
@@ -197,7 +198,7 @@ declare -A workloads_skipCRIOTests=(
 ['test "test workload can override pod defaults"']="workloads.bats case is not working: see `eval echo $url`"
 ['test "test workload pod should not be set if not defaulted or specified"']="workloads.bats case is not working: see `eval echo $url`"
 ['test "test workload pod should override infra_ctr_cpuset option"']="workloads.bats case is not working: see `eval echo $url`"
-['test "test workload allowed annotation appended with runtime"']="workloads.bats case is not working: see `eval echo $url`"
+['test "test workload allowed annotation appended with runtime"']="workloads.bats case is not working: see https://github.com/cri-o/cri-o/issues/6175"
 ['test "test workload allowed annotation works for pod"']="workloads.bats case is not working: see `eval echo $url`"
 )
 declare -A userns_annotation_skipCRIOTests=(
