@@ -56,12 +56,11 @@ kubernetes_delete_cc_pod_if_exists() {
 #
 # Parameters:
 #	$1 - the sandbox ID
-#	$2 - wait time in seconds. Defaults to 10. (optional)
-#	$3 - sleep time in seconds between checks. Defaults to 5. (optional)
+#	$2 - wait time in seconds. Defaults to 60. (optional)
 #
 kubernetes_wait_cc_pod_be_ready() {
 	local pod_name="$1"
-	local wait_time="${2:-30}"
+	local wait_time="${2:-60}"
 
 	kubectl wait --timeout=${wait_time}s --for=condition=ready pods/$pod_name
 }
@@ -80,7 +79,7 @@ kubernetes_create_cc_pod() {
 		return 1
 	fi
 
-    kubectl apply -f ${config_file}
+	kubectl apply -f ${config_file}
 	if ! pod_name=$(kubectl get pods -o jsonpath='{.items..metadata.name}'); then
 		echo "Failed to create the pod"
 		return 1
@@ -115,7 +114,7 @@ checkout_doc_repo_dir() {
 
 kubernetes_create_ssh_demo_pod() {
 	checkout_doc_repo_dir
-	kubectl apply -f "${doc_repo_dir}/demos/ssh-demo/k8s-cc-ssh.yaml" && pod=$(kubectl get pods -o jsonpath='{.items..metadata.name}') && kubectl wait --for=condition=ready pods/$pod
+	kubectl apply -f "${doc_repo_dir}/demos/ssh-demo/k8s-cc-ssh.yaml" && pod=$(kubectl get pods -o jsonpath='{.items..metadata.name}') && kubectl wait --timeout=60s --for=condition=ready pods/$pod
 	kubectl get pod $pod
 }
 
@@ -150,7 +149,7 @@ assert_pod_fail() {
 
 setup_decryption_files_in_guest() {
     local rootfs_agent_config="/etc/agent-config.toml"
-    sudo -E AA_KBC_PARAMS="offline_fs_kbc::null" envsubst < ${katacontainers_repo_dir}/docs/how-to/data/confidential-agent-config.toml.in | sudo tee ${rootfs_agent_config}
+    sudo -E AA_KBC_PARAMS="offline_fs_kbc::null" HTTPS_PROXY="${HTTPS_PROXY:-${https_proxy:-}}" envsubst < ${katacontainers_repo_dir}/docs/how-to/data/confidential-agent-config.toml.in | sudo tee ${rootfs_agent_config}
 	
     cp_to_guest_img "/tests/fixtures" "${rootfs_agent_config}"
     add_kernel_params \
