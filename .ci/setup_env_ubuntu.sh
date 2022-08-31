@@ -37,7 +37,7 @@ declare -A packages=( \
 	[crio_dependencies]="libglib2.0-dev libseccomp-dev libapparmor-dev libgpgme11-dev thin-provisioning-tools" \
 	[bison_binary]="bison" \
 	[libudev-dev]="libudev-dev" \
-	[build_tools]="build-essential pkg-config zlib1g-dev" \
+	[build_tools]="build-essential python3 pkg-config zlib1g-dev" \
 	[crio_dependencies_for_ubuntu]="libdevmapper-dev util-linux" \
 	[metrics_dependencies]="smem jq" \
 	[cri-containerd_dependencies]="btrfs-progs libseccomp-dev libapparmor-dev make gcc pkg-config" \
@@ -55,12 +55,6 @@ if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 20.04" | bc -q)" == 
 	packages[cri-containerd_dependencies]+=" libbtrfs-dev"
 	# driverctl is unavailable on older Ubuntu like 18.04
 	packages[vfio_test]="pciutils driverctl"
-fi
-
-if [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 22.04" | bc -q)" == "1" ]; then
-	packages[build_tools]+=" python2"
-else
-	packages[build_tools]+=" python"
 fi
 
 if [ "$(uname -m)" == "x86_64" ] && [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 18.04" | bc -q)" == "1" ]; then
