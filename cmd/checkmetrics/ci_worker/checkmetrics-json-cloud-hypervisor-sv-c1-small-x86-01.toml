@@ -81,9 +81,9 @@ description = "measure write 90 percentile using fio"
 # within (inclusive)
 checkvar = ".\"fio\".Results | .[] | .write90percentile.Result"
 checktype = "mean"
-midval = 80384.0
-minpercent = 50.0
-maxpercent = 50.0
+midval = 70557.0
+minpercent = 60.0
+maxpercent = 60.0
 
 [[metric]]
 name = "fio"
@@ -94,9 +94,9 @@ description = "measure write 95 percentile using fio"
 # within (inclusive)
 checkvar = ".\"fio\".Results | .[] | .write95percentile.Result"
 checktype = "mean"
-midval = 84480.0
-minpercent = 50.0
-maxpercent = 50.0
+midval = 60362.0
+minpercent = 60.0
+maxpercent = 60.0
 
 [[metric]]
 name = "blogbench"

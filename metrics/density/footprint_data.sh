@@ -29,7 +29,6 @@ PAYLOAD_SLEEP="${PAYLOAD_SLEEP:-10}"
 #  Default is we run busybox, as a 'small' workload
 PAYLOAD="${PAYLOAD:-quay.io/prometheus/busybox:latest}"
 PAYLOAD_ARGS="${PAYLOAD_ARGS:-tail -f /dev/null}"
-PAYLOAD_RUNTIME_ARGS="${PAYLOAD_RUNTIME_ARGS:-5120}"
 
 ###
 # Define the cutoff checks for when we stop running the test
@@ -93,7 +92,6 @@ save_config(){
 		"testname": "${TEST_NAME}",
 		"payload": "${PAYLOAD}",
 		"payload_args": "${PAYLOAD_ARGS}",
-		"payload_runtime_args": "${PAYLOAD_RUNTIME_ARGS}",
 		"payload_sleep": ${PAYLOAD_SLEEP},
 		"max_containers": ${MAX_NUM_CONTAINERS},
 		"max_memory_consumed": "${MAX_MEMORY_CONSUMED}",
@@ -281,7 +279,7 @@ function go() {
 
 	for i in $(seq 1 $MAX_NUM_CONTAINERS); do
 		containers+=($(random_name))
-		sudo ctr run --memory-limit $PAYLOAD_RUNTIME_ARGS --rm --runtime=$CTR_RUNTIME $PAYLOAD ${containers[-1]} sh -c $PAYLOAD_ARGS
+		sudo ctr run --rm --runtime=$CTR_RUNTIME $PAYLOAD ${containers[-1]} sh -c $PAYLOAD_ARGS
 
 		if [[ $PAYLOAD_SLEEP ]]; then
 			sleep $PAYLOAD_SLEEP
@@ -310,8 +308,6 @@ function show_vars()
 	echo -e "\tPAYLOAD (${PAYLOAD})"
 	echo -e "\t\tThe ctr image to run"
 	echo -e "\tPAYLOAD_ARGS (${PAYLOAD_ARGS})"
-	echo -e "\t\tAny arguments passed into the ctr image"
-	echo -e "\tPAYLOAD_RUNTIME_ARGS (${PAYLOAD_RUNTIME_ARGS})"
 	echo -e "\t\tAny extra arguments passed into the ctr 'run' command"
 	echo -e "\tPAYLOAD_SLEEP (${PAYLOAD_SLEEP})"
 	echo -e "\t\tSeconds to sleep between launch and measurement, to allow settling"
