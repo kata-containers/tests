@@ -69,6 +69,9 @@ case "${KATA_HYPERVISOR}" in
 		install_qemu
 		echo "Installing virtiofsd"
 		"${cidir}/install_virtiofsd.sh"
+		if [ "${TEE_TYPE}" == "tdx" ]; then
+			"${cidir}/install_tdvf.sh"
+		fi
 		;;
 	"dragonball")
 		echo "Kata Hypervisor is dragonball"
