@@ -1,0 +1,18 @@
+name: Check KATA_GITHUB_ACTIONS_PR_SIZE_TOKEN
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  test-pr-size-token:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print PR sizing limit
+        env:
+          GH_TOKEN: ${{ secrets.KATA_GITHUB_ACTIONS_PR_SIZE_TOKEN }}
+        run: |
+          gh api -H "Accept: application/vnd.github+json"   /rate_limit
