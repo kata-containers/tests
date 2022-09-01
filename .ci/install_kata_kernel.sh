@@ -18,7 +18,6 @@ cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 
 PREFIX="${PREFIX:-/usr}"
-KATA_BUILD_CC="${KATA_BUILD_CC:-no}"
 kernel_dir="${DESTDIR:-}${PREFIX}/share/kata-containers"
 
 kernel_packaging_dir="${katacontainers_repo_dir}/tools/packaging/kernel"
@@ -57,30 +56,6 @@ build_and_install_kernel() {
 	"${kernel_packaging_dir}/build-kernel.sh" -v "${kernel_version}" ${extra_opts} "build"
 	sudo -E PATH="$PATH" "${kernel_packaging_dir}/build-kernel.sh" -v "${kernel_version}" ${extra_opts} "install"
 	popd >> /dev/null
-}
-
-build_and_install_kernel_for_cc() {
-	local kernel_type="${1:-}"
-	local artifact="kernel"
-
-	case "$kernel_type" in
-		tdx|sev)
-			artifact="${kernel_type}-${artifact}"
-			;;
-		vanilla) ;;
-		*)
-			die_unsupported_kernel_type "$kernel_type"
-			;;
-	esac
-
-	build_static_artifact_and_install "${artifact}"
-}
-
-die_unsupported_kernel_type() {
-	local kernel_type="${1:-}"
-
-	info "kernel type '${kernel_type}' not supported"
-	usage 1
 }
 
 # $1 kernel_binary: binary to install could be vmlinux or vmlinuz
@@ -132,11 +107,6 @@ install_kernel() {
 	[ -n "${kernel_version}" ] || die "kernel version is empty"
 
 	info "Installing '${kernel_type}' kernel"
-
-	if [ "$KATA_BUILD_CC" == "yes" ]; then
-		build_and_install_kernel_for_cc "$kernel_type"
-		return
-	fi
 
 	kernel_version=${kernel_version#v}
 	local latest_build_url="${jenkins_url}/job/kata-containers-2.0-kernel-${kernel_type}-$(arch)-nightly/${cached_artifacts_path}"
@@ -214,7 +184,8 @@ main() {
 			install_kernel "${kernel_type}" $(get_version "assets.kernel.sev.tag")
 			;;
 		*)
-			die_unsupported_kernel_type "$kernel_type"
+			info "kernel type '${kernel_type}' not supported"
+			usage 1
 			;;
 	esac
 }
