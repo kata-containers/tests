@@ -17,7 +17,6 @@ source "${cidir}/../lib/common.bash"
 source /etc/os-release || source /usr/lib/os-release
 
 PREFIX=${PREFIX:-/usr}
-KATA_BUILD_CC="${KATA_BUILD_CC:-no}"
 KATA_DEV_MODE="${KATA_DEV_MODE:-}"
 
 CURRENT_QEMU_VERSION=""
@@ -63,25 +62,6 @@ uncompress_static_qemu() {
 build_and_install_static_qemu() {
 	build_static_qemu
 	uncompress_static_qemu "${KATA_TESTS_CACHEDIR}/${QEMU_TAR}"
-}
-
-# Build QEMU for Confidential Containers.
-build_and_install_qemu_for_cc() {
-	local artifact="qemu"
-
-	case "${qemu_type}" in
-		tdx)
-			artifact="${qemu_type}-${artifact}"
-
-			build_static_artifact_and_install "tdx-tdvf"
-			;;
-		vanilla) ;;
-		*)
-			die_unsupported_qemu_type "$qemu_type"
-			;;
-	esac
-
-	build_static_artifact_and_install "$artifact"
 }
 
 install_cached_qemu() {
@@ -140,13 +120,6 @@ build_and_install_qemu() {
 	popd
 }
 
-die_unsupported_qemu_type() {
-	local qemu_type="${1:-}"
-
-	info "qemu type '${qemu_type}' not supported"
-	usage 1
-}
-
 #Load specific configure file
 if [ -f "${cidir}/${QEMU_ARCH}/lib_install_qemu_${QEMU_ARCH}.sh" ]; then
 	source "${cidir}/${QEMU_ARCH}/lib_install_qemu_${QEMU_ARCH}.sh"
@@ -163,11 +136,6 @@ run() {
 
 			if [ -n "${FORCE_BUILD_QEMU:-}" ]; then
 				build_and_install_qemu
-			elif [ "${KATA_BUILD_CC}" == "yes" ]; then
-				# Let's always build QEMU for Confidential
-				# Containers to avoid potential issues due to
-				# installation on different prefix.
-				build_and_install_qemu_for_cc
 			elif [ "$CURRENT_QEMU_VERSION" == "$cached_qemu_version" ]; then
 				# Let's check if the current sha256sum matches
 				# with the cached, otherwise build QEMU locally
@@ -233,7 +201,6 @@ main() {
 		esac
 	done
 
-	export qemu_type
 	case "${qemu_type}" in
 		tdx)
 			CURRENT_QEMU_VERSION=$(get_version "assets.hypervisor.qemu.tdx.tag")
@@ -246,7 +213,8 @@ main() {
 			qemu_latest_build_url="${jenkins_url}/job/kata-containers-2.0-qemu-$(uname -m)/${cached_artifacts_path}"
 			;;
 		*)
-			die_unsupported_qemu_type "$qemu_type"
+			info "qemu type '${qemu_type}' not supported"
+			usage 1
 			;;
 	esac
 
