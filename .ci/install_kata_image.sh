@@ -24,7 +24,6 @@ AGENT_INIT="${AGENT_INIT:-${TEST_INITRD:-no}}"
 TEST_INITRD="${TEST_INITRD:-no}"
 build_method="${BUILD_METHOD:-distro}"
 EXTRA_PKGS="${EXTRA_PKGS:-}"
-KATA_BUILD_CC="${KATA_BUILD_CC:-no}"
 
 build_rust_image() {
 	osbuilder_path="${GOPATH}/src/${rust_agent_repo}/tools/osbuilder"
@@ -49,8 +48,12 @@ build_rust_image() {
 				[[ -z "${USE_PODMAN:-}" ]] && use_docker="${use_docker:-1}"
 			fi
 			distro="${osbuilder_distro:-ubuntu}"
-			sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" EXTRA_PKGS="${EXTRA_PKGS}" \
-				make -e "${target_image}"
+			if [ ${KATA_BUILD_CC} == "yes" ]; then
+				sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" AA_KBC="${AA_KBC:-}" UMOCI=yes make -e "image"
+			else
+				sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" EXTRA_PKGS="${EXTRA_PKGS}" \
+					make -e "${target_image}"
+			fi
 			;;
 		"dracut")
 			sudo -E BUILD_METHOD="dracut" make -e "${target_image}"
@@ -70,22 +73,8 @@ build_rust_image() {
 	popd
 }
 
-build_image_for_cc () {
-	[ "${TEST_INITRD}" != "yes" ] || \
-		die "Build of initrd image for Confidential Containers is still unsupported."
-
-	[ "${osbuilder_distro:-ubuntu}" == "ubuntu" ] || \
-		die "The only supported image for Confidential Containers is Ubuntu"
-
-	build_static_artifact_and_install "rootfs-image"
-}
-
 main() {
-	if [ ${KATA_BUILD_CC} == "yes" ]; then
-		build_image_for_cc
-	else
-		build_rust_image
-	fi
+	build_rust_image
 }
 
 main
