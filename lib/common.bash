@@ -270,7 +270,7 @@ cp_to_guest_img() {
 	rootfs_dir="$(mktemp -d)"
 
 	# Open the original initrd/image, inject the agent file
-	local image_path="$(kata-runtime kata-env --json | jq -r .Image.Path)"
+	local image_path="$(sudo -E PATH=$PATH kata-runtime kata-env --json | jq -r .Image.Path)"
 	if [ -f "$image_path" ]; then
 		if ! sudo mount -o loop,offset=$((512*6144)) "$image_path" \
 			"$rootfs_dir"; then
@@ -279,7 +279,7 @@ cp_to_guest_img() {
 			return 1
 		fi
 	else
-		local initrd_path="$(kata-runtime kata-env --json | \
+		local initrd_path="$(sudo -E PATH=$PATH kata-runtime kata-env --json | \
 			jq -r .Initrd.Path)"
 		if [ ! -f "$initrd_path" ]; then
 			echo "Guest initrd and image not found"
@@ -335,7 +335,7 @@ find_guest_img() {
 	local file=""
 
 	for img_type in Image Initrd; do
-		file="$(kata-runtime kata-env --json | \
+		file="$(sudo -E PATH=$PATH kata-runtime kata-env --json | \
 			jq -r .${img_type}.Path)"
 		[ -f "$file" ] && break
 	done
