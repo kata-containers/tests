@@ -70,7 +70,11 @@ setup() {
 		cat "$pod_config"
 	fi
 	
-	copy_files_to_guest
+	if [ "${SKOPEO:-}" == "yes" ]; then
+		setup_skopeo_signature_files_in_guest
+	else
+		setup_offline_fs_kbc_signature_files_in_guest
+	fi
 }
 
 # Check the logged messages on host have a given message.
