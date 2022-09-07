@@ -21,6 +21,7 @@ function remove_tmp_file() {
 trap remove_tmp_file EXIT
 
 function main() {
+	init_env
 	cmds=("bc" "jq")
 	check_cmds "${cmds[@]}"
 
