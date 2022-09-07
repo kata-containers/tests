@@ -12,22 +12,6 @@ source "${BATS_TEST_DIRNAME}/../../../lib/common.bash"
 source "${BATS_TEST_DIRNAME}/../../../.ci/lib.sh"
 FIXTURES_DIR="${BATS_TEST_DIRNAME}/fixtures"
 
-# Currently the agent can only check images signature if using skopeo.
-# There isn't a way to probe the agent to determine if skopeo is present
-# or not, so we need to rely on build variables. If we are running under
-# CI then we assume the variables are properly exported, otherwise we
-# should skip testing.
-#
-skip_if_skopeo_not_present () {
-	if [ "${CI:-}" == "true" ]; then
-		if [ "${SKOPEO:-no}" == "no" ]; then
-			skip "Skopeo seems not installed in guest"
-		fi
-	else
-		skip "Cannot determine skopeo is installed in guest"
-	fi
-}
-
 # Delete the containers alongside the Pod.
 #
 # Parameters:
