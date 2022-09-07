@@ -89,6 +89,7 @@ Tests relating to networking. General items could include:
 - latency
 - jitter
 - parallel bandwidth
+- write and read percentiles 
 
 For further details see the [network tests documentation](network).
 
