@@ -317,6 +317,16 @@ main() {
 	info "Clean up any leftover CNI configuration"
 	cleanup_cni_configuration
 
+	if [ "$CRI_RUNTIME" == crio ]; then
+		crio_repository="github.com/cri-o/cri-o"
+		crio_repository_path="$GOPATH/src/${crio_repository}"
+		cni_directory="/etc/cni/net.d"
+		if [ ! -d "${cni_directory}" ]; then
+			sudo mkdir -p "${cni_directory}"
+		fi
+		sudo cp "${crio_repository_path}/contrib/cni/10-crio-bridge.conf" "${cni_directory}"
+	fi
+
 	info "Start ${CRI_RUNTIME} service"
 	start_cri_runtime_service "${CRI_RUNTIME}" "${cri_runtime_socket}"
 
