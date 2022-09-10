@@ -17,9 +17,8 @@ NC='\033[0m'
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 tests_repo_dir="$(realpath "$script_dir/../..")"
 
-export KBS_DB_HOST="127.0.0.1"
-export KBS_DB_USER="root"
-export KBS_DB_PW="root"
+export KBS_DB_USER="kbsuser"
+export KBS_DB_PW="kbspassword"
 export KBS_DB="simple_kbs"
 export KBS_DB_TYPE="mysql"
 
@@ -52,25 +51,8 @@ install_sevctl_and_export_sev_cert_chain() {
 
 run_kbs() {
   git clone https://github.com/confidential-containers/simple-kbs.git --branch main
-  pushd simple-kbs
-
-  # Run mysql database container
-  esudo docker run -t --detach --rm \
-    -p 3306:3306 \
-    --name kbs-db \
-    --env MARIADB_ROOT_PASSWORD=$KBS_DB_PW \
-    mariadb:latest
+  (cd simple-kbs && esudo docker-compose up -d)
   sleep 5
-
-  # Create database and tables
-  mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${KBS_DB_HOST} -e "CREATE DATABASE ${KBS_DB};"
-  mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${KBS_DB_HOST} ${KBS_DB} < "db-mysql.sql"
-
-  # Build simple-kbs and run it in background
-  cargo build
-  RUST_LOG=debug cargo run &
-  sleep 5
-  popd
 }
 
 calculate_measurement_and_add_to_kbs() {
@@ -93,9 +75,9 @@ calculate_measurement_and_add_to_kbs() {
 
   # Add key, keyset and policy with measurement to DB
   mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${KBS_DB_HOST} -D ${KBS_DB} <<EOF
-    INSERT INTO secrets VALUES (10, 'key_id1', '${enc_key}', 10);
-    INSERT INTO keysets VALUES (10, 'KEYSET-1', '["key_id1"]', 10);
-    INSERT INTO policy VALUES (10, '["${measurement}"]', '[]', 0, 0, '[]', now(), NULL, 1);
+    REPLACE INTO secrets VALUES (10, 'key_id1', '${enc_key}', 10);
+    REPLACE INTO keysets VALUES (10, 'KEYSET-1', '["key_id1"]', 10);
+    REPLACE INTO policy VALUES (10, '["${measurement}"]', '[]', 0, 0, '[]', now(), NULL, 1);
 EOF
 }
 
@@ -200,13 +182,9 @@ cleanup() {
   esudo kubectl delete -f test/encrypted-image-tests.yaml 2>/dev/null
   esudo "${tests_repo_dir}/integration/kubernetes/cleanup_env.sh"
 
-  # Stop KBS DB container and prune it
-  esudo docker stop kbs-db 2>/dev/null
-  esudo docker container prune -f 2>/dev/null
-
-  # Kill KBS and attestation-agent daemons
-  esudo pkill -9 -f simple-kbs
-  sleep 5
+  # Stop KBS and KBS DB containers and prune system
+  (cd simple-kbs && esudo docker-compose down 2>/dev/null)
+  esudo docker system prune -f 2>/dev/null
 
   echo "Cleanup complete"
   echo "###############################################################################"
@@ -216,6 +194,10 @@ cleanup() {
 main() {
   source "$HOME/.cargo/env"
   mkdir -p test
+
+  # Install package dependencies
+  esudo apt install -y docker-compose
+  pip install sev-snp-measure
 
   # Pull encrypted docker image - workload
   esudo docker pull quay.io/kata-containers/encrypted-image-tests:encrypted
@@ -229,10 +211,14 @@ main() {
   esudo ./integration/kubernetes/init.sh
   popd
 
-  # sevctl, kbs, sev_snp_measure
+  # sevctl, kbs
   install_sevctl_and_export_sev_cert_chain
   run_kbs
-  pip install sev-snp-measure
+
+  # Set KBS_DB_HOST to kbs db container IP
+  export KBS_DB_HOST=$(esudo docker network inspect simple-kbs_default \
+    | jq -r '.[].Containers[] | select(.Name | test("simple-kbs_db.*")).IPv4Address' \
+    | sed "s|/.*$||g")
 
   # Testing
   calculate_measurement_and_add_to_kbs
