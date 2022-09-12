@@ -118,12 +118,12 @@ case "${CI_JOB}" in
 		"CC_CRI_CONTAINERD"|"CC_SKOPEO_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_K8S"|"CC_SKOPEO_CRI_CONTAINERD_K8S"|"CC_SEV_CRI_CONTAINERD_K8S")
 			# Export any CC specific environment variables
 			export KATA_BUILD_CC="yes"
-			export UMOCI=yes
+			export AA_KBC="offline_fs_kbc"
 			if [[ "${CI_JOB}" =~ SKOPEO ]]; then
+				export UMOCI=yes
 				export SKOPEO=yes
 			fi
 			if [[ "${CI_JOB}" =~ K8S ]]; then
-				export AA_KBC="offline_fs_kbc"
 				export KUBERNETES=yes
 			fi
 			if [[ "${CI_JOB}" =~ SEV ]]; then
@@ -143,10 +143,10 @@ case "${CI_JOB}" in
 		export KATA_HYPERVISOR="cloud-hypervisor"
 	fi
 	export KATA_BUILD_CC="yes"
+	export AA_KBC="offline_fs_kbc"
 	export TEE_TYPE="tdx"
 	export KATA_BUILD_KERNEL_TYPE="tdx"
 	export KATA_BUILD_QEMU_TYPE="tdx"
-	export UMOCI="yes"
 	;;
 "CC_CRI_CONTAINERD_K8S_TDX_QEMU"|"CC_CRI_CONTAINERD_K8S_TDX_CLOUD_HYPERVISOR"|"CC_SKOPEO_CRI_CONTAINERD_K8S_TDX_QEMU"|"CC_SKOPEO_CRI_CONTAINERD_K8S_TDX_CLOUD_HYPERVISOR")
 	# This job only tests containerd + k8s
@@ -162,10 +162,10 @@ case "${CI_JOB}" in
 	export KATA_BUILD_KERNEL_TYPE="tdx"
 	export KATA_BUILD_QEMU_TYPE="tdx"
 	export KUBERNETES="yes"
-	export UMOCI=yes
 	export AA_KBC="offline_fs_kbc"
 	export KUBERNETES=yes
 	if [[ "${CI_JOB}" =~ SKOPEO ]]; then
+		export UMOCI=yes
 		export SKOPEO=yes
 	fi
 	;;
@@ -177,8 +177,9 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	# Export any CC specific environment variables
 	export KATA_BUILD_CC="yes"
-	export UMOCI=yes
+	export AA_KBC="offline_fs_kbc"
 	if [ "${CI_JOB}" == "CC_SKOPEO_CRI_CONTAINERD_CLOUD_HYPERVISOR" ]; then
+		export UMOCI=yes
 		export SKOPEO=yes
 	fi
 	;;

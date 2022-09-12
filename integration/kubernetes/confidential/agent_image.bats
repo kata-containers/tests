@@ -140,7 +140,7 @@ assert_logs_contain() {
 teardown() {
 	# Print the logs and cleanup resources.
 	echo "-- Kata logs:"
-	sudo journalctl -xe -t kata --since "$start_date"
+	sudo journalctl -xe -t kata --since "$start_date" -n 2500
 
 	# Allow to not destroy the environment if you are developing/debugging
 	# tests.
