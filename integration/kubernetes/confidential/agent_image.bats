@@ -85,7 +85,8 @@ setup() {
 #
 assert_logs_contain() {
 	local message="$1"
-	journalctl -x -t kata --since "$start_date" | grep "$message"
+	# Note: with image-rs we get more that the default 1000 lines of logs
+	journalctl -x -t kata --since "$start_date" -n 100000 | grep "$message"
 }
 
 @test "$test_tag Test can pull an unencrypted image inside the guest" {
@@ -140,7 +141,7 @@ assert_logs_contain() {
 teardown() {
 	# Print the logs and cleanup resources.
 	echo "-- Kata logs:"
-	sudo journalctl -xe -t kata --since "$start_date" -n 2500
+	sudo journalctl -xe -t kata --since "$start_date" -n 100000
 
 	# Allow to not destroy the environment if you are developing/debugging
 	# tests.
