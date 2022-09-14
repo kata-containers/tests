@@ -11,6 +11,7 @@ BusyBox/B
 ccloudvm/B
 codecov/B
 containerd/B
+crictl/B
 cri-o/B
 CRI-O/B
 DevStack/B
