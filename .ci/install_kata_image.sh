@@ -34,9 +34,6 @@ build_rust_image() {
 	target_image="image"
 	file_to_install="${osbuilder_path}/${image_name}"
 	if [ "${TEST_INITRD}" == "yes" ]; then
-		if [ "${AGENT_INIT}" != "yes" ]; then
-			die "TEST_INITRD=yes without AGENT_INIT=yes is unsupported"
-		fi
 		target_image="initrd"
 		file_to_install="${osbuilder_path}/${initrd_name}"
 	fi
@@ -49,7 +46,7 @@ build_rust_image() {
 			fi
 			distro="${osbuilder_distro:-ubuntu}"
 			if [ ${KATA_BUILD_CC} == "yes" ]; then
-				sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" AA_KBC="${AA_KBC:-}" UMOCI=yes make -e "image"
+				sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" AA_KBC="${AA_KBC:-}" UMOCI=yes make -e "${target_image}"
 			else
 				sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" EXTRA_PKGS="${EXTRA_PKGS}" \
 					make -e "${target_image}"

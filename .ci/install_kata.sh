@@ -71,6 +71,8 @@ case "${KATA_HYPERVISOR}" in
 		"${cidir}/install_virtiofsd.sh"
 		if [ "${TEE_TYPE}" == "tdx" ]; then
 			"${cidir}/install_tdvf.sh"
+		elif [ "${TEE_TYPE:-}" == "sev" ]; then
+			"${cidir}/install_ovmf_sev.sh"
 		fi
 		;;
 	"dragonball")

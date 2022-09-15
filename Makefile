@@ -97,6 +97,10 @@ cc-kubernetes:
 	K8S_TEST_UNION="confidential/agent_image.bats confidential/agent_image_encrypted.bats" \
 	bash integration/kubernetes/run_kubernetes_tests.sh
 
+# Run the Confidential Containers AMD SEV specific tests.
+cc-sev-containerd:
+	bash functional/sev/run.sh
+
 log-parser:
 	make -C cmd/log-parser
 
