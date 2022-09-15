@@ -1,0 +1,28 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: encrypted-image-tests
+spec:
+  selector:
+    app: encrypted-image-tests
+  ports:
+  - port: 22
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: encrypted-image-tests
+spec:
+  selector:
+    matchLabels:
+      app: encrypted-image-tests
+  template:
+    metadata:
+      labels:
+        app: encrypted-image-tests
+    spec:
+      runtimeClassName: kata-qemu-sev
+      containers:
+      - name: encrypted-image-tests
+        image: quay.io/kata-containers/encrypted-image-tests:encrypted
+        imagePullPolicy: Always
