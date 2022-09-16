@@ -12,7 +12,7 @@ export KATA_ETC_CONFIG_PATH="/etc/kata-containers/configuration.toml"
 
 export katacontainers_repo=${katacontainers_repo:="github.com/kata-containers/kata-containers"}
 export katacontainers_repo_dir="${GOPATH}/src/${katacontainers_repo}"
-export kata_default_branch="${kata_default_branch:-main}"
+export kata_default_branch="${kata_default_branch:-stable-3.0}"
 export CI_JOB="${CI_JOB:-}"
 
 # Name of systemd service for the throttler

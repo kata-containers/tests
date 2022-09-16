@@ -27,7 +27,7 @@ source "${cidir}/lib.sh"
 
 # If no branch specified, compare against the main branch.
 # The 'branch' var is required by the get_pr() lib functions.
-branch=${branch:-main}
+branch=${branch:-stable-3.0}
 
 # The YAML file containing our filename match patterns.
 yqfile_rootname="ci-fast-return.yaml"
