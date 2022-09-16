@@ -463,6 +463,7 @@ static_check_license_headers()
 			--exclude="src/libs/protocols/protos/gogo/*.proto" \
 			--exclude="src/libs/protocols/protos/google/*.proto" \
 			--exclude="src/libs/*/test/texture/*" \
+			--exclude="src/agent/rustjail/src/cgroups/systemd/interface/*" \
 			-EL $extra_args "\<${pattern}\>" \
 			$files || true)
 
