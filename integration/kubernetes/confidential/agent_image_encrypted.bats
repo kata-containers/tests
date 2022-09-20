@@ -8,6 +8,8 @@ load "${BATS_TEST_DIRNAME}/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../confidential/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../../lib/common.bash"
 
+# Allow to configure the runtimeClassName on pod configuration.
+RUNTIMECLASS="${RUNTIMECLASS:-kata}"
 test_tag="[cc][agent][kubernetes][containerd]"
 original_kernel_params=$(get_kernel_params)
 

@@ -91,8 +91,8 @@ checkout_doc_repo_dir() {
     mkdir -p $(dirname ${doc_repo_dir}) && sudo chown -R ${USER}:${USER} $(dirname ${doc_repo_dir})
     if [ ! -d "${doc_repo_dir}" ]; then
         git clone https://${doc_repo} "${doc_repo_dir}"
-        # Update runtimeClassName from kata-cc to kata
-        sudo sed -i -e 's/\([[:blank:]]*runtimeClassName: \).*/\1kata/g' "${doc_repo_dir}/demos/ssh-demo/k8s-cc-ssh.yaml"
+        # Update runtimeClassName from kata-cc to "$RUNTIMECLASS"
+        sudo sed -i -e 's/\([[:blank:]]*runtimeClassName: \).*/\1'${RUNTIMECLASS:-kata}'/g' "${doc_repo_dir}/demos/ssh-demo/k8s-cc-ssh.yaml"
         chmod 600 ${doc_repo_dir}/demos/ssh-demo/ccv0-ssh
     fi
 }

@@ -7,8 +7,8 @@ kind: Pod
 metadata:
   name: busybox-cc
 spec:
-  runtimeClassName: kata
+  runtimeClassName: $RUNTIMECLASS
   containers:
   - name: nginx
-    image: quay.io/kata-containers/confidential-containers:signed
+    image: $IMAGE
     imagePullPolicy: Always
