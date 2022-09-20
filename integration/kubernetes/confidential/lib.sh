@@ -12,22 +12,6 @@ source "${BATS_TEST_DIRNAME}/../../../lib/common.bash"
 source "${BATS_TEST_DIRNAME}/../../../.ci/lib.sh"
 FIXTURES_DIR="${BATS_TEST_DIRNAME}/fixtures"
 
-# Currently the agent can only check images signature if using skopeo.
-# There isn't a way to probe the agent to determine if skopeo is present
-# or not, so we need to rely on build variables. If we are running under
-# CI then we assume the variables are properly exported, otherwise we
-# should skip testing.
-#
-skip_if_skopeo_not_present () {
-	if [ "${CI:-}" == "true" ]; then
-		if [ "${SKOPEO:-no}" == "no" ]; then
-			skip "Skopeo seems not installed in guest"
-		fi
-	else
-		skip "Cannot determine skopeo is installed in guest"
-	fi
-}
-
 # Delete the containers alongside the Pod.
 #
 # Parameters:
@@ -149,15 +133,7 @@ assert_pod_fail() {
 }
 
 setup_decryption_files_in_guest() {
-    local rootfs_agent_config="/etc/agent-config.toml"
-
-    clone_katacontainers_repo
-
-    sudo -E AA_KBC_PARAMS="offline_fs_kbc::null" HTTPS_PROXY="${HTTPS_PROXY:-${https_proxy:-}}" envsubst < ${katacontainers_repo_dir}/docs/how-to/data/confidential-agent-config.toml.in | sudo tee ${rootfs_agent_config}
-
-    cp_to_guest_img "/tests/fixtures" "${rootfs_agent_config}"
-    add_kernel_params \
-	    "agent.config_file=/tests/fixtures/$(basename ${rootfs_agent_config})"
+    setup_offline_fs_kbc_agent_config_in_guest
 
     curl -Lo "${HOME}/aa-offline_fs_kbc-keys.json" https://raw.githubusercontent.com/confidential-containers/documentation/main/demos/ssh-demo/aa-offline_fs_kbc-keys.json
     cp_to_guest_img "etc" "${HOME}/aa-offline_fs_kbc-keys.json" 

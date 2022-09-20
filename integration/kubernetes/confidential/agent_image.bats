@@ -70,7 +70,11 @@ setup() {
 		cat "$pod_config"
 	fi
 	
-	copy_files_to_guest
+	if [ "${SKOPEO:-}" = "yes" ]; then
+		setup_skopeo_signature_files_in_guest
+	else
+		setup_offline_fs_kbc_signature_files_in_guest
+	fi
 }
 
 # Check the logged messages on host have a given message.
@@ -81,7 +85,8 @@ setup() {
 #
 assert_logs_contain() {
 	local message="$1"
-	journalctl -x -t kata --since "$start_date" | grep "$message"
+	# Note: with image-rs we get more that the default 1000 lines of logs
+	journalctl -x -t kata --since "$start_date" -n 100000 | grep "$message"
 }
 
 @test "$test_tag Test can pull an unencrypted image inside the guest" {
@@ -98,24 +103,24 @@ assert_logs_contain() {
 }
 
 @test "$test_tag Test can pull a unencrypted signed image from a protected registry" {
-	skip_if_skopeo_not_present
 	local container_config="${FIXTURES_DIR}/pod-config.yaml"
 
 	create_test_pod
 }
 
 @test "$test_tag Test cannot pull an unencrypted unsigned image from a protected registry" {
-	skip_if_skopeo_not_present
 	local container_config="${FIXTURES_DIR}/pod-config_unsigned-protected.yaml"
 
 	echo $container_config
 	assert_pod_fail "$container_config"
-
-	assert_logs_contain 'Signature for identity .* is not accepted'
+	if [ "${SKOPEO:-}" = "yes" ]; then
+		assert_logs_contain 'Signature for identity .* is not accepted'
+	else
+		assert_logs_contain 'Validate image failed: The signatures do not satisfied! Reject reason: \[Match reference failed.\]'
+	fi
 }
 
 @test "$test_tag Test can pull an unencrypted unsigned image from an unprotected registry" {
-	skip_if_skopeo_not_present
 	pod_config="${FIXTURES_DIR}/pod-config_unsigned-unprotected.yaml"
 	echo $pod_config
 
@@ -123,17 +128,20 @@ assert_logs_contain() {
 }
 
 @test "$test_tag Test unencrypted signed image with unknown signature is rejected" {
-	skip_if_skopeo_not_present
 	local container_config="${FIXTURES_DIR}/pod-config_signed-protected-other.yaml"
 
 	assert_pod_fail "$container_config"
-	assert_logs_contain "Invalid GPG signature"
+	if [ "${SKOPEO:-}" = "yes" ]; then
+		assert_logs_contain "Invalid GPG signature"
+	else
+		assert_logs_contain 'Validate image failed: The signatures do not satisfied! Reject reason: \[signature verify failed! There is no pubkey can verify the signature!\]'
+	fi
 }
 
 teardown() {
 	# Print the logs and cleanup resources.
 	echo "-- Kata logs:"
-	sudo journalctl -xe -t kata --since "$start_date"
+	sudo journalctl -xe -t kata --since "$start_date" -n 100000
 
 	# Allow to not destroy the environment if you are developing/debugging
 	# tests.
