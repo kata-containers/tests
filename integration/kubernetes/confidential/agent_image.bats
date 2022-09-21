@@ -49,8 +49,10 @@ setup() {
 	switch_image_service_offload on
 	clear_kernel_params
 	add_kernel_params "${original_kernel_params}"
-	add_kernel_params \
-		"agent.container_policy_file=/etc/containers/quay_verification/quay_policy.json"
+	if [ "${SKOPEO:-}" = "yes" ]; then
+		add_kernel_params \
+			"agent.container_policy_file=/etc/containers/quay_verification/quay_policy.json"
+	fi
 
 	# In case the tests run behind a firewall where images needed to be fetched
 	# through a proxy.
