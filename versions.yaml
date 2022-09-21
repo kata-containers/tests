@@ -10,7 +10,7 @@ description: |
   This file contains test specific version details.
   For other version details, see the main database:
 
-  https://github.com/kata-containers/kata-containers/blob/main/versions.yaml
+  https://github.com/kata-containers/kata-containers/blob/stable-3.0/versions.yaml
 
 docker_images:
   description: "Docker hub images used for testing"

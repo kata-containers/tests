@@ -24,7 +24,7 @@ END=${END:-$(date -I -d "$defend")}
 
 # Where are we looking? Default to origin/master
 remote="${remote:-origin}"
-branch="${branch:-main}"
+branch="${branch:-stable-3.0}"
 
 repo_base="github.com/kata-containers"
 repos="${repos:-
