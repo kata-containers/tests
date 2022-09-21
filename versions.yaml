@@ -69,6 +69,11 @@ externals:
     url: "https://github.com/hadolint/hadolint"
     version: "2.7.0"
 
+  simple-kbs:
+    description: "Simple KBS that hosts key storage with release policies"
+    url: "https://github.com/confidential-containers/simple-kbs.git"
+    tag: "0.1.1"
+
   sonobuoy:
     description: "Tool to run kubernetes e2e conformance tests"
     url: "https://github.com/vmware-tanzu/sonobuoy"

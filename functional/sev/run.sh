@@ -51,6 +51,7 @@ install_sevctl_and_export_sev_cert_chain() {
 
 run_kbs() {
   git clone https://github.com/confidential-containers/simple-kbs.git --branch main
+  (cd simple-kbs && git checkout -b branch_0.1.1 0.1.1)
   (cd simple-kbs && esudo docker-compose up -d)
   sleep 5
 }
