@@ -42,16 +42,29 @@ initrd_add_files() {
 }
 
 install_sevctl_and_export_sev_cert_chain() {
-  git clone https://github.com/virtee/sevctl.git
-  (cd sevctl && cargo build)
+  local build_dir="sevctl"
+
+  if [ ! -d "$build_dir" ]; then
+    git clone https://github.com/virtee/sevctl.git "$build_dir"
+  else
+    (cd "$build_dir" && git pull --rebase origin main)
+  fi
+
+  (cd "$build_dir" && cargo build)
 
   # Export the SEV cert chain
-  esudo sevctl/target/debug/sevctl export -f /opt/sev/cert_chain.cert
+  esudo "${build_dir}/target/debug/sevctl" export -f /opt/sev/cert_chain.cert
 }
 
 run_kbs() {
-  git clone https://github.com/confidential-containers/simple-kbs.git --branch main
-  (cd simple-kbs && git checkout -b branch_0.1.1 0.1.1)
+  local build_dir="simple-kbs"
+
+  if [ ! -d "$build_dir" ]; then
+    git clone https://github.com/confidential-containers/simple-kbs.git \
+	    --branch main "$build_dir"
+    (cd simple-kbs && git checkout -b branch_0.1.1 0.1.1)
+  fi
+
   (cd simple-kbs && esudo docker-compose up -d)
   sleep 5
 }
