@@ -124,11 +124,8 @@ install_kernel() {
 		return
 	fi
 
-	if [[ "${kata_kernel_version}" != "${cached_kernel_version}" ]] ||
-		   ! install_prebuilt_kernel ${latest_build_url} ${cached_kernel_version}; then
-	    info "failed to install cached kernel, trying to build from source"
-	    build_and_install_kernel "${kernel_type}" "${kernel_version}"
-	fi
+	info "failed to install cached kernel, trying to build from source"
+	build_and_install_kernel "${kernel_type}" "${kernel_version}"
 }
 
 usage() {
