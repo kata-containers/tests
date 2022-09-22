@@ -7,8 +7,17 @@
 load "${BATS_TEST_DIRNAME}/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../confidential/lib.sh"
 
-test_tag="[cc][agent][kubernetes][containerd]"
+# Images used on the tests.
+#
+image_signed="quay.io/kata-containers/confidential-containers:signed"
+image_signed_protected_other="quay.io/kata-containers/confidential-containers:other_signed"
+image_unsigned_protected="quay.io/kata-containers/confidential-containers:unsigned"
+image_unsigned_unprotected="quay.io/prometheus/busybox:latest"
+
 original_kernel_params=$(get_kernel_params)
+# Allow to configure the runtimeClassName on pod configuration.
+RUNTIMECLASS="${RUNTIMECLASS:-kata}"
+test_tag="[cc][agent][kubernetes][containerd]"
 
 # Create the test pod.
 #
@@ -31,11 +40,32 @@ create_test_pod() {
 	kubernetes_create_cc_pod $pod_config
 }
 
+# Create a pod configuration out of a template file.
+#
+# Parameters:
+#	$1 - the container image.
+# Return:
+# 	the path to the configuration file. The caller should not care about
+# 	its removal afterwards as it is created under the bats temporary
+# 	directory.
+#
+# Environment variables:
+#	RUNTIMECLASS: set the runtimeClassName value from $RUNTIMECLASS.
+#
+new_pod_config() {
+	local base_config="${FIXTURES_DIR}/pod-config.yaml.in"
+	local image="$1"
+
+	local new_config=$(mktemp "${BATS_FILE_TMPDIR}/$(basename ${base_config}).XXX")
+	IMAGE="$image" RUNTIMECLASS="$RUNTIMECLASS" envsubst < "$base_config" > "$new_config"
+	echo "$new_config"
+}
+
 setup() {
 	start_date=$(date +"%Y-%m-%d %H:%M:%S")
 
 	sandbox_name="busybox-cc"
-	pod_config="${FIXTURES_DIR}/pod-config.yaml"
+	pod_config="$(new_pod_config "$image_signed")"
 	pod_id=""
 
 	echo "Delete any existing ${sandbox_name} pod"
@@ -52,24 +82,6 @@ setup() {
 	add_kernel_params \
 		"agent.container_policy_file=/etc/containers/quay_verification/quay_policy.json"
 
-	# In case the tests run behind a firewall where images needed to be fetched
-	# through a proxy.
-	local https_proxy="${HTTPS_PROXY:-${https_proxy:-}}"
-	if [ -n "$https_proxy" ]; then
-		echo "Enable agent https proxy"
-		add_kernel_params "agent.https_proxy=$https_proxy"
-
-		local local_dns=$(grep nameserver /etc/resolv.conf \
-			/run/systemd/resolve/resolv.conf  2>/dev/null \
-			|grep -v "127.0.0.53" | cut -d " " -f 2 | head -n 1)
-		local new_file="${BATS_FILE_TMPDIR}/$(basename ${pod_config})"
-		echo "New pod configuration with local dns: $new_file"
-		cp -f "${pod_config}" "${new_file}"
-		pod_config="$new_file"
-		sed -i -e 's/8.8.8.8/'${local_dns}'/' "${pod_config}"
-		cat "$pod_config"
-	fi
-	
 	if [ "${SKOPEO:-}" = "yes" ]; then
 		setup_skopeo_signature_files_in_guest
 	else
@@ -90,8 +102,6 @@ assert_logs_contain() {
 }
 
 @test "$test_tag Test can pull an unencrypted image inside the guest" {
-	local container_config="${FIXTURES_DIR}/pod-config.yaml"
-
 	create_test_pod
 
 	echo "Check the image was not pulled in the host"
@@ -103,13 +113,11 @@ assert_logs_contain() {
 }
 
 @test "$test_tag Test can pull a unencrypted signed image from a protected registry" {
-	local container_config="${FIXTURES_DIR}/pod-config.yaml"
-
 	create_test_pod
 }
 
 @test "$test_tag Test cannot pull an unencrypted unsigned image from a protected registry" {
-	local container_config="${FIXTURES_DIR}/pod-config_unsigned-protected.yaml"
+	local container_config="$(new_pod_config "$image_unsigned_protected")"
 
 	echo $container_config
 	assert_pod_fail "$container_config"
@@ -121,14 +129,15 @@ assert_logs_contain() {
 }
 
 @test "$test_tag Test can pull an unencrypted unsigned image from an unprotected registry" {
-	pod_config="${FIXTURES_DIR}/pod-config_unsigned-unprotected.yaml"
+	pod_config="$(new_pod_config "$image_unsigned_unprotected")"
 	echo $pod_config
 
 	create_test_pod
 }
 
 @test "$test_tag Test unencrypted signed image with unknown signature is rejected" {
-	local container_config="${FIXTURES_DIR}/pod-config_signed-protected-other.yaml"
+	local container_config="$(new_pod_config "$image_signed_protected_other")"
+	echo $container_config
 
 	assert_pod_fail "$container_config"
 	if [ "${SKOPEO:-}" = "yes" ]; then
