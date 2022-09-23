@@ -36,6 +36,7 @@ setup() {
     setup_decryption_files_in_guest
     kubernetes_create_ssh_demo_pod
 
+    sleep 1
     local pod_ip_address=$(kubectl get service ccv0-ssh -o jsonpath="{.spec.clusterIP}")
     ssh-keygen -lf <(ssh-keyscan ${pod_ip_address} 2>/dev/null)
 
