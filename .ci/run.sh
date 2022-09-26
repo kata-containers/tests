@@ -41,10 +41,12 @@ case "${CI_JOB}" in
 	"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S"|"CRI_CONTAINERD_K8S_DEVMAPPER"|"CC_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_CLOUD_HYPERVISOR")
 		echo "INFO: Running stability test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
-		echo "INFO: Containerd checks"
-		sudo -E PATH="$PATH" bash -c "make cri-containerd"
-		echo "INFO: Running nydus test"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make nydus"
+		# Issue https://github.com/kata-containers/tests/issues/5151
+		# echo "INFO: Containerd checks"
+		# sudo -E PATH="$PATH" bash -c "make cri-containerd"
+		# Issue https://github.com/kata-containers/tests/issues/5151
+		# echo "INFO: Running nydus test"
+		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make nydus"
 		[[ "${CI_JOB}" =~ K8S ]] && \
 			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
 		echo "INFO: Running vcpus test"
@@ -57,8 +59,9 @@ case "${CI_JOB}" in
 		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make pmem"
 		echo "INFO: Running ksm test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make ksm"
-		echo "INFO: Running kata-monitor test"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make monitor"
+		# Issue https://github.com/kata-containers/tests/issues/5151
+		# echo "INFO: Running kata-monitor test"
+		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make monitor"
 		echo "INFO: Running tracing test"
 		sudo -E PATH="$PATH" bash -c "make tracing"
 		if [[ "${CI_JOB}" =~ CC_CRI_CONTAINERD ]]; then
@@ -73,8 +76,9 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" bash -c "make kubernetes"
 		echo "INFO: Running rootless tests"
 		sudo -E PATH="$PATH" bash -c "make rootless"
-		echo "INFO: Running kata-monitor test"
-		sudo -E PATH="$PATH" bash -c "make monitor"
+		# Issue https://github.com/kata-containers/tests/issues/5151
+		# echo "INFO: Running kata-monitor test"
+		# sudo -E PATH="$PATH" bash -c "make monitor"
 		;;
 	"CRIO_K8S_COMPLETE")
 		echo "INFO: Running kubernetes tests (minimal) with CRI-O"
@@ -89,15 +93,17 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" bash -c "make kubernetes"
 		;;
 	"CLOUD-HYPERVISOR-K8S-CONTAINERD"|"CLOUD-HYPERVISOR-K8S-CONTAINERD-DEVMAPPER")
-		echo "INFO: Containerd checks"
-		sudo -E PATH="$PATH" bash -c "make cri-containerd"
+		# Issue https://github.com/kata-containers/tests/issues/5151
+		# echo "INFO: Containerd checks"
+		# sudo -E PATH="$PATH" bash -c "make cri-containerd"
 
 		echo "INFO: Running kubernetes tests with containerd"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
 		;;
 	"EXTERNAL_CLOUD_HYPERVISOR")
-		echo "INFO:n Running tests on Cloud Hypervisor PR"
-		sudo -E PATH="$PATH" bash -c "make cri-containerd"
+		# Issue https://github.com/kata-containers/tests/issues/5151
+		# echo "INFO:n Running tests on Cloud Hypervisor PR"
+		# sudo -E PATH="$PATH" bash -c "make cri-containerd"
 		;;
 	"EXTERNAL_CRIO")
 		echo "INFO: Running tests on cri-o PR"
@@ -146,8 +152,9 @@ case "${CI_JOB}" in
 		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make nydus"
 		echo "INFO: Running stability test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make dragonball-stability"
-		echo "INFO: Containerd checks"
-		sudo -E PATH="$PATH" bash -c "make cri-containerd"
+		# Issue https://github.com/kata-containers/tests/issues/5151
+		# echo "INFO: Containerd checks"
+		# sudo -E PATH="$PATH" bash -c "make cri-containerd"
 		echo "INFO: Running kubernetes tests"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
 		;;
