@@ -179,7 +179,7 @@ load_runtime_config_path() {
 
 setup_skopeo_signature_files_in_guest() {
 	setup_common_signature_files_in_guest
-	cp_to_guest_img "${rootfs_directory}" "${SHARED_FIXTURES_DIR}/registries.d"
+	cp_to_guest_img "etc/containers/" "${SHARED_FIXTURES_DIR}/registries.d"
 }
 
 # TODO #3970 - when skopeo fully removed refactor this and delete policy.json in fixture
