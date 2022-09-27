@@ -41,11 +41,11 @@ kubernetes_delete_cc_pod_if_exists() {
 #
 # Parameters:
 #	$1 - the sandbox ID
-#	$2 - wait time in seconds. Defaults to 60. (optional)
+#	$2 - wait time in seconds. Defaults to 120. (optional)
 #
 kubernetes_wait_cc_pod_be_ready() {
 	local pod_name="$1"
-	local wait_time="${2:-60}"
+	local wait_time="${2:-120}"
 
 	kubectl wait --timeout=${wait_time}s --for=condition=ready pods/$pod_name
 }
@@ -99,7 +99,7 @@ checkout_doc_repo_dir() {
 
 kubernetes_create_ssh_demo_pod() {
 	checkout_doc_repo_dir
-	kubectl apply -f "${doc_repo_dir}/demos/ssh-demo/k8s-cc-ssh.yaml" && pod=$(kubectl get pods -o jsonpath='{.items..metadata.name}') && kubectl wait --timeout=60s --for=condition=ready pods/$pod
+	kubectl apply -f "${doc_repo_dir}/demos/ssh-demo/k8s-cc-ssh.yaml" && pod=$(kubectl get pods -o jsonpath='{.items..metadata.name}') && kubectl wait --timeout=120s --for=condition=ready pods/$pod
 	kubectl get pod $pod
 }
 
