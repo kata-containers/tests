@@ -147,7 +147,7 @@ run_kbs() {
   
   # Set KBS_DB_HOST to kbs db container IP
   KBS_DB_HOST=$(esudo docker network inspect simple-kbs_default \
-    | jq -r '.[].Containers[] | select(.Name | test("simple-kbs_db.*")).IPv4Address' \
+    | jq -r '.[].Containers[] | select(.Name | test("simple-kbs[_-]db.*")).IPv4Address' \
     | sed "s|/.*$||g")
 
   waitForProcess 15 1 "mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${KBS_DB_HOST} -D ${KBS_DB} -e '\q'"
