@@ -87,6 +87,8 @@ declare -A command_skipCRIOTests=(
 )
 declare -A config_skipCRIOTests=(
 ['test "replace default runtime should succeed"']="config.bats case is not working: see `eval echo $url`"
+['test "choose different default runtime should succeed"']="config.bats case is not working: see `eval echo $url`"
+['test "runc not existing when default_runtime changed should succeed"']="config.bats case is not working: see `eval echo $url`"
 ['test "retain default runtime should succeed"']="config.bats case is not working: see `eval echo $url`"
 )
 declare -A config_migrate_skipCRIOTests=(
