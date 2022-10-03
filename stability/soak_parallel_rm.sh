@@ -141,15 +141,6 @@ go() {
 	done
 }
 
-kill_all_containers() {
-	for container in $(sudo ctr containers list -q); do
-		sudo ctr tasks kill "$container"
-		# Give task a second to die if required
-		waitForProcess 1 1 "! (sudo ctr tasks list -q | grep -q $container)"
-		sudo ctr containers delete "$container"
-	done
-}
-
 count_mounts() {
 	echo $(mount | wc -l)
 }
@@ -165,7 +156,7 @@ check_mounts() {
 init() {
 	restart_containerd_service
 	extract_kata_env
-	kill_all_containers
+	clean_env_ctr
 
 	# remember how many mount points we had before we do anything
 	# and then sanity check we end up with no new ones dangling at the end
@@ -200,7 +191,7 @@ spin() {
 		#check we are in a sane state
 		check_all_running
 		#shut them all down
-		kill_all_containers
+		clean_env_ctr
 		#Note there should be none running
 		how_many=0
 		#and check they all died
