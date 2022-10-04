@@ -155,6 +155,31 @@ function build() {
 	build_version "${github_project}" "${make_target}" "${version}"
 }
 
+# Build the artifact tarball using kata-deploy build scripts then uncompress
+# it.
+#
+# Parameters:
+#	$1 - artifact name. For example, qemu, qemu-tdx, rootfs-image,
+#	     and so on.
+#
+# Environment variables:
+#	DESTDIR - where to uncompress the tarball, by default is '/'.
+#
+function build_static_artifact_and_install() {
+	local artifact="${1:-}"
+	local destdir="${DESTDIR:-/}"
+	local make_target="${artifact}-tarball"
+	local tarball="kata-static-${artifact}.tar.xz"
+
+	clone_katacontainers_repo
+
+	pushd "$katacontainers_repo_dir" >/dev/null
+	sudo -E PATH=$PATH make "$make_target"
+	sudo tar -xvJpf "build/${tarball}" -C "${destdir}"
+	sudo rm -rf "build/"
+	popd >/dev/null
+}
+
 function get_dep_from_yaml_db(){
 	local versions_file="$1"
 	local dependency="$2"
