@@ -24,6 +24,7 @@ AGENT_INIT="${AGENT_INIT:-${TEST_INITRD:-no}}"
 TEST_INITRD="${TEST_INITRD:-no}"
 build_method="${BUILD_METHOD:-distro}"
 EXTRA_PKGS="${EXTRA_PKGS:-}"
+KATA_BUILD_CC="${KATA_BUILD_CC:-no}"
 
 build_rust_image() {
 	osbuilder_path="${GOPATH}/src/${rust_agent_repo}/tools/osbuilder"
@@ -70,8 +71,19 @@ build_rust_image() {
 	popd
 }
 
+build_image_for_cc () {
+	[ "${osbuilder_distro:-ubuntu}" == "ubuntu" ] || \
+		die "The only supported image for Confidential Containers is Ubuntu"
+
+	build_static_artifact_and_install "rootfs-image"
+}
+
 main() {
-	build_rust_image
+	if [ ${KATA_BUILD_CC} == "yes" ]; then
+		build_image_for_cc
+	else
+		build_rust_image
+	fi
 }
 
 main
