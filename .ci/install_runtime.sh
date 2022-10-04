@@ -14,10 +14,14 @@ cidir=$(dirname "$0")
 
 source "${cidir}/lib.sh"
 source /etc/os-release || source /usr/lib/os-release
+KATA_BUILD_CC="${KATA_BUILD_CC:-no}"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 KATA_EXPERIMENTAL_FEATURES="${KATA_EXPERIMENTAL_FEATURES:-}"
 MACHINETYPE="${MACHINETYPE:-q35}"
 METRICS_CI="${METRICS_CI:-}"
+if [ "$KATA_BUILD_CC" == "yes" ]; then
+	PREFIX="${PREFIX:-/opt/confidential-containers}"
+fi
 PREFIX="${PREFIX:-/usr}"
 DESTDIR="${DESTDIR:-/}"
 TEST_INITRD="${TEST_INITRD:-}"
@@ -57,6 +61,18 @@ NEW_RUNTIME_CONFIG="${PKGDEFAULTSDIR}/configuration.toml"
 clone_katacontainers_repo
 
 build_install_shim_v2(){
+	if [ "$KATA_BUILD_CC" == "yes" ]; then
+		build_static_artifact_and_install "shim-v2"
+
+		local bin_dir="/usr/bin"
+		if [ "$PREFIX" != "$bin_dir" ]; then
+			for target_file in $PREFIX/bin/*; do
+				sudo ln --force -s "$target_file" "$bin_dir"
+			done
+		fi
+		return
+	fi
+
 	pushd "$runtime_src_path"
 	make
 	sudo -E PATH=$PATH make install
