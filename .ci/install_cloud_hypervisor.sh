@@ -13,17 +13,14 @@ set -o errtrace
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 
+# Whether build for confidential containers or not.
+KATA_BUILD_CC="${KATA_BUILD_CC:-no}"
+
 main() {
-	local buildscript="${katacontainers_repo_dir}/tools/packaging/kata-deploy/local-build/kata-deploy-binaries.sh"
+	build_static_artifact_and_install "cloud-hypervisor"
 
-	# Just in case the kata-containers repo is not cloned yet.
-	clone_katacontainers_repo
-
-	pushd $katacontainers_repo_dir
-	sudo -E PATH=$PATH bash ${buildscript} --build=cloud-hypervisor
-	sudo tar -xvJpf build/kata-static-cloud-hypervisor.tar.xz -C /
-	sudo ln -sf /opt/kata/bin/cloud-hypervisor /usr/bin/cloud-hypervisor
-	popd
+	[ "${KATA_BUILD_CC}" == "yes" ] || \
+		sudo ln -sf /opt/kata/bin/cloud-hypervisor /usr/bin/cloud-hypervisor
 }
 
 main "$@"
