@@ -223,21 +223,22 @@ clean_env()
 
 clean_env_ctr()
 {
-	local i=""
-	local containers=( $(sudo ctr c list -q) )
-	local count_running="${#containers[@]}"
-	local count_stopped=0
-	local time_out=10
+	local count_running="$(ctr c list -q | wc -l)"
+	local remaining_attempts=10
+	declare -a running_tasks=()
+	local count_tasks=0
 	local sleep_time=1
-	local tasks=""
+	local time_out=10
 
 	[ "$count_running" -eq "0" ] && return 0
 
+	readarray -t running_tasks < <(sudo ctr t list -q)
+
 	info "Wait until the containers gets removed"
-	for i in "${containers[@]}"; do
-		task="$(sudo ctr task ls | grep -E "\<${i}\>" | cut -f1 -d" " || true)"
-		[ -n "${task}" ] && sudo ctr task kill "${task}"
-		[ -n "${task}" ] && sudo ctr tasks kill -s SIGKILL "${task}"
+
+	for task_id in "${running_tasks[@]}"; do
+		sudo ctr t kill -a -s SIGTERM ${task_id} >/dev/null 2>&1
+		sleep 0.5
 	done
 
 	# do not stop if the command fails, it will be evaluated by waitForProcess
@@ -245,9 +246,23 @@ clean_env_ctr()
 
 	local res="ok"
 	waitForProcess "${time_out}" "${sleep_time}" "$cmd" || res="fail"
+
 	[ "$res" == "ok" ] || sudo systemctl restart containerd
 
-	sudo ctr containers delete ${containers[@]}
+	while (( remaining_attempts > 0 )); do
+		sudo ctr c rm $(sudo ctr c list -q) >/dev/null 2>&1
+
+		count_running="$(sudo ctr c list -q | wc -l)"
+
+		[ "$count_running" -eq 0 ] && break
+
+		remaining_attempts=$((remaining_attempts-1))
+	done
+
+	count_tasks="$(sudo ctr t list -q | wc -l)"
+	if (( count_tasks > 0 )); then
+		die "Can't remove running contaienrs."
+	fi
 }
 
 
