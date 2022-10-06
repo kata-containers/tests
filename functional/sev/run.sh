@@ -218,7 +218,7 @@ main() {
 
   # Set KBS_DB_HOST to kbs db container IP
   export KBS_DB_HOST=$(esudo docker network inspect simple-kbs_default \
-    | jq -r '.[].Containers[] | select(.Name | test("simple-kbs_db.*")).IPv4Address' \
+    | jq -r '.[].Containers[] | select(.Name | test("simple-kbs[_-]db.*")).IPv4Address' \
     | sed "s|/.*$||g")
 
   # Testing
