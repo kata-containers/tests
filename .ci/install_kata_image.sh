@@ -25,6 +25,7 @@ TEST_INITRD="${TEST_INITRD:-no}"
 build_method="${BUILD_METHOD:-distro}"
 EXTRA_PKGS="${EXTRA_PKGS:-}"
 KATA_BUILD_CC="${KATA_BUILD_CC:-no}"
+TEE_TYPE="${TEE_TYPE:-}"
 
 build_rust_image() {
 	osbuilder_path="${GOPATH}/src/${rust_agent_repo}/tools/osbuilder"
@@ -72,10 +73,15 @@ build_rust_image() {
 }
 
 build_image_for_cc () {
-	[ "${osbuilder_distro:-ubuntu}" == "ubuntu" ] || \
-		die "The only supported image for Confidential Containers is Ubuntu"
+	if [ "${TEST_INITRD}" == "yes" ]; then
+		[ "${TEE_TYPE}" == "sev" ] || die "SEV is the only TEE type that supports initrd"
+		build_static_artifact_and_install "sev-rootfs-initrd"
+	else
+		[ "${osbuilder_distro:-ubuntu}" == "ubuntu" ] || \
+			die "The only supported image for Confidential Containers is Ubuntu"
 
-	build_static_artifact_and_install "rootfs-image"
+		build_static_artifact_and_install "rootfs-image"
+	fi
 }
 
 main() {
