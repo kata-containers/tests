@@ -732,6 +732,10 @@ static_check_docs()
 		# Google APIs typically require an auth token.
 		echo "$url"|grep -q 'https://www.googleapis.com' && continue
 
+		# request to intel.com will get 403 response status code,
+		# see https://github.com/kata-containers/tests/issues/5191
+		echo "$url"|grep -q 'https://www.intel.com' && continue
+
 		# Git repo URL check
 		if echo "$url"|grep -q '^https.*git'
 		then
