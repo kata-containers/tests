@@ -60,17 +60,19 @@ else
 	"k8s-nginx-connectivity.bats" \
 	"k8s-hugepages.bats")
 	# TODO: runtime-rs doesn't support the following test cases, and will be fixed/improved in the future:
-	# k8s-block-volume.bats, k8s-copy-file.bats, k8s-cpu-ns.bats, k8s-empty-dirs.bats, k8s-expose-ip.bats,
-	# k8s-hugepages.bats, k8s-inotify.bats, k8s-liveness-probes.bats, k8s-nginx-connectivity.bats,
+	# k8s-block-volume.bats, k8s-cpu-ns.bats, k8s-empty-dirs.bats, k8s-expose-ip.bats,
+	# k8s-hugepages.bats, k8s-liveness-probes.bats, k8s-nginx-connectivity.bats,
 	# k8s-pid-ns.bats, k8s-ro-volume.bats
 	if [ "$KATA_HYPERVISOR" == "dragonball" ]; then
                 K8S_TEST_UNION=("k8s-attach-handlers.bats" \
                 "k8s-caps.bats" \
                 "k8s-configmap.bats" \
+                "k8s-copy-file.bats" \
                 "k8s-credentials-secrets.bats" \
                 "k8s-custom-dns.bats" \
                 "k8s-env.bats" \
                 "k8s-exec.bats" \
+                "k8s-inotify.bats" \
                 "k8s-job.bats" \
                 "k8s-limit-range.bats" \
                 "k8s-memory.bats" \
