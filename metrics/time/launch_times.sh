@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2017-2021 Intel Corporation
+# Copyright (c) 2017-2022 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -38,11 +38,10 @@ REQUIRED_CMDS=("bc" "awk")
 # Note the no-0-padding - 0 padding the results breaks bc in some cases
 DATECMD="date -u +%-s:%-N"
 
-# This the minimum entropy level produced
-# by haveged is 1000 see https://wiki.archlinux.org/index.php/Haveged
-# Less than 1000 could potentially slow down cryptographic
-# applications see https://www.suse.com/support/kb/doc/?id=7011351
-entropy_level="1000"
+# The modern Linux RNG is extremely fast at generating entropy on demand
+# and does not need to have as large a store of entropy anymore as the value
+# of 256 was found to work well with common cryptographic algorithms
+entropy_level="256"
 
 check_entropy_level() {
 	retries="10"
@@ -52,7 +51,7 @@ check_entropy_level() {
 		fi
 		sleep 1
 	done
-	if [ $(cat /proc/sys/kernel/random/entropy_avail) -le ${entropy_level} ]; then
+	if [ $(cat /proc/sys/kernel/random/entropy_avail) -lt ${entropy_level} ]; then
 		die "Not enough entropy level to run this test"
 	fi
 }
