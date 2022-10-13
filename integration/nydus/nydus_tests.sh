@@ -22,6 +22,7 @@ kata_config_backup="/tmp/kata-configuration.toml"
 SYSCONFIG_FILE="/etc/kata-containers/configuration.toml"
 DEFAULT_CONFIG_FILE="/usr/share/defaults/kata-containers/configuration-qemu.toml"
 CLH_CONFIG_FILE="/usr/share/defaults/kata-containers/configuration-clh.toml"
+DB_CONFIG_FILE="/usr/share/defaults/kata-containers/configuration-dragonball.toml"
 need_restore_containerd_config=false
 containerd_config="/etc/containerd/config.toml"
 containerd_config_backup="/tmp/containerd.config.toml"
@@ -29,8 +30,8 @@ containerd_config_backup="/tmp/containerd.config.toml"
 # test image for container
 IMAGE="${IMAGE:-ghcr.io/dragonflyoss/image-service/alpine:nydus-latest}"
 
-if [ "$KATA_HYPERVISOR" != "qemu" ] && [ "$KATA_HYPERVISOR" != "cloud-hypervisor" ]; then
-	echo "Skip nydus test for $KATA_HYPERVISOR, it only works for QEMU/CLH now."
+if [ "$KATA_HYPERVISOR" != "qemu" ] && [ "$KATA_HYPERVISOR" != "cloud-hypervisor" ] && [ "$KATA_HYPERVISOR" != "dragonball" ]; then
+	echo "Skip nydus test for $KATA_HYPERVISOR, it only works for QEMU/CLH/DB now."
 	exit 0
 fi
 
@@ -88,6 +89,8 @@ function config_kata() {
 		sudo cp -a "${SYSCONFIG_FILE}" "${kata_config_backup}"
 	elif [ "$KATA_HYPERVISOR" == "qemu" ]; then
 		sudo cp -a "${DEFAULT_CONFIG_FILE}" "${SYSCONFIG_FILE}"
+	elif [ "$KATA_HYPERVISOR" == "dragonball" ]; then
+		sudo cp -a "${DB_CONFIG_FILE}" "${SYSCONFIG_FILE}"
 	else
 		sudo cp -a "${CLH_CONFIG_FILE}" "${SYSCONFIG_FILE}"
 	fi
@@ -96,8 +99,11 @@ function config_kata() {
 	sudo sed -i -e 's/^#\(enable_debug\).*=.*$/\1 = true/g' "${SYSCONFIG_FILE}"
 	sudo sed -i -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug"/g' "${SYSCONFIG_FILE}"
 
-	sudo sed -i 's|^shared_fs.*|shared_fs = "virtio-fs-nydus"|g' "${SYSCONFIG_FILE}"
-	sudo sed -i 's|^virtio_fs_daemon.*|virtio_fs_daemon = "/usr/local/bin/nydusd-virtiofs"|g' "${SYSCONFIG_FILE}"
+	if [ "$KATA_HYPERVISOR" != "dragonball" ]; then
+		sudo sed -i 's|^shared_fs.*|shared_fs = "virtio-fs-nydus"|g' "${SYSCONFIG_FILE}"
+		sudo sed -i 's|^virtio_fs_daemon.*|virtio_fs_daemon = "/usr/local/bin/nydusd-virtiofs"|g' "${SYSCONFIG_FILE}"
+	fi
+
 	sudo sed -i 's|^virtio_fs_extra_args.*|virtio_fs_extra_args = []|g' "${SYSCONFIG_FILE}"
 }
 
