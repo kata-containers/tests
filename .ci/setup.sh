@@ -65,6 +65,7 @@ install_container_engine() {
 		sudo dnf reinstall -y podman || sudo dnf install -y --allowerasing podman
 		# Install docker-podman, so scripts from outside our repo which are not aware of podman don't break
 		sudo dnf -y install podman-docker
+		sudo systemctl enable --now podman.socket
 		return
 	fi
 
