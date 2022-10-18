@@ -58,9 +58,6 @@ case "${KATA_HYPERVISOR}" in
 		"${cidir}/install_cloud_hypervisor.sh"
 		echo "Installing virtiofsd"
 		"${cidir}/install_virtiofsd.sh"
-		if [ "${TEE_TYPE}" == "tdx" ]; then
-			"${cidir}/install_td_shim.sh"
-		fi
 		;;
 	"firecracker")
 		"${cidir}/install_firecracker.sh"
