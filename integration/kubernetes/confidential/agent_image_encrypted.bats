@@ -16,7 +16,7 @@ original_kernel_params=$(get_kernel_params)
 setup() {
     start_date=$(date +"%Y-%m-%d %H:%M:%S")
 
-    pod_id=$(kubectl get pods -o jsonpath='{.items..metadata.name}')
+    pod_id=$(kubectl get pods -l app=ccv0-ssh -o jsonpath='{.items..metadata.name}')
     if [ -n ${pod_id} ]; then
 	    kubernetes_delete_ssh_demo_pod_if_exists "$pod_id"
     fi
@@ -61,7 +61,7 @@ teardown() {
     	return
     fi
 
-    pod_id=$(kubectl get pods -o jsonpath='{.items..metadata.name}')
+    pod_id=$(kubectl get pods -l app=ccv0-ssh -o jsonpath='{.items..metadata.name}')
     kubernetes_delete_ssh_demo_pod_if_exists "$pod_id" || true
 
     clear_kernel_params
