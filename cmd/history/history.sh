@@ -40,7 +40,7 @@ msg() {
 run() {
 	# Blank the file
 	echo "" > "${REPORTFILE}"
-	
+
 	msg "------------------------------------"
 	msg "Commits from $START to $END"
 	msg "------------------------------------"
@@ -51,7 +51,7 @@ run() {
 		TZ=UTC git -C "${repopath}" log --since "$START" --until "$END" --pretty="%cd: %h: ${repo}: %s" --date=format:"%Y-%m-%dT%H:%M:%S" --no-merges ${branch} | tee -a "${REPORTFILE}"
 		msg ""
 	done
-	
+
 	# And make a date sorted version of the file
 	sort -r < "${REPORTFILE}" > "${SORTEDREPORTFILE}"
 	# Remove all the 'fluff' from that sorted file, as it is now just noise.
