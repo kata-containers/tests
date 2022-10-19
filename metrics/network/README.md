@@ -6,7 +6,7 @@ parallel bandwidth.
 
 ## Performance tools
 
-- `iperf3` measures bandwidth and the quality of a network link.
+- `iperf3` measures bandwidth, jitter, CPU usage and the quality of a network link.
 - `ping` is the simplest command to test basic connectivity testing.
 
 ## Networking tests

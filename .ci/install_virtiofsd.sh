@@ -17,7 +17,6 @@ DESTDIR="${DESTDIR:-/}"
 KATA_BUILD_CC="${KATA_BUILD_CC:-no}"
 
 main() {
-	bash "${cidir}/install_rust.sh" && source "$HOME/.cargo/env"
 
 	build_static_artifact_and_install "virtiofsd"
 

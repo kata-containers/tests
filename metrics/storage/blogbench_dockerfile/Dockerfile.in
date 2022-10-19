@@ -23,7 +23,6 @@ RUN apt-get update && \
 	curl -OkL "${BLOGBENCH_URL}/blogbench-${BLOGBENCH_VERSION}.tar.gz" && \
 	tar xzf "blogbench-${BLOGBENCH_VERSION}.tar.gz" -C /
 WORKDIR "/blogbench-${BLOGBENCH_VERSION}"
-#	cd "blogbench-${BLOGBENCH_VERSION}" && \
 RUN arch="$(uname -m)" && \
 	export arch && \
 	./configure --build="${arch}" && \
