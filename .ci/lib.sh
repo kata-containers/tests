@@ -14,7 +14,6 @@ export katacontainers_repo=${katacontainers_repo:="github.com/kata-containers/ka
 export katacontainers_repo_dir="${GOPATH}/src/${katacontainers_repo}"
 export kata_default_branch="${kata_default_branch:-CCv0}"
 export CI_JOB="${CI_JOB:-}"
-
 export tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 export tests_repo_dir="${GOPATH}/src/${tests_repo}"
 
@@ -166,6 +165,8 @@ function build() {
 #	DESTDIR - where to uncompress the tarball, by default is '/'.
 #
 function build_static_artifact_and_install() {
+	export GOPATH="${GOPATH:-}"
+	echo "GOPATH from build static $GOPATH"
 	local artifact="${1:-}"
 	local destdir="${DESTDIR:-/}"
 	local make_target="${artifact}-tarball"
@@ -177,7 +178,7 @@ function build_static_artifact_and_install() {
 		tarball="kata-static-cc-${artifact}.tar.xz"
 	fi
 
-	clone_katacontainers_repo
+	export GOPATH="${GOPATH:-}" && clone_katacontainers_repo
 
 	pushd "$katacontainers_repo_dir" >/dev/null
 	sudo -E PATH=$PATH make "$make_target"
