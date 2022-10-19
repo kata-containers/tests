@@ -133,6 +133,9 @@ vfio:
 
 agent: bash -f functional/agent/agent_test.sh
 
+agent_systemd_cgroup:
+	bash -f functional/agent_systemd_cgroup/agent_systemd_cgroup_test.sh
+
 monitor:
 	bash -f functional/kata-monitor/run.sh
 
