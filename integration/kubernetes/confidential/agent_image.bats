@@ -84,11 +84,15 @@ setup() {
 			"agent.container_policy_file=/etc/containers/quay_verification/quay_policy.json"
 	fi
 
-	if [ "${SKOPEO:-}" = "yes" ]; then
-		setup_skopeo_signature_files_in_guest
-	else
-		setup_offline_fs_kbc_signature_files_in_guest
+	# In case the tests run behind a firewall where images needed to be fetched
+	# through a proxy. With measured rootfs enabled, we can not set proxy through
+	# agent config file.
+	local https_proxy="${HTTPS_PROXY:-${https_proxy:-}}"
+	if [ -n "$https_proxy" ]; then
+		echo "Enable agent https proxy"
+		add_kernel_params "agent.https_proxy=$https_proxy"
 	fi
+	switch_measured_rootfs_verity_scheme none
 }
 
 # Check the logged messages on host have a given message.
@@ -103,6 +107,23 @@ assert_logs_contain() {
 	journalctl -x -t kata --since "$start_date" -n 100000 | grep "$message"
 }
 
+@test "$test_tag Test can launch pod with measured boot enabled" {
+	switch_measured_rootfs_verity_scheme dm-verity
+	pod_config="$(new_pod_config "$image_unsigned_unprotected")"
+	echo $pod_config
+
+	create_test_pod
+}
+
+@test "$test_tag Test cannnot launch pod with measured boot enabled and rootfs modified" {
+	switch_measured_rootfs_verity_scheme dm-verity
+	setup_signature_files
+	pod_config="$(new_pod_config "$image_unsigned_unprotected")"
+	echo $pod_config
+
+	assert_pod_fail "$pod_config"
+}
+
 @test "$test_tag Test can pull an unencrypted image inside the guest" {
 	create_test_pod
 
@@ -115,10 +136,12 @@ assert_logs_contain() {
 }
 
 @test "$test_tag Test can pull a unencrypted signed image from a protected registry" {
+	setup_signature_files
 	create_test_pod
 }
 
 @test "$test_tag Test cannot pull an unencrypted unsigned image from a protected registry" {
+	setup_signature_files
 	local container_config="$(new_pod_config "$image_unsigned_protected")"
 
 	echo $container_config
@@ -131,6 +154,7 @@ assert_logs_contain() {
 }
 
 @test "$test_tag Test can pull an unencrypted unsigned image from an unprotected registry" {
+	setup_signature_files
 	pod_config="$(new_pod_config "$image_unsigned_unprotected")"
 	echo $pod_config
 
@@ -138,6 +162,7 @@ assert_logs_contain() {
 }
 
 @test "$test_tag Test unencrypted signed image with unknown signature is rejected" {
+	setup_signature_files
 	local container_config="$(new_pod_config "$image_signed_protected_other")"
 	echo $container_config
 
