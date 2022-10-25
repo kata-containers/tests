@@ -29,6 +29,7 @@ setup() {
     switch_image_service_offload on
     clear_kernel_params
     add_kernel_params "${original_kernel_params}"
+    switch_measured_rootfs_verity_scheme none
 }
 
 @test "$test_tag Test can pull an encrypted image inside the guest with decryption key" {
