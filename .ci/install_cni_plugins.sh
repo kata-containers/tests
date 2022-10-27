@@ -12,8 +12,9 @@ source "${cidir}/lib.sh"
 
 plugins_version=$(get_version "externals.cni-plugins.version")
 echo "Retrieve CNI plugins repository"
-go get -d github.com/containernetworking/plugins || true
-pushd $GOPATH/src/github.com/containernetworking/plugins
+pushd $GOPATH/src/
+git clone https://github.com/containernetworking/plugins.git || true
+cd plugins
 git checkout "$plugins_version"
 
 echo "Build CNI plugins"
