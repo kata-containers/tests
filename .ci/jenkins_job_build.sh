@@ -220,7 +220,8 @@ run_unit_test() {
 		echo "Running unit tests"
 		sudo chown -R "$USER" "$HOME/.cargo" || true
 		"$ci_dir_name/install_rust.sh" && source "$HOME/.cargo/env"
-		[ ! -d "${katacontainers_repo_dir}" ] && go get -d "${katacontainers_repo}" || true
+		clone_katacontainers_repo
+
 		pushd "${GOPATH}/src/${katacontainers_repo}"
 		echo "Installing libseccomp library from sources"
 		libseccomp_install_dir=$(mktemp -d -t libseccomp.XXXXXXXXXX)
@@ -271,7 +272,8 @@ test_snap_build() {
 	if [[ "${ID}" == "ubuntu" && "$(uname -m)" != "x86_64" ]]; then
 		echo "Test snap build"
 		sudo apt install -y snapcraft
-		[ ! -d "${katacontainers_repo_dir}" ] && go get -d "${katacontainers_repo}" || true
+		clone_katacontainers_repo
+
 		pushd "${katacontainers_repo_dir}"
 		sudo snapcraft snap --debug --destructive-mode
 		# PREFIX is changed in snap build, change it back

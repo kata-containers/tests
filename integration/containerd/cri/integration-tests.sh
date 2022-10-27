@@ -49,6 +49,7 @@ CI=${CI:-""}
 
 containerd_shim_path="$(command -v containerd-shim)"
 readonly cri_containerd_repo=$(get_version "externals.containerd.url")
+readonly cri_containerd_repo_git="https://${cri_containerd_repo}.git"
 
 #containerd config file
 readonly tmp_dir=$(mktemp -t -d test-cri-containerd.XXXX)
@@ -457,7 +458,10 @@ main() {
 	# make sure cri-containerd test install the proper critest version its testing
 	rm -f "${CRITEST}"
 
-	go get ${cri_containerd_repo}
+	if [ ! -d "${GOPATH}/src/${cri_containerd_repo}" ]; then
+		mkdir -p "${GOPATH}/src/${cri_containerd_repo}"
+		git clone ${cri_containerd_repo_git} "${GOPATH}/src/${cri_containerd_repo}"
+	fi
 	pushd "${GOPATH}/src/${cri_containerd_repo}"
 
 	git reset HEAD

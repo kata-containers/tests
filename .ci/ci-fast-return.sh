@@ -431,15 +431,17 @@ check_for_self_test() {
 # github.com/kward/shunit2 library, and are encoded into functions starting
 # with the string 'test'.
 self_test() {
-	local shunit2_path="github.com/kward/shunit2"
+	local shunit2_path="https://github.com/kward/shunit2.git"
 	local_info "Running self tests"
 
-	local_info "Go get unit test framework from ${shunit2_path}"
-	go get -d "${shunit2_path}" || true
+	local_info "Clone unit test framework from ${shunit2_path}"
+	pushd "${GOPATH}/src/"
+	git clone "${shunit2_path}" || true
+	popd
 	local_info "Run the unit tests"
 
 	# Sourcing the `shunit2` file automatically runs the unit tests in this file.
-	. "${GOPATH}/src/${shunit2_path}/shunit2"
+	. "${GOPATH}/src/shunit2/shunit2"
 	# shunit2 call does not return - it exits with its return code.
 }
 

@@ -39,11 +39,12 @@ install_from_source() {
 	echo "Trying to install containerd from source"
 	(
 		containerd_repo=$(get_version "externals.containerd.url")
-		go get "${containerd_repo}"
-		cd "${GOPATH}/src/${containerd_repo}" >>/dev/null
+		cd ${GOPATH}/src/
+		git clone "https://${containerd_repo}.git" "${GOPATH}/src/${containerd_repo}"
 
 		add_repo_to_git_safe_directory "${GOPATH}/src/${containerd_repo}"
 
+		cd "${GOPATH}/src/${containerd_repo}"
 		git fetch
 		git checkout "${containerd_tarball_version}"
 		make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
