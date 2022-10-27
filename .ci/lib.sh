@@ -11,6 +11,7 @@ export KATA_QEMU_DESTDIR=${KATA_QEMU_DESTDIR:-"/usr"}
 export KATA_ETC_CONFIG_PATH="/etc/kata-containers/configuration.toml"
 
 export katacontainers_repo=${katacontainers_repo:="github.com/kata-containers/kata-containers"}
+export katacontainers_repo_git="https://${katacontainers_repo}.git"
 export katacontainers_repo_dir="${GOPATH}/src/${katacontainers_repo}"
 export kata_default_branch="${kata_default_branch:-stable-3.0}"
 export CI_JOB="${CI_JOB:-}"
@@ -98,7 +99,8 @@ clone_katacontainers_repo() {
 	add_repo_to_git_safe_directory "${katacontainers_repo_dir}"
 
 	if [ ! -d "${katacontainers_repo_dir}" ]; then
-		go get -d "${katacontainers_repo}" || true
+		mkdir -p "${katacontainers_repo_dir}"
+		git clone ${katacontainers_repo_git} "${katacontainers_repo_dir}" || true
 		pushd "${katacontainers_repo_dir}"
 		# Checkout to default branch
 		git checkout "${kata_default_branch}"
@@ -115,7 +117,10 @@ function build_version() {
 
 	project_dir="${GOPATH}/src/${github_project}"
 
-	[ -d "${project_dir}" ] || go get -d "${github_project}" || true
+	if [ -d "${project_dir}" ]; then
+		mkdir -p ${project_dir}
+		git clone "https://${github_project}.git" ${project_dir} || true
+	fi
 
 	pushd "${project_dir}"
 
@@ -168,7 +173,7 @@ function get_version(){
 	versions_file="${katacontainers_repo_dir}/versions.yaml"
 	if [ ! -d "${katacontainers_repo_dir}" ]; then
 		mkdir -p "$(dirname ${katacontainers_repo_dir})"
-		git clone --quiet https://${katacontainers_repo}.git "${katacontainers_repo_dir}"
+		git clone --quiet ${katacontainers_repo_git} "${katacontainers_repo_dir}"
 		( cd "${katacontainers_repo_dir}" && git checkout "$kata_default_branch" >&2 )
 	fi
 	get_dep_from_yaml_db "${versions_file}" "${dependency}"
@@ -745,14 +750,17 @@ testCheckLabel() {
 # github.com/kward/shunit2 library, and are encoded into functions starting
 # with the string 'test'.
 self_test() {
-	local shunit2_path="github.com/kward/shunit2"
+	local shunit2_path="https://github.com/kward/shunit2.git"
 	local_info "Running self tests"
 
-	local_info "Go get unit test framework from ${shunit2_path}"
-	go get -d "${shunit2_path}" || true
+	local_info "Clone unit test framework from ${shunit2_path}"
+	pushd "${GOPATH}/src/"
+	git clone "${shunit2_path}" || true
+	popd
 	local_info "Run the unit tests"
+
 	# Sourcing the `shunit2` file automatically runs the unit tests in this file.
-	. "${GOPATH}/src/${shunit2_path}/shunit2"
+	. "${GOPATH}/src/shunit2/shunit2"
 	# shunit2 call does not return - it exits with its return code.
 }
 

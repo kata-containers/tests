@@ -559,7 +559,7 @@ static_check_docs()
 		url=$(get_test_version "externals.xurls.url")
 
 		# xurls is very fussy about how it's built.
-		GO111MODULE=on go get "${url}@${version}"
+		go install "${url}@${version}"
 
 		command -v xurls &>/dev/null ||
 			die 'xurls not found. Ensure that "$GOPATH/bin" is in your $PATH'
@@ -915,7 +915,7 @@ static_check_vendor()
 		# This does not really verify the integrity of vendored code:
 		# https://github.com/golang/go/issues/27348
 		# Once that is added we need to add an extra step to verify vendored code.
-		GO111MODULE=on go mod verify
+		go mod verify
 		return
 	fi
 
