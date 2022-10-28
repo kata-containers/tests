@@ -238,8 +238,6 @@ run_unit_test() {
 
 run_main_test() {
 	"${ci_dir_name}/setup.sh"
-	# Use virtio-9p on s390x -- https://github.com/kata-containers/tests/issues/3998 for tracking
-	[ "$arch" = s390x ] && sudo -E "${GOPATH}/src/${tests_repo}/${cidir}/set_kata_config.sh" shared_fs virtio-9p
 
 	if [ "${CI_JOB}" == "VFIO" ]; then
 		pushd "${GOPATH}/src/${tests_repo}"
