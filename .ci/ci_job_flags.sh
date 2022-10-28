@@ -203,7 +203,7 @@ case "${CI_JOB}" in
 	export INSTALL_KATA="no"
 	export KUBERNETES="yes"
 	;;
-"VFIO")
+"VFIO"|"VFIO_AP")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
