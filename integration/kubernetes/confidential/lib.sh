@@ -74,6 +74,9 @@ checkout_doc_repo_dir() {
         git clone https://${doc_repo} "${doc_repo_dir}"
         # Update runtimeClassName from kata-cc to "$RUNTIMECLASS"
         sudo sed -i -e 's/\([[:blank:]]*runtimeClassName: \).*/\1'${RUNTIMECLASS:-kata}'/g' "${doc_repo_dir}/demos/ssh-demo/k8s-cc-ssh.yaml"
+        if [ "$(uname -m)" != "x86_64" ]; then
+            sudo sed -i -e 's/^\(.*image: docker\.io.*\)$/\1:'$(uname -m)'/g' "${doc_repo_dir}/demos/ssh-demo/k8s-cc-ssh.yaml"
+        fi
         chmod 600 ${doc_repo_dir}/demos/ssh-demo/ccv0-ssh
     fi
 }
