@@ -133,7 +133,7 @@ assert_pod_fail() {
 }
 
 setup_decryption_files_in_guest() {
-    setup_offline_fs_kbc_agent_config_in_guest
+	add_kernel_params "agent.aa_kbc_params=offline_fs_kbc::null"
 
     curl -Lo "${HOME}/aa-offline_fs_kbc-keys.json" https://raw.githubusercontent.com/confidential-containers/documentation/main/demos/ssh-demo/aa-offline_fs_kbc-keys.json
     cp_to_guest_img "etc" "${HOME}/aa-offline_fs_kbc-keys.json" 

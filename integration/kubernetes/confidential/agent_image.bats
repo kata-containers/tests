@@ -84,14 +84,7 @@ setup() {
 			"agent.container_policy_file=/etc/containers/quay_verification/quay_policy.json"
 	fi
 
-	# In case the tests run behind a firewall where images needed to be fetched
-	# through a proxy. With measured rootfs enabled, we can not set proxy through
-	# agent config file.
-	local https_proxy="${HTTPS_PROXY:-${https_proxy:-}}"
-	if [ -n "$https_proxy" ]; then
-		echo "Enable agent https proxy"
-		add_kernel_params "agent.https_proxy=$https_proxy"
-	fi
+	setup_http_proxy
 	switch_measured_rootfs_verity_scheme none
 }
 
