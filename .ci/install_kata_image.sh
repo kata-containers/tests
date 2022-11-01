@@ -80,7 +80,14 @@ build_image_for_cc () {
 		[ "${osbuilder_distro:-ubuntu}" == "ubuntu" ] || \
 			die "The only supported image for Confidential Containers is Ubuntu"
 
-		build_static_artifact_and_install "rootfs-image"
+		if [ "${TEE_TYPE}" == "tdx" ] && [ "${KATA_HYPERVISOR}" == "qemu" ]; then
+			# Cloud Hypervisor is still using `offline_fs_kbc`, so it has to
+			# use the generic image.  QEMU, on the other hand, is using
+			# `eaa_kbc` and it requires the `tdx-rootfs-image`.
+			build_static_artifact_and_install "tdx-rootfs-image"
+		else
+			build_static_artifact_and_install "rootfs-image"
+		fi
 	fi
 }
 
