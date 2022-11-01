@@ -29,6 +29,8 @@ setup() {
     switch_image_service_offload on
     clear_kernel_params
     add_kernel_params "${original_kernel_params}"
+
+    setup_http_proxy
     switch_measured_rootfs_verity_scheme none
 }
 
