@@ -59,7 +59,7 @@ run_kbs() {
 calculate_measurement_and_add_to_kbs() {
   local kernel_path="$(kata-runtime kata-env --json | jq -r .Kernel.Path)"
   local initrd_path="$(kata-runtime kata-env --json | jq -r .Initrd.Path)"
-  local append="tsc=reliable no_timer_check rcupdate.rcu_expedited=1 i8042.direct=1 i8042.dumbkbd=1 i8042.nopnp=1 i8042.noaux=1 noreplace-smp reboot=k cryptomgr.notests net.ifnames=0 pci=lastbus=0 console=hvc0 console=hvc1 quiet panic=1 nr_cpus=1 agent.config_file=/etc/agent-config.toml"
+  local append="tsc=reliable no_timer_check rcupdate.rcu_expedited=1 i8042.direct=1 i8042.dumbkbd=1 i8042.nopnp=1 i8042.noaux=1 noreplace-smp reboot=k cryptomgr.notests net.ifnames=0 pci=lastbus=0 console=hvc0 console=hvc1 quiet panic=1 nr_cpus=1 agent.config_file=/etc/agent-config.toml agent.enable_signature_verification=false"
 
   # Generate digest from sev-snp-measure output - this also inserts measurement values inside OVMF image
   measurement=$(~/.local/bin/sev-snp-measure --mode=sev --output-format=base64 \
