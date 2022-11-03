@@ -8,8 +8,12 @@ load "${BATS_TEST_DIRNAME}/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../confidential/lib.sh"
 
 # Images used on the tests.
-#
-image_signed="quay.io/kata-containers/confidential-containers:signed"
+## Cosign
+image_cosigned="quay.io/kata-containers/confidential-containers:cosign-signed"
+image_cosigned_other="quay.io/kata-containers/confidential-containers:cosign-signed-key2"
+
+## Simple Signing
+image_simple_signed="quay.io/kata-containers/confidential-containers:signed"
 image_signed_protected_other="quay.io/kata-containers/confidential-containers:other_signed"
 image_unsigned_protected="quay.io/kata-containers/confidential-containers:unsigned"
 image_unsigned_unprotected="quay.io/prometheus/busybox:latest"
@@ -36,7 +40,7 @@ create_test_pod() {
 	fi
 
 	echo "Create the test sandbox"
-	echo "Pod config is: "$pod_config
+	echo "Pod config is: $pod_config"
 	kubernetes_create_cc_pod $pod_config
 }
 
@@ -65,7 +69,7 @@ setup() {
 	start_date=$(date +"%Y-%m-%d %H:%M:%S")
 
 	sandbox_name="busybox-cc"
-	pod_config="$(new_pod_config "$image_signed")"
+	pod_config="$(new_pod_config "$image_simple_signed")"
 	pod_id=""
 
 	echo "Delete any existing ${sandbox_name} pod"
@@ -164,6 +168,27 @@ assert_logs_contain() {
 		assert_logs_contain "Invalid GPG signature"
 	else
 		assert_logs_contain 'Validate image failed: The signatures do not satisfied! Reject reason: \[signature verify failed! There is no pubkey can verify the signature!\]'
+	fi
+}
+
+@test "$test_tag Test unencrypted image signed with cosign" {
+	setup_cosign_signatures_files
+	pod_config="$(new_pod_config "$image_cosigned")"
+	echo $pod_config
+
+	create_test_pod
+}
+
+@test "$test_tag Test unencrypted image with unknown cosign signature" {
+	setup_cosign_signatures_files
+	local container_config="$(new_pod_config "$image_cosigned_other")"
+	echo $container_config
+
+	assert_pod_fail "$container_config"
+	if [ "${SKOPEO:-}" = "yes" ]; then
+		assert_logs_contain 'Signature for identity .* is not accepted'
+	else
+		assert_logs_contain 'Validate image failed: \[PublicKeyVerifier { key: CosignVerificationKey'
 	fi
 }
 
