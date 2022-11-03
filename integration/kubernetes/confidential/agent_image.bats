@@ -8,8 +8,12 @@ load "${BATS_TEST_DIRNAME}/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../confidential/lib.sh"
 
 # Images used on the tests.
-#
-image_signed="quay.io/kata-containers/confidential-containers:signed"
+## Cosign
+image_cosigned="quay.io/kata-containers/confidential-containers:cosign-signed"
+image_cosigned_other="quay.io/kata-containers/confidential-containers:cosign-signed-key2"
+
+## Simple Signing
+image_simple_signed="quay.io/kata-containers/confidential-containers:signed"
 image_signed_protected_other="quay.io/kata-containers/confidential-containers:other_signed"
 image_unsigned_protected="quay.io/kata-containers/confidential-containers:unsigned"
 image_unsigned_unprotected="quay.io/prometheus/busybox:latest"
@@ -36,7 +40,7 @@ create_test_pod() {
 	fi
 
 	echo "Create the test sandbox"
-	echo "Pod config is: "$pod_config
+	echo "Pod config is: $pod_config"
 	kubernetes_create_cc_pod $pod_config
 }
 
@@ -64,12 +68,10 @@ new_pod_config() {
 setup() {
 	start_date=$(date +"%Y-%m-%d %H:%M:%S")
 
-	sandbox_name="busybox-cc"
-	pod_config="$(new_pod_config "$image_signed")"
+	pod_config="$(new_pod_config "$image_simple_signed")"
 	pod_id=""
 
-	echo "Delete any existing ${sandbox_name} pod"
-	kubernetes_delete_cc_pod_if_exists "$sandbox_name"
+	kubernetes_delete_all_cc_pods_if_any_exists || true
 
 	echo "Prepare containerd for Confidential Container"
 	SAVED_CONTAINERD_CONF_FILE="/etc/containerd/config.toml.$$"
@@ -167,6 +169,27 @@ assert_logs_contain() {
 	fi
 }
 
+@test "$test_tag Test unencrypted image signed with cosign" {
+	setup_cosign_signatures_files
+	pod_config="$(new_pod_config "$image_cosigned")"
+	echo $pod_config
+
+	create_test_pod
+}
+
+@test "$test_tag Test unencrypted image with unknown cosign signature" {
+	setup_cosign_signatures_files
+	local container_config="$(new_pod_config "$image_cosigned_other")"
+	echo $container_config
+
+	assert_pod_fail "$container_config"
+	if [ "${SKOPEO:-}" = "yes" ]; then
+		assert_logs_contain 'Signature for identity .* is not accepted'
+	else
+		assert_logs_contain 'Validate image failed: \[PublicKeyVerifier { key: CosignVerificationKey'
+	fi
+}
+
 teardown() {
 	# Print the logs and cleanup resources.
 	echo "-- Kata logs:"
@@ -175,12 +198,11 @@ teardown() {
 	# Allow to not destroy the environment if you are developing/debugging
 	# tests.
 	if [[ "${CI:-false}" == "false" && "${DEBUG:-}" == true ]]; then
-		echo "Leaving changes and created resources untoughted"
+		echo "Leaving changes and created resources untouched"
 		return
 	fi
 
-	kubernetes_delete_cc_pod_if_exists "$sandbox_name" || true
-
+	kubernetes_delete_all_cc_pods_if_any_exists || true
 	clear_kernel_params
 	add_kernel_params "${original_kernel_params}"
 	switch_image_service_offload off

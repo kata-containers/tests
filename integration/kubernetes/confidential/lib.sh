@@ -12,29 +12,10 @@ source "${BATS_TEST_DIRNAME}/../../../lib/common.bash"
 source "${BATS_TEST_DIRNAME}/../../../.ci/lib.sh"
 FIXTURES_DIR="${BATS_TEST_DIRNAME}/fixtures"
 
-# Delete the containers alongside the Pod.
-#
-# Parameters:
-#	$1 - the sandbox name
-#
-kubernetes_delete_cc_pod() {
-	local sandbox_name="$1"
-	local pod_id=${sandbox_name}
-	if [ -n "${pod_id}" ]; then
-	
-		kubectl delete pod "${pod_id}"
-	fi
-}
-
-# Delete the pod if it exists, otherwise just return.
-#
-# Parameters:
-#	$1 - the sandbox name
-#
-kubernetes_delete_cc_pod_if_exists() {
-	local sandbox_name="$1"
-	[ -z "$(kubectl get pods ${sandbox_name})" ] || \
-		kubernetes_delete_cc_pod "${sandbox_name}"
+# Delete all pods if any exist, otherwise just return
+kubernetes_delete_all_cc_pods_if_any_exists() {
+  [ -z "$(kubectl get pods)" ] || \
+		kubectl delete --all pods
 }
 
 # Wait until the pod is not 'Ready'. Fail if it hits the timeout.
