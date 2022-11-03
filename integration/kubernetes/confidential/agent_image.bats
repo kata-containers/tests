@@ -198,7 +198,7 @@ teardown() {
 	# Allow to not destroy the environment if you are developing/debugging
 	# tests.
 	if [[ "${CI:-false}" == "false" && "${DEBUG:-}" == true ]]; then
-		echo "Leaving changes and created resources untoughted"
+		echo "Leaving changes and created resources untouched"
 		return
 	fi
 
