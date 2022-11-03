@@ -68,12 +68,10 @@ new_pod_config() {
 setup() {
 	start_date=$(date +"%Y-%m-%d %H:%M:%S")
 
-	sandbox_name="busybox-cc"
 	pod_config="$(new_pod_config "$image_simple_signed")"
 	pod_id=""
 
-	echo "Delete any existing ${sandbox_name} pod"
-	kubernetes_delete_cc_pod_if_exists "$sandbox_name"
+	kubernetes_delete_all_cc_pods_if_any_exists || true
 
 	echo "Prepare containerd for Confidential Container"
 	SAVED_CONTAINERD_CONF_FILE="/etc/containerd/config.toml.$$"
@@ -204,8 +202,7 @@ teardown() {
 		return
 	fi
 
-	kubernetes_delete_cc_pod_if_exists "$sandbox_name" || true
-
+	kubernetes_delete_all_cc_pods_if_any_exists || true
 	clear_kernel_params
 	add_kernel_params "${original_kernel_params}"
 	switch_image_service_offload off
