@@ -232,7 +232,10 @@ testContainerStop() {
 	info "stop pod $podid"
 	sudo crictl stopp $podid
 	info "remove pod $podid"
+	sudo crictl -v
+	sudo crictl version
 	sudo crictl rmp $podid
+	info "not here"
 
 	sudo cp "$default_containerd_config_backup" "$default_containerd_config"
 	restart_containerd_service
