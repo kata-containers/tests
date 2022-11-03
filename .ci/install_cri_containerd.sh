@@ -69,6 +69,17 @@ install_from_static_tarball() {
 	sudo tar -xvf "${tarball_name}" -C /
 }
 
+install_cri-tools() {
+crictl_repo=$(get_version "externals.critools.url")
+crictl_version=$(get_version "externals.critools.version")
+crictl_tag_prefix="v"
+
+crictl_url="${crictl_repo}/releases/download/v${crictl_version}/crictl-${crictl_tag_prefix}${crictl_version}-linux-$(${script_dir}/kata-arch.sh -g).tar.gz"
+curl -Ls "$crictl_url" | sudo tar xfz - -C /usr/local/bin
+}
+
 install_from_static_tarball || install_from_source
+
+install_cri-tools
 
 sudo systemctl daemon-reload
