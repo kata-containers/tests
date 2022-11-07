@@ -250,6 +250,13 @@ setup_offline_fs_kbc_signature_files_in_guest() {
 }
 
 setup_cosign_signatures_files() {
+
+	# Currently (kata-containers#5582) the support or cosign in image-rs introduce a dependency on
+	# the `ring` crate, so we can't support these features on s390x
+	if [ "$(uname -m)" == "s390x" ]; then
+		skip "Cannot run test on s390x"
+	fi
+
 	# Enable signature verification via kata-configuration by removing the param that disables it
 	remove_kernel_param "agent.enable_signature_verification"
 
