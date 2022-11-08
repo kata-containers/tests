@@ -173,9 +173,18 @@ disable_full_debug() {
 # Parameters:
 #	$1 - (Optional) file path to where save the current containerd's config.toml
 #
+# Environment variables:
+#	TESTS_CONFIGURE_CC_CONTAINERD - if set to 'no' then this function
+#					become bogus.
+#
 configure_cc_containerd() {
 	local saved_containerd_conf_file="${1:-}"
 	local containerd_conf_file="/etc/containerd/config.toml"
+
+	# The test caller might want to skip the re-configure. For example, when
+	# installed via operator it will assume containerd is in right state
+	# already.
+	[ "${TESTS_CONFIGURE_CC_CONTAINERD:-yes}" == "yes" ] || return 0
 
 	# Even if we are not saving the original file it is a good idea to
 	# restart containerd because it might be in an inconsistent state here.
