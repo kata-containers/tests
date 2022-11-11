@@ -308,7 +308,8 @@ TestContainerMemoryUpdate() {
 
 getContainerSwapInfo() {
 	swap_size=$(($(crictl exec $cid cat /proc/meminfo | grep "SwapTotal:" | awk '{print $2}')*1024))
-	swappiness=$(crictl exec $cid cat /proc/sys/vm/swappiness)
+	# NOTE: these below two checks only works on cgroup v1
+	swappiness=$(crictl exec $cid cat /sys/fs/cgroup/memory/memory.swappiness)
 	swap_in_bytes=$(crictl exec $cid cat /sys/fs/cgroup/memory/memory.memsw.limit_in_bytes)
 }
 
@@ -318,6 +319,7 @@ TestContainerSwap() {
 	fi
 
 	local container_yaml=${REPORT_DIR}/container.yaml
+	local image="busybox:latest"
 
 	info "Test container with guest swap"
 
@@ -345,7 +347,7 @@ TestContainerSwap() {
 	# Test with swap device
 	cat << EOF > "${container_yaml}"
 metadata:
-  name: busybox-killed-vmm
+  name: busybox-swap
 annotations:
   io.katacontainers.container.resource.swappiness: "100"
   io.katacontainers.container.resource.swap_in_bytes: "1610612736"
@@ -357,26 +359,25 @@ image:
 command:
 - top
 EOF
+
 	testContainerStart 1
 	getContainerSwapInfo
+	testContainerStop
+
 	if [ $swappiness -ne 100 ]; then
-		testContainerStop
 		die "The VM swappiness $swappiness with swap device is not right"
 	fi
 	if [ $swap_in_bytes -ne 1610612736 ]; then
-		testContainerStop
 		die "The VM swap_in_bytes $swap_in_bytes with swap device is not right"
 	fi
 	if [ $swap_size -ne 536870912 ]; then
-		testContainerStop
 		die "The VM swap size $swap_size with swap device is not right"
 	fi
-	testContainerStop
 
 	# Test without swap_in_bytes
 	cat << EOF > "${container_yaml}"
 metadata:
-  name: busybox-killed-vmm
+  name: busybox-swap
 annotations:
   io.katacontainers.container.resource.swappiness: "100"
 linux:
@@ -387,27 +388,26 @@ image:
 command:
 - top
 EOF
+
 	testContainerStart 1
 	getContainerSwapInfo
+	testContainerStop
+
 	if [ $swappiness -ne 100 ]; then
-		testContainerStop
 		die "The VM swappiness $swappiness without swap_in_bytes is not right"
 	fi
 	# swap_in_bytes is not set, it should be a value that bigger than 1125899906842624
 	if [ $swap_in_bytes -lt 1125899906842624 ]; then
-		testContainerStop
 		die "The VM swap_in_bytes $swap_in_bytes without swap_in_bytes is not right"
 	fi
 	if [ $swap_size -ne 1073741824 ]; then
-		testContainerStop
 		die "The VM swap size $swap_size without swap_in_bytes is not right"
 	fi
-	testContainerStop
 
 	# Test without memory_limit_in_bytes
 	cat << EOF > "${container_yaml}"
 metadata:
-  name: busybox-killed-vmm
+  name: busybox-swap
 annotations:
   io.katacontainers.container.resource.swappiness: "100"
 image:
@@ -415,22 +415,21 @@ image:
 command:
 - top
 EOF
+
 	testContainerStart 1
 	getContainerSwapInfo
+	testContainerStop
+
 	if [ $swappiness -ne 100 ]; then
-		testContainerStop
 		die "The VM swappiness $swappiness without memory_limit_in_bytes is not right"
 	fi
 	# swap_in_bytes is not set, it should be a value that bigger than 1125899906842624
 	if [ $swap_in_bytes -lt 1125899906842624 ]; then
-		testContainerStop
 		die "The VM swap_in_bytes $swap_in_bytes without memory_limit_in_bytes is not right"
 	fi
 	if [ $swap_size -ne 2147483648 ]; then
-		testContainerStop
 		die "The VM swap size $swap_size without memory_limit_in_bytes is not right"
 	fi
-	testContainerStop
 
 	create_containerd_config "${containerd_runtime_test}"
 }
@@ -474,6 +473,8 @@ main() {
 	create_containerd_config "${containerd_runtime_test}"
 
 	info "containerd(cri): Running cri-integration"
+
+	TestContainerSwap
 
 	passing_test=(
 	TestContainerStats
