@@ -19,11 +19,12 @@ git checkout "$plugins_version"
 
 echo "Build CNI plugins"
 ./build_linux.sh
-
 echo "Install CNI binaries"
+
 cni_bin_path="/opt/cni"
-sudo rm -r ${cni_bin_path}
+# sudo rm -r ${cni_bin_path}
 sudo mkdir -p ${cni_bin_path}
+
 sudo cp -a bin ${cni_bin_path}
 
 popd

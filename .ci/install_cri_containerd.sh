@@ -25,7 +25,8 @@ source "${script_dir}/lib.sh"
 CONTAINERD_OS=$(go env GOOS)
 CONTAINERD_ARCH=$(go env GOARCH)
 
-containerd_tarball_version=$(get_version "externals.containerd.version")
+# containerd_tarball_version=$(get_version "externals.containerd.version")
+containerd_tarball_version="v1.6.8"
 
 containerd_version=${containerd_tarball_version#v}
 

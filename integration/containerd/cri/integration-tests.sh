@@ -18,7 +18,8 @@ source "${SCRIPT_PATH}/../../../.ci/lib.sh"
 # runc is installed in /usr/local/sbin/ add that path
 export PATH="$PATH:/usr/local/sbin"
 
-containerd_tarball_version=$(get_version "externals.containerd.version")
+# containerd_tarball_version=$(get_version "externals.containerd.version")
+containerd_tarball_version="v1.6.8"
 
 # Runtime to be used for testing
 RUNTIME=${RUNTIME:-containerd-shim-kata-v2}
