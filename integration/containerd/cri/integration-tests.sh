@@ -457,9 +457,11 @@ main() {
 	# make sure cri-containerd test install the proper critest version its testing
 	rm -f "${CRITEST}"
 
-	go get ${cri_containerd_repo}
-	pushd "${GOPATH}/src/${cri_containerd_repo}"
+	pushd "${GOPATH}/src/github.com"
+	git clone https://${cri_containerd_repo}
+	popd
 
+	pushd "${GOPATH}/src/github.com/containerd"
 	git reset HEAD
 	git checkout ${containerd_tarball_version}
 	cp "${SCRIPT_PATH}/container_restart_test.go.patch" ./integration/container_restart_test.go

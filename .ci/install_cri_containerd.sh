@@ -9,6 +9,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
+set -x
 
 source /etc/os-release || source /usr/lib/os-release
 
@@ -39,10 +40,12 @@ install_from_source() {
 	echo "Trying to install containerd from source"
 	(
 		containerd_repo=$(get_version "externals.containerd.url")
-		go get "${containerd_repo}"
-		cd "${GOPATH}/src/${containerd_repo}" >>/dev/null
+		pushd "${GOPATH}/src/github.com"
+		git clone "https://${containerd_repo}"
+		popd
 
-		add_repo_to_git_safe_directory "${GOPATH}/src/${containerd_repo}"
+		cd "${GOPATH}/src/github.com/containerd" >>/dev/null
+		add_repo_to_git_safe_directory "${GOPATH}/src/github.com/containerd"
 
 		git fetch
 		git checkout "${containerd_tarball_version}"
