@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-aa_kbc_params = "offline_sev_kbc::null"
+aa_kbc_params = "online_sev_kbc::123.123.123.123:44444"
 [endpoints]
 allowed = [
 "AddARPNeighborsRequest",
@@ -41,4 +41,4 @@ allowed = [
 "VolumeStatsRequest",
 "WaitProcessRequest",
 "WriteStreamRequest"
-]
+
