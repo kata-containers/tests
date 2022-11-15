@@ -158,12 +158,6 @@ branch=
 # the Jenkins GithubPullRequestBuilder Plugin
 [ -n "${ghprbPullId}" ] && [ -n "${ghprbTargetBranch}" ] && export pr_number="${ghprbPullId}"
 
-# Install go after repository is cloned and checkout to PR
-# This ensures:
-# - We have latest changes in install_go.sh
-# - We got get changes if versions.yaml changed.
-"${GOPATH}/src/${tests_repo}/.ci/install_go.sh" -p -f
-
 if [ -n "$pr_number" ]; then
 	export branch="${ghprbTargetBranch}"
 	export pr_branch="PR_${pr_number}"
@@ -173,6 +167,12 @@ fi
 
 # Resolve kata dependencies
 "${GOPATH}/src/${tests_repo}/.ci/resolve-kata-dependencies.sh"
+
+# Install go after repository is cloned and checkout to PR
+# This ensures:
+# - We have latest changes in install_go.sh
+# - We got get changes if versions.yaml changed.
+"${GOPATH}/src/${tests_repo}/.ci/install_go.sh" -p -f
 
 # Check if we can fastpath return/skip the CI
 # Work around the 'set -e' dying if the check fails by using a bash
