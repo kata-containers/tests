@@ -47,17 +47,19 @@ func (t LinkType) String() string {
 //
 // Example: A heading like this:
 //
-//    ### This is a `verbatim` heading
+//	### This is a `verbatim` heading
 //
 // ... would be described as:
 //
 // ```go
-// Heading{
-//   Name:     "This is a verbatim heading",
-//   MDName    "This is a `verbatim` heading",
-//   LinkName: "this-is-a-verbatim-heading",
-//   Level:    3,
-// }
+//
+//	Heading{
+//	  Name:     "This is a verbatim heading",
+//	  MDName    "This is a `verbatim` heading",
+//	  LinkName: "this-is-a-verbatim-heading",
+//	  Level:    3,
+//	}
+//
 // ```
 type Heading struct {
 	// Not strictly necessary since the name is used as a hash key.
@@ -79,31 +81,34 @@ type Heading struct {
 //
 // Example: A link like this:
 //
-//     [internal link](#internal-section-name)
+//	[internal link](#internal-section-name)
 //
 // ... would be described as:
 //
 // ```go
-// Link{
-//   Address:      "internal-section-name",
-//   ResolvedPath: "",
-//   Description:  "internal link",
-//   Type:         internalLink,
-// }
+//
+//	Link{
+//	  Address:      "internal-section-name",
+//	  ResolvedPath: "",
+//	  Description:  "internal link",
+//	  Type:         internalLink,
+//	}
 //
 // And a link like this:
 //
-//     [external link](/foo.md#section-name)
+//	[external link](/foo.md#section-name)
 //
 // ... would be described as:
 //
 // ```go
-// Link{
-//   Address:      "foo.md#section-name",
-//   ResolvedPath: "/docroot/foo.md",
-//   Description:  "external link",
-//   Type:         externalLink,
-// }
+//
+//	Link{
+//	  Address:      "foo.md#section-name",
+//	  ResolvedPath: "/docroot/foo.md",
+//	  Description:  "external link",
+//	  Type:         externalLink,
+//	}
+//
 // ```
 type Link struct {
 	// Document this link refers to.

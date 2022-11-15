@@ -281,7 +281,8 @@ static_check_go_arch_specific()
 		info "Installing ${linter}"
 
 		local linter_url=$(get_test_version "externals.golangci-lint.url")
-		local linter_version=$(get_test_version "externals.golangci-lint.version")
+		# local linter_version=$(get_test_version "externals.golangci-lint.version")
+		local linter_version="v1.45.2" # this work for tests repo
 
 		info "Forcing ${linter} version ${linter_version}"
 		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin "${linter_version}"
