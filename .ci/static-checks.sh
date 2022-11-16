@@ -281,7 +281,8 @@ static_check_go_arch_specific()
 		info "Installing ${linter}"
 
 		local linter_url=$(get_test_version "externals.golangci-lint.url")
-		local linter_version=$(get_test_version "externals.golangci-lint.version")
+		# local linter_version=$(get_test_version "externals.golangci-lint.version")
+		local linter_version="v1.45.2" # this work for tests repo
 
 		info "Forcing ${linter} version ${linter_version}"
 		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin "${linter_version}"
@@ -559,7 +560,7 @@ static_check_docs()
 		url=$(get_test_version "externals.xurls.url")
 
 		# xurls is very fussy about how it's built.
-		GO111MODULE=on go get "${url}@${version}"
+		go install "${url}@${version}"
 
 		command -v xurls &>/dev/null ||
 			die 'xurls not found. Ensure that "$GOPATH/bin" is in your $PATH'
@@ -915,41 +916,9 @@ static_check_vendor()
 		# This does not really verify the integrity of vendored code:
 		# https://github.com/golang/go/issues/27348
 		# Once that is added we need to add an extra step to verify vendored code.
-		GO111MODULE=on go mod verify
+		go mod verify
 		return
 	fi
-
-	# All vendor operations should modify this file
-	local vendor_ctl_file="Gopkg.lock"
-
-	[ -e "$vendor_ctl_file" ] || { info "No vendoring in this repository" && return; }
-
-	info "Checking vendored code is pristine"
-
-	files=$(get_pr_changed_file_details_full || true)
-
-	# Strip off status
-	files=$(echo "$files"|awk '{print $NF}')
-
-	if [ -n "$files" ]
-	then
-		# PR changed files so check if it changed any vendored files
-		vendor_files=$(echo "$files" | grep -E "\<vendor/" || true)
-
-		if [ -n "$vendor_files" ]
-		then
-			result=$(echo "$files" | egrep "\<${vendor_ctl_file}\>" || true)
-			[ -n "$result" ] || die "PR changes vendor files, but does not update ${vendor_ctl_file}"
-		fi
-	fi
-
-	info "Checking vendoring metadata"
-
-	# Get the vendoring tool
-	go get github.com/golang/dep/cmd/dep
-
-	# Check, but don't touch!
-	dep check
 }
 
 static_check_xml()
