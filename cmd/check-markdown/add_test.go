@@ -8,7 +8,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -24,7 +23,7 @@ const (
 )
 
 func createFile(file, contents string) error {
-	return ioutil.WriteFile(file, []byte(contents), testFileMode)
+	return os.WriteFile(file, []byte(contents), testFileMode)
 }
 
 // makeDirs creates two directories below the specified base directory: one is
@@ -137,7 +136,7 @@ func TestDocAddLink(t *testing.T) {
 func TestDocLinkAddrToPath(t *testing.T) {
 	assert := assert.New(t)
 
-	dir, err := ioutil.TempDir("", "")
+	dir, err := os.MkdirTemp("", "")
 	assert.NoError(err)
 
 	cwd, err := os.Getwd()
