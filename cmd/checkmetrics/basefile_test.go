@@ -5,7 +5,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -17,7 +16,7 @@ this is not a valid toml file
 `
 
 func createBadFile(filename string) error {
-	return ioutil.WriteFile(filename, []byte(badFileContents), os.FileMode(0640))
+	return os.WriteFile(filename, []byte(badFileContents), os.FileMode(0640))
 }
 
 const goodFileContents = `
@@ -41,14 +40,14 @@ maxval = 1.5
 `
 
 func createGoodFile(filename string) error {
-	return ioutil.WriteFile(filename, []byte(goodFileContents), os.FileMode(0640))
+	return os.WriteFile(filename, []byte(goodFileContents), os.FileMode(0640))
 }
 
 func TestNewBasefile(t *testing.T) {
 
 	assert := assert.New(t)
 
-	tmpdir, err := ioutil.TempDir("", "cm-")
+	tmpdir, err := os.MkdirTemp("", "cm-")
 	assert.NoError(err)
 	defer os.RemoveAll(tmpdir)
 
