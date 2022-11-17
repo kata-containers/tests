@@ -43,10 +43,10 @@ externals:
   description: "Third-party projects used specifically for testing"
 
   flannel:
-    url: "https://github.com/coreos/flannel"
-    version: "v0.14.0"
+    url: "https://github.com/flannel-io/flannel"
+    version: "v0.20.1"
     # yamllint disable-line rule:line-length
-    kube-flannel_url: "https://raw.githubusercontent.com/coreos/flannel/v0.14.0/Documentation/kube-flannel.yml"
+    kube-flannel_url: "https://raw.githubusercontent.com/flannel-io/flannel/v0.20.1/Documentation/kube-flannel.yml"
 
   xurls:
     description: |
