@@ -8,7 +8,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	bf "gopkg.in/russross/blackfriday.v2"
@@ -36,7 +36,7 @@ func (d *Doc) parse() error {
 
 // parseMarkdown parses the documents markdown.
 func (d *Doc) parseMarkdown() error {
-	bytes, err := ioutil.ReadFile(d.Name)
+	bytes, err := os.ReadFile(d.Name)
 	if err != nil {
 		return err
 	}
