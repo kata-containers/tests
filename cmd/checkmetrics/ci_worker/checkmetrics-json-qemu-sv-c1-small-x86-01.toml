@@ -68,7 +68,7 @@ description = "measure container average of blogbench read"
 # within (inclusive)
 checkvar = ".\"blogbench\".Results | .[] | .read.Result"
 checktype = "mean"
-midval = 55011.88
+midval = 49725.0
 minpercent = 10.0
 maxpercent = 10.0
 
