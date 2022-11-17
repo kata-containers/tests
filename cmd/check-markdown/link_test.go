@@ -8,7 +8,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -22,7 +21,7 @@ import (
 // constructor) and categorise() called. If not set, the constructor will be
 // used.
 func createLinkAndCategorise(assert *assert.Assertions, createLinkManually bool) {
-	dir, err := ioutil.TempDir("", "")
+	dir, err := os.MkdirTemp("", "")
 	assert.NoError(err)
 
 	cwd, err := os.Getwd()
@@ -142,7 +141,7 @@ func TestLinkCategorise(t *testing.T) {
 func TestLinkHandleImplicitREADME(t *testing.T) {
 	assert := assert.New(t)
 
-	dir, err := ioutil.TempDir("", "")
+	dir, err := os.MkdirTemp("", "")
 	assert.NoError(err)
 	defer os.RemoveAll(dir)
 
