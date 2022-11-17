@@ -135,6 +135,11 @@ delete_pods() {
 run_kbs() {
   KBS_DIR="$(mktemp -d /tmp/kbs.XXXXXXXX)"
   pushd "${KBS_DIR}"
+  
+  local sev_config="/opt/confidential-containers/share/defaults/kata-containers/configuration-qemu-sev.toml"
+  ipv4="$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)"  
+  sed -i 's/^\(kernel_params\s*=\s*\"\)\(.*\)\"$/\1\2 agent.aa_kbc_params\=online_sev_kbc::'${ipv4}':44444\"/' ${sev_config}
+
 
   # Retrieve simple-kbs repo and tag from versions.yaml
   local simple_kbs_url=$(get_version "externals.simple-kbs.url")
