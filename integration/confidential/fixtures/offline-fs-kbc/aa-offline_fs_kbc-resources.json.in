@@ -1,0 +1,7 @@
+{
+  "Policy": "${POLICY}",
+  "Sigstore Config": "${SIGSTORE_CONFIG}",
+  "GPG Keyring": "${GPG_KEYRING}",
+  "Cosign Key": "${COSIGN_KEY}",
+  "Credential": "${CREDENTIAL}"
+}
