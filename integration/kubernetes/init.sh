@@ -30,11 +30,6 @@ untaint_node() {
 	# Enable the master node to be able to schedule pods.
 	local node_name="$(hostname | awk '{print tolower($0)}')"
 	local get_taints="kubectl get 'node/${node_name}' -o jsonpath='{.spec.taints}'"
-	if eval $get_taints | grep -q 'NoSchedule'; then
-		info "Taint 'NoSchedule' is found. Untaint the node so pods can be scheduled."
-		kubectl taint nodes "${node_name}" \
-			node-role.kubernetes.io/master:NoSchedule-
-	fi
 	if eval $get_taints | grep -q 'control-plane'; then
 		info "Taint 'control-plane' is found. Untaint the node so pods can be scheduled."
 		kubectl taint nodes "${node_name}" \
