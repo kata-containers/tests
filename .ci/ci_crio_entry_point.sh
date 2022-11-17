@@ -121,10 +121,6 @@ cd "${katacontainers_repo_dir}"
 # Install yq
 ${GOPATH}/src/${tests_repo}/.ci/install_yq.sh
 
-# CRI-O switched to using go 1.18+
-golang_version="1.18.1"
-yq w -i versions.yaml languages.golang.meta.newest-version "${golang_version}"
-
 critools_version="${branch_release_number}.0"
 [ ${critools_version} == "1.24.0" ] && critools_version="1.24.2"
 echo "Using critools ${critools_version}"
