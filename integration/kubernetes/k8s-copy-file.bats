@@ -78,4 +78,6 @@ teardown() {
 
 	rm -f "$file_name"
 	kubectl delete pod "$pod_name"
+
+	rm -f "$pod_config"
 }

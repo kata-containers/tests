@@ -87,9 +87,19 @@ test_runk() {
     local cmd='[ "STOPPED" == "$(sudo ctr t ls | grep ${CONTAINER_ID} | awk "{print \$3}")" ]'
     waitForProcess 10 1 "${cmd}" || die "failed to kill task"
 
-    echo "check the container is stopped, and delete it"
+    echo "check the container is stopped"
     # there is only title line of ps command
     [ "1" == "$(sudo ctr t ps ${CONTAINER_ID} | wc -l)" ] || die "kill command failed"
+
+    # High-level container runtimes such as containerd call the kill command with
+    # --all option in order to terminate all processes inside the container
+    # even if the container already is stopped. Hence, a low-level runtime
+    # should allow kill --all regardless of the container state like runc.
+    echo "test kill --all is allowed regardless of the container state"
+    sudo ctr t kill --signal SIGKILL ${CONTAINER_ID} && die "kill should fail"
+    sudo ctr t kill --signal SIGKILL --all ${CONTAINER_ID} || die "kill --all should not fail"
+
+    echo "delete the container"
     sudo ctr t rm ${CONTAINER_ID} || die "failed to delete task"
     [ -z "$(sudo ctr t ls | grep ${CONTAINER_ID})" ] || die "failed to delete task"
     sudo ctr c rm ${CONTAINER_ID} || die "failed to delete container"

@@ -1,14 +1,12 @@
 // Copyright (c) 2021 Intel Corporation
 //
 // SPDX-License-Identifier: Apache-2.0
-//
 package main
 
 import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -153,7 +151,7 @@ func (c fioTestConfig) run() (result fioResult, err error) {
 	outputFile := path.Join(testDir, "output.json")
 	log.Infof("Store results output in : %s", outputFile)
 
-	err = ioutil.WriteFile(outputFile, []byte(output), 0644)
+	err = os.WriteFile(outputFile, []byte(output), 0644)
 	if err != nil {
 		return result, err
 	}
@@ -186,7 +184,7 @@ func runFioJobs(testDirPath string, cfg fioTestConfig) (results []fioResult, err
 		return results, err
 	}
 
-	files, err := ioutil.ReadDir(fioJobsDir)
+	files, err := os.ReadDir(fioJobsDir)
 	if err != nil {
 		log.Fatal(err)
 		return results, err
