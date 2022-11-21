@@ -59,12 +59,19 @@ install_from_branch() {
 	warn "Using patched Confidential Computing containerd version: see https://${containerd_repo}/tree/${containerd_branch}"
 	echo "Trying to install containerd from a branch"
 	(
-		go get -d "${containerd_repo}"
-		cd "${GOPATH}/src/${containerd_repo}" >>/dev/null
-		git config --global --add safe.directory "${GOPATH}/src/${containerd_repo}"
-		git fetch
+		original_containerd_repo="github.com/containerd/containerd"
+		git clone "https://${original_containerd_repo}.git" "${GOPATH}/src/${original_containerd_repo}"
+
+		add_repo_to_git_safe_directory "${GOPATH}/src/${original_containerd_repo}"
+
+		cd "${GOPATH}/src/${original_containerd_repo}"
+
+		git remote add dev https://${containerd_repo}.git
+		git remote update
+
 		git checkout "${containerd_branch}"
-		sudo -E PATH="$PATH" make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
+
+		make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
 		# SH: The PR containerd version might not match the version.yaml one, so get from build
 		containerd_version=$(_output/cri/bin/containerd --version | awk '{ print substr($3,2); }')
 		tarball_name="cri-containerd-cni-${containerd_version}-${CONTAINERD_OS}-${CONTAINERD_ARCH}.tar.gz"
