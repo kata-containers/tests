@@ -90,7 +90,6 @@ func (d *Doc) addHeading(heading Heading) error {
 // - the same description and the same address.
 // - the same description but with different addresses.
 // - different descriptions but with the same address.
-//
 func (d *Doc) addLink(link Link) error {
 	addr := link.Address
 

@@ -31,6 +31,7 @@ then
 fi
 
 crio_repository="github.com/cri-o/cri-o"
+crio_repository_git="https://${crio_repository}.git"
 crio_repository_path="$GOPATH/src/${crio_repository}"
 
 img_file=""
@@ -45,7 +46,8 @@ check_processes
 
 # Clone CRI-O repo if it is not already present.
 if [ ! -d "${crio_repository_path}" ]; then
-	go get -d "${crio_repository}" || true
+	mkdir -p "${crio_repository_path}"
+	git clone ${crio_repository_git} "${crio_repository_path}"
 fi
 
 # If the change we are testing does not come from CRI-O repository,

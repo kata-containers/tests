@@ -49,11 +49,13 @@ CI=${CI:-""}
 
 containerd_shim_path="$(command -v containerd-shim)"
 readonly cri_containerd_repo=$(get_version "externals.containerd.url")
+readonly cri_containerd_repo_git="https://${cri_containerd_repo}.git"
 
 #containerd config file
 readonly tmp_dir=$(mktemp -t -d test-cri-containerd.XXXX)
 export REPORT_DIR="${tmp_dir}"
 readonly CONTAINERD_CONFIG_FILE="${tmp_dir}/test-containerd-config"
+readonly CONTAINERD_CONFIG_FILE_TEMP="${CONTAINERD_CONFIG_FILE}.temp"
 readonly default_containerd_config="/etc/containerd/config.toml"
 readonly default_containerd_config_backup="$CONTAINERD_CONFIG_FILE.backup"
 readonly kata_config="/etc/kata-containers/configuration.toml"
@@ -176,13 +178,16 @@ check_daemon_setup() {
 	#restart docker service as TestImageLoad depends on it
 	[ -z "${USE_PODMAN:-}" ] && restart_docker_service
 
+	# containerd cri-integration will modify the passed in config file. Let's
+	# give it a temp one.
+	cp $CONTAINERD_CONFIG_FILE $CONTAINERD_CONFIG_FILE_TEMP
 	# in some distros(AlibabaCloud), there is no btrfs-devel package available,
 	# so pass GO_BUILDTAGS="no_btrfs" to make to not use btrfs.
 	sudo -E PATH="${PATH}:/usr/local/bin" \
 		REPORT_DIR="${REPORT_DIR}" \
 		FOCUS="TestImageLoad" \
 		RUNTIME="" \
-		CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE" \
+		CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE_TEMP" \
 		make GO_BUILDTAGS="no_btrfs" -e cri-integration
 }
 
@@ -459,7 +464,10 @@ main() {
 	# make sure cri-containerd test install the proper critest version its testing
 	rm -f "${CRITEST}"
 
-	go get -d ${cri_containerd_repo}
+	if [ ! -d "${GOPATH}/src/${cri_containerd_repo}" ]; then
+		mkdir -p "${GOPATH}/src/${cri_containerd_repo}"
+		git clone ${cri_containerd_repo_git} "${GOPATH}/src/${cri_containerd_repo}"
+	fi
 	pushd "${GOPATH}/src/${cri_containerd_repo}"
 
 	git reset HEAD
@@ -507,11 +515,14 @@ main() {
 	# so pass GO_BUILDTAGS="no_btrfs" to make to not use btrfs.
 	for t in "${passing_test[@]}"
 	do
+		# containerd cri-integration will modify the passed in config file. Let's
+		# give it a temp one.
+		cp $CONTAINERD_CONFIG_FILE $CONTAINERD_CONFIG_FILE_TEMP
 		sudo -E PATH="${PATH}:/usr/local/bin" \
 			REPORT_DIR="${REPORT_DIR}" \
 			FOCUS="${t}" \
 			RUNTIME="" \
-			CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE" \
+			CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE_TEMP" \
 			make GO_BUILDTAGS="no_btrfs" -e cri-integration
 	done
 

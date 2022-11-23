@@ -40,11 +40,12 @@ install_from_source() {
 	echo "Trying to install containerd from source"
 	(
 		containerd_repo=$(get_version "externals.containerd.url")
-		go get "${containerd_repo}"
-		cd "${GOPATH}/src/${containerd_repo}" >>/dev/null
+		cd ${GOPATH}/src/
+		git clone "https://${containerd_repo}.git" "${GOPATH}/src/${containerd_repo}"
 
 		add_repo_to_git_safe_directory "${GOPATH}/src/${containerd_repo}"
 
+		cd "${GOPATH}/src/${containerd_repo}"
 		git fetch
 		git checkout "${containerd_tarball_version}"
 		make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
@@ -58,12 +59,19 @@ install_from_branch() {
 	warn "Using patched Confidential Computing containerd version: see https://${containerd_repo}/tree/${containerd_branch}"
 	echo "Trying to install containerd from a branch"
 	(
-		go get -d "${containerd_repo}"
-		cd "${GOPATH}/src/${containerd_repo}" >>/dev/null
-		git config --global --add safe.directory "${GOPATH}/src/${containerd_repo}"
-		git fetch
+		original_containerd_repo="github.com/containerd/containerd"
+		git clone "https://${original_containerd_repo}.git" "${GOPATH}/src/${original_containerd_repo}"
+
+		add_repo_to_git_safe_directory "${GOPATH}/src/${original_containerd_repo}"
+
+		cd "${GOPATH}/src/${original_containerd_repo}"
+
+		git remote add dev https://${containerd_repo}.git
+		git remote update
+
 		git checkout "${containerd_branch}"
-		sudo -E PATH="$PATH" make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
+
+		make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
 		# SH: The PR containerd version might not match the version.yaml one, so get from build
 		containerd_version=$(_output/cri/bin/containerd --version | awk '{ print substr($3,2); }')
 		tarball_name="cri-containerd-cni-${containerd_version}-${CONTAINERD_OS}-${CONTAINERD_ARCH}.tar.gz"
@@ -87,11 +95,22 @@ install_from_static_tarball() {
 	sudo tar -xvf "${tarball_name}" -C /
 }
 
+install_cri-tools() {
+crictl_repo=$(get_version "externals.critools.url")
+crictl_version=$(get_version "externals.critools.version")
+crictl_tag_prefix="v"
+
+crictl_url="${crictl_repo}/releases/download/v${crictl_version}/crictl-${crictl_tag_prefix}${crictl_version}-linux-$(${script_dir}/kata-arch.sh -g).tar.gz"
+curl -Ls "$crictl_url" | sudo tar xfz - -C /usr/local/bin
+}
+
 # For 'CCv0' we are pulling in a branch of our confidential-containers fork of containerd with our custom code
 if [ -n "${containerd_branch}" ]; then
   install_from_branch
 else
   install_from_static_tarball || install_from_source
 fi
+
+install_cri-tools
 
 sudo systemctl daemon-reload
