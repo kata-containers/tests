@@ -11,7 +11,7 @@ echo "Configure CNI"
 cni_net_config_path="/etc/cni/net.d"
 sudo mkdir -p ${cni_net_config_path}
 
-sudo sh -c 'cat >/etc/cni/net.d/01-mynet.conf <<-EOF
+sudo sh -c 'cat >/etc/cni/net.d/10-mynet.conf <<-EOF
 {
   "cniVersion": "1.0.0",
   "name": "containerd-net",
