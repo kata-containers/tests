@@ -108,6 +108,14 @@ build_custom_stress_image()
 			waitForProcess 15 3 "curl http://localhost:${registry_port}"
 			sudo -E "${container_engine}" push "${stress_image}"
 		fi
+		if [ "$(uname -m)" != "s390x" ] && [ "$(uname -m)" != "ppc64le" ] && [ "$(uname -m)" != "aarch64" ] && [ "$ID" != "fedora" }; then
+			pushd "${GOPATH}/src/github.com/kata-containers/tests/metrics/density/sysbench-dockerfile"
+			registry_port="5000"
+			sysbench_image="localhost:${registry_port}/sysbench-kata:latest"
+			sudo -E "${container_engine}" build . -t "${sysbench_image}"
+			sudo -E "${container_engine}" push "${sysbench_image}"
+			popd
+		fi
 	fi
 }
 
