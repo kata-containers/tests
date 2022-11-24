@@ -484,16 +484,7 @@ main() {
 
 	TestContainerSwap
 
-	passing_test=(
-	TestContainerStats
-	TestContainerRestart
-	TestContainerListStatsWithIdFilter
-	TestContainerListStatsWithIdSandboxIdFilter
-	TestDuplicateName
-	TestImageLoad
-	TestImageFSInfo
-	TestSandboxCleanRemove
-	)
+	passing_test="TestContainerStats|TestContainerRestart|TestContainerListStatsWithIdFilter|TestContainerListStatsWithIdSandboxIdFilter|TestDuplicateName|TestImageLoad|TestImageFSInfo|TestSandboxCleanRemove"
 
 	if [[ "${KATA_HYPERVISOR}" == "cloud-hypervisor" || \
 		"${KATA_HYPERVISOR}" == "qemu" ]]; then
@@ -501,23 +492,20 @@ main() {
 		info "${KATA_HYPERVISOR} fails with TestContainerListStatsWithSandboxIdFilter }"
 		info "see ${issue}"
 	else
-		passing_test+=("TestContainerListStatsWithSandboxIdFilter")
+		passing_test="${passing_test}|TestContainerListStatsWithSandboxIdFilter"
 	fi
 
 	# in some distros(AlibabaCloud), there is no btrfs-devel package available,
 	# so pass GO_BUILDTAGS="no_btrfs" to make to not use btrfs.
-	for t in "${passing_test[@]}"
-	do
-		# containerd cri-integration will modify the passed in config file. Let's
-		# give it a temp one.
-		cp $CONTAINERD_CONFIG_FILE $CONTAINERD_CONFIG_FILE_TEMP
-		sudo -E PATH="${PATH}:/usr/local/bin" \
-			REPORT_DIR="${REPORT_DIR}" \
-			FOCUS="${t}" \
-			RUNTIME="" \
-			CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE_TEMP" \
-			make GO_BUILDTAGS="no_btrfs" -e cri-integration
-	done
+	# containerd cri-integration will modify the passed in config file. Let's
+	# give it a temp one.
+	cp $CONTAINERD_CONFIG_FILE $CONTAINERD_CONFIG_FILE_TEMP
+	sudo -E PATH="${PATH}:/usr/local/bin" \
+		REPORT_DIR="${REPORT_DIR}" \
+		FOCUS="^(${passing_test})$" \
+		RUNTIME="" \
+		CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE_TEMP" \
+		make GO_BUILDTAGS="no_btrfs" -e cri-integration
 
 	# TODO: runtime-rs doesn't support memory update currently
 	if [ "$KATA_HYPERVISOR" != "dragonball" ]; then
