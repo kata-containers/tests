@@ -75,7 +75,7 @@ function setup_nydus() {
 		--log-level debug \
 		--root /var/lib/containerd/io.containerd.snapshotter.v1.nydus \
 		--cache-dir /var/lib/nydus/cache \
-		--nydusd-path /usr/local/bin/nydusd-fusedev \
+		--nydusd-path /usr/local/bin/nydusd \
 		--nydusimg-path /usr/local/bin/nydus-image \
 		--disable-cache-manager true \
 		--enable-nydus-overlayfs true \
@@ -101,7 +101,7 @@ function config_kata() {
 
 	if [ "$KATA_HYPERVISOR" != "dragonball" ]; then
 		sudo sed -i 's|^shared_fs.*|shared_fs = "virtio-fs-nydus"|g' "${SYSCONFIG_FILE}"
-		sudo sed -i 's|^virtio_fs_daemon.*|virtio_fs_daemon = "/usr/local/bin/nydusd-virtiofs"|g' "${SYSCONFIG_FILE}"
+		sudo sed -i 's|^virtio_fs_daemon.*|virtio_fs_daemon = "/usr/local/bin/nydusd"|g' "${SYSCONFIG_FILE}"
 	fi
 
 	sudo sed -i 's|^virtio_fs_extra_args.*|virtio_fs_extra_args = []|g' "${SYSCONFIG_FILE}"
@@ -182,7 +182,7 @@ function teardown() {
 	kill -9 $(pidof $bin) || true
 	[ "$(pidof $bin)" == "" ] || die "$bin is running"
 
-	bin=nydusd-fusedev
+	bin=nydusd
 	kill -9 $(pidof $bin) || true
 	[ "$(pidof $bin)" == "" ] || die "$bin is running"
 
