@@ -12,16 +12,6 @@ SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 
 ${SCRIPT_PATH}/../../../.ci/install_cri_containerd.sh
 
-cni_bin_path="/opt/cni"
-
-# Check if cni plugin binary is already installed, if so skip installation and 
-# simply configure cni.
-if [ -f "${cni_bin_path}/bridge" ]; then
-	${SCRIPT_PATH}/../../../.ci/configure_cni.sh
-else
-	${SCRIPT_PATH}/../../../.ci/install_cni_plugins.sh
-fi
-
 export SHIMV2_TEST=true
 
 echo "========================================"
