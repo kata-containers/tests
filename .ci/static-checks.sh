@@ -434,6 +434,7 @@ static_check_license_headers()
 			--exclude="*.ipynb" \
 			--exclude="*.jpg" \
 			--exclude="*.json" \
+			--exclude="*.json.in" \
 			--exclude="LICENSE*" \
 			--exclude="THIRD-PARTY" \
 			--exclude="*.md" \
