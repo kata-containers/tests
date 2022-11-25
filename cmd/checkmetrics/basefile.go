@@ -6,7 +6,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/BurntSushi/toml"
 	log "github.com/sirupsen/logrus"
@@ -25,7 +25,7 @@ func newBasefile(file string) (*baseFile, error) {
 		return nil, fmt.Errorf("missing baseline reference file")
 	}
 
-	configuration, err := ioutil.ReadFile(file)
+	configuration, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}

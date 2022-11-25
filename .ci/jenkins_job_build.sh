@@ -158,12 +158,6 @@ branch=
 # the Jenkins GithubPullRequestBuilder Plugin
 [ -n "${ghprbPullId}" ] && [ -n "${ghprbTargetBranch}" ] && export pr_number="${ghprbPullId}"
 
-# Install go after repository is cloned and checkout to PR
-# This ensures:
-# - We have latest changes in install_go.sh
-# - We got get changes if versions.yaml changed.
-"${GOPATH}/src/${tests_repo}/.ci/install_go.sh" -p -f
-
 if [ -n "$pr_number" ]; then
 	export branch="${ghprbTargetBranch}"
 	export pr_branch="PR_${pr_number}"
@@ -173,6 +167,12 @@ fi
 
 # Resolve kata dependencies
 "${GOPATH}/src/${tests_repo}/.ci/resolve-kata-dependencies.sh"
+
+# Install go after repository is cloned and checkout to PR
+# This ensures:
+# - We have latest changes in install_go.sh
+# - We got get changes if versions.yaml changed.
+"${GOPATH}/src/${tests_repo}/.ci/install_go.sh" -p -f
 
 # Check if we can fastpath return/skip the CI
 # Work around the 'set -e' dying if the check fails by using a bash
@@ -220,7 +220,8 @@ run_unit_test() {
 		echo "Running unit tests"
 		sudo chown -R "$USER" "$HOME/.cargo" || true
 		"$ci_dir_name/install_rust.sh" && source "$HOME/.cargo/env"
-		[ ! -d "${katacontainers_repo_dir}" ] && go get -d "${katacontainers_repo}" || true
+		clone_katacontainers_repo
+
 		pushd "${GOPATH}/src/${katacontainers_repo}"
 		echo "Installing libseccomp library from sources"
 		libseccomp_install_dir=$(mktemp -d -t libseccomp.XXXXXXXXXX)
@@ -273,7 +274,8 @@ test_snap_build() {
 	if [[ "${ID}" == "ubuntu" && "$(uname -m)" != "x86_64" ]]; then
 		echo "Test snap build"
 		sudo apt install -y snapcraft
-		[ ! -d "${katacontainers_repo_dir}" ] && go get -d "${katacontainers_repo}" || true
+		clone_katacontainers_repo
+
 		pushd "${katacontainers_repo_dir}"
 		sudo snapcraft snap --debug --destructive-mode
 		# PREFIX is changed in snap build, change it back

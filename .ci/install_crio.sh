@@ -17,18 +17,14 @@ echo "Install go-md2man"
 go_md2man_url=$(get_test_version "externals.go-md2man.url")
 go_md2man_version=$(get_test_version "externals.go-md2man.version")
 go_md2man_repo=${go_md2man_url/https:\/\/}
-go get -d "${go_md2man_repo}"
-pushd "$GOPATH/src/${go_md2man_repo}"
-git checkout "${go_md2man_version}"
-go build
-go install
-popd
+go install "${go_md2man_repo}"@"${go_md2man_version}"
 
 echo "Install conmon"
 conmon_url=$(get_version "externals.conmon.url")
 conmon_version=$(get_version "externals.conmon.version")
 conmon_repo=${conmon_url/https:\/\/}
-go get -d "${conmon_repo}" || true
+mkdir -p "$GOPATH/src/${conmon_repo}"
+git clone "https://${conmon_repo}.git" "$GOPATH/src/${conmon_repo}" || true
 pushd "$GOPATH/src/${conmon_repo}"
 git checkout "${conmon_version}"
 make
@@ -101,6 +97,7 @@ echo "Get CRI-O sources"
 kubernetes_sigs_org="github.com/kubernetes-sigs"
 ghprbGhRepository="${ghprbGhRepository:-}"
 crio_repo=$(get_version "externals.crio.url")
+crio_repo_git="${crio_repo}.git"
 # remove https:// from the url
 crio_repo="${crio_repo#*//}"
 
@@ -109,7 +106,8 @@ crictl_repo=$(get_version "externals.critools.url")
 crictl_version=$(get_version "externals.critools.version")
 crictl_tag_prefix="v"
 
-go get -d "$crio_repo" || true
+mkdir -p "${GOPATH}/src/${crio_repo}"
+git clone "$crio_repo_git" "${GOPATH}/src/${crio_repo}" || true
 
 if [ "$ghprbGhRepository" != "${crio_repo/github.com\/}" ]
 then
@@ -142,7 +140,8 @@ curl -Ls "$crictl_url" | sudo tar xfz - -C /usr/local/bin
 
 echo "Install runc for CRI-O"
 runc_version=$(get_version "externals.runc.version")
-go get -d github.com/opencontainers/runc
+mkdir -p "${GOPATH}/src/github.com/opencontainers/runc"
+git clone https://github.com/opencontainers/runc.git "${GOPATH}/src/github.com/opencontainers/runc"
 pushd "${GOPATH}/src/github.com/opencontainers/runc"
 git checkout "$runc_version"
 typeset -a build_union

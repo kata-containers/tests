@@ -7,7 +7,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"sort"
 
@@ -17,7 +16,7 @@ import (
 const fileMode os.FileMode = 0600
 
 func readYAML(file string) (*LabelsFile, error) {
-	bytes, err := ioutil.ReadFile(file)
+	bytes, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +47,7 @@ func writeYAML(lf *LabelsFile, file string) error {
 		return err
 	}
 
-	return ioutil.WriteFile(file, bytes, fileMode)
+	return os.WriteFile(file, bytes, fileMode)
 }
 
 func checkYAML(file string) error {

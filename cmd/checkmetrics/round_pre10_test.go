@@ -1,7 +1,9 @@
 // Copyright (c) 2018 Intel Corporation
 //
 // SPDX-License-Identifier: Apache-2.0
+//go:build !go1.10
 // +build !go1.10
+
 //
 // The go library only got math.Round in go1.10. If we are building
 // with a version of Go older than that then add our own Round routine
@@ -20,6 +22,7 @@ import (
 // Round returns the nearest integer, rounding half away from zero.
 //
 // Special cases are:
+//
 //	Round(±0) = ±0
 //	Round(±Inf) = ±Inf
 //	Round(NaN) = NaN

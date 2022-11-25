@@ -6,7 +6,6 @@ package main
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -18,7 +17,7 @@ this is not a valid json file
 `
 
 func CreateBadFile(filename string) error {
-	return ioutil.WriteFile(filename, []byte(BadFileContents), os.FileMode(0640))
+	return os.WriteFile(filename, []byte(BadFileContents), os.FileMode(0640))
 }
 
 const GoodFileContents = `
@@ -105,14 +104,14 @@ const GoodFileContents = `
 `
 
 func CreateFile(filename string, contents string) error {
-	return ioutil.WriteFile(filename, []byte(contents), os.FileMode(0640))
+	return os.WriteFile(filename, []byte(contents), os.FileMode(0640))
 }
 
 func TestLoad(t *testing.T) {
 	assert := assert.New(t)
 
 	// Set up and create a json results file
-	tmpdir, err := ioutil.TempDir("", "cm-")
+	tmpdir, err := os.MkdirTemp("", "cm-")
 	assert.NoError(err)
 	defer os.RemoveAll(tmpdir)
 
