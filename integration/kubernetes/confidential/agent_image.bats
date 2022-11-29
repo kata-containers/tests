@@ -18,6 +18,9 @@ image_signed_protected_other="quay.io/kata-containers/confidential-containers:ot
 image_unsigned_protected="quay.io/kata-containers/confidential-containers:unsigned"
 image_unsigned_unprotected="quay.io/prometheus/busybox:latest"
 
+## Authenticated Image
+image_authenticated="quay.io/kata-containers/confidential-containers-auth:nginx"
+
 original_kernel_params=$(get_kernel_params)
 # Allow to configure the runtimeClassName on pod configuration.
 RUNTIMECLASS="${RUNTIMECLASS:-kata}"
@@ -188,6 +191,34 @@ assert_logs_contain() {
 	else
 		assert_logs_contain 'Validate image failed: \[PublicKeyVerifier { key: CosignVerificationKey'
 	fi
+}
+
+
+@test "$test_tag Test pull an unencrypted unsigned image from an authenticated registry with correct credentials" {
+	setup_credentials_files "quay.io/kata-containers/confidential-containers-auth"
+
+	pod_config="$(new_pod_config "${image_authenticated}")"
+	echo $pod_config
+
+	create_test_pod
+}
+
+@test "$test_tag Test cannot pull an image from an authenticated registry with incorrect credentials" {
+	REGISTRY_CREDENTIAL_ENCODED="QXJhbmRvbXF1YXl0ZXN0YWNjb3VudHRoYXRkb2VzbnRleGlzdDpwYXNzd29yZAo=" setup_credentials_files "quay.io/kata-containers/confidential-containers-auth"
+
+	pod_config="$(new_pod_config "${image_authenticated}")"
+	echo "Pod config: ${pod_config}"
+
+	assert_pod_fail "${pod_config}"
+	assert_logs_contain 'failed to pull manifest Authentication failure'
+}
+
+@test "$test_tag Test cannot pull an image from an authenticated registry without credentials" {
+	pod_config="$(new_pod_config "${image_authenticated}")"
+	echo "Pod config: ${pod_config}"
+
+	assert_pod_fail "${pod_config}"
+	assert_logs_contain 'failed to pull manifest Not authorized'
 }
 
 teardown() {

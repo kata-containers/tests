@@ -275,7 +275,6 @@ setup_cosign_signatures_files() {
 }
 
 setup_signature_files() {
-	echo "setup signature files"
 	if [ "${SKOPEO:-}" = "yes" ]; then
 		setup_skopeo_signature_files_in_guest
 	else
@@ -293,4 +292,24 @@ setup_http_proxy() {
 		echo "Enable agent https proxy"
 		add_kernel_params "agent.https_proxy=$https_proxy"
 	fi
+}
+
+# Sets up the credentials file in the guest image for the offline_fs_kbc
+# Note: currrently doesn't configure the signature information, just credentials
+#
+# Parameters:
+#	$1 - The container registry e.g. quay.io/kata-containers/confidential-containers-auth
+#
+# Environment variables:
+#	REGISTRY_CREDENTIAL_ENCODED - The base64 encoded version of the registry credentials
+#	e.g. echo "username:password" | base64
+#
+setup_credentials_files() {
+	add_kernel_params "agent.aa_kbc_params=offline_fs_kbc::null"
+
+	dest_dir="$(mktemp -t -d offline-fs-kbc-XXXXXXXX)"
+	dest_file=${dest_dir}/aa-offline_fs_kbc-resources.json
+	auth_json=$(REGISTRY=$1 CREDENTIALS="${REGISTRY_CREDENTIAL_ENCODED}" envsubst < "${SHARED_FIXTURES_DIR}/offline-fs-kbc/auth.json.in" | base64 -w 0)
+	CREDENTIAL="${auth_json}" envsubst < "${SHARED_FIXTURES_DIR}/offline-fs-kbc/aa-offline_fs_kbc-resources.json.in" > "${dest_file}"
+	cp_to_guest_img "etc" "${dest_file}"
 }
