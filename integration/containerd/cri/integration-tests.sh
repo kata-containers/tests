@@ -78,13 +78,6 @@ ci_config() {
 		fi
 	fi
 
-	if [ -n "${CI}" ]; then
-		(
-		echo "Install cni config"
-		${SCRIPT_PATH}/../../../.ci/configure_cni.sh
-		)
-	fi
-
 	echo "enable debug for kata-runtime"
 	sudo sed -i 's/^#enable_debug =/enable_debug =/g' ${kata_config}
 }
@@ -315,7 +308,8 @@ TestContainerMemoryUpdate() {
 
 getContainerSwapInfo() {
 	swap_size=$(($(crictl exec $cid cat /proc/meminfo | grep "SwapTotal:" | awk '{print $2}')*1024))
-	swappiness=$(crictl exec $cid cat /proc/sys/vm/swappiness)
+	# NOTE: these below two checks only works on cgroup v1
+	swappiness=$(crictl exec $cid cat /sys/fs/cgroup/memory/memory.swappiness)
 	swap_in_bytes=$(crictl exec $cid cat /sys/fs/cgroup/memory/memory.memsw.limit_in_bytes)
 }
 
@@ -325,6 +319,7 @@ TestContainerSwap() {
 	fi
 
 	local container_yaml=${REPORT_DIR}/container.yaml
+	local image="busybox:latest"
 
 	info "Test container with guest swap"
 
@@ -352,7 +347,7 @@ TestContainerSwap() {
 	# Test with swap device
 	cat << EOF > "${container_yaml}"
 metadata:
-  name: busybox-killed-vmm
+  name: busybox-swap
 annotations:
   io.katacontainers.container.resource.swappiness: "100"
   io.katacontainers.container.resource.swap_in_bytes: "1610612736"
@@ -364,26 +359,25 @@ image:
 command:
 - top
 EOF
+
 	testContainerStart 1
 	getContainerSwapInfo
+	testContainerStop
+
 	if [ $swappiness -ne 100 ]; then
-		testContainerStop
 		die "The VM swappiness $swappiness with swap device is not right"
 	fi
 	if [ $swap_in_bytes -ne 1610612736 ]; then
-		testContainerStop
 		die "The VM swap_in_bytes $swap_in_bytes with swap device is not right"
 	fi
 	if [ $swap_size -ne 536870912 ]; then
-		testContainerStop
 		die "The VM swap size $swap_size with swap device is not right"
 	fi
-	testContainerStop
 
 	# Test without swap_in_bytes
 	cat << EOF > "${container_yaml}"
 metadata:
-  name: busybox-killed-vmm
+  name: busybox-swap
 annotations:
   io.katacontainers.container.resource.swappiness: "100"
 linux:
@@ -394,27 +388,26 @@ image:
 command:
 - top
 EOF
+
 	testContainerStart 1
 	getContainerSwapInfo
+	testContainerStop
+
 	if [ $swappiness -ne 100 ]; then
-		testContainerStop
 		die "The VM swappiness $swappiness without swap_in_bytes is not right"
 	fi
 	# swap_in_bytes is not set, it should be a value that bigger than 1125899906842624
 	if [ $swap_in_bytes -lt 1125899906842624 ]; then
-		testContainerStop
 		die "The VM swap_in_bytes $swap_in_bytes without swap_in_bytes is not right"
 	fi
 	if [ $swap_size -ne 1073741824 ]; then
-		testContainerStop
 		die "The VM swap size $swap_size without swap_in_bytes is not right"
 	fi
-	testContainerStop
 
 	# Test without memory_limit_in_bytes
 	cat << EOF > "${container_yaml}"
 metadata:
-  name: busybox-killed-vmm
+  name: busybox-swap
 annotations:
   io.katacontainers.container.resource.swappiness: "100"
 image:
@@ -422,22 +415,21 @@ image:
 command:
 - top
 EOF
+
 	testContainerStart 1
 	getContainerSwapInfo
+	testContainerStop
+
 	if [ $swappiness -ne 100 ]; then
-		testContainerStop
 		die "The VM swappiness $swappiness without memory_limit_in_bytes is not right"
 	fi
 	# swap_in_bytes is not set, it should be a value that bigger than 1125899906842624
 	if [ $swap_in_bytes -lt 1125899906842624 ]; then
-		testContainerStop
 		die "The VM swap_in_bytes $swap_in_bytes without memory_limit_in_bytes is not right"
 	fi
 	if [ $swap_size -ne 2147483648 ]; then
-		testContainerStop
 		die "The VM swap size $swap_size without memory_limit_in_bytes is not right"
 	fi
-	testContainerStop
 
 	create_containerd_config "${containerd_runtime_test}"
 }
@@ -491,16 +483,9 @@ main() {
 
 	info "containerd(cri): Running cri-integration"
 
-	passing_test=(
-	TestContainerStats
-	TestContainerRestart
-	TestContainerListStatsWithIdFilter
-	TestContainerListStatsWithIdSandboxIdFilter
-	TestDuplicateName
-	TestImageLoad
-	TestImageFSInfo
-	TestSandboxCleanRemove
-	)
+	TestContainerSwap
+
+	passing_test="TestContainerStats|TestContainerRestart|TestContainerListStatsWithIdFilter|TestContainerListStatsWithIdSandboxIdFilter|TestDuplicateName|TestImageLoad|TestImageFSInfo|TestSandboxCleanRemove"
 
 	if [[ "${KATA_HYPERVISOR}" == "cloud-hypervisor" || \
 		"${KATA_HYPERVISOR}" == "qemu" ]]; then
@@ -508,23 +493,20 @@ main() {
 		info "${KATA_HYPERVISOR} fails with TestContainerListStatsWithSandboxIdFilter }"
 		info "see ${issue}"
 	else
-		passing_test+=("TestContainerListStatsWithSandboxIdFilter")
+		passing_test="${passing_test}|TestContainerListStatsWithSandboxIdFilter"
 	fi
 
 	# in some distros(AlibabaCloud), there is no btrfs-devel package available,
 	# so pass GO_BUILDTAGS="no_btrfs" to make to not use btrfs.
-	for t in "${passing_test[@]}"
-	do
-		# containerd cri-integration will modify the passed in config file. Let's
-		# give it a temp one.
-		cp $CONTAINERD_CONFIG_FILE $CONTAINERD_CONFIG_FILE_TEMP
-		sudo -E PATH="${PATH}:/usr/local/bin" \
-			REPORT_DIR="${REPORT_DIR}" \
-			FOCUS="${t}" \
-			RUNTIME="" \
-			CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE_TEMP" \
-			make GO_BUILDTAGS="no_btrfs" -e cri-integration
-	done
+	# containerd cri-integration will modify the passed in config file. Let's
+	# give it a temp one.
+	cp $CONTAINERD_CONFIG_FILE $CONTAINERD_CONFIG_FILE_TEMP
+	sudo -E PATH="${PATH}:/usr/local/bin" \
+		REPORT_DIR="${REPORT_DIR}" \
+		FOCUS="^(${passing_test})$" \
+		RUNTIME="" \
+		CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE_TEMP" \
+		make GO_BUILDTAGS="no_btrfs" -e cri-integration
 
 	# TODO: runtime-rs doesn't support memory update currently
 	if [ "$KATA_HYPERVISOR" != "dragonball" ]; then
