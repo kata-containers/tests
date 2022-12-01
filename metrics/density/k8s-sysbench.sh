@@ -7,6 +7,7 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -x
 
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 
@@ -31,7 +32,7 @@ function sysbench_memory() {
 	metrics_json_start_array
 	local json="$(cat << EOF
 	{
-		"memory-latency-sum": {
+		"memorylatencysum": {
 			"Result" : $memory_latency_sum,
 			"Units" : "ms"
 		}
