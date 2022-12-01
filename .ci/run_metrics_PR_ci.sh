@@ -105,6 +105,7 @@ run() {
 			bash network/latency_kubernetes/latency-network.sh
 			bash network/iperf3_kubernetes/k8s-network-metrics-iperf3.sh -a
 			bash storage/fio-k8s/fio-test-ci.sh
+			bash density/k8s-sysbench.sh
 			end_kubernetes
 			check_processes
 		else
