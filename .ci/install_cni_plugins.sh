@@ -18,7 +18,7 @@ cd plugins
 git checkout "$plugins_version"
 
 echo "Build CNI plugins"
-./build_linux.sh
+sudo -E "PATH=$PATH" ./build_linux.sh
 
 echo "Install CNI binaries"
 cni_bin_path="/opt/cni"
