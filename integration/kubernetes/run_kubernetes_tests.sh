@@ -125,6 +125,16 @@ fi
 
 pushd "$kubernetes_dir"
 info "Initialize the test environment"
+plugin_dir="/opt/cni/bin"
+if [ ! -f "${plugin_dir}/flannel" ]; then
+	die "Cannot start testing due to lack of plugin \"flannel\""
+fi
+if [ $(ls "${plugin_dir}" | wc -w) -gt 1 ]; then
+	info "Making backup for cni plugins..."
+	tar cvfz /opt/plugins-backup.tar.gz "${plugin_dir}"
+else
+	die "No plugins, but flannel"
+fi
 wait_init_retry="30"
 if ! bash ./init.sh; then
 	info "Environment initialization failed. Clean up and try again."

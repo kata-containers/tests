@@ -274,6 +274,10 @@ start_cri_runtime_service() {
 
 	sudo systemctl status "${cri}" --no-pager || \
 		die "Unable to start the ${cri} service"
+	if [ ! -f /opt/cni/bin/flannel ]; then
+		info "Plugin \"flannel\" not found, restoring it from backup"
+		tar xvfz /opt/plugins-backup.tar.gz -C /
+	fi
 }
 
 main() {
