@@ -60,6 +60,7 @@ install_from_branch() {
 	echo "Trying to install containerd from a branch"
 	(
 		original_containerd_repo="github.com/containerd/containerd"
+		sudo rm -rf "${GOPATH}/src/${original_containerd_repo}"
 		git clone "https://${original_containerd_repo}.git" "${GOPATH}/src/${original_containerd_repo}"
 
 		add_repo_to_git_safe_directory "${GOPATH}/src/${original_containerd_repo}"
@@ -71,7 +72,7 @@ install_from_branch() {
 
 		git checkout "${containerd_branch}"
 
-		make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
+		sudo -E PATH="$PATH" make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
 		# SH: The PR containerd version might not match the version.yaml one, so get from build
 		containerd_version=$(_output/cri/bin/containerd --version | awk '{ print substr($3,2); }')
 		tarball_name="cri-containerd-cni-${containerd_version}-${CONTAINERD_OS}-${CONTAINERD_ARCH}.tar.gz"
