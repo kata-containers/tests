@@ -7,6 +7,8 @@
 load "${BATS_TEST_DIRNAME}/../../.ci/lib.sh"
 load "${BATS_TEST_DIRNAME}/tests_common.sh"
 source "/etc/os-release" || source "/usr/lib/os-release"
+issue="https://github.com/kata-containers/tests/issues/4474"
+cgroupv2_issue="https://github.com/kata-containers/tests/issues/5218"
 
 setup() {
 	extract_kata_env
@@ -45,6 +47,8 @@ setup() {
 }
 
 @test "Hugepages" {
+    [ "${NAME}" == "Ubuntu" ] && [ "$(echo "${VERSION_ID} >= 22.04" | bc -q)" == "1" ] && skip "hugepages test is not working with cgroupsv2 see $cgroupv2_issue"
+
 	# Create pod
 	kubectl create -f "${pod_config_dir}/test_hugepage.yaml"
 
@@ -57,7 +61,7 @@ setup() {
 
 
 @test "Hugepages and sandbox cgroup" {
-	skip "test not working see: https://github.com/kata-containers/tests/issues/4474"
+	skip "test not working see: $issue"
 
 	# Enable sandbox_cgroup_only
 	# And set default memory to a low value that is not smaller then container's request
