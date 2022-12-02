@@ -15,6 +15,7 @@ CRI_RUNTIME="${CRI_RUNTIME:-crio}"
 
 main () {
 	local cri_runtime_socket=""
+	local keep_cni_bin="${1:-false}"
 
 	case "${CRI_RUNTIME}" in
 	containerd)
@@ -48,7 +49,7 @@ main () {
 
 	# if CI run in bare-metal, we need a set of extra clean
 	if [ "${BAREMETAL}" == true ] && [ -f "${SCRIPT_PATH}/cleanup_bare_metal_env.sh" ]; then
-		bash -f "${SCRIPT_PATH}/cleanup_bare_metal_env.sh"
+		bash -f "${SCRIPT_PATH}/cleanup_bare_metal_env.sh ${keep_cni_bin}"
 	fi
 
 	info "Check no kata processes are left behind after reseting kubernetes"
