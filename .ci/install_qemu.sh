@@ -72,8 +72,6 @@ build_and_install_qemu_for_cc() {
 	case "${qemu_type}" in
 		tdx)
 			artifact="${qemu_type}-${artifact}"
-
-			"${cidir}/install_tdvf.sh"
 			;;
 		vanilla) ;;
 		*)
