@@ -21,10 +21,6 @@ main() {
 
 	[ "${KATA_BUILD_CC}" == "yes" ] || \
 		sudo ln -sf /opt/kata/bin/cloud-hypervisor /usr/bin/cloud-hypervisor
-
-	if [ "${TEE_TYPE:-}" == "tdx" ]; then
-		"${cidir}/install_td_shim.sh"
-	fi
 }
 
 main "$@"
