@@ -4,9 +4,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-set -o errexit
-set -o nounset
-set -o pipefail
+#set -o errexit
+#set -o nounset
+#set -o pipefail
 set -x
 
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
@@ -60,8 +60,9 @@ function sysbench_start_deployment() {
 	export pod_name="test-sysbench"
 
 	kubectl create -f "${SCRIPT_PATH}/runtimeclass_workloads/sysbench-pod.yaml"
-	kubectl wait --for=condition=Ready --timeout=120s pod "$pod_name"
-
+	kubectl describe pods
+	kubectl wait --for=condition=Ready --timeout=500s pod "$pod_name"
+	kubectl describe pods
 }
 
 function sysbench_cleanup() {
