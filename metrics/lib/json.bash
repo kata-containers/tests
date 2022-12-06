@@ -9,6 +9,9 @@
 declare -a json_result_array
 declare -a json_array_array
 
+JSON_TX_ONELINE="${JSON_TX_ONELINE:-}"
+JSON_URL="${JSON_URL:-}"
+
 # Generate a timestamp in nanoseconds since 1st Jan 1970
 timestamp_ns() {
 	local t
