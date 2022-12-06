@@ -23,7 +23,7 @@ image_unsigned_protected="quay.io/kata-containers/confidential-containers:unsign
 image_unsigned_unprotected="quay.io/prometheus/busybox:latest"
 
 ## Authenticated Image
-image_authenticated="quay.io/kata-containers/confidential-containers-auth:nginx"
+image_authenticated="quay.io/kata-containers/confidential-containers-auth:test"
 
 original_kernel_params=$(get_kernel_params)
 # Allow to configure the runtimeClassName on pod configuration.
