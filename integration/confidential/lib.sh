@@ -237,14 +237,15 @@ setup_skopeo_signature_files_in_guest() {
 # TODO #3970 - when skopeo fully removed refactor this and delete policy.json in fixture
 setup_common_signature_files_in_guest() {
 	rootfs_directory="etc/containers/"
-	signatures_dir="${SHARED_FIXTURES_DIR}/quay_verification/signatures"
+	signatures_dir="${SHARED_FIXTURES_DIR}/quay_verification/$(uname -m)/signatures"
 
 	if [ ! -d "${signatures_dir}" ]; then
 		sudo mkdir "${signatures_dir}"
 	fi
 
-	sudo tar -zvxf "${SHARED_FIXTURES_DIR}/quay_verification/signatures.tar" -C "${signatures_dir}"
+	sudo tar -zvxf "${SHARED_FIXTURES_DIR}/quay_verification/$(uname -m)/signatures.tar" -C "${signatures_dir}"
 
+	sudo cp -ar ${SHARED_FIXTURES_DIR}/quay_verification/$(uname -m)/* ${SHARED_FIXTURES_DIR}/quay_verification
 	cp_to_guest_img "${rootfs_directory}" "${SHARED_FIXTURES_DIR}/quay_verification"
 }
 
@@ -255,7 +256,7 @@ setup_offline_fs_kbc_signature_files_in_guest() {
 	# Set-up required files in guest image
 	setup_common_signature_files_in_guest
 	add_kernel_params "agent.aa_kbc_params=offline_fs_kbc::null"
-	cp_to_guest_img "etc" "${SHARED_FIXTURES_DIR}/offline-fs-kbc/aa-offline_fs_kbc-resources.json"
+	cp_to_guest_img "etc" "${SHARED_FIXTURES_DIR}/offline-fs-kbc/$(uname -m)/aa-offline_fs_kbc-resources.json"
 }
 
 setup_cosign_signatures_files() {

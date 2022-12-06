@@ -13,9 +13,13 @@ image_cosigned="quay.io/kata-containers/confidential-containers:cosign-signed"
 image_cosigned_other="quay.io/kata-containers/confidential-containers:cosign-signed-key2"
 
 ## Simple Signing
-image_simple_signed="quay.io/kata-containers/confidential-containers:signed"
-image_signed_protected_other="quay.io/kata-containers/confidential-containers:other_signed"
-image_unsigned_protected="quay.io/kata-containers/confidential-containers:unsigned"
+tag_suffix=""
+if [ "$(uname -m)" != "x86_64" ]; then
+	tag_suffix="-$(uname -m)"
+fi
+image_simple_signed="quay.io/kata-containers/confidential-containers:signed${tag_suffix}"
+image_signed_protected_other="quay.io/kata-containers/confidential-containers:other_signed${tag_suffix}"
+image_unsigned_protected="quay.io/kata-containers/confidential-containers:unsigned${tag_suffix}"
 image_unsigned_unprotected="quay.io/prometheus/busybox:latest"
 
 ## Authenticated Image

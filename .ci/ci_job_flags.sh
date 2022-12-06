@@ -148,22 +148,25 @@ case "${CI_JOB}" in
 	export KATA_BUILD_KERNEL_TYPE="tdx"
 	export KATA_BUILD_QEMU_TYPE="tdx"
 	;;
-"CC_CRI_CONTAINERD_K8S_TDX_QEMU"|"CC_CRI_CONTAINERD_K8S_TDX_CLOUD_HYPERVISOR"|"CC_SKOPEO_CRI_CONTAINERD_K8S_TDX_QEMU"|"CC_SKOPEO_CRI_CONTAINERD_K8S_TDX_CLOUD_HYPERVISOR")
+"CC_CRI_CONTAINERD_K8S_TDX_QEMU"|"CC_CRI_CONTAINERD_K8S_SE_QEMU"|"CC_CRI_CONTAINERD_K8S_TDX_CLOUD_HYPERVISOR"|"CC_SKOPEO_CRI_CONTAINERD_K8S_TDX_QEMU"|"CC_SKOPEO_CRI_CONTAINERD_K8S_TDX_CLOUD_HYPERVISOR")
 	# This job only tests containerd + k8s
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
+	export KUBERNETES="yes"
+	export AA_KBC="offline_fs_kbc"
+	export KATA_BUILD_CC="yes"
 	if [[ "${CI_JOB}" =~ CLOUD_HYPERVISOR ]]; then
 		export KATA_HYPERVISOR="cloud-hypervisor"
 	fi
-	export KATA_BUILD_CC="yes"
-	export TEE_TYPE="tdx"
-	export KATA_BUILD_KERNEL_TYPE="tdx"
-	export KATA_BUILD_QEMU_TYPE="tdx"
-	export KUBERNETES="yes"
-	export AA_KBC="offline_fs_kbc"
-	export KUBERNETES=yes
+	if [[ "${CI_JOB}" =~ TDX ]]; then
+		export TEE_TYPE="tdx"
+		export KATA_BUILD_KERNEL_TYPE="tdx"
+		export KATA_BUILD_QEMU_TYPE="tdx"
+	elif [[ "${CI_JOB}" =~ _SE_ ]]; then
+		export TEE_TYPE="se"
+	fi
 	if [[ "${CI_JOB}" =~ SKOPEO ]]; then
 		export UMOCI=yes
 		export SKOPEO=yes
