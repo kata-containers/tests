@@ -30,7 +30,7 @@ setup() {
     clear_kernel_params
     add_kernel_params "${original_kernel_params}"
 
-    setup_http_proxy
+    setup_proxy
     switch_measured_rootfs_verity_scheme none
 }
 

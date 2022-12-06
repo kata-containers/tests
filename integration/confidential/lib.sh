@@ -319,11 +319,17 @@ setup_signature_files() {
 # through a proxy. 
 # Note: With measured rootfs enabled, we can not set proxy through
 # agent config file.
-setup_http_proxy() {
+setup_proxy() {
 	local https_proxy="${HTTPS_PROXY:-${https_proxy:-}}"
 	if [ -n "$https_proxy" ]; then
 		echo "Enable agent https proxy"
 		add_kernel_params "agent.https_proxy=$https_proxy"
+	fi
+
+	local no_proxy="${NO_PROXY:-${no_proxy:-}}"
+	if [ -n "${no_proxy}" ]; then
+		echo "Enable agent no proxy"
+		add_kernel_params "agent.no_proxy=${no_proxy}"
 	fi
 }
 

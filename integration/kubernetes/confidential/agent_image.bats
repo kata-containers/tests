@@ -93,7 +93,7 @@ setup() {
 			"agent.container_policy_file=/etc/containers/quay_verification/quay_policy.json"
 	fi
 
-	setup_http_proxy
+	setup_proxy
 	switch_measured_rootfs_verity_scheme none
 }
 
