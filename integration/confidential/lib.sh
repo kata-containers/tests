@@ -283,8 +283,19 @@ setup_cosign_signatures_files() {
 	remove_kernel_param "agent.enable_signature_verification"
 
 	# Set-up required files in guest image
-	add_kernel_params "agent.aa_kbc_params=offline_fs_kbc::null"
-	cp_to_guest_img "etc" "${SHARED_FIXTURES_DIR}/cosign/offline-fs-kbc/aa-offline_fs_kbc-resources.json"
+	case "${AA_KBC:-}" in
+		"offline_fs_kbc")
+			add_kernel_params "agent.aa_kbc_params=offline_fs_kbc::null"
+			cp_to_guest_img "etc" "${SHARED_FIXTURES_DIR}/cosign/offline-fs-kbc/aa-offline_fs_kbc-resources.json"
+			;;
+		"eaa_kbc")
+			# EAA KBC is specified as: eaa_kbc::host_ip:port, and 50000 is the default port used
+			# by the service, as well as the one configured in the Kata Containers rootfs.
+			add_kernel_params "agent.aa_kbc_params=eaa_kbc::$(hostname -I | awk '{print $1}'):50000"
+			;;
+		*)
+			;;
+	esac
 }
 
 setup_signature_files() {
