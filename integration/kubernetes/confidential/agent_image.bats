@@ -208,6 +208,10 @@ assert_logs_contain() {
 }
 
 @test "$test_tag Test cannot pull an image from an authenticated registry with incorrect credentials" {
+	if [ "${AA_KBC}" = "eaa_kbc" ]; then
+		skip "As the test requires changing verdictd configuration and restarting its service"
+	fi
+
 	REGISTRY_CREDENTIAL_ENCODED="QXJhbmRvbXF1YXl0ZXN0YWNjb3VudHRoYXRkb2VzbnRleGlzdDpwYXNzd29yZAo=" setup_credentials_files "quay.io/kata-containers/confidential-containers-auth"
 
 	pod_config="$(new_pod_config "${image_authenticated}")"
