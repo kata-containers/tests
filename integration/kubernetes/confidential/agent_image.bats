@@ -199,7 +199,13 @@ assert_logs_contain() {
 
 
 @test "$test_tag Test pull an unencrypted unsigned image from an authenticated registry with correct credentials" {
-	setup_credentials_files "quay.io/kata-containers/confidential-containers-auth"
+	if [ "${AA_KBC}" = "offline_fs_kbc" ]; then
+		setup_credentials_files "quay.io/kata-containers/confidential-containers-auth"
+	elif [ "${AA_KBC}" = "eaa_kbc" ]; then
+		# EAA KBC is specified as: eaa_kbc::host_ip:port, and 50000 is the default port used
+		# by the service, as well as the one configured in the Kata Containers rootfs.
+		add_kernel_params "agent.aa_kbc_params=eaa_kbc::$(hostname -I | awk '{print $1}'):50000"
+	fi
 
 	pod_config="$(new_pod_config "${image_authenticated}")"
 	echo $pod_config
