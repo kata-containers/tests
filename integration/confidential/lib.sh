@@ -259,6 +259,18 @@ setup_offline_fs_kbc_signature_files_in_guest() {
 	cp_to_guest_img "etc" "${SHARED_FIXTURES_DIR}/offline-fs-kbc/$(uname -m)/aa-offline_fs_kbc-resources.json"
 }
 
+setup_eaa_kbc_signature_files_in_guest() {
+	# Enable signature verification via kata-configuration by removing the param that disables it
+	remove_kernel_param "agent.enable_signature_verification"
+
+	# Set-up required files in guest image
+	setup_common_signature_files_in_guest
+
+	# EAA KBC is specified as: eaa_kbc::host_ip:port, and 50000 is the default port used
+	# by the service, as well as the one configured in the Kata Containers rootfs.
+	add_kernel_params "agent.aa_kbc_params=eaa_kbc::$(hostname -I | awk '{print $1}'):50000"
+}
+
 setup_cosign_signatures_files() {
 
 	# Currently (kata-containers#5582) the support or cosign in image-rs introduce a dependency on
@@ -271,15 +283,35 @@ setup_cosign_signatures_files() {
 	remove_kernel_param "agent.enable_signature_verification"
 
 	# Set-up required files in guest image
-	add_kernel_params "agent.aa_kbc_params=offline_fs_kbc::null"
-	cp_to_guest_img "etc" "${SHARED_FIXTURES_DIR}/cosign/offline-fs-kbc/aa-offline_fs_kbc-resources.json"
+	case "${AA_KBC:-}" in
+		"offline_fs_kbc")
+			add_kernel_params "agent.aa_kbc_params=offline_fs_kbc::null"
+			cp_to_guest_img "etc" "${SHARED_FIXTURES_DIR}/cosign/offline-fs-kbc/aa-offline_fs_kbc-resources.json"
+			;;
+		"eaa_kbc")
+			# EAA KBC is specified as: eaa_kbc::host_ip:port, and 50000 is the default port used
+			# by the service, as well as the one configured in the Kata Containers rootfs.
+			add_kernel_params "agent.aa_kbc_params=eaa_kbc::$(hostname -I | awk '{print $1}'):50000"
+			;;
+		*)
+			;;
+	esac
 }
 
 setup_signature_files() {
 	if [ "${SKOPEO:-}" = "yes" ]; then
 		setup_skopeo_signature_files_in_guest
 	else
-		setup_offline_fs_kbc_signature_files_in_guest
+		case "${AA_KBC:-}" in
+			"offline_fs_kbc")
+				setup_offline_fs_kbc_signature_files_in_guest
+				;;
+			"eaa_kbc")
+				setup_eaa_kbc_signature_files_in_guest
+				;;
+			*)
+				;;
+		esac
 	fi
 }
 
@@ -287,11 +319,17 @@ setup_signature_files() {
 # through a proxy. 
 # Note: With measured rootfs enabled, we can not set proxy through
 # agent config file.
-setup_http_proxy() {
+setup_proxy() {
 	local https_proxy="${HTTPS_PROXY:-${https_proxy:-}}"
 	if [ -n "$https_proxy" ]; then
 		echo "Enable agent https proxy"
 		add_kernel_params "agent.https_proxy=$https_proxy"
+	fi
+
+	local no_proxy="${NO_PROXY:-${no_proxy:-}}"
+	if [ -n "${no_proxy}" ]; then
+		echo "Enable agent no proxy"
+		add_kernel_params "agent.no_proxy=${no_proxy}"
 	fi
 }
 

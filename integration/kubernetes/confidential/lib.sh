@@ -83,6 +83,7 @@ checkout_doc_repo_dir() {
 
 kubernetes_create_ssh_demo_pod() {
 	checkout_doc_repo_dir
+	[ "${AA_KBC:-}" == "eaa_kbc" ] && sed -i 's#katadocker/ccv0-ssh#katadocker/ssh-demo-eaa-kbc#g' "${doc_repo_dir}/demos/ssh-demo/k8s-cc-ssh.yaml"
 	kubectl apply -f "${doc_repo_dir}/demos/ssh-demo/k8s-cc-ssh.yaml" && pod=$(kubectl get pods -o jsonpath='{.items..metadata.name}') && kubectl wait --timeout=120s --for=condition=ready pods/$pod
 	kubectl get pod $pod
 }

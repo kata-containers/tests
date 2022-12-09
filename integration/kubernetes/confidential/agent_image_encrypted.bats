@@ -30,13 +30,18 @@ setup() {
     clear_kernel_params
     add_kernel_params "${original_kernel_params}"
 
-    setup_http_proxy
+    setup_proxy
     switch_measured_rootfs_verity_scheme none
 }
 
 @test "$test_tag Test can pull an encrypted image inside the guest with decryption key" {
-
-    setup_decryption_files_in_guest
+    if [ "${AA_KBC}" = "offline_fs_kbc" ]; then
+        setup_decryption_files_in_guest
+    elif [ "${AA_KBC}" = "eaa_kbc" ]; then
+        # EAA KBC is specified as: eaa_kbc::host_ip:port, and 50000 is the default port used
+        # by the service, as well as the one configured in the Kata Containers rootfs.
+        add_kernel_params "agent.aa_kbc_params=eaa_kbc::$(hostname -I | awk '{print $1}'):50000"
+    fi
     kubernetes_create_ssh_demo_pod
 
     sleep 1

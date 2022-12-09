@@ -93,7 +93,7 @@ setup() {
 			"agent.container_policy_file=/etc/containers/quay_verification/quay_policy.json"
 	fi
 
-	setup_http_proxy
+	setup_proxy
 	switch_measured_rootfs_verity_scheme none
 }
 
@@ -199,7 +199,13 @@ assert_logs_contain() {
 
 
 @test "$test_tag Test pull an unencrypted unsigned image from an authenticated registry with correct credentials" {
-	setup_credentials_files "quay.io/kata-containers/confidential-containers-auth"
+	if [ "${AA_KBC}" = "offline_fs_kbc" ]; then
+		setup_credentials_files "quay.io/kata-containers/confidential-containers-auth"
+	elif [ "${AA_KBC}" = "eaa_kbc" ]; then
+		# EAA KBC is specified as: eaa_kbc::host_ip:port, and 50000 is the default port used
+		# by the service, as well as the one configured in the Kata Containers rootfs.
+		add_kernel_params "agent.aa_kbc_params=eaa_kbc::$(hostname -I | awk '{print $1}'):50000"
+	fi
 
 	pod_config="$(new_pod_config "${image_authenticated}")"
 	echo $pod_config
@@ -208,6 +214,10 @@ assert_logs_contain() {
 }
 
 @test "$test_tag Test cannot pull an image from an authenticated registry with incorrect credentials" {
+	if [ "${AA_KBC}" = "eaa_kbc" ]; then
+		skip "As the test requires changing verdictd configuration and restarting its service"
+	fi
+
 	REGISTRY_CREDENTIAL_ENCODED="QXJhbmRvbXF1YXl0ZXN0YWNjb3VudHRoYXRkb2VzbnRleGlzdDpwYXNzd29yZAo=" setup_credentials_files "quay.io/kata-containers/confidential-containers-auth"
 
 	pod_config="$(new_pod_config "${image_authenticated}")"
