@@ -210,6 +210,10 @@ if [ "${METRICS_CI}" = "false" ]; then
 		# If not a PR, we are testing on stable or master branch.
 		[ -z "$pr_number" ] && specific_branch="true"
 		"${ci_dir_name}/static-checks.sh" --only-arch "$kata_repo" "$specific_branch"
+		# It is too early to configure defaultRuntimeConfiguration for CC
+		# The file generation should be deferred at runtime installation with
+		# /opt/confidential-containers/share/defaults/kata-containers/configuration.toml
+		rm -f src/runtime/pkg/katautils/config-settings.go
 	fi
 fi
 
