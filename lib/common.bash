@@ -223,7 +223,7 @@ clean_env()
 
 clean_env_ctr()
 {
-	local count_running="$(ctr c list -q | wc -l)"
+	local count_running="$(sudo ctr c list -q | wc -l)"
 	local remaining_attempts=10
 	declare -a running_tasks=()
 	local count_tasks=0
