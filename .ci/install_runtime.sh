@@ -98,7 +98,9 @@ build_install_agent_ctl(){
 	popd
 }
 
-build_install_agent_ctl
+if [ "${KATA_BUILD_CC}" == "no" ]; then
+	build_install_agent_ctl
+fi
 
 experimental_qemu="${experimental_qemu:-false}"
 
