@@ -193,7 +193,9 @@ cleanup() {
 }
 
 main() {
-  source "$HOME/.cargo/env"
+  # Rust required to build sevctl
+  "${tests_repo_dir}/.ci/install_rust.sh" && source "$HOME/.cargo/env"
+  
   mkdir -p test
 
   # Install package dependencies
