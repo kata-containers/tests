@@ -11,6 +11,8 @@ set -o pipefail
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 source "${SCRIPT_PATH}/../../lib/common.bash"
 
+info "Clean up bare metal env"
+keep_cni_bin="${1:-false}"
 iptables_cache="${KATA_TESTS_DATADIR}/iptables_cache"
 
 # The kubeadm reset process does not reset or clean up iptables rules
@@ -26,7 +28,9 @@ sudo -E rm -rf "$HOME/.kube"
 
 # Remove existing CNI configurations and binaries.
 sudo sh -c 'rm -rf /var/lib/cni'
-sudo sh -c 'rm -rf /opt/cni/bin/*'
+if [ "${keep_cni_bin}" = "false" ]; then
+	sudo sh -c 'rm -rf /opt/cni/bin/*'
+fi
 
 #cleanup stale file under /run
 sudo sh -c 'rm -rf /run/flannel'
