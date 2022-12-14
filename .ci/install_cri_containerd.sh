@@ -28,7 +28,6 @@ CONTAINERD_ARCH=$(go env GOARCH)
 containerd_tarball_version=$(get_version "externals.containerd.version")
 
 containerd_version=${containerd_tarball_version#v}
-containerd_branch=$(get_version "externals.containerd.branch")
 
 echo "Set up environment"
 if [ "$ID" == centos ] || [ "$ID" == rhel ] || [ "$ID" == sles ]; then
@@ -49,32 +48,6 @@ install_from_source() {
 		git fetch
 		git checkout "${containerd_tarball_version}"
 		make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
-		tarball_name="cri-containerd-cni-${containerd_version}-${CONTAINERD_OS}-${CONTAINERD_ARCH}.tar.gz"
-		sudo tar -xvf "./releases/${tarball_name}" -C /
-	)
-}
-
-install_from_branch() {
-	containerd_repo=$(get_version "externals.containerd.url")
-	warn "Using patched Confidential Computing containerd version: see https://${containerd_repo}/tree/${containerd_branch}"
-	echo "Trying to install containerd from a branch"
-	(
-		original_containerd_repo="github.com/containerd/containerd"
-		sudo rm -rf "${GOPATH}/src/${original_containerd_repo}"
-		git clone "https://${original_containerd_repo}.git" "${GOPATH}/src/${original_containerd_repo}"
-
-		add_repo_to_git_safe_directory "${GOPATH}/src/${original_containerd_repo}"
-
-		cd "${GOPATH}/src/${original_containerd_repo}"
-
-		git remote add dev https://${containerd_repo}.git
-		git remote update
-
-		git checkout "${containerd_branch}"
-
-		sudo -E PATH="$PATH" make BUILD_TAGS="${BUILDTAGS:-}" cri-cni-release
-		# SH: The PR containerd version might not match the version.yaml one, so get from build
-		containerd_version=$(_output/cri/bin/containerd --version | awk '{ print substr($3,2); }')
 		tarball_name="cri-containerd-cni-${containerd_version}-${CONTAINERD_OS}-${CONTAINERD_ARCH}.tar.gz"
 		sudo tar -xvf "./releases/${tarball_name}" -C /
 	)
@@ -105,12 +78,7 @@ crictl_url="${crictl_repo}/releases/download/v${crictl_version}/crictl-${crictl_
 curl -Ls "$crictl_url" | sudo tar xfz - -C /usr/local/bin
 }
 
-# For 'CCv0' we are pulling in a branch of our confidential-containers fork of containerd with our custom code
-if [ -n "${containerd_branch}" ]; then
-  install_from_branch
-else
-  install_from_static_tarball || install_from_source
-fi
+install_from_static_tarball || install_from_source
 
 install_cri-tools
 
