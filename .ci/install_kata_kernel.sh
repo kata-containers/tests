@@ -47,6 +47,8 @@ build_and_install_kernel() {
 		sev)
 			extra_opts="-x sev"
 			;;
+		dragonabll)
+			extra_opts="-e -t dragonball"
 	esac
 
 	# Always build and install the kernel version found locally
@@ -182,6 +184,9 @@ main() {
 			;;
 		sev)
 			install_kernel "${kernel_type}" $(get_version "assets.kernel.sev.tag")
+			;;
+		dragonball)
+			install_kernel "${kernel_type}" $(get_version "assets.dragonball-kernel-experimental.version")
 			;;
 		*)
 			info "kernel type '${kernel_type}' not supported"
