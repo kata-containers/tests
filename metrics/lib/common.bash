@@ -19,6 +19,7 @@ CTR_RUNTIME="${CTR_RUNTIME:-io.containerd.kata.v2}"
 RUNTIME="${RUNTIME:-containerd-shim-kata-v2}"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 TEST_REPO="${TEST_REPO:-github.com/kata-containers/tests}"
+JSON_HOST="${JSON_HOST:-}"
 
 KSM_BASE="/sys/kernel/mm/ksm"
 KSM_ENABLE_FILE="${KSM_BASE}/run"
