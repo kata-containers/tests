@@ -229,5 +229,6 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="dragonball"
 	export KUBERNETES="yes"
+	export USE_DEVMAPPER="true"
 	;;
 esac
