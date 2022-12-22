@@ -14,6 +14,7 @@ readonly runc_path=$(command -v runc)
 sudo mkdir -p /etc/containerd/
 
 cat << EOF | sudo tee /etc/containerd/config.toml
+version = 2
 [debug]
   level = "debug"
 [plugins]
