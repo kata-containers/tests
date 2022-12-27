@@ -32,6 +32,7 @@ else
 	"k8s-env.bats" \
 	"k8s-exec.bats" \
 	"k8s-expose-ip.bats" \
+	"k8s-file-volume.bats" \
 	"k8s-inotify.bats" \
 	"k8s-job.bats" \
 	"k8s-kill-all-process-in-container.bats" \
@@ -72,6 +73,7 @@ else
                 "k8s-env.bats" \
                 "k8s-exec.bats" \
                 "k8s-expose-ip.bats" \
+		"k8s-file-volume.bats" \
                 "k8s-inotify.bats" \
                 "k8s-job.bats" \
                 "k8s-limit-range.bats" \
