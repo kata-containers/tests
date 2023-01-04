@@ -154,17 +154,17 @@ run_kbs() {
   popd
 }
 
-pull_encrypted_image_and_set_keys() {
-  # Pull encrypted docker image - test workload
-  local encrypted_image_url="quay.io/kata-containers/encrypted-image-tests:encrypted"
-  esudo docker pull "${encrypted_image_url}"
+pull_unencrypted_image_and_set_keys() {
+  # Pull unencrypted test image to get labels
+  local unencrypted_image_url="quay.io/kata-containers/encrypted-image-tests:unencrypted"
+  esudo docker pull "${unencrypted_image_url}"
 
   # Get encryption key from docker image label
-  ENCRYPTION_KEY=$(esudo docker inspect ${encrypted_image_url} \
+  ENCRYPTION_KEY=$(esudo docker inspect ${unencrypted_image_url} \
     | jq -r '.[0].Config.Labels.enc_key')
 
   # Get ssh key from docker image label and save to file
-  esudo docker inspect ${encrypted_image_url} \
+  esudo docker inspect ${unencrypted_image_url} \
     | jq -r '.[0].Config.Labels.ssh_key' \
     | sed "s|\(-----BEGIN OPENSSH PRIVATE KEY-----\)|\1\n|g" \
     | sed "s|\(-----END OPENSSH PRIVATE KEY-----\)|\n\1|g" \
@@ -265,9 +265,9 @@ setup_file() {
   echo "Setting up simple-kbs..."
   run_kbs
 
-  # Pull image and retrieve encryption and ssh keys
-  echo "Pulling encrypted image and setting keys..."
-  pull_encrypted_image_and_set_keys
+  # Pull unencrypted image and retrieve encryption and ssh keys
+  echo "Pulling unencrypted image and setting keys..."
+  pull_unencrypted_image_and_set_keys
 
   echo "SETUP FILE - COMPLETE"
   echo "###############################################################################"
