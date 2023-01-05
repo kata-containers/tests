@@ -71,7 +71,7 @@ calculate_measurement_and_add_to_kbs() {
   if [[ -z "${measurement}" ]]; then >&2 echo "Measurement is invalid"; return 1; fi
 
   # Get encryption key from docker image label
-  enc_key=$(esudo docker inspect quay.io/kata-containers/encrypted-image-tests:unencrypted \
+  enc_key=$(esudo docker inspect ghcr.io/fitzthum/encrypted-image-tests:unencrypted \
     | jq -r '.[0].Config.Labels.enc_key')
 
   # Add key, keyset and policy with measurement to DB
@@ -113,7 +113,7 @@ spec:
       runtimeClassName: kata
       containers:
       - name: encrypted-image-tests
-        image: quay.io/kata-containers/encrypted-image-tests:encrypted
+        image: ghcr.io/fitzthum/encrypted-image-tests:encrypted
         imagePullPolicy: Always
 EOF
 
@@ -141,7 +141,7 @@ EOF
   pod_ip=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $6;}')
   
   # Get ssh key from docker image label and save to file
-  esudo docker inspect quay.io/kata-containers/encrypted-image-tests:unencrypted \
+  esudo docker inspect ghcr.io/fitzthum/encrypted-image-tests:unencrypted \
     | jq -r '.[0].Config.Labels.ssh_key' \
     | sed "s|\(-----BEGIN OPENSSH PRIVATE KEY-----\)|\1\n|g" \
     | sed "s|\(-----END OPENSSH PRIVATE KEY-----\)|\n\1|g" \
@@ -203,7 +203,7 @@ main() {
   pip install sev-snp-measure
 
   # Pull unencrypted docker image to get labels
-  esudo docker pull quay.io/kata-containers/encrypted-image-tests:unencrypted
+  esudo docker pull ghcr.io/fitzthum/encrypted-image-tests:unencrypted
 
   # Copy agent-config.toml to initrd image
   initrd_add_files

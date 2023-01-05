@@ -156,7 +156,7 @@ run_kbs() {
 
 pull_unencrypted_image_and_set_keys() {
   # Pull unencrypted test image to get labels
-  local unencrypted_image_url="quay.io/kata-containers/encrypted-image-tests:unencrypted"
+  local unencrypted_image_url="ghcr.io/fitzthum/encrypted-image-tests:unencrypted"
   esudo docker pull "${unencrypted_image_url}"
 
   # Get encryption key from docker image label
