@@ -47,7 +47,7 @@ build_and_install_kernel() {
 		sev)
 			extra_opts="-x sev"
 			;;
-		dragonabll)
+		dragonball)
 			extra_opts="-e -t dragonball"
 	esac
 
