@@ -29,17 +29,26 @@ esudo() {
 initrd_add_files() {
   rootfs_dir="$(mktemp -d)"
   initrd_path="$(kata-runtime kata-env --json | jq -r .Initrd.Path)"
-  
+  agent_config_path="functional/sev/fixtures/agent-config.toml"
+
   # Extract gzip initrd into temp directory
   zcat "${initrd_path}" | cpio --extract --preserve-modification-time --make-directories --directory="${rootfs_dir}"
-  
+
   # Copy agent-config.toml to initrd
-  esudo cp "functional/sev/fixtures/agent-config.toml" "${rootfs_dir}/etc"
+  esudo cp "${agent_config_path}" "${rootfs_dir}/etc"
 
   # Compress and save initrd and cleanup temp directory
   sudo bash -c "cd "${rootfs_dir}" && find . | cpio -H newc -o | gzip -9 > ${initrd_path}"
   rm -rf "$rootfs_dir"
 }
+
+find_kbs() {
+  kbs_ip="$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')"
+  local config_file="/opt/confidential-containers/share/defaults/kata-containers/configuration.toml"
+  local aa_kbc_params="agent.aa_kbc_params=online_sev_kbc::${kbs_ip}:44444"
+  esudo sed -i -e 's#^\(kernel_params\) = "\(.*\)"#\1 = "\2 '"$aa_kbc_params"'"#g' "$config_file"
+}
+
 
 install_sevctl_and_export_sev_cert_chain() {
   git clone https://github.com/virtee/sevctl.git
@@ -59,7 +68,7 @@ run_kbs() {
 calculate_measurement_and_add_to_kbs() {
   local kernel_path="$(kata-runtime kata-env --json | jq -r .Kernel.Path)"
   local initrd_path="$(kata-runtime kata-env --json | jq -r .Initrd.Path)"
-  local append="tsc=reliable no_timer_check rcupdate.rcu_expedited=1 i8042.direct=1 i8042.dumbkbd=1 i8042.nopnp=1 i8042.noaux=1 noreplace-smp reboot=k cryptomgr.notests net.ifnames=0 pci=lastbus=0 console=hvc0 console=hvc1 quiet panic=1 nr_cpus=1 selinux=0 agent.config_file=/etc/agent-config.toml agent.enable_signature_verification=false"
+  local append="tsc=reliable no_timer_check rcupdate.rcu_expedited=1 i8042.direct=1 i8042.dumbkbd=1 i8042.nopnp=1 i8042.noaux=1 noreplace-smp reboot=k cryptomgr.notests net.ifnames=0 pci=lastbus=0 console=hvc0 console=hvc1 quiet panic=1 nr_cpus=1 selinux=0 agent.config_file=/etc/agent-config.toml agent.enable_signature_verification=false agent.aa_kbc_params=online_sev_kbc::${kbs_ip}:44444"
 
   # Generate digest from sev-snp-measure output - this also inserts measurement values inside OVMF image
   measurement=$(~/.local/bin/sev-snp-measure --mode=sev --output-format=base64 \
@@ -117,8 +126,8 @@ spec:
         imagePullPolicy: Always
 EOF
 
-  echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-  echo "KATA CC SEV TEST - STARTED"
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+echo "KATA CC SEV TEST - STARTED"
 
   # Start the pod and retrieve the name
   esudo kubectl apply -f "encrypted-image-tests.yaml"
@@ -139,7 +148,7 @@ EOF
   esudo kubectl describe pod ${pod_name}
   echo "-------------------------------------------------------------------------------"
   pod_ip=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $6;}')
-  
+
   # Get ssh key from docker image label and save to file
   esudo docker inspect ghcr.io/fitzthum/encrypted-image-tests:unencrypted \
     | jq -r '.[0].Config.Labels.ssh_key' \
@@ -195,7 +204,7 @@ cleanup() {
 main() {
   # Rust required to build sevctl
   "${tests_repo_dir}/.ci/install_rust.sh" && source "$HOME/.cargo/env"
-  
+
   mkdir -p test
 
   # Install package dependencies
@@ -222,6 +231,9 @@ main() {
   export KBS_DB_HOST=$(esudo docker network inspect simple-kbs_default \
     | jq -r '.[].Containers[] | select(.Name | test("simple-kbs[_-]db.*")).IPv4Address' \
     | sed "s|/.*$||g")
+
+  # Modify config file for online kbs
+  find_kbs
 
   # Testing
   calculate_measurement_and_add_to_kbs
