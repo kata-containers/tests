@@ -7,7 +7,7 @@
 # Usage:
 # curl -OL https://raw.githubusercontent.com/kata-containers/tests/master/.ci/ci_entry_point.sh.sh
 # export export CI_JOB="JOB_ID"
-# bash ci_entry_point.sh.sh "<repo-to-test>"
+# bash ci_entry_point.sh.sh "<repo-to-test>" "<main|unit|snap|all>"
 
 set -o errexit
 set -o nounset
@@ -37,6 +37,8 @@ repo_to_test="${1:-}"
 repo_to_test=${repo_to_test#"https://"}
 repo_to_test=${repo_to_test%".git"}
 
+# test type pass to jenkins_job_build.sh
+TEST_TYPE="${2:-all}"
 # PR info provided by the caller
 ghprbPullId=${ghprbPullId:-}
 ghprbTargetBranch=${ghprbTargetBranch:-}
@@ -88,5 +90,5 @@ fi
 if [ "${CI_JOB}" == "VFIO" ] && [ ${FORCE_JENKINS_JOB_BUILD} = 0 ]; then
 	.ci/vfio_jenkins_job_build.sh "${repo_to_test}"
 else
-	.ci/jenkins_job_build.sh "${repo_to_test}"
+	.ci/jenkins_job_build.sh "${repo_to_test}" -t "${TEST_TYPE}"
 fi

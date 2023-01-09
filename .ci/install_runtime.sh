@@ -150,6 +150,7 @@ case "${KATA_HYPERVISOR}" in
 		fi
 		;;
 	"dragonball")
+		sudo sed -i -e 's/vmlinux.container/vmlinux-dragonball-experimental.container/' "${PKGDEFAULTSDIR}/configuration-dragonball.toml"
 		enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-dragonball.toml"
 		;;
 	*)

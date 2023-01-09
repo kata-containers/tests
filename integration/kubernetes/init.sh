@@ -332,7 +332,10 @@ main() {
 		if [ ! -d "${cni_directory}" ]; then
 			sudo mkdir -p "${cni_directory}"
 		fi
-		sudo cp "${crio_repository_path}/contrib/cni/10-crio-bridge.conf" "${cni_directory}"
+		# The config file for cni in cri-o v1.26 and higher has the extension "conflist"
+		# Using a wildcard here to keep support for both names.
+		# To be removed and replaced with "conflist" when support for older cri-o versions is abandonned.
+		sudo cp "${crio_repository_path}/contrib/cni/10-crio-bridge.conf"* "${cni_directory}"
 	fi
 
 	info "Start ${CRI_RUNTIME} service"
