@@ -162,7 +162,6 @@ err_report() {
 	fi
 }
 
-trap err_report ERR
 
 check_daemon_setup() {
 	info "containerd(cri): Check daemon works with runc"
@@ -483,7 +482,6 @@ main() {
 
 	info "containerd(cri): Running cri-integration"
 
-	TestContainerSwap
 
 	passing_test="TestContainerStats|TestContainerRestart|TestContainerListStatsWithIdFilter|TestContainerListStatsWithIdSandboxIdFilter|TestDuplicateName|TestImageLoad|TestImageFSInfo|TestSandboxCleanRemove"
 
@@ -507,6 +505,12 @@ main() {
 		RUNTIME="" \
 		CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE_TEMP" \
 		make GO_BUILDTAGS="no_btrfs" -e cri-integration
+
+	# trap error for print containerd log,
+	# containerd's `cri-integration` will print the log itself.
+	trap err_report ERR
+
+	TestContainerSwap
 
 	# TODO: runtime-rs doesn't support memory update currently
 	if [ "$KATA_HYPERVISOR" != "dragonball" ]; then

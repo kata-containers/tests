@@ -230,26 +230,20 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
 	;;
-"CLOUD-HYPERVISOR-K8S-CONTAINERD")
+"CLOUD-HYPERVISOR-K8S-CONTAINERD"|"CLOUD-HYPERVISOR-K8S-CONTAINERD-DEVMAPPER"|"EXTERNAL_CLOUD_HYPERVISOR")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	export KUBERNETES="yes"
-	;;
-"CLOUD-HYPERVISOR-K8S-CONTAINERD-DEVMAPPER")
-	init_ci_flags
-	export CRI_CONTAINERD="yes"
-	export CRI_RUNTIME="containerd"
-	export KATA_HYPERVISOR="cloud-hypervisor"
-	export KUBERNETES="yes"
-	export USE_DEVMAPPER="true"
-	;;
-"EXTERNAL_CLOUD_HYPERVISOR")
-	init_ci_flags
-	export CRI_CONTAINERD="yes"
-	export CRI_RUNTIME="containerd"
-	export KATA_HYPERVISOR="cloud-hypervisor"
+	case "${CI_JOB}" in
+		"CLOUD-HYPERVISOR-K8S-CONTAINERD-DEVMAPPER")
+			export USE_DEVMAPPER="true"
+			;;
+		"EXTERNAL_CLOUD_HYPERVISOR")
+			export KUBERNETES="no"
+			;;
+	esac
 	;;
 "EXTERNAL_CRIO")
 	init_ci_flags
