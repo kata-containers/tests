@@ -128,7 +128,7 @@ case "${CI_JOB}" in
 			fi
 			if [[ "${CI_JOB}" =~ SEV ]]; then
 				export TEE_TYPE="sev"
-				export AA_KBC="offline_sev_kbc"
+				export AA_KBC="online_sev_kbc"
 				export TEST_INITRD="yes"
 			fi
 			;;
