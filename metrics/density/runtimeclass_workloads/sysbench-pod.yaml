@@ -9,7 +9,6 @@ metadata:
   name: test-sysbench
 spec:
   terminationGracePeriodSeconds: 0
-  shareProcessNamespace: true
   runtimeClassName: kata
   containers:
   - name: test-sysbench
