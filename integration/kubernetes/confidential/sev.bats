@@ -360,11 +360,11 @@ EOF
   pod_info=$(esudo kubectl describe pod ${pod_name})
 
   # Check failure condition
-  if [[ ! ${pod_info} =~ "fw digest not valid" ]]; then
+  if [[ ! ${pod_info} =~ "Failed to pull image" ]]; then
     >&2 echo -e "${RED}TEST - FAIL${NC}"
     return 1
   else
-    echo "Pod message contains: fw digest not valid"
+    echo "Pod message contains: Failed to pull image"
     echo -e "${GREEN}TEST - PASS${NC}"
   fi
 }
