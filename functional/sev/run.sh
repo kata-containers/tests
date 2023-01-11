@@ -26,6 +26,14 @@ esudo() {
   sudo -E PATH=$PATH "$@"
 }
 
+configure_containerd() {
+  local containerd_config="/etc/containerd/config.toml"
+  esudo sed -i 's/\([[:blank:]]*\)\(runtime_type = "io.containerd.kata.v2"\)/\1\2\n\1cri_handler = "cc"/' "$containerd_config"
+  esudo systemctl restart containerd
+  sleep 10
+
+}
+
 initrd_add_files() {
   rootfs_dir="$(mktemp -d)"
   initrd_path="$(kata-runtime kata-env --json | jq -r .Initrd.Path)"
@@ -206,6 +214,9 @@ main() {
   "${tests_repo_dir}/.ci/install_rust.sh" && source "$HOME/.cargo/env"
 
   mkdir -p test
+
+  # Enable image service offload
+  configure_containerd
 
   # Install package dependencies
   esudo apt install -y docker-compose
