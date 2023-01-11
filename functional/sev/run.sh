@@ -26,6 +26,24 @@ esudo() {
   sudo -E PATH=$PATH "$@"
 }
 
+install_containerd_fork() {
+  local containerd_repo="https://github.com/confidential-containers/containerd"
+  local containerd_tag="v1.6.6.0"
+  local build_dir="$(mktemp -d -t containerd-XXXXXXXXXX)/containerd"
+
+  esudo apt-get install libbtrfs-dev
+
+  git clone -b "$containerd_tag" "$containerd_repo" "$build_dir"
+  pushd "$build_dir"
+  make
+  sudo make install
+  popd
+
+  rm -rf "$build_dir"
+  esudo systemctl restart containerd
+
+}
+
 configure_containerd() {
   local containerd_config="/etc/containerd/config.toml"
   esudo sed -i 's/\([[:blank:]]*\)\(runtime_type = "io.containerd.kata.v2"\)/\1\2\n\1cri_handler = "cc"/' "$containerd_config"
@@ -214,6 +232,9 @@ main() {
   "${tests_repo_dir}/.ci/install_rust.sh" && source "$HOME/.cargo/env"
 
   mkdir -p test
+
+  # Switch to containerd that supports image service offload
+  install_containerd_fork
 
   # Enable image service offload
   configure_containerd
