@@ -44,6 +44,11 @@ test_queries+=(".\"memory-footprint-ksm\".Results | .[] | .average.Result")
 tests+=("memory-footprint-inside-container")
 test_queries+=(".\"memory-footprint-inside-container\".Results | .[] | .memtotal.Result")
 
+if [ "${KATA_HYPERVISOR}" == "cloud-hypervisor" ]; then
+	tests+=("network-iperf3")
+	test_queries+=(".\"network-iperf3\".Results | .[] | .cpu.Result")
+fi
+
 # What is the base URL of the Jenkins server
 url_base="http://jenkins.katacontainers.io/job"
 
