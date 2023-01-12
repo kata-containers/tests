@@ -38,12 +38,21 @@ install_runk() {
     echo "Install runk"
     pushd ${RUNK_SRC_PATH}
     make
+    ls -tl /usr/local/bin/runk || echo "no runk found"
     sudo make install
+    ls -tl /usr/local/bin/runk || echo "no runk found"
     popd
 }
 
 test_runk() {
     echo "start container with runk"
+
+    echo "--------------------"
+    uname -a
+    mount
+    cat /proc/self/mountinfo
+    echo "--------------------"
+
     # Bind mount ${WORK_DIR}:/tmp. Tests below will store files in this dir and check them when container is frozon.
     sudo ctr run --pid-file ${PID_FILE} --rm -d --runc-binary ${RUNK_BIN_PATH} --mount type=bind,src=${WORK_DIR},dst=/tmp,options=rbind:rw ${TEST_IMAGE} ${CONTAINER_ID}
     read CID PID STATUS <<< $(sudo ctr t ls | grep ${CONTAINER_ID})

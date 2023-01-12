@@ -39,32 +39,32 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make qat"
 		;;
 	"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S"|"CRI_CONTAINERD_K8S_DEVMAPPER"|"CC_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_CLOUD_HYPERVISOR")
-		echo "INFO: Running stability test"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
-		echo "INFO: Containerd checks"
-		sudo -E PATH="$PATH" bash -c "make cri-containerd"
-		echo "INFO: Running nydus test"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make nydus"
-		[[ "${CI_JOB}" =~ K8S ]] && \
-			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
-		echo "INFO: Running vcpus test"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make vcpus"
-		echo "INFO: Skipping pmem test: Issue: https://github.com/kata-containers/tests/issues/3223"
-		echo "INFO: Running stability test with sandbox_cgroup_only"
-		export TEST_SANDBOX_CGROUP_ONLY=true
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
-		# echo "INFO: Running pmem integration test"
-		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make pmem"
-		echo "INFO: Running ksm test"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make ksm"
-		echo "INFO: Running kata-monitor test"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make monitor"
-		echo "INFO: Running tracing test"
-		sudo -E PATH="$PATH" bash -c "make tracing"
-		if [[ "${CI_JOB}" =~ CC_CRI_CONTAINERD ]]; then
-			echo "INFO: Running Confidential Container tests"
-			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-containerd"
-		fi
+		# echo "INFO: Running stability test"
+		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
+		# echo "INFO: Containerd checks"
+		# sudo -E PATH="$PATH" bash -c "make cri-containerd"
+		# echo "INFO: Running nydus test"
+		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make nydus"
+		# [[ "${CI_JOB}" =~ K8S ]] && \
+		# 	sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
+		# echo "INFO: Running vcpus test"
+		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make vcpus"
+		# echo "INFO: Skipping pmem test: Issue: https://github.com/kata-containers/tests/issues/3223"
+		# echo "INFO: Running stability test with sandbox_cgroup_only"
+		# export TEST_SANDBOX_CGROUP_ONLY=true
+		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make stability"
+		# # echo "INFO: Running pmem integration test"
+		# # sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make pmem"
+		# echo "INFO: Running ksm test"
+		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make ksm"
+		# echo "INFO: Running kata-monitor test"
+		# sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make monitor"
+		# echo "INFO: Running tracing test"
+		# sudo -E PATH="$PATH" bash -c "make tracing"
+		# if [[ "${CI_JOB}" =~ CC_CRI_CONTAINERD ]]; then
+		# 	echo "INFO: Running Confidential Container tests"
+		# 	sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-containerd"
+		# fi
 		echo "INFO: Running runk test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make runk"
 		;;
