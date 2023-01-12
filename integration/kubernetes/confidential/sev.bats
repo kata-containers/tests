@@ -154,17 +154,17 @@ run_kbs() {
   popd
 }
 
-pull_encrypted_image_and_set_keys() {
-  # Pull encrypted docker image - test workload
-  local encrypted_image_url="quay.io/kata-containers/encrypted-image-tests:encrypted"
-  esudo docker pull "${encrypted_image_url}"
+pull_unencrypted_image_and_set_keys() {
+  # Pull unencrypted test image to get labels
+  local unencrypted_image_url="ghcr.io/fitzthum/encrypted-image-tests:unencrypted"
+  esudo docker pull "${unencrypted_image_url}"
 
   # Get encryption key from docker image label
-  ENCRYPTION_KEY=$(esudo docker inspect ${encrypted_image_url} \
+  ENCRYPTION_KEY=$(esudo docker inspect ${unencrypted_image_url} \
     | jq -r '.[0].Config.Labels.enc_key')
 
   # Get ssh key from docker image label and save to file
-  esudo docker inspect ${encrypted_image_url} \
+  esudo docker inspect ${unencrypted_image_url} \
     | jq -r '.[0].Config.Labels.ssh_key' \
     | sed "s|\(-----BEGIN OPENSSH PRIVATE KEY-----\)|\1\n|g" \
     | sed "s|\(-----END OPENSSH PRIVATE KEY-----\)|\n\1|g" \
@@ -204,6 +204,16 @@ nr_cpus=1 scsi_mod.scan=none agent.config_file=/etc/agent-config.toml"
   )
   if [[ -z "${measurement}" ]]; then return 1; fi
   echo ${measurement}
+}
+
+# KBS must be accessible from inside the guest, so update the config file
+# with the IP of the host
+update_kbs_uri() {
+  local sev_config="/opt/confidential-containers/share/defaults/kata-containers/configuration-qemu-sev.toml"
+  kbs_ip="$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')"
+  local aa_kbc_params="agent.aa_kbc_params=online_sev_kbc::${kbs_ip}:44444"
+  esudo sed -i -e 's#^\(kernel_params\) = "\(.*\)"#\1 = "\2 '"$aa_kbc_params"'"#g' "$sev_config"
+
 }
 
 add_key_to_kbs_db() {
@@ -265,9 +275,9 @@ setup_file() {
   echo "Setting up simple-kbs..."
   run_kbs
 
-  # Pull image and retrieve encryption and ssh keys
-  echo "Pulling encrypted image and setting keys..."
-  pull_encrypted_image_and_set_keys
+  # Pull unencrypted image and retrieve encryption and ssh keys
+  echo "Pulling unencrypted image and setting keys..."
+  pull_unencrypted_image_and_set_keys
 
   echo "SETUP FILE - COMPLETE"
   echo "###############################################################################"
@@ -318,6 +328,11 @@ EOF
 }
 
 @test "$test_tag Test SEV encrypted container launch failure with INVALID measurement" {
+  # update kata config to point to KBS
+  # this test expects an invalid measurement, but we still update
+  # config so that the kernel params (which are saved) are correct
+  update_kbs_uri
+
   # Generate firmware measurement
   local append="INVALID INPUT"
   measurement=$(generate_firmware_measurement_with_append ${append})
@@ -345,16 +360,17 @@ EOF
   pod_info=$(esudo kubectl describe pod ${pod_name})
 
   # Check failure condition
-  if [[ ! ${pod_info} =~ "fw digest not valid" ]]; then
+  if [[ ! ${pod_info} =~ "Failed to pull image" ]]; then
     >&2 echo -e "${RED}TEST - FAIL${NC}"
     return 1
   else
-    echo "Pod message contains: fw digest not valid"
+    echo "Pod message contains: Failed to pull image"
     echo -e "${GREEN}TEST - PASS${NC}"
   fi
 }
 
 @test "$test_tag Test SEV encrypted container launch success with NO measurement" {
+
   # Add key to KBS without a policy measurement
   add_key_to_kbs_db
   
@@ -386,6 +402,7 @@ EOF
 }
 
 @test "$test_tag Test SEV encrypted container launch success with VALID measurement" {
+
   # Generate firmware measurement
   local append=$(cat ${TEST_DIR}/guest-kernel-append)
   echo "Kernel Append: ${append}"
