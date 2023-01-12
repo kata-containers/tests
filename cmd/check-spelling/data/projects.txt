@@ -85,6 +85,7 @@ SQLite/B
 SUSE/B
 systemd/B
 TravisCI/B
+Tokio/B
 Vexxhost/B
 virtcontainers/B
 VMWare/B
