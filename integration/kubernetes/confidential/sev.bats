@@ -142,8 +142,18 @@ run_kbs() {
 
   # Clone and run
   git clone "${simple_kbs_url}" --branch main
-  (cd simple-kbs && git checkout -b "branch_${simple_kbs_tag}" "${simple_kbs_tag}")
-  (cd simple-kbs && esudo docker-compose up -d)
+
+  pushd simple-kbs
+  git checkout -b "branch_${simple_kbs_tag}" "${simple_kbs_tag}"
+  esudo docker-compose build
+
+  esudo docker-compose up -d
+  until docker-compose top | grep -q "simple-kbs"
+  do
+    echo "waiting for simple-kbs to start"
+    sleep 5
+  done
+  popd
   
   # Set KBS_DB_HOST to kbs db container IP
   KBS_DB_HOST=$(esudo docker network inspect simple-kbs_default \
