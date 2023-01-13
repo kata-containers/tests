@@ -142,8 +142,18 @@ run_kbs() {
 
   # Clone and run
   git clone "${simple_kbs_url}" --branch main
-  (cd simple-kbs && git checkout -b "branch_${simple_kbs_tag}" "${simple_kbs_tag}")
-  (cd simple-kbs && esudo docker-compose up -d)
+
+  pushd simple-kbs
+  git checkout -b "branch_${simple_kbs_tag}" "${simple_kbs_tag}"
+  esudo docker-compose build
+
+  esudo docker-compose up -d
+  until docker-compose top | grep -q "simple-kbs"
+  do
+    echo "waiting for simple-kbs to start"
+    sleep 5
+  done
+  popd
   
   # Set KBS_DB_HOST to kbs db container IP
   KBS_DB_HOST=$(esudo docker network inspect simple-kbs_default \
@@ -297,8 +307,10 @@ EOF
 }
 
 @test "$test_tag Test SEV unencrypted container launch success" {
-  # Add key to KBS with policy measurement
-  add_key_to_kbs_db
+
+  # Turn off pre-attestation. It is not necessary for an unencrypted image.
+  local kata_config_file="/opt/confidential-containers/share/defaults/kata-containers/configuration-qemu-sev.toml"
+  esudo sed -i 's/guest_pre_attestation = true/guest_pre_attestation = false/g' ${kata_config_file}
   
   # Start the service/deployment/pod
   esudo kubectl apply -f \
@@ -325,6 +337,9 @@ EOF
     echo "DMESG REPORT: $sev_enabled"
     echo -e "${GREEN}KATA CC TEST - PASS: SEV is Enabled${NC}"
   fi
+
+  # Re-enable pre-attestation for the next tests
+  esudo sed -i 's/guest_pre_attestation = false/guest_pre_attestation = true/g' ${kata_config_file}
 }
 
 @test "$test_tag Test SEV encrypted container launch failure with INVALID measurement" {
