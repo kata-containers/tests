@@ -47,6 +47,10 @@ test_queries+=(".\"memory-footprint-inside-container\".Results | .[] | .memtotal
 if [ "${KATA_HYPERVISOR}" == "cloud-hypervisor" ]; then
 	tests+=("network-iperf3")
 	test_queries+=(".\"network-iperf3\".Results | .[] | .cpu.Result")
+
+	tests+=("latency")
+	test_queries+=(".\"latency\".Results | .[] | .latency.Result")
+
 fi
 
 # What is the base URL of the Jenkins server
