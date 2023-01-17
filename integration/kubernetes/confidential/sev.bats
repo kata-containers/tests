@@ -362,9 +362,9 @@ EOF
   print_service_info
 
   # Save guest qemu kernel append to file
-  kenel_append=$(get_guest_kernel_append "${pod_name}")
-  echo "${kenel_append}" > "${TEST_DIR}/guest-kernel-append"
-  echo "Kernel Append Retrieved from QEMU Process: ${kenel_append}"
+  kernel_append=$(get_guest_kernel_append "${pod_name}")
+  echo "${kernel_append}" > "${TEST_DIR}/guest-kernel-append"
+  echo "Kernel Append Retrieved from QEMU Process: ${kernel_append}"
 
   # Get pod info
   pod_info=$(esudo kubectl describe pod ${pod_name})
