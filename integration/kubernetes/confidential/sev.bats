@@ -67,6 +67,17 @@ generate_service_yaml() {
     envsubst < "${service_yaml_template}" > "${service_yaml}"
 }
 
+configure_containerd() {
+  local containerd_config="/etc/containerd/config.toml"
+
+  # Only add the cri_handler if it is not already set
+  cri_handler_set=$(cat "${containerd_config}" | grep "cri_handler = \"cc\"" || true)
+  if [ -z "${cri_handler_set}" ]; then
+    esudo sed -i -e 's/\([[:blank:]]*\)\(runtime_type = "io.containerd.kata.v2"\)/\1\2\n\1cri_handler = "cc"/' "${containerd_config}"
+    esudo systemctl restart containerd
+  fi
+}
+
 # Wait until the pod is 'Ready'. Fail if it hits the timeout.
 kubernetes_wait_for_pod_ready_state() {
   local pod_name="${1}"
@@ -304,6 +315,8 @@ setup_file() {
     docker-compose
   pip install sev-snp-measure
   "${TESTS_REPO_DIR}/.ci/install_yq.sh" >&2
+
+  configure_containerd
 
   # KBS setup and run
   echo "Setting up simple-kbs..."
