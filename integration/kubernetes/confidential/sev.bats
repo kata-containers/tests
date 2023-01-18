@@ -14,7 +14,6 @@ export KBS_DB_USER="kbsuser"
 export KBS_DB_PW="kbspassword"
 export KBS_DB="simple_kbs"
 export KBS_DB_TYPE="mysql"
-export SEV_CONFIG="/opt/confidential-containers/share/defaults/kata-containers/configuration-qemu-sev.toml"
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -24,6 +23,10 @@ TESTS_REPO_DIR=$(realpath "$BATS_TEST_DIRNAME/../../..")
 load "${TESTS_REPO_DIR}/lib/common.bash"
 #load "${TESTS_REPO_DIR}/.ci/lib.sh"
 test_tag="[cc][kubernetes][containerd][sev]"
+
+export SEV_CONFIG="/opt/confidential-containers/share/defaults/kata-containers/configuration-qemu-sev.toml"
+export FIXTURES_DIR="${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures"
+export IMAGE_REPO="ghcr.io/fitzthum/encrypted-image-tests"
 
 esudo() {
   sudo -E PATH=$PATH "$@"
@@ -43,6 +46,25 @@ get_version() {
   result=$("${GOPATH}/bin/yq" r -X "$versions_file" "$dependency")
   [ "$result" = "null" ] && result=""
   echo "$result"
+}
+
+generate_service_yaml() {
+  local name="${1}"
+  local image="${2}"
+  local runtime_class="kata"
+
+  local service_yaml_template="${FIXTURES_DIR}/service.yaml.in"
+  
+  # If this is an operator test, set the runtime class appropriately
+  if [ "${OPERATOR}" == true ]; then
+    runtime_class="kata-qemu-sev"
+  fi
+
+  local service_yaml="${TEST_DIR}/${name}.yaml"
+  rm -f "${service_yaml}"
+  
+  NAME="${name}" IMAGE="${image}" RUNTIMECLASS="$runtime_class" \
+    envsubst < "${service_yaml_template}" > "${service_yaml}"
 }
 
 # Wait until the pod is 'Ready'. Fail if it hits the timeout.
@@ -125,9 +147,9 @@ delete_pods() {
 
   # Delete both encrypted and unencrypted pods
   esudo kubectl delete -f \
-    "${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures/unencrypted-image-tests.yaml" 2>/dev/null || true
+    "${TEST_DIR}/unencrypted-image-tests.yaml" 2>/dev/null || true
   esudo kubectl delete -f \
-    "${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures/encrypted-image-tests.yaml" 2>/dev/null || true
+    "${TEST_DIR}/encrypted-image-tests.yaml" 2>/dev/null || true
   
   [ -z "${encrypted_pod_name}" ] || (kubernetes_wait_for_pod_delete_state "${encrypted_pod_name}" || true)
   [ -z "${unencrypted_pod_name}" ] || (kubernetes_wait_for_pod_delete_state "${unencrypted_pod_name}" || true)
@@ -167,7 +189,7 @@ run_kbs() {
 
 pull_unencrypted_image_and_set_keys() {
   # Pull unencrypted test image to get labels
-  local unencrypted_image_url="ghcr.io/fitzthum/encrypted-image-tests:unencrypted"
+  local unencrypted_image_url="${IMAGE_REPO}:unencrypted"
   esudo docker pull "${unencrypted_image_url}"
 
   # Get encryption key from docker image label
@@ -218,9 +240,14 @@ nr_cpus=1 scsi_mod.scan=none agent.config_file=/etc/agent-config.toml"
 # KBS must be accessible from inside the guest, so update the config file
 # with the IP of the host
 update_kbs_uri() {
-  kbs_ip="$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')"
+  local kbs_ip="$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')"
   local aa_kbc_params="agent.aa_kbc_params=online_sev_kbc::${kbs_ip}:44444"
-  esudo sed -i -e 's#^\(kernel_params\) = "\(.*\)"#\1 = "\2 '"${aa_kbc_params}"'"#g' "${SEV_CONFIG}"
+
+  # Only add the aa_kbc_params if it is not already set
+  aa_kbc_params_set=$(cat "${SEV_CONFIG}" | grep "kernel_params" | grep "${aa_kbc_params}" || true)
+  if [ -z "${aa_kbc_params_set}" ]; then
+    esudo sed -i -e 's#^\(kernel_params\) = "\(.*\)"#\1 = "\2 '"${aa_kbc_params}"'"#g' "${SEV_CONFIG}"
+  fi
 }
 
 add_key_to_kbs_db() {
@@ -286,6 +313,9 @@ setup_file() {
   echo "Pulling unencrypted image and setting keys..."
   pull_unencrypted_image_and_set_keys
 
+  generate_service_yaml "unencrypted-image-tests" "${IMAGE_REPO}:unencrypted"
+  generate_service_yaml "encrypted-image-tests" "${IMAGE_REPO}:encrypted"
+
   echo "SETUP FILE - COMPLETE"
   echo "###############################################################################"
 }
@@ -308,8 +338,7 @@ EOF
   esudo sed -i 's/guest_pre_attestation = true/guest_pre_attestation = false/g' ${SEV_CONFIG}
   
   # Start the service/deployment/pod
-  esudo kubectl apply -f \
-    "${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures/unencrypted-image-tests.yaml"
+  esudo kubectl apply -f "${TEST_DIR}/unencrypted-image-tests.yaml"
   
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   pod_name=$(esudo kubectl get pod -o wide | grep unencrypted-image-tests | awk '{print $1;}')
@@ -352,8 +381,7 @@ EOF
   add_key_to_kbs_db ${measurement}
   
   # Start the service/deployment/pod
-  esudo kubectl apply -f \
-    "${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures/encrypted-image-tests.yaml"
+  esudo kubectl apply -f "${TEST_DIR}/encrypted-image-tests.yaml"
   
   # Retrieve pod name, wait for it to fail
   pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $1;}')
@@ -385,8 +413,7 @@ EOF
   add_key_to_kbs_db
   
   # Start the service/deployment/pod
-  esudo kubectl apply -f \
-    "${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures/encrypted-image-tests.yaml"
+  esudo kubectl apply -f "${TEST_DIR}/encrypted-image-tests.yaml"
 
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $1;}')
@@ -423,8 +450,7 @@ EOF
   add_key_to_kbs_db ${measurement}
   
   # Start the service/deployment/pod
-  esudo kubectl apply -f \
-    "${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures/encrypted-image-tests.yaml"
+  esudo kubectl apply -f "${TEST_DIR}/encrypted-image-tests.yaml"
 
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $1;}')
