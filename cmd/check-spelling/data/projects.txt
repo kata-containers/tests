@@ -83,6 +83,7 @@ snapcraft/B
 snapd/B
 SQLite/B
 SUSE/B
+Sysbench/B
 systemd/B
 TravisCI/B
 Tokio/B
