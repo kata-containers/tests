@@ -8,6 +8,7 @@ Ansible/B
 AppArmor/B
 blogbench/B
 BusyBox/B
+Cassandra/B
 ccloudvm/B
 codecov/B
 containerd/B
