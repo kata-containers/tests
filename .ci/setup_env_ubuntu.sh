@@ -12,7 +12,7 @@ source "/etc/os-release" || source "/usr/lib/os-release"
 source "${cidir}/lib.sh"
 
 echo "Update apt repositories"
-sudo -E apt update
+#sudo -E apt update
 
 # Removing man-db, workflow's kept failing, fixes: #4480
 echo "Removing man-db, not needed for CI/CD"

@@ -241,3 +241,4 @@ checktype = "mean"
 midval = 0.025
 minpercent = 60.0
 maxpercent = 50.0
+
