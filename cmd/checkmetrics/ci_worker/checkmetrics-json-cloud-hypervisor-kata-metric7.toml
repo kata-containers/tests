@@ -133,7 +133,7 @@ description = "measure read-bw using fio"
 # within (inclusive)
 checkvar = ".\"fio\".Results | .[] | .readbw.Result"
 checktype = "mean"
-midval = 81568051.0
+midval = 113203942.0
 minpercent = 25.0
 maxpercent = 25.0
 
