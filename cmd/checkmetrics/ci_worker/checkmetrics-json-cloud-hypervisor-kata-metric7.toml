@@ -173,7 +173,7 @@ description = "measure container bandwidth using iperf3"
 # within (inclusive)
 checkvar = ".\"network-iperf3\".Results | .[] | .bandwidth.Result"
 checktype = "mean"
-midval = 37613781147.0
+midval = 61147291549.0
 minpercent = 10.0
 maxpercent = 10.0
 
@@ -225,7 +225,7 @@ description = "measure container parallel bandwidth using iperf3"
 # within (inclusive)
 checkvar = ".\"network-iperf3\".Results | .[] | .parallel.Result"
 checktype = "mean"
-midval = 44243050018.0
+midval = 75296926250.0
 minpercent = 10.0
 maxpercent = 10.0
 
@@ -238,7 +238,7 @@ description = "measure container jitter using iperf3"
 # within (inclusive)
 checkvar = ".\"network-iperf3\".Results | .[] | .jitter.Result"
 checktype = "mean"
-midval = 0.025
+midval = 0.039
 minpercent = 60.0
 maxpercent = 50.0
 
