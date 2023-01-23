@@ -164,7 +164,7 @@ configure_network() {
 			info "Restart the CRI-O service due to $issue"
 			sudo systemctl restart crio
 		fi
-		local list_pods="kubectl get -n kube-system --selector app=flannel pods"
+		local list_pods="kubectl get -n kube-flannel --selector app=flannel pods"
 		info "Wait for Flannel pods to show up"
 		waitForProcess "60" "10" \
 			"[ \$($list_pods 2>/dev/null | wc -l) -gt 0 ]"
@@ -172,11 +172,11 @@ configure_network() {
 		for flannel_p in $($list_pods \
 			-o jsonpath='{.items[*].metadata.name}'); do
 			info "Wait for pod $flannel_p be ready"
-			if ! kubectl wait -n kube-system --for=condition=Ready \
+			if ! kubectl wait -n kube-flannel --for=condition=Ready \
 				"pod/$flannel_p"; then
 				info "Flannel pod $flannel_p failed to start"
 				echo "[DEBUG] Pod ${flannel_p}:" 1>&2
-				kubectl describe -n kube-system "pod/$flannel_p"
+				kubectl describe -n kube-flannel "pod/$flannel_p"
 			fi
 		done
 	fi
