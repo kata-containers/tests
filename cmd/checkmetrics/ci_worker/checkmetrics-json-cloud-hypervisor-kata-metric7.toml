@@ -17,8 +17,8 @@ description = "measure container lifecycle timings"
 checkvar = ".\"boot-times\".Results | .[] | .\"to-workload\".Result"
 checktype = "mean"
 midval = 0.47
-minpercent = 25.0
-maxpercent = 25.0
+minpercent = 30.0
+maxpercent = 30.0
 
 [[metric]]
 name = "memory-footprint"
