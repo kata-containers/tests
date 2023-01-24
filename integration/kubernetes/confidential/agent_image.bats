@@ -88,11 +88,7 @@ setup() {
 	switch_image_service_offload on
 	clear_kernel_params
 	add_kernel_params "${original_kernel_params}"
-	if [ "${SKOPEO:-}" = "yes" ]; then
-		add_kernel_params \
-			"agent.container_policy_file=/etc/containers/quay_verification/quay_policy.json"
-	fi
-
+	
 	setup_proxy
 	switch_measured_rootfs_verity_scheme none
 }
@@ -148,11 +144,7 @@ assert_logs_contain() {
 
 	echo $container_config
 	assert_pod_fail "$container_config"
-	if [ "${SKOPEO:-}" = "yes" ]; then
-		assert_logs_contain 'Signature for identity .* is not accepted'
-	else
-		assert_logs_contain 'Validate image failed: The signatures do not satisfied! Reject reason: \[Match reference failed.\]'
-	fi
+	assert_logs_contain 'Validate image failed: The signatures do not satisfied! Reject reason: \[Match reference failed.\]'
 }
 
 @test "$test_tag Test can pull an unencrypted unsigned image from an unprotected registry" {
@@ -169,11 +161,7 @@ assert_logs_contain() {
 	echo $container_config
 
 	assert_pod_fail "$container_config"
-	if [ "${SKOPEO:-}" = "yes" ]; then
-		assert_logs_contain "Invalid GPG signature"
-	else
-		assert_logs_contain 'Validate image failed: The signatures do not satisfied! Reject reason: \[signature verify failed! There is no pubkey can verify the signature!\]'
-	fi
+	assert_logs_contain 'Validate image failed: The signatures do not satisfied! Reject reason: \[signature verify failed! There is no pubkey can verify the signature!\]'
 }
 
 @test "$test_tag Test unencrypted image signed with cosign" {
@@ -190,11 +178,7 @@ assert_logs_contain() {
 	echo $container_config
 
 	assert_pod_fail "$container_config"
-	if [ "${SKOPEO:-}" = "yes" ]; then
-		assert_logs_contain 'Signature for identity .* is not accepted'
-	else
-		assert_logs_contain 'Validate image failed: \[PublicKeyVerifier { key: CosignVerificationKey'
-	fi
+	assert_logs_contain 'Validate image failed: \[PublicKeyVerifier { key: CosignVerificationKey'
 }
 
 

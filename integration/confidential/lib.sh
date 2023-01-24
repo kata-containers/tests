@@ -229,12 +229,6 @@ load_runtime_config_path() {
 	fi
 }
 
-setup_skopeo_signature_files_in_guest() {
-	setup_common_signature_files_in_guest
-	cp_to_guest_img "${rootfs_directory}" "${SHARED_FIXTURES_DIR}/registries.d"
-}
-
-# TODO #3970 - when skopeo fully removed refactor this and delete policy.json in fixture
 setup_common_signature_files_in_guest() {
 	rootfs_directory="etc/containers/"
 	signatures_dir="${SHARED_FIXTURES_DIR}/quay_verification/$(uname -m)/signatures"
@@ -299,20 +293,16 @@ setup_cosign_signatures_files() {
 }
 
 setup_signature_files() {
-	if [ "${SKOPEO:-}" = "yes" ]; then
-		setup_skopeo_signature_files_in_guest
-	else
-		case "${AA_KBC:-}" in
-			"offline_fs_kbc")
-				setup_offline_fs_kbc_signature_files_in_guest
-				;;
-			"eaa_kbc")
-				setup_eaa_kbc_signature_files_in_guest
-				;;
-			*)
-				;;
-		esac
-	fi
+	case "${AA_KBC:-}" in
+		"offline_fs_kbc")
+			setup_offline_fs_kbc_signature_files_in_guest
+			;;
+		"eaa_kbc")
+			setup_eaa_kbc_signature_files_in_guest
+			;;
+		*)
+			;;
+	esac
 }
 
 # In case the tests run behind a firewall where images needed to be fetched

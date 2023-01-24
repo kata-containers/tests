@@ -63,14 +63,14 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" bash -c "make tracing"
 		
 		# TODO - one issue #4755 is resolved we can uncomment these and run the CC tests at the end of the run job.
-		# if [[ "${CI_JOB}" =~ CC_CRI_CONTAINERD ]] || [[ "${CI_JOB}" =~ CC_SKOPEO_CRI_CONTAINERD ]]; then
+		# if [[ "${CI_JOB}" =~ CC_CRI_CONTAINERD ]]; then
 		# 	echo "INFO: Running Confidential Container tests"
 		# 	sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-containerd"
 		# fi
 		echo "INFO: Running runk test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make runk"
 		;;
-	"CC_CRI_CONTAINERD"|"CC_SKOPEO_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_CLOUD_HYPERVISOR"|"CC_SKOPEO_CRI_CONTAINERD_CLOUD_HYPERVISOR"|"CC_CRI_CONTAINERD_TDX_QEMU"|"CC_CRI_CONTAINERD_TDX_CLOUD_HYPERVISOR")
+	"CC_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_CLOUD_HYPERVISOR"|"CC_CRI_CONTAINERD_TDX_QEMU"|"CC_CRI_CONTAINERD_TDX_CLOUD_HYPERVISOR")
 		echo "INFO: Running Confidential Container tests"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-containerd"
 		;;
@@ -78,7 +78,7 @@ case "${CI_JOB}" in
 		info "Running Confidential Containers tests for AMD SEV"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-sev-containerd"
 		;;
-	"CC_CRI_CONTAINERD_K8S"|"CC_SKOPEO_CRI_CONTAINERD_K8S"|"CC_CRI_CONTAINERD_K8S_TDX_QEMU"|"CC_CRI_CONTAINERD_K8S_SE_QEMU"|"CC_CRI_CONTAINERD_K8S_TDX_CLOUD_HYPERVISOR"|"CC_SKOPEO_CRI_CONTAINERD_K8S_TDX_QEMU"|"CC_SKOPEO_CRI_CONTAINERD_K8S_TDX_CLOUD_HYPERVISOR")
+	"CC_CRI_CONTAINERD_K8S"|"CC_CRI_CONTAINERD_K8S_TDX_QEMU"|"CC_CRI_CONTAINERD_K8S_SE_QEMU"|"CC_CRI_CONTAINERD_K8S_TDX_CLOUD_HYPERVISOR")
 		info "Running Confidential Container tests"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-kubernetes"
 		;;
