@@ -1,0 +1,32 @@
+# Copyright (c) 2023 Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+kind: Service
+apiVersion: v1
+metadata:
+  name: $NAME
+spec:
+  selector:
+    app: $NAME
+  ports:
+  - port: 22
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: $NAME
+spec:
+  selector:
+    matchLabels:
+      app: $NAME
+  template:
+    metadata:
+      labels:
+        app: $NAME
+    spec:
+      runtimeClassName: $RUNTIMECLASS
+      containers:
+      - name: $NAME
+        image: $IMAGE
+        imagePullPolicy: Always

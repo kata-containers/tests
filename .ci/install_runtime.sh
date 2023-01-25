@@ -115,8 +115,7 @@ fi
 enable_hypervisor_config(){
 	local path=$1
 	sudo rm -f "${PKGDEFAULTSDIR}/configuration.toml"
-	sudo cp -a "$path" "${PKGDEFAULTSDIR}/configuration.toml"
-
+	sudo ln -sf "${path}" "${PKGDEFAULTSDIR}/configuration.toml"
 }
 
 case "${KATA_HYPERVISOR}" in
@@ -146,7 +145,7 @@ case "${KATA_HYPERVISOR}" in
 			# Due to a KVM bug, vmx-rdseed-exit must be disabled in QEMU >= 4.2
 			# All CI now uses qemu 5.0+, disabled in the time..
 			# see https://github.com/kata-containers/runtime/pull/2355#issuecomment-625469252
-			sudo sed -i 's|^cpu_features="|cpu_features="-vmx-rdseed-exit,|g' "${runtime_config_path}"
+			sudo sed -i --follow-symlinks 's|^cpu_features="|cpu_features="-vmx-rdseed-exit,|g' "${runtime_config_path}"
 		fi
 		;;
 	"dragonball")
@@ -162,20 +161,20 @@ if [ x"${TEST_INITRD}" == x"yes" ]; then
 	echo "Set to test initrd image"
 	image_path="${image_path:-$SHAREDIR/kata-containers}"
 	initrd_name=${initrd_name:-kata-containers-initrd.img}
-	sudo sed -i -e "s|^image =.*|initrd = \"$image_path/$initrd_name\"|" "${runtime_config_path}"
+	sudo sed -i --follow-symlinks -e "s|^image =.*|initrd = \"$image_path/$initrd_name\"|" "${runtime_config_path}"
 fi
 
 if [ -z "${METRICS_CI}" ]; then
 	echo "Enabling all debug options in file ${runtime_config_path}"
-	sudo sed -i -e 's/^#\(enable_debug\).*=.*$/\1 = true/g' "${runtime_config_path}"
-	sudo sed -i -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug"/g' "${runtime_config_path}"
+	sudo sed -i --follow-symlinks -e 's/^#\(enable_debug\).*=.*$/\1 = true/g' "${runtime_config_path}"
+	sudo sed -i --follow-symlinks -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug"/g' "${runtime_config_path}"
 else
 	echo "Metrics run - do not enable all debug options in file ${runtime_config_path}"
 fi
 
 if [ "$USE_VSOCK" == "yes" ]; then
 	echo "Configure use of VSOCK in ${runtime_config_path}"
-	sudo sed -i -e 's/^#use_vsock.*/use_vsock = true/' "${runtime_config_path}"
+	sudo sed -i --follow-symlinks -e 's/^#use_vsock.*/use_vsock = true/' "${runtime_config_path}"
 
 	# On OpenShift CI the vhost module should not be loaded on build time.
 	if [ "$OPENSHIFT_CI" == "false" ]; then
@@ -192,28 +191,28 @@ fi
 
 if [ "$MACHINETYPE" == "q35" ]; then
 	echo "Use machine_type q35"
-	sudo sed -i -e 's|machine_type = "pc"|machine_type = "q35"|' "${runtime_config_path}"
+	sudo sed -i --follow-symlinks -e 's|machine_type = "pc"|machine_type = "q35"|' "${runtime_config_path}"
 fi
 
 # Enable experimental features if KATA_EXPERIMENTAL_FEATURES is set to true
 if [ "$KATA_EXPERIMENTAL_FEATURES" = true ]; then
 	echo "Enable runtime experimental features"
 	feature="newstore"
-	sudo sed -i -e "s|^experimental.*$|experimental=[ \"$feature\" ]|" "${runtime_config_path}"
+	sudo sed -i --follow-symlinks -e "s|^experimental.*$|experimental=[ \"$feature\" ]|" "${runtime_config_path}"
 fi
 
 # Enable virtio-blk device driver only for ubuntu with initrd for this moment
 # see https://github.com/kata-containers/tests/issues/1603
 if [ "$ID" == ubuntu ] && [ x"${TEST_INITRD}" == x"yes" ] && [ "$VERSION_ID" != "16.04" ] && [ "$arch" != "ppc64le" ]; then
 	echo "Set virtio-blk as the block device driver on $ID"
-	sudo sed -i 's/block_device_driver = "virtio-scsi"/block_device_driver = "virtio-blk"/' "${runtime_config_path}"
+	sudo sed -i --follow-symlinks 's/block_device_driver = "virtio-scsi"/block_device_driver = "virtio-blk"/' "${runtime_config_path}"
 fi
 
 # Install UEFI ROM for arm64/qemu
 ENABLE_ARM64_UEFI="${ENABLE_ARM64_UEFI:-false}"
 if [ "$arch" == "aarch64" -a "${KATA_HYPERVISOR}" == "qemu" -a "${ENABLE_ARM64_UEFI}" == "true" ]; then
 	${cidir}/aarch64/install_rom_aarch64.sh
-	sudo sed -i 's|pflashes = \[\]|pflashes = ["/usr/share/kata-containers/kata-flash0.img", "/usr/share/kata-containers/kata-flash1.img"]|' "${runtime_config_path}"
+	sudo sed -i --follow-symlinks 's|pflashes = \[\]|pflashes = ["/usr/share/kata-containers/kata-flash0.img", "/usr/share/kata-containers/kata-flash1.img"]|' "${runtime_config_path}"
 	#enable pflash
-	sudo sed -i 's|#pflashes|pflashes|' "${runtime_config_path}"
+	sudo sed -i --follow-symlinks 's|#pflashes|pflashes|' "${runtime_config_path}"
 fi

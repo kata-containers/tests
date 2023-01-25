@@ -24,6 +24,10 @@ load "${TESTS_REPO_DIR}/lib/common.bash"
 #load "${TESTS_REPO_DIR}/.ci/lib.sh"
 test_tag="[cc][kubernetes][containerd][sev]"
 
+export SEV_CONFIG="/opt/confidential-containers/share/defaults/kata-containers/configuration-qemu-sev.toml"
+export FIXTURES_DIR="${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures"
+export IMAGE_REPO="ghcr.io/fitzthum/encrypted-image-tests"
+
 esudo() {
   sudo -E PATH=$PATH "$@"
 }
@@ -42,6 +46,36 @@ get_version() {
   result=$("${GOPATH}/bin/yq" r -X "$versions_file" "$dependency")
   [ "$result" = "null" ] && result=""
   echo "$result"
+}
+
+generate_service_yaml() {
+  local name="${1}"
+  local image="${2}"
+  local runtime_class="kata"
+
+  local service_yaml_template="${FIXTURES_DIR}/service.yaml.in"
+  
+  # If this is an operator test, set the runtime class appropriately
+  if [ "${OPERATOR}" == true ]; then
+    runtime_class="kata-qemu-sev"
+  fi
+
+  local service_yaml="${TEST_DIR}/${name}.yaml"
+  rm -f "${service_yaml}"
+  
+  NAME="${name}" IMAGE="${image}" RUNTIMECLASS="$runtime_class" \
+    envsubst < "${service_yaml_template}" > "${service_yaml}"
+}
+
+configure_containerd() {
+  local containerd_config="/etc/containerd/config.toml"
+
+  # Only add the cri_handler if it is not already set
+  cri_handler_set=$(cat "${containerd_config}" | grep "cri_handler = \"cc\"" || true)
+  if [ -z "${cri_handler_set}" ]; then
+    esudo sed -i -e 's/\([[:blank:]]*\)\(runtime_type = "io.containerd.kata.v2"\)/\1\2\n\1cri_handler = "cc"/' "${containerd_config}"
+    esudo systemctl restart containerd
+  fi
 }
 
 # Wait until the pod is 'Ready'. Fail if it hits the timeout.
@@ -124,9 +158,9 @@ delete_pods() {
 
   # Delete both encrypted and unencrypted pods
   esudo kubectl delete -f \
-    "${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures/unencrypted-image-tests.yaml" 2>/dev/null || true
+    "${TEST_DIR}/unencrypted-image-tests.yaml" 2>/dev/null || true
   esudo kubectl delete -f \
-    "${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures/encrypted-image-tests.yaml" 2>/dev/null || true
+    "${TEST_DIR}/encrypted-image-tests.yaml" 2>/dev/null || true
   
   [ -z "${encrypted_pod_name}" ] || (kubernetes_wait_for_pod_delete_state "${encrypted_pod_name}" || true)
   [ -z "${unencrypted_pod_name}" ] || (kubernetes_wait_for_pod_delete_state "${unencrypted_pod_name}" || true)
@@ -166,7 +200,7 @@ run_kbs() {
 
 pull_unencrypted_image_and_set_keys() {
   # Pull unencrypted test image to get labels
-  local unencrypted_image_url="ghcr.io/fitzthum/encrypted-image-tests:unencrypted"
+  local unencrypted_image_url="${IMAGE_REPO}:unencrypted"
   esudo docker pull "${unencrypted_image_url}"
 
   # Get encryption key from docker image label
@@ -190,15 +224,13 @@ i8042.direct=1 i8042.dumbkbd=1 i8042.nopnp=1 i8042.noaux=1 noreplace-smp reboot=
 cryptomgr.notests net.ifnames=0 pci=lastbus=0 console=hvc0 console=hvc1 quiet panic=1 \
 nr_cpus=1 scsi_mod.scan=none agent.config_file=/etc/agent-config.toml"
 
-  local sev_config="/opt/confidential-containers/share/defaults/kata-containers/configuration-qemu-sev.toml"
-
   # Gather firmware locations and kernel append for measurement
   local append=${1:-${append_default}}
   local ovmf_path="/opt/confidential-containers/share/ovmf/OVMF.fd"
   local kernel_path="$(esudo /opt/confidential-containers/bin/kata-runtime \
-    --config ${sev_config} kata-env --json | jq -r .Kernel.Path)"
+    --config ${SEV_CONFIG} kata-env --json | jq -r .Kernel.Path)"
   local initrd_path="$(esudo /opt/confidential-containers/bin/kata-runtime \
-    --config ${sev_config} kata-env --json | jq -r .Initrd.Path)"
+    --config ${SEV_CONFIG} kata-env --json | jq -r .Initrd.Path)"
   
   # Return error if files don't exist
   [ -f "${ovmf_path}" ] || return 1
@@ -219,11 +251,14 @@ nr_cpus=1 scsi_mod.scan=none agent.config_file=/etc/agent-config.toml"
 # KBS must be accessible from inside the guest, so update the config file
 # with the IP of the host
 update_kbs_uri() {
-  local sev_config="/opt/confidential-containers/share/defaults/kata-containers/configuration-qemu-sev.toml"
-  kbs_ip="$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')"
+  local kbs_ip="$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')"
   local aa_kbc_params="agent.aa_kbc_params=online_sev_kbc::${kbs_ip}:44444"
-  esudo sed -i -e 's#^\(kernel_params\) = "\(.*\)"#\1 = "\2 '"$aa_kbc_params"'"#g' "$sev_config"
 
+  # Only add the aa_kbc_params if it is not already set
+  aa_kbc_params_set=$(cat "${SEV_CONFIG}" | grep "kernel_params" | grep "${aa_kbc_params}" || true)
+  if [ -z "${aa_kbc_params_set}" ]; then
+    esudo sed -i -e 's#^\(kernel_params\) = "\(.*\)"#\1 = "\2 '"${aa_kbc_params}"'"#g' "${SEV_CONFIG}"
+  fi
 }
 
 add_key_to_kbs_db() {
@@ -281,6 +316,8 @@ setup_file() {
   pip install sev-snp-measure
   "${TESTS_REPO_DIR}/.ci/install_yq.sh" >&2
 
+  configure_containerd
+
   # KBS setup and run
   echo "Setting up simple-kbs..."
   run_kbs
@@ -288,6 +325,9 @@ setup_file() {
   # Pull unencrypted image and retrieve encryption and ssh keys
   echo "Pulling unencrypted image and setting keys..."
   pull_unencrypted_image_and_set_keys
+
+  generate_service_yaml "unencrypted-image-tests" "${IMAGE_REPO}:unencrypted"
+  generate_service_yaml "encrypted-image-tests" "${IMAGE_REPO}:encrypted"
 
   echo "SETUP FILE - COMPLETE"
   echo "###############################################################################"
@@ -307,14 +347,11 @@ EOF
 }
 
 @test "$test_tag Test SEV unencrypted container launch success" {
-
   # Turn off pre-attestation. It is not necessary for an unencrypted image.
-  local kata_config_file="/opt/confidential-containers/share/defaults/kata-containers/configuration-qemu-sev.toml"
-  esudo sed -i 's/guest_pre_attestation = true/guest_pre_attestation = false/g' ${kata_config_file}
+  esudo sed -i 's/guest_pre_attestation = true/guest_pre_attestation = false/g' ${SEV_CONFIG}
   
   # Start the service/deployment/pod
-  esudo kubectl apply -f \
-    "${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures/unencrypted-image-tests.yaml"
+  esudo kubectl apply -f "${TEST_DIR}/unencrypted-image-tests.yaml"
   
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   pod_name=$(esudo kubectl get pod -o wide | grep unencrypted-image-tests | awk '{print $1;}')
@@ -339,12 +376,12 @@ EOF
   fi
 
   # Re-enable pre-attestation for the next tests
-  esudo sed -i 's/guest_pre_attestation = false/guest_pre_attestation = true/g' ${kata_config_file}
+  esudo sed -i 's/guest_pre_attestation = false/guest_pre_attestation = true/g' ${SEV_CONFIG}
 }
 
 @test "$test_tag Test SEV encrypted container launch failure with INVALID measurement" {
-  # update kata config to point to KBS
-  # this test expects an invalid measurement, but we still update
+  # Update kata config to point to KBS
+  # This test expects an invalid measurement, but we still update
   # config so that the kernel params (which are saved) are correct
   update_kbs_uri
 
@@ -357,8 +394,7 @@ EOF
   add_key_to_kbs_db ${measurement}
   
   # Start the service/deployment/pod
-  esudo kubectl apply -f \
-    "${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures/encrypted-image-tests.yaml"
+  esudo kubectl apply -f "${TEST_DIR}/encrypted-image-tests.yaml"
   
   # Retrieve pod name, wait for it to fail
   pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $1;}')
@@ -367,9 +403,9 @@ EOF
   print_service_info
 
   # Save guest qemu kernel append to file
-  kenel_append=$(get_guest_kernel_append "${pod_name}")
-  echo "${kenel_append}" > "${TEST_DIR}/guest-kernel-append"
-  echo "Kernel Append Retrieved from QEMU Process: ${kenel_append}"
+  kernel_append=$(get_guest_kernel_append "${pod_name}")
+  echo "${kernel_append}" > "${TEST_DIR}/guest-kernel-append"
+  echo "Kernel Append Retrieved from QEMU Process: ${kernel_append}"
 
   # Get pod info
   pod_info=$(esudo kubectl describe pod ${pod_name})
@@ -390,8 +426,7 @@ EOF
   add_key_to_kbs_db
   
   # Start the service/deployment/pod
-  esudo kubectl apply -f \
-    "${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures/encrypted-image-tests.yaml"
+  esudo kubectl apply -f "${TEST_DIR}/encrypted-image-tests.yaml"
 
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $1;}')
@@ -428,8 +463,7 @@ EOF
   add_key_to_kbs_db ${measurement}
   
   # Start the service/deployment/pod
-  esudo kubectl apply -f \
-    "${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures/encrypted-image-tests.yaml"
+  esudo kubectl apply -f "${TEST_DIR}/encrypted-image-tests.yaml"
 
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $1;}')
