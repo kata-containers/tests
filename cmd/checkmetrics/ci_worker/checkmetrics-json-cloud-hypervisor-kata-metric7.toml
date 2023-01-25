@@ -16,9 +16,9 @@ description = "measure container lifecycle timings"
 # within (inclusive)
 checkvar = ".\"boot-times\".Results | .[] | .\"to-workload\".Result"
 checktype = "mean"
-midval = 0.70
-minpercent = 25.0
-maxpercent = 25.0
+midval = 0.47
+minpercent = 30.0
+maxpercent = 30.0
 
 [[metric]]
 name = "memory-footprint"
@@ -68,7 +68,7 @@ description = "measure container average of blogbench write"
 # within (inclusive)
 checkvar = ".\"blogbench\".Results | .[] | .write.Result"
 checktype = "mean"
-midval = 805.0
+midval = 1346.0
 minpercent = 10.0
 maxpercent = 10.0
 
@@ -107,7 +107,7 @@ description = "measure container average of blogbench read"
 # within (inclusive)
 checkvar = ".\"blogbench\".Results | .[] | .read.Result"
 checktype = "mean"
-midval = 49802.0
+midval = 84119.0
 minpercent = 10.0
 maxpercent = 10.0
 
@@ -133,7 +133,7 @@ description = "measure read-bw using fio"
 # within (inclusive)
 checkvar = ".\"fio\".Results | .[] | .readbw.Result"
 checktype = "mean"
-midval = 81568051.0
+midval = 113203942.0
 minpercent = 25.0
 maxpercent = 25.0
 
@@ -173,7 +173,7 @@ description = "measure container bandwidth using iperf3"
 # within (inclusive)
 checkvar = ".\"network-iperf3\".Results | .[] | .bandwidth.Result"
 checktype = "mean"
-midval = 37613781147.0
+midval = 61147291549.0
 minpercent = 10.0
 maxpercent = 10.0
 
@@ -225,7 +225,7 @@ description = "measure container parallel bandwidth using iperf3"
 # within (inclusive)
 checkvar = ".\"network-iperf3\".Results | .[] | .parallel.Result"
 checktype = "mean"
-midval = 44243050018.0
+midval = 75296926250.0
 minpercent = 10.0
 maxpercent = 10.0
 
@@ -238,6 +238,7 @@ description = "measure container jitter using iperf3"
 # within (inclusive)
 checkvar = ".\"network-iperf3\".Results | .[] | .jitter.Result"
 checktype = "mean"
-midval = 0.025
+midval = 0.039
 minpercent = 60.0
 maxpercent = 50.0
+

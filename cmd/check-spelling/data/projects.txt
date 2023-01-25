@@ -8,6 +8,7 @@ Ansible/B
 AppArmor/B
 blogbench/B
 BusyBox/B
+Cassandra/B
 ccloudvm/B
 codecov/B
 containerd/B
@@ -84,8 +85,10 @@ snapcraft/B
 snapd/B
 SQLite/B
 SUSE/B
+Sysbench/B
 systemd/B
 TravisCI/B
+Tokio/B
 Vexxhost/B
 virtcontainers/B
 VMWare/B
