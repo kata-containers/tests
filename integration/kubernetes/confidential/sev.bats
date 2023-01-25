@@ -53,12 +53,14 @@ generate_service_yaml() {
   local name="${1}"
   local image="${2}"
 
+  local kbs_ip="$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')"
   local service_yaml_template="${FIXTURES_DIR}/service.yaml.in"
 
   local service_yaml="${TEST_DIR}/${name}.yaml"
   rm -f "${service_yaml}"
   
   NAME="${name}" IMAGE="${image}" RUNTIMECLASS="${RUNTIMECLASS}" \
+    KBS_URI="${kbs_ip}:44444" \
     envsubst < "${service_yaml_template}" > "${service_yaml}"
 }
 
@@ -246,6 +248,13 @@ nr_cpus=1 scsi_mod.scan=none agent.config_file=/etc/agent-config.toml"
 # KBS must be accessible from inside the guest, so update the config file
 # with the IP of the host
 update_kbs_uri() {
+
+  # If we have new config file, don't update the kernel params
+  local legacy_kbs_config=$(cat "${SEV_CONFIG}" | grep "guest_pre_attestation_proxy" || true)
+  if [ -z "${legacy_kbs_config}" ]; then
+    return 0
+  fi
+
   local kbs_ip="$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')"
   local aa_kbc_params="agent.aa_kbc_params=online_sev_kbc::${kbs_ip}:44444"
 
