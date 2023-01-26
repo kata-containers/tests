@@ -14,6 +14,8 @@ QEMU_REPO_URL=$(get_version "assets.hypervisor.qemu.url")
 # Remove 'https://' from the repo url to be able to git clone the repo
 QEMU_REPO=${QEMU_REPO_URL/https:\/\//}
 
+PREFIX=${PREFIX:-/opt/kata}
+
 build_and_install_qemu() {
         PACKAGING_DIR="${katacontainers_repo_dir}/tools/packaging"
         QEMU_CONFIG_SCRIPT="${PACKAGING_DIR}/scripts/configure-hypervisor.sh"
@@ -30,7 +32,7 @@ build_and_install_qemu() {
 	sudo -E ${PACKAGING_DIR}/scripts/patch_qemu.sh ${CURRENT_QEMU_VERSION} ${PACKAGING_DIR}/qemu/patches
 
         echo "Build Qemu"
-        "${QEMU_CONFIG_SCRIPT}" "qemu" | xargs sudo -E ./configure
+        PREFIX="${PREFIX}" "${QEMU_CONFIG_SCRIPT}" "qemu" | xargs sudo -E ./configure
         sudo -E make -j $(nproc)
 
         echo "Install Qemu"

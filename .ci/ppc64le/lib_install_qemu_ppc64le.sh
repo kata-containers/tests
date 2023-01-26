@@ -11,6 +11,7 @@ stable_branch=$(echo $CURRENT_QEMU_TAG | tr -d 'v' | awk 'BEGIN { FS = "." } {pr
 BUILT_QEMU="qemu-system-ppc64"
 export source_repo="${source_repo:-github.com/kata-containers/kata-containers}"
 export packaging_dir="$GOPATH/src/${source_repo}/tools/packaging"
+PREFIX=${PREFIX:-/opt/kata}
 
 source "${cidir}/lib.sh"
 
@@ -34,7 +35,7 @@ build_and_install_qemu() {
         sudo -E ${packaging_dir}/scripts/apply_patches.sh "${packaging_dir}/qemu/patches/${stable_branch}"
 	
         echo "Build Qemu"
-        "${QEMU_CONFIG_SCRIPT}" "qemu" | xargs sudo -E ./configure
+        PREFIX="${PREFIX}" "${QEMU_CONFIG_SCRIPT}" "qemu" | xargs sudo -E ./configure
         sudo -E make -j $(nproc)
 
         echo "Install Qemu"
