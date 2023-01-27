@@ -157,8 +157,8 @@ EOF
 setup_configuration_file() {
 	local qemu_config_file="configuration-qemu.toml"
 	local clh_config_file="configuration-clh.toml"
-	local image_file="/usr/share/kata-containers/kata-containers.img"
-	local initrd_file="/usr/share/kata-containers/kata-containers-initrd.img"
+	local image_file="/opt/kata/share/kata-containers/kata-containers.img"
+	local initrd_file="/opt/kata/share/kata-containers/kata-containers-initrd.img"
 	local kata_config_file=""
 
 	for file in $(kata-runtime --kata-show-default-config-paths); do
