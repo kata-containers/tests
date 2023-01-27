@@ -181,7 +181,7 @@ fi
 ENABLE_ARM64_UEFI="${ENABLE_ARM64_UEFI:-false}"
 if [ "$arch" == "aarch64" -a "${KATA_HYPERVISOR}" == "qemu" -a "${ENABLE_ARM64_UEFI}" == "true" ]; then
 	${cidir}/aarch64/install_rom_aarch64.sh
-	sudo sed -i 's|pflashes = \[\]|pflashes = ["/usr/share/kata-containers/kata-flash0.img", "/usr/share/kata-containers/kata-flash1.img"]|' "${runtime_config_path}"
+	sudo sed -i 's|pflashes = \[\]|pflashes = ["/opt/kata/share/kata-containers/kata-flash0.img", "/opt/kata/share/kata-containers/kata-flash1.img"]|' "${runtime_config_path}"
 	#enable pflash
 	sudo sed -i 's|#pflashes|pflashes|' "${runtime_config_path}"
 fi
