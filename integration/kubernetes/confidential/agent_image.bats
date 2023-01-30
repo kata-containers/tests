@@ -128,9 +128,19 @@ assert_logs_contain() {
 	echo "Check the image was not pulled in the host"
 	local pod_id=$(kubectl get pods -o jsonpath='{.items..metadata.name}')
 	retrieve_sandbox_id
+	echo "ls /run/kata-containers/shared/sandboxes/"
+	ls /run/kata-containers/shared/sandboxes/
+	echo "ls /run/kata-containers/shared/sandboxes/${sandbox_id}/shared"
+	ls /run/kata-containers/shared/sandboxes/${sandbox_id}/shared
+	echo "find /run/kata-containers/shared/sandboxes/${sandbox_id}/shared \
+		-name rootfs"
+	find /run/kata-containers/shared/sandboxes/${sandbox_id}/shared \
+		-name rootfs
 	rootfs=($(find /run/kata-containers/shared/sandboxes/${sandbox_id}/shared \
 		-name rootfs))
 	[ ${#rootfs[@]} -eq 1 ]
+	# trigger failure in order to print debug
+	return 1
 }
 
 @test "$test_tag Test can pull a unencrypted signed image from a protected registry" {
