@@ -51,8 +51,6 @@ if [ "$(uname -m)" == "s390x" ] && grep -Eq "\<(fedora|suse)\>" /etc/os-release 
 	export CC=gcc
 fi
 
-[ -z "${USE_DOCKER:-}" ] && grep -Eq "\<fedora\>" /etc/os-release 2> /dev/null && export USE_PODMAN=true
-
 tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 lib_script="${GOPATH}/src/${tests_repo}/lib/common.bash"
 source "${lib_script}"
