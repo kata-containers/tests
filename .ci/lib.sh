@@ -211,14 +211,11 @@ function get_dep_from_yaml_db(){
 function get_version(){
 	dependency="$1"
 	versions_file="${katacontainers_repo_dir}/versions.yaml"
-	echo "ls: $versions_file $(ls $versions_file)"
 	if [ ! -d "${katacontainers_repo_dir}" ]; then
 		mkdir -p "$(dirname ${katacontainers_repo_dir})"
 		git clone --quiet ${katacontainers_repo_git} "${katacontainers_repo_dir}"
 		( cd "${katacontainers_repo_dir}" && git checkout "$kata_default_branch" >&2 )
-		echo "kata_default_branch: $(kata_default_branch)"
 	fi
-	echo "Versions: $(cat $versions_file)"
 	get_dep_from_yaml_db "${versions_file}" "${dependency}"
 }
 

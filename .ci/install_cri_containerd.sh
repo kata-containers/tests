@@ -25,9 +25,11 @@ source "${script_dir}/lib.sh"
 CONTAINERD_OS=$(go env GOOS)
 CONTAINERD_ARCH=$(go env GOARCH)
 
+
 containerd_tarball_version=$(get_version "externals.containerd.version")
 
 containerd_version=${containerd_tarball_version#v}
+echo "Versions: $(cat $versions_file)"
 
 echo "Set up environment"
 if [ "$ID" == centos ] || [ "$ID" == rhel ] || [ "$ID" == sles ]; then
