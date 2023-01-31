@@ -29,6 +29,7 @@ CONTAINERD_ARCH=$(go env GOARCH)
 containerd_tarball_version=$(get_version "externals.containerd.version")
 
 containerd_version=${containerd_tarball_version#v}
+versions_file="${katacontainers_repo_dir}/versions.yaml"
 echo "Versions: $(cat $versions_file)"
 
 echo "Set up environment"
