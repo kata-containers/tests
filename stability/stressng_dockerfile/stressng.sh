@@ -8,10 +8,10 @@ set -o pipefail
 
 # General env
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
-source "${SCRIPT_PATH}/../metrics/lib/common.bash"
+source "${SCRIPT_PATH}/../../metrics/lib/common.bash"
 
 PAYLOAD_ARGS="${PAYLOAD_ARGS:-tail -f /dev/null}"
-DOCKERFILE="${SCRIPT_PATH}/stressng_dockerfile/Dockerfile"
+DOCKERFILE="${SCRIPT_PATH}/Dockerfile"
 IMAGE="docker.io/library/local-stressng:latest"
 CONTAINER_NAME="${CONTAINER_NAME:-stressng_test}"
 
