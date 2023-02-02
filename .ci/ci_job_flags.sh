@@ -158,7 +158,9 @@ case "${CI_JOB}" in
 		export KATA_BUILD_QEMU_TYPE="tdx"
 		export AA_KBC="eaa_kbc"
 	elif [[ "${CI_JOB}" =~ _SE_ ]]; then
-		export TEE_TYPE="se"
+		if grep -q 'prot_virt=1' /proc/cmdline && grep -Eq '^facilities.* 158 .*' /proc/cpuinfo; then
+			export TEE_TYPE="se"
+		fi
 	fi
 
 	if [[ "${CI_JOB}" =~ CLOUD_HYPERVISOR ]]; then
