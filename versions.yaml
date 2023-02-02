@@ -44,9 +44,9 @@ externals:
 
   flannel:
     url: "https://github.com/flannel-io/flannel"
-    version: "v0.20.2"
+    version: "v0.21.0"
     # yamllint disable-line rule:line-length
-    kube-flannel_url: "https://raw.githubusercontent.com/flannel-io/flannel/v0.20.2/Documentation/kube-flannel.yml"
+    kube-flannel_url: "https://raw.githubusercontent.com/flannel-io/flannel/v0.21.0/Documentation/kube-flannel.yml"
 
   xurls:
     description: |
