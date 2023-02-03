@@ -96,8 +96,8 @@ registry_server_teardown() {
 	fi
 }
 
-# Clone repo if $katacontainers_repo_dir is empty
-# Otherwise, we assume $katacontainers_repo is cloned and pull latest changes if there are any
+# Clone repo only if $katacontainers_repo_dir is empty
+# Otherwise, we assume $katacontainers_repo is cloned and in correct branch, e.g. a PR or local change
 clone_katacontainers_repo() {
 	add_repo_to_git_safe_directory "${katacontainers_repo_dir}"
 
@@ -107,11 +107,6 @@ clone_katacontainers_repo() {
 		pushd "${katacontainers_repo_dir}"
 		# Checkout to default branch
 		git checkout "${kata_default_branch}"
-		popd
-	else
-		pushd "${katacontainers_repo_dir}"
-		git checkout "${kata_default_branch}"
-		git pull
 		popd
 	fi
 }
