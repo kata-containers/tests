@@ -38,6 +38,16 @@ function main() {
 	SHARED_CMD="stress-ng --shm 0"
 	sudo -E ctr t exec --exec-id 3 "${CONTAINER_NAME}" sh -c "${SHARED_CMD}"
 
+	# Run all stressors one by one on all CPUs
+	info "Running all stressors one by one"
+	STRESSORS_CMD="stress-ng --seq 0 -t 10 --tz -v"
+	sudo -E ctr t exec --exec-id 4 "${CONTAINER_NAME}" sh -c "${STRESSORS_CMD}"
+
+	# Test floating point on CPU for 60 seconds
+	info  "Running floating tests on CPU"
+	FLOAT_CMD="stress-ng --matrix 1 -t 1m"
+	sudo -E ctr t exec --exec-id 5 "${CONTAINER_NAME}" sh -c "${FLOAT_CMD}"
+
 	clean_env_ctr
 }
 
