@@ -198,6 +198,8 @@ pull_fedora_cloud_image() {
 	loop=$(sudo losetup --show -Pf "${fedora_img}")
 	sudo mount "${loop}p1" /mnt
 
+	ls
+
 	# disable selinux
 	sudo sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /mnt/etc/selinux/config
 
