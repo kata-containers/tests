@@ -70,6 +70,10 @@ stability:
 	ITERATIONS=2 MAX_CONTAINERS=20 ./soak_parallel_rm.sh
 	cd stability && ./hypervisor_stability_kill_test.sh
 
+stability-baremetal:
+	cd stability && \
+	bash -f stressng.sh
+
 # If hypervisor is dragonball, the default path to keep pod info is /run/kata. Meanwhile, there is 
 # no independent hypervisor process for dragonball, so disale hypervisor_stability_kill_test.sh
 dragonball-stability:
