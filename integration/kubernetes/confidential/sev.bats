@@ -25,6 +25,7 @@ load "${TESTS_REPO_DIR}/lib/common.bash"
 test_tag="[cc][kubernetes][containerd][sev]"
 
 export SEV_CONFIG="/opt/confidential-containers/share/defaults/kata-containers/configuration-qemu-sev.toml"
+export RUNTIMECLASS=${RUNTIMECLASS:-"kata"}
 export FIXTURES_DIR="${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures"
 export IMAGE_REPO="ghcr.io/fitzthum/encrypted-image-tests"
 
@@ -51,19 +52,13 @@ get_version() {
 generate_service_yaml() {
   local name="${1}"
   local image="${2}"
-  local runtime_class="kata"
 
   local service_yaml_template="${FIXTURES_DIR}/service.yaml.in"
-  
-  # If this is an operator test, set the runtime class appropriately
-  if [ "${OPERATOR}" == true ]; then
-    runtime_class="kata-qemu-sev"
-  fi
 
   local service_yaml="${TEST_DIR}/${name}.yaml"
   rm -f "${service_yaml}"
   
-  NAME="${name}" IMAGE="${image}" RUNTIMECLASS="$runtime_class" \
+  NAME="${name}" IMAGE="${image}" RUNTIMECLASS="${RUNTIMECLASS}" \
     envsubst < "${service_yaml_template}" > "${service_yaml}"
 }
 
