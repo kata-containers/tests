@@ -158,7 +158,7 @@ configure_network() {
 		fi
 		local list_pods="kubectl get -n kube-flannel --selector app=flannel pods"
 		info "Wait for Flannel pods to show up"
-		waitForProcess "30" "10" \
+		waitForProcess "60" "10" \
 			"[ \$($list_pods 2>/dev/null | wc -l) -gt 0 ]"
 		local flannel_p
 		for flannel_p in $($list_pods \

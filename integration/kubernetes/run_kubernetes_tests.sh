@@ -124,7 +124,7 @@ info "Initialize the test environment"
 wait_init_retry="30"
 if ! bash ./init.sh; then
 	info "Environment initialization failed. Clean up and try again."
-	if ! bash ./cleanup_env.sh; then
+	if ! bash ./cleanup_env.sh "true"; then
 		die "Failed on cleanup, it won't retry. Bailing out..."
 	else
 		# trap on exit should be added only if cleanup_env.sh returned
