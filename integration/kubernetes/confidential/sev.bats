@@ -73,22 +73,6 @@ configure_containerd() {
   fi
 }
 
-# Wait until the pod is 'Ready'. Fail if it hits the timeout.
-kubernetes_wait_for_pod_ready_state() {
-  local pod_name="${1}"
-  local wait_time="${2:-60}"
-
-  esudo kubectl wait --for=condition=ready pod/$pod_name --timeout=${wait_time}s
-}
-
-# Wait until the pod is 'Deleted'. Fail if it hits the timeout.
-kubernetes_wait_for_pod_delete_state() {
-  local pod_name="${1}"
-  local wait_time="${2:-60}"
-
-  esudo kubectl wait --for=delete pod/$pod_name --timeout=${wait_time}s
-}
-
 # Find container id
 get_container_id() {
   local pod_name="${1}"
@@ -157,8 +141,8 @@ delete_pods() {
   esudo kubectl delete -f \
     "${TEST_DIR}/encrypted-image-tests.yaml" 2>/dev/null || true
   
-  [ -z "${encrypted_pod_name}" ] || (kubernetes_wait_for_pod_delete_state "${encrypted_pod_name}" || true)
-  [ -z "${unencrypted_pod_name}" ] || (kubernetes_wait_for_pod_delete_state "${unencrypted_pod_name}" || true)
+  [ -z "${encrypted_pod_name}" ] || (esudo kubectl wait --for=delete pod/"${encrypted_pod_name}" --timeout=60s || true)
+  [ -z "${unencrypted_pod_name}" ] || (esudo kubectl wait --for=delete pod/"${unencrypted_pod_name}" --timeout=60s || true)
 }
 
 run_kbs() {
@@ -332,7 +316,7 @@ setup() {
   # Remove the service/deployment/pod if it exists
   echo "Deleting previous test pods..."
   delete_pods
-
+  
   # Delete any previous data in the DB
   mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${KBS_DB_HOST} -D ${KBS_DB} <<EOF
     DELETE FROM secrets WHERE id = 10;
@@ -350,7 +334,7 @@ EOF
   
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   pod_name=$(esudo kubectl get pod -o wide | grep unencrypted-image-tests | awk '{print $1;}')
-  kubernetes_wait_for_pod_ready_state "$pod_name" 20
+  esudo kubectl wait --for=condition=ready pod/"$pod_name" --timeout=20s
   pod_ip=$(esudo kubectl get pod -o wide | grep unencrypted-image-tests | awk '{print $6;}')
 
   print_service_info
@@ -393,7 +377,7 @@ EOF
   
   # Retrieve pod name, wait for it to fail
   pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $1;}')
-  kubernetes_wait_for_pod_ready_state "$pod_name" 20 || true
+  esudo kubectl wait --for=condition=ready pod/"$pod_name" --timeout=20s || true
 
   print_service_info
 
@@ -425,7 +409,7 @@ EOF
 
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $1;}')
-  kubernetes_wait_for_pod_ready_state "$pod_name" 20
+  esudo kubectl wait --for=condition=ready pod/"$pod_name" --timeout=20s
   pod_ip=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $6;}')
 
   print_service_info
@@ -462,7 +446,7 @@ EOF
 
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $1;}')
-  kubernetes_wait_for_pod_ready_state "$pod_name" 20
+  esudo kubectl wait --for=condition=ready pod/"$pod_name" --timeout=20s
   pod_ip=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $6;}')
 
   print_service_info
@@ -495,7 +479,7 @@ teardown_file() {
 
   # Remove the service/deployment/pod
   delete_pods
-
+  
   # Stop KBS and KBS DB containers
   (cd ${KBS_DIR}/simple-kbs && esudo docker-compose down 2>/dev/null)
 
