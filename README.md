@@ -16,11 +16,11 @@ We provide several tests to ensure Kata-Containers run on different scenarios
 and with different container managers.
 
 1. Integration tests to ensure compatibility with:
-   - [Kubernetes](https://github.com/kata-containers/tests/tree/main/integration/kubernetes)
-   - [Containerd](https://github.com/kata-containers/tests/tree/main/integration/containerd)
+   - [Kubernetes](https://github.com/kata-containers/tests/tree/stable-3.1/integration/kubernetes)
+   - [Containerd](https://github.com/kata-containers/tests/tree/stable-3.1/integration/containerd)
 2. [Stability tests](./stability)
-3. [Metrics](https://github.com/kata-containers/tests/tree/main/metrics)
-4. [VFIO](https://github.com/kata-containers/tests/tree/main/functional/vfio)
+3. [Metrics](https://github.com/kata-containers/tests/tree/stable-3.1/metrics)
+4. [VFIO](https://github.com/kata-containers/tests/tree/stable-3.1/functional/vfio)
 
 ## CI Content
 
@@ -164,7 +164,7 @@ possible tests.
 
 ## Write a new Unit Test
 
-See the [unit test advice documentation](https://github.com/kata-containers/kata-containers/blob/main/docs/Unit-Test-Advice.md).
+See the [unit test advice documentation](https://github.com/kata-containers/kata-containers/blob/stable-3.1/docs/Unit-Test-Advice.md).
 
 ## Run the Kata Containers tests
 
@@ -175,7 +175,7 @@ You need to install the following to run Kata Containers tests:
 - [golang](https://golang.org/dl)
 
   To view the versions of go known to work, see the `golang` entry in the
-  [versions database](https://github.com/kata-containers/kata-containers/blob/main/versions.yaml).
+  [versions database](https://github.com/kata-containers/kata-containers/blob/stable-3.1/versions.yaml).
 
 - `make`.
 
@@ -183,7 +183,7 @@ You need to install the following to run Kata Containers tests:
 
 The recommended method to set up Kata Containers is to use the official and latest
 stable release. You can find the official documentation to do this in the
-[Kata Containers installation user guides](https://github.com/kata-containers/kata-containers/blob/main/docs/install/README.md).
+[Kata Containers installation user guides](https://github.com/kata-containers/kata-containers/blob/stable-3.1/docs/install/README.md).
 
 To try the latest commits of Kata use the CI scripts, which build and install from the
 `kata-containers` repositories, with the following steps:
@@ -213,7 +213,7 @@ $ export CI_JOB=CRI_CONTAINERD_K8S
 $ .ci/setup.sh
 ```
 In this case we are exporting the environment variables for the CRI_CONTAINERD_K8S Jenkins Job for more information
-of which CI_JOB needs to be used see the following https://github.com/kata-containers/tests/blob/main/.ci/ci_job_flags.sh.
+of which CI_JOB needs to be used see the following https://github.com/kata-containers/tests/blob/stable-3.1/.ci/ci_job_flags.sh.
 
 > **Limitation:** If the script fails for a reason and it is re-executed, it will execute
 all steps from the beginning and not from the failed step.

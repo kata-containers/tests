@@ -40,7 +40,7 @@ create_file() {
 	local block_size=4096
 	local data_offset=$((1024*1024*2))
 	local dax_alignment=$((1024*1024*2))
-	local nsdax_src_url="https://raw.githubusercontent.com/kata-containers/kata-containers/main/tools/osbuilder/image-builder/nsdax.gpl.c"
+	local nsdax_src_url="https://raw.githubusercontent.com/kata-containers/kata-containers/stable-3.1/tools/osbuilder/image-builder/nsdax.gpl.c"
 
 	truncate -s "${SIZE}" "${FILE}"
 	if [ $((($(stat -c '%s' "${FILE}")/1024/1024)%128)) -ne 0 ]; then
