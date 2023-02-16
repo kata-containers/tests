@@ -40,7 +40,7 @@ typeset -r arch_func_regex="_arch_specific$"
 repo=""
 specific_branch="false"
 force="false"
-branch=${branch:-main}
+branch=${branch:-stable-3.1}
 
 # Which static check functions to consider.
 handle_funcs="all"
