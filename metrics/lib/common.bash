@@ -228,8 +228,8 @@ common_init(){
 save_ksm_settings(){
 	echo "saving KSM settings"
 	ksm_stored_run=$(cat ${KSM_ENABLE_FILE})
-	ksm_stored_pages=$(cat ${KSM_ENABLE_FILE})
-	ksm_stored_sleep=$(cat ${KSM_ENABLE_FILE})
+	ksm_stored_pages=$(cat ${KSM_PAGES_FILE})
+	ksm_stored_sleep=$(cat ${KSM_SLEEP_FILE})
 }
 
 set_ksm_aggressive(){
