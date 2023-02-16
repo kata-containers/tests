@@ -24,6 +24,8 @@ spec:
     metadata:
       labels:
         app: $NAME
+      annotations:
+        io.katacontainers.config.pre_attestation.uri: "$KBS_URI"
     spec:
       runtimeClassName: $RUNTIMECLASS
       containers:
