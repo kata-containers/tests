@@ -41,12 +41,12 @@ build_rust_image() {
 	info "Building ${target_image} with AGENT_INIT=${AGENT_INIT}"
 	case "$build_method" in
 		"distro")
-			distro="${osbuilder_distro:-ubuntu}"
+			distro="${osbuilder_distro:-alpine}"
 			if [[ ! "${osbuild_docker:-}" =~ ^(0|false|no)$ ]]; then
 				use_docker="${osbuild_docker:-}"
 				[[ -z "${USE_PODMAN:-}" ]] && use_docker="${use_docker:-1}"
 			fi
-			sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" \
+			sudo -E USE_DOCKER="${use_docker:-}" DISTRO="${distro}" AGENT_INIT="yes" \
 				make -e "${target_image}"
 			;;
 		"dracut")
