@@ -24,6 +24,7 @@ declare -r TEST_BOOT="boot"
 declare -r TEST_DENSITY="density"
 declare -r TEST_NETWORK="network"
 declare -r TEST_BLOGBENCH="blogbench"
+declare -r TEST_LATENCY="latency"
 
 # Some tests can only run in cloud hypervisor
 declare -r CLH_NAME="cloud-hypervisor"
@@ -50,7 +51,7 @@ init() {
 run() {
 	if [ "${TEST_SELECTOR}" != "all" ] && [ "${TEST_SELECTOR}" != "${TEST_DENSITY}" ]  && \
 	[ "${TEST_SELECTOR}" != "${TEST_BLOGBENCH}" ] && [ "${TEST_SELECTOR}" != "${TEST_BOOT}" ] && \
-	[ "${TEST_SELECTOR}" != "${TEST_NETWORK}" ]; then
+	[ "${TEST_SELECTOR}" != "${TEST_NETWORK}" ] && [ "${TEST_SELECTOR}" != "${TEST_LATENCY}" ]; then
 		info "Invalid test: $TEST_SELECTOR"
 		return 1
 	fi
@@ -96,6 +97,18 @@ run() {
 	# Run the time tests
 	if [ "${TEST_SELECTOR}" = "all" ] || [ "${TEST_SELECTOR}" = "${TEST_BOOT}" ]; then
 		bash time/launch_times.sh -i public.ecr.aws/ubuntu/ubuntu:latest -n 20
+	fi
+
+	# Run latency tests
+	if [ "${TEST_SELECTOR}" = "all" ] || [ "${TEST_SELECTOR}" = "${TEST_LATENCY}" ]; then
+		if [ "${KATA_HYPERVISOR}" = "${CLH_NAME}" ]; then
+			start_kubernetes
+			bash network/latency_kubernetes/latency-network.sh
+			end_kubernetes
+			check_processes
+		else
+			info "${TEST_LATENCY} can't run using ${KATA_HYPERVISOR}"
+		fi
 	fi
 
 	# run network tests
