@@ -136,6 +136,24 @@ case "${CI_JOB}" in
 		echo "INFO: Running cloud hypervisor metrics tests"
 		sudo -E PATH="$PATH" ".ci/run_metrics_PR_ci.sh"
 		;;
+	"METRICS_CLH")
+		export RUNTIME="kata-runtime"
+		export CTR_RUNTIME="io.containerd.kata.v2"
+		export config_path="/usr/share/defaults/kata-containers"
+		tests_repo="github.com/kata-containers/tests"
+
+		echo "INFO: Install cloud hypervisor"
+		export KATA_HYPERVISOR="cloud-hypervisor"
+		pushd "${GOPATH}/src/${tests_repo}"
+		sudo -E PATH="$PATH" ".ci/install_cloud_hypervisor.sh"
+		popd
+
+		echo "INFO: Use cloud hypervisor configuration"
+		sudo -E ln -sf "${config_path}/configuration-clh.toml" "${config_path}/configuration.toml"
+
+		echo "INFO: Running cloud hypervisor metrics tests"
+		sudo -E PATH="$PATH" ".ci/run_metrics_PR_ci.sh"
+		;;
 	"VIRTIOFS_EXPERIMENTAL")
 		sudo -E PATH="$PATH" bash -c "make filesystem"
 		;;
