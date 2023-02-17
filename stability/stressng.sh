@@ -48,6 +48,11 @@ function main() {
 	FLOAT_CMD="stress-ng --matrix 1 -t 1m"
 	sudo -E ctr t exec --exec-id 5 "${CONTAINER_NAME}" sh -c "${FLOAT_CMD}"
 
+	# Runs two instances of the CPU stressors, one instance of the matrix
+	info "Running instances of the CPU stressors"
+	INSTANCE_CMD='stress-ng --cpu 2 --matrix 1 --mq 3 -t 5m'
+	sudo -E ctr t exec --exec-id 6 "${CONTAINER_NAME}" sh -c "${INSTANCE_CMD}"
+
 	clean_env_ctr
 }
 
