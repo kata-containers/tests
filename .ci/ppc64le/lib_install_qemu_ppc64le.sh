@@ -42,5 +42,11 @@ build_and_install_qemu() {
 
         sudo ln -sf $(command -v ${BUILT_QEMU}) "/usr/bin/qemu-system-${QEMU_ARCH}"
 
+        # Check if virtiofsd is properly installed
+        if [ ! -f /usr/libexec/qemu/virtiofsd ]; then 
+                echo "INFO: virtiofsd is not installed"
+                return 1 
+        fi
+
         popd
 }
