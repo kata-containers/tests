@@ -16,12 +16,10 @@ source "${cidir}/lib.sh"
 source /etc/os-release || source /usr/lib/os-release
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 KATA_EXPERIMENTAL_FEATURES="${KATA_EXPERIMENTAL_FEATURES:-}"
-MACHINETYPE="${MACHINETYPE:-q35}"
 METRICS_CI="${METRICS_CI:-}"
 PREFIX="${PREFIX:-/usr}"
 DESTDIR="${DESTDIR:-/}"
 TEST_INITRD="${TEST_INITRD:-}"
-USE_VSOCK="${USE_VSOCK:-yes}"
 TEE_TYPE="${TEE_TYPE:-}"
 USER="${USER:-$(id -u)}"
 GID="${GID:-$(id -g)}"
@@ -142,28 +140,6 @@ if [ -z "${METRICS_CI}" ]; then
 	sudo sed -i -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug"/g' "${runtime_config_path}"
 else
 	echo "Metrics run - do not enable all debug options in file ${runtime_config_path}"
-fi
-
-if [ "$USE_VSOCK" == "yes" ]; then
-	echo "Configure use of VSOCK in ${runtime_config_path}"
-	sudo sed -i -e 's/^#use_vsock.*/use_vsock = true/' "${runtime_config_path}"
-
-	# On OpenShift CI the vhost module should not be loaded on build time.
-	if [ "$OPENSHIFT_CI" == "false" ]; then
-		vsock_module="vhost_vsock"
-		echo "Check if ${vsock_module} is loaded"
-		if lsmod | grep -q "\<${vsock_module}\>" ; then
-			echo "Module ${vsock_module} is already loaded"
-		else
-			echo "Load ${vsock_module} module"
-			sudo modprobe "${vsock_module}"
-		fi
-	fi
-fi
-
-if [ "$MACHINETYPE" == "q35" ]; then
-	echo "Use machine_type q35"
-	sudo sed -i -e 's|machine_type = "pc"|machine_type = "q35"|' "${runtime_config_path}"
 fi
 
 # Enable experimental features if KATA_EXPERIMENTAL_FEATURES is set to true
