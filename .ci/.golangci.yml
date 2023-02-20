@@ -14,7 +14,6 @@ run:
 linters:
   disable-all: true
   enable:
-    - deadcode
     - gocyclo
     - gofmt
     - gosimple
@@ -22,10 +21,8 @@ linters:
     - ineffassign
     - misspell
     - staticcheck
-    - structcheck
     - typecheck
     - unused
-    - varcheck
 
 linters-settings:
   gocyclo:
