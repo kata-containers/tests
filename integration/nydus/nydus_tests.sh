@@ -17,6 +17,7 @@ source "${dir_path}/../../.ci/lib.sh"
 source "/etc/os-release" || source "/usr/lib/os-release"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 
+default_config=""
 need_restore_kata_config=false
 kata_config_backup="/tmp/kata-configuration.toml"
 SYSCONFIG_FILE="/etc/kata-containers/configuration.toml"
@@ -86,13 +87,14 @@ function config_kata() {
 	sudo mkdir -p /etc/kata-containers
 	if [ -f "$SYSCONFIG_FILE" ]; then
 		need_restore_kata_config=true
-		sudo cp -a "${SYSCONFIG_FILE}" "${kata_config_backup}"
+		default_config=$(readlink -f ${SYSCONFIG_FILE})
+		sudo cp -a "${default_config}" "${kata_config_backup}"
 	elif [ "$KATA_HYPERVISOR" == "qemu" ]; then
-		sudo cp -a "${DEFAULT_CONFIG_FILE}" "${SYSCONFIG_FILE}"
+		sudo ln -sf "${DEFAULT_CONFIG_FILE}" "${SYSCONFIG_FILE}"
 	elif [ "$KATA_HYPERVISOR" == "dragonball" ]; then
-		sudo cp -a "${DB_CONFIG_FILE}" "${SYSCONFIG_FILE}"
+		sudo ln -sf "${DB_CONFIG_FILE}" "${SYSCONFIG_FILE}"
 	else
-		sudo cp -a "${CLH_CONFIG_FILE}" "${SYSCONFIG_FILE}"
+		sudo ln -sf "${CLH_CONFIG_FILE}" "${SYSCONFIG_FILE}"
 	fi
 
 	echo "Enabling all debug options in file ${SYSCONFIG_FILE}"
@@ -186,7 +188,7 @@ function teardown() {
 
 	# restore kata configuratiom.toml if needed
 	if [ "${need_restore_kata_config}" == "true" ]; then
-		sudo mv "$kata_config_backup" "$SYSCONFIG_FILE"
+		sudo mv "$kata_config_backup" "$default_config"
 	else
 		sudo rm "$SYSCONFIG_FILE"
 	fi

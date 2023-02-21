@@ -94,7 +94,7 @@ if [ "${KATA_ETC_CONFIG_PATH}" != "${kata_config_path}" ]; then
 		sudo mkdir -p "${kata_etc_dir}"
 	fi
 	info "Creating etc config based on ${kata_config_path}"
-	sudo cp "${kata_config_path}" "${KATA_ETC_CONFIG_PATH}"
+	sudo ln -sf "${kata_config_path}" "${KATA_ETC_CONFIG_PATH}"
 fi
 
 info "modifying config file : ${KATA_ETC_CONFIG_PATH}"
