@@ -379,6 +379,7 @@ gen_clean_arch() {
 		sudo rm -rf /etc/systemd/system/kubelet.service.d
 		sudo systemctl daemon-reload
 		sudo apt-get autoremove -y kubeadm kubelet kubectl
+		sudo apt install -y curl make git
 	fi
 
 	# Remove existing k8s related configurations and binaries.
