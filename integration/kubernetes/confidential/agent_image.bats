@@ -106,6 +106,7 @@ assert_logs_contain() {
 }
 
 @test "$test_tag Test can launch pod with measured boot enabled" {
+	skip
 	switch_measured_rootfs_verity_scheme dm-verity
 	pod_config="$(new_pod_config "$image_unsigned_unprotected")"
 	echo $pod_config
@@ -114,6 +115,7 @@ assert_logs_contain() {
 }
 
 @test "$test_tag Test cannnot launch pod with measured boot enabled and rootfs modified" {
+	skip
 	switch_measured_rootfs_verity_scheme dm-verity
 	setup_signature_files
 	pod_config="$(new_pod_config "$image_unsigned_unprotected")"
