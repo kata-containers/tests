@@ -71,8 +71,8 @@ stability:
 	cd stability && ./hypervisor_stability_kill_test.sh
 
 stability-baremetal:
-	cd stability && \
-	bash -f stressng.sh
+	bash -f stability/stressng.sh
+	bash -f stability/scability_test.sh 100 10
 
 # If hypervisor is dragonball, the default path to keep pod info is /run/kata. Meanwhile, there is 
 # no independent hypervisor process for dragonball, so disale hypervisor_stability_kill_test.sh
