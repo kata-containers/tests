@@ -51,6 +51,11 @@ if [ "${KATA_HYPERVISOR}" == "cloud-hypervisor" ]; then
 	tests+=("latency")
 	test_queries+=(".\"latency\".Results | .[] | .latency.Result")
 
+	tests+=("network-iperf3")
+	test_queries+=(".\"network-iperf3\".Results | .[] | .parallel.Result")
+
+	tests+=("network-iperf3")
+	test_queries+=(".\"network-iperf3\".Results | .[] | .jitter.Result")
 fi
 
 # What is the base URL of the Jenkins server

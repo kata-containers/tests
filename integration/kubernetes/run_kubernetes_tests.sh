@@ -73,7 +73,8 @@ else
                 "k8s-env.bats" \
                 "k8s-exec.bats" \
                 "k8s-expose-ip.bats" \
-		"k8s-file-volume.bats" \
+                "k8s-file-volume.bats" \
+                "k8s-footloose.bats" \
                 "k8s-inotify.bats" \
                 "k8s-job.bats" \
                 "k8s-limit-range.bats" \
@@ -97,8 +98,8 @@ else
                 "k8s-shared-volume.bats" \
                 "k8s-volume.bats" \
                 "k8s-nginx-connectivity.bats" \
-		"k8s-ro-volume.bats" \
-		"k8s-pid-ns.bats" \
+                "k8s-ro-volume.bats" \
+                "k8s-pid-ns.bats" \
                 )
         fi
 fi
