@@ -379,11 +379,12 @@ EOF
     echo -e "${GREEN}KATA CC TEST - PASS: SEV is Enabled${NC}"
   fi
 
-  # Re-enable pre-attestation for the next tests
-  esudo sed -i 's/guest_pre_attestation = false/guest_pre_attestation = true/g' ${SEV_CONFIG}
 }
 
 @test "$test_tag Test SEV encrypted container launch failure with INVALID measurement" {
+  # Make sure pre-attestation is enabled. 
+  esudo sed -i 's/guest_pre_attestation = false/guest_pre_attestation = true/g' ${SEV_CONFIG}
+
   # Update kata config to point to KBS
   # This test expects an invalid measurement, but we still update
   # config so that the kernel params (which are saved) are correct
