@@ -117,7 +117,7 @@ run() {
 	if [ "${TEST_SELECTOR}" = "all" ] || [ "${TEST_SELECTOR}" = "${TEST_IPERF}" ]; then
 		if [ "${KATA_HYPERVISOR}" = "${CLH_NAME}" ]; then
 			start_kubernetes
-			bash network/latency_kubernetes/k8s-network-metrics-iperf3.sh -a
+			bash network/iperf3_kubernetes/k8s-network-metrics-iperf3.sh -a
 			end_kubernetes
 			check_processes
 		else
