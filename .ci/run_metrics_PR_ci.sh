@@ -25,6 +25,7 @@ declare -r TEST_DENSITY="density"
 declare -r TEST_NETWORK="network"
 declare -r TEST_BLOGBENCH="blogbench"
 declare -r TEST_LATENCY="latency"
+declare -r TEST_IPERF="iperf"
 
 # Some tests can only run in cloud hypervisor
 declare -r CLH_NAME="cloud-hypervisor"
@@ -51,7 +52,8 @@ init() {
 run() {
 	if [ "${TEST_SELECTOR}" != "all" ] && [ "${TEST_SELECTOR}" != "${TEST_DENSITY}" ]  && \
 	[ "${TEST_SELECTOR}" != "${TEST_BLOGBENCH}" ] && [ "${TEST_SELECTOR}" != "${TEST_BOOT}" ] && \
-	[ "${TEST_SELECTOR}" != "${TEST_NETWORK}" ] && [ "${TEST_SELECTOR}" != "${TEST_LATENCY}" ]; then
+	[ "${TEST_SELECTOR}" != "${TEST_NETWORK}" ] && [ "${TEST_SELECTOR}" != "${TEST_LATENCY}" ] && \
+	[ "${TEST_SELECTOR}" != "${TEST_IPERF}" ]; then
 		info "Invalid test: $TEST_SELECTOR"
 		return 1
 	fi
@@ -108,6 +110,18 @@ run() {
 			check_processes
 		else
 			info "${TEST_LATENCY} can't run using ${KATA_HYPERVISOR}"
+		fi
+	fi
+
+	# Run iperf tests
+	if [ "${TEST_SELECTOR}" = "all" ] || [ "${TEST_SELECTOR}" = "${TEST_IPERF}" ]; then
+		if [ "${KATA_HYPERVISOR}" = "${CLH_NAME}" ]; then
+			start_kubernetes
+			bash network/latency_kubernetes/k8s-network-metrics-iperf3.sh -a
+			end_kubernetes
+			check_processes
+		else
+			info "${TEST_IPERF} can't run using ${KATA_HYPERVISOR}"
 		fi
 	fi
 
