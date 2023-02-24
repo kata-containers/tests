@@ -223,7 +223,7 @@ nr_cpus=1 scsi_mod.scan=none agent.config_file=/etc/agent-config.toml"
 
   # Gather firmware locations and kernel append for measurement
   local append=${1:-${append_default}}
-  local ovmf_path="/opt/confidential-containers/share/ovmf/OVMF.fd"
+  local ovmf_path=$(grep "firmware = " $SEV_CONFIG | cut -d'"' -f2)
   local kernel_path="$(esudo /opt/confidential-containers/bin/kata-runtime \
     --config ${SEV_CONFIG} kata-env --json | jq -r .Kernel.Path)"
   local initrd_path="$(esudo /opt/confidential-containers/bin/kata-runtime \
