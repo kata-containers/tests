@@ -216,7 +216,11 @@ assert_logs_contain() {
 	echo "Pod config: ${pod_config}"
 
 	assert_pod_fail "${pod_config}"
-	assert_logs_contain 'failed to pull manifest Not authorized'
+	if [ "${AA_KBC}" = "eaa_kbc" ]; then 
+		assert_logs_contain 'failed to pull manifest Not authorized'
+	else
+		assert_logs_contain 'failed to pull manifest Authentication failure'
+	fi
 }
 
 teardown() {
