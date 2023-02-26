@@ -74,7 +74,6 @@ else
                 "k8s-exec.bats" \
                 "k8s-expose-ip.bats" \
                 "k8s-file-volume.bats" \
-                "k8s-footloose.bats" \
                 "k8s-inotify.bats" \
                 "k8s-job.bats" \
                 "k8s-limit-range.bats" \
@@ -101,6 +100,14 @@ else
                 "k8s-ro-volume.bats" \
                 "k8s-pid-ns.bats" \
                 )
+                arch=$("${cidir}"/kata-arch.sh -d)
+                if [ "$arch" == "x86_64" ]; then
+                    # Currently, we only solve k8s-footloose.bats problem in x86_64 and 
+                    # special care is needed for aarch64 or other platform.
+                    K8S_TEST_UNION+=("k8s-footloose.bats")
+                fi
+
+
         fi
 fi
 
