@@ -223,7 +223,7 @@ nr_cpus=1 scsi_mod.scan=none agent.config_file=/etc/agent-config.toml"
 
   # Gather firmware locations and kernel append for measurement
   local append=${1:-${append_default}}
-  local ovmf_path="/opt/confidential-containers/share/ovmf/OVMF.fd"
+  local ovmf_path=$(grep "firmware = " $SEV_CONFIG | cut -d'"' -f2)
   local kernel_path="$(esudo /opt/confidential-containers/bin/kata-runtime \
     --config ${SEV_CONFIG} kata-env --json | jq -r .Kernel.Path)"
   local initrd_path="$(esudo /opt/confidential-containers/bin/kata-runtime \
@@ -379,11 +379,12 @@ EOF
     echo -e "${GREEN}KATA CC TEST - PASS: SEV is Enabled${NC}"
   fi
 
-  # Re-enable pre-attestation for the next tests
-  esudo sed -i 's/guest_pre_attestation = false/guest_pre_attestation = true/g' ${SEV_CONFIG}
 }
 
 @test "$test_tag Test SEV encrypted container launch failure with INVALID measurement" {
+  # Make sure pre-attestation is enabled. 
+  esudo sed -i 's/guest_pre_attestation = false/guest_pre_attestation = true/g' ${SEV_CONFIG}
+
   # Update kata config to point to KBS
   # This test expects an invalid measurement, but we still update
   # config so that the kernel params (which are saved) are correct
