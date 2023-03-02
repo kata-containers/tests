@@ -1,3 +1,4 @@
 ginkgo
 !/**/ginkgo
 /.vagrant/
+cmd/check-markdown/kata-check-markdown
