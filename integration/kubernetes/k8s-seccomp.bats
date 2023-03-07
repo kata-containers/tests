@@ -11,7 +11,7 @@ setup() {
 	extract_kata_env
 
 	# Ensure setting seccomp mode is allowed on guest
-	sudo sed -i 's/disable_guest_seccomp=true/disable_guest_seccomp=false/' ${RUNTIME_CONFIG_PATH}
+	sudo sed --follow-symlinks -i 's/disable_guest_seccomp=true/disable_guest_seccomp=false/' ${RUNTIME_CONFIG_PATH}
 
 	pod_name="seccomp-container"
 	get_pod_config_dir
@@ -37,6 +37,6 @@ teardown() {
 	kubectl describe "pod/${pod_name}"
 
 	kubectl delete -f "${pod_config_dir}/pod-seccomp.yaml" || true
-	sudo sed -i 's/disable_guest_seccomp=false/disable_guest_seccomp=true/'\
+	sudo sed --follow-symlinks -i 's/disable_guest_seccomp=false/disable_guest_seccomp=true/'\
 		${RUNTIME_CONFIG_PATH}
 }

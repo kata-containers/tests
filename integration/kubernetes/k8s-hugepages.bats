@@ -35,7 +35,7 @@ setup() {
 	sed "s/\${hugepages_size}/$hugepages_size_k8s/" "$pod_config_dir/pod-hugepage.yaml" > "$pod_config_dir/test_hugepage.yaml"
 
 	# Enable hugepages
-	sed -i 's/#enable_hugepages = true/enable_hugepages = true/g' ${RUNTIME_CONFIG_PATH}
+	sed --follow-symlinks -i 's/#enable_hugepages = true/enable_hugepages = true/g' ${RUNTIME_CONFIG_PATH}
 
 	old_pages=$(cat "/sys/kernel/mm/hugepages/$hugepages_sysfs_dir/nr_hugepages")
 
@@ -65,8 +65,8 @@ setup() {
 
 	# Enable sandbox_cgroup_only
 	# And set default memory to a low value that is not smaller then container's request
-	sed -i 's/sandbox_cgroup_only=false/sandbox_cgroup_only=true/g' ${RUNTIME_CONFIG_PATH}
-	sed -i 's|^default_memory.*|default_memory = 512|g' $RUNTIME_CONFIG_PATH
+	sed --follow-symlinks -i 's/sandbox_cgroup_only=false/sandbox_cgroup_only=true/g' ${RUNTIME_CONFIG_PATH}
+	sed --follow-symlinks -i 's|^default_memory.*|default_memory = 512|g' $RUNTIME_CONFIG_PATH
 
 	# Create pod
 	kubectl create -f "${pod_config_dir}/test_hugepage.yaml"
@@ -77,7 +77,7 @@ setup() {
 	kubectl exec $pod_name mount | grep "nodev on /hugepages type hugetlbfs (rw,relatime,pagesize=$hugepages_size_mount.*)"
 
 	# Disable sandbox_cgroup_only
-	sed -i 's/sandbox_cgroup_only=true/sandbox_cgroup_only=false/g' ${RUNTIME_CONFIG_PATH}
+	sed --follow-symlinks -i 's/sandbox_cgroup_only=true/sandbox_cgroup_only=false/g' ${RUNTIME_CONFIG_PATH}
 }
 
 teardown() {
@@ -87,9 +87,9 @@ teardown() {
 	kubectl delete pod "$pod_name"
 
 	# Disable sandbox_cgroup_only, in case previous test failed.
-	sed -i 's/sandbox_cgroup_only=true/sandbox_cgroup_only=false/g' ${RUNTIME_CONFIG_PATH}
+	sed --follow-symlinks -i 's/sandbox_cgroup_only=true/sandbox_cgroup_only=false/g' ${RUNTIME_CONFIG_PATH}
 
 	# Disable hugepages and set default memory back to 2048Mi
-	sed -i 's/enable_hugepages = true/#enable_hugepages = true/g' ${RUNTIME_CONFIG_PATH}
-	sed -i 's|^default_memory.*|default_memory = 2048|g' $RUNTIME_CONFIG_PATH
+	sed --follow-symlinks -i 's/enable_hugepages = true/#enable_hugepages = true/g' ${RUNTIME_CONFIG_PATH}
+	sed --follow-symlinks -i 's|^default_memory.*|default_memory = 2048|g' $RUNTIME_CONFIG_PATH
 }

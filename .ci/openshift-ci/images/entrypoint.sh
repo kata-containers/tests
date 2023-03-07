@@ -44,10 +44,10 @@ update_qemu_path()
 	local toml="${SRC}/opt/kata/share/defaults/kata-containers/configuration.toml"
 	# Make a copy of the original file, it can help with debugging.
 	cp -f "$toml" "${toml}.orig"
-	sed -i 's#/opt/kata/bin/qemu-system-x86_64#'${QEMU_PATH}'#g' "$toml"
+	sed --follow-symlinks -i 's#/opt/kata/bin/qemu-system-x86_64#'${QEMU_PATH}'#g' "$toml"
 	# Assume virtiofsd is located at same directory of QEMU.
 	local virtiofsd_path="$(dirname $QEMU_PATH)/virtiofsd"
-	sed -i 's#/opt/kata/libexec/kata-qemu/virtiofsd#'$virtiofsd_path'#g' \
+	sed --follow-symlinks -i 's#/opt/kata/libexec/kata-qemu/virtiofsd#'$virtiofsd_path'#g' \
 		"$toml"
 }
 
@@ -57,7 +57,7 @@ update_kernel_path()
 {
 	local toml="${SRC}/opt/kata/share/defaults/kata-containers/configuration.toml"
 	local kernel_path="/lib/modules/$(uname -r)/vmlinuz"
-	sed -i 's#^kernel = ".*"#kernel = "'${kernel_path}'"#g' "$toml"
+	sed --follow-symlinks -i 's#^kernel = ".*"#kernel = "'${kernel_path}'"#g' "$toml"
 }
 
 # In case the initrd was not created in a build root which kernel version

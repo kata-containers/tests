@@ -70,7 +70,7 @@ enable_confidential_computing() {
 	sudo crudini --set "${conf_file}" 'hypervisor.qemu' 'firmware' '"'${FIRMWARE}'"'
 	sudo crudini --set "${conf_file}" 'hypervisor.qemu' 'firmware_volume' '"'${FIRMWARE_VOLUME}'"'
 	sudo crudini --set "${conf_file}" 'hypervisor.qemu' 'cpu_features' '"pmu=off,-kvm-steal-time"'
-	sudo sed -i 's|^# confidential_guest.*|confidential_guest = true|' "${conf_file}"
+	sudo sed --follow-symlinks -i 's|^# confidential_guest.*|confidential_guest = true|' "${conf_file}"
 }
 
 remove_tdx_tmp_dir() {

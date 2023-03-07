@@ -130,9 +130,9 @@ enable_pflash_in_config()
 	do
 		config_path="${con_pre}/kata-containers/configuration.toml"
 		[ -f "${config_path}" ] || continue	
-		sudo sed -i 's|pflashes = \[\]|pflashes = ["/usr/share/kata-containers/kata-flash0.img", "/usr/share/kata-containers/kata-flash1.img"]|' "${config_path}"
+		sudo sed --follow-symlinks -i 's|pflashes = \[\]|pflashes = ["/usr/share/kata-containers/kata-flash0.img", "/usr/share/kata-containers/kata-flash1.img"]|' "${config_path}"
 		#enable pflash
-		sudo sed -i 's|#pflashes|pflashes|' "${config_path}"
+		sudo sed --follow-symlinks -i 's|#pflashes|pflashes|' "${config_path}"
 	done
 }
 

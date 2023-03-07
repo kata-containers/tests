@@ -117,11 +117,11 @@ case "${KATA_HYPERVISOR}" in
 			# Due to a KVM bug, vmx-rdseed-exit must be disabled in QEMU >= 4.2
 			# All CI now uses qemu 5.0+, disabled in the time..
 			# see https://github.com/kata-containers/runtime/pull/2355#issuecomment-625469252
-			sudo sed -i 's|^cpu_features="|cpu_features="-vmx-rdseed-exit,|g' "${runtime_config_path}"
+			sudo sed --follow-symlinks -i 's|^cpu_features="|cpu_features="-vmx-rdseed-exit,|g' "${runtime_config_path}"
 		fi
 		;;
 	"dragonball")
-		sudo sed -i -e 's/vmlinux.container/vmlinux-dragonball-experimental.container/' "${PKGDEFAULTSDIR}/configuration-dragonball.toml"
+		sudo sed --follow-symlinks -i -e 's/vmlinux.container/vmlinux-dragonball-experimental.container/' "${PKGDEFAULTSDIR}/configuration-dragonball.toml"
 		enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-dragonball.toml"
 		;;
 	*)
@@ -133,20 +133,20 @@ if [ x"${TEST_INITRD}" == x"yes" ]; then
 	echo "Set to test initrd image"
 	image_path="${image_path:-$SHAREDIR/kata-containers}"
 	initrd_name=${initrd_name:-kata-containers-initrd.img}
-	sudo sed -i -e "s|^image =.*|initrd = \"$image_path/$initrd_name\"|" "${runtime_config_path}"
+	sudo sed --follow-symlinks -i -e "s|^image =.*|initrd = \"$image_path/$initrd_name\"|" "${runtime_config_path}"
 fi
 
 if [ -z "${METRICS_CI}" ]; then
 	echo "Enabling all debug options in file ${runtime_config_path}"
-	sudo sed -i -e 's/^#\(enable_debug\).*=.*$/\1 = true/g' "${runtime_config_path}"
-	sudo sed -i -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug"/g' "${runtime_config_path}"
+	sudo sed --follow-symlinks -i -e 's/^#\(enable_debug\).*=.*$/\1 = true/g' "${runtime_config_path}"
+	sudo sed --follow-symlinks -i -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug"/g' "${runtime_config_path}"
 else
 	echo "Metrics run - do not enable all debug options in file ${runtime_config_path}"
 fi
 
 if [ "$USE_VSOCK" == "yes" ]; then
 	echo "Configure use of VSOCK in ${runtime_config_path}"
-	sudo sed -i -e 's/^#use_vsock.*/use_vsock = true/' "${runtime_config_path}"
+	sudo sed --follow-symlinks -i -e 's/^#use_vsock.*/use_vsock = true/' "${runtime_config_path}"
 
 	# On OpenShift CI the vhost module should not be loaded on build time.
 	if [ "$OPENSHIFT_CI" == "false" ]; then
@@ -163,37 +163,37 @@ fi
 
 if [ "$MACHINETYPE" == "q35" ]; then
 	echo "Use machine_type q35"
-	sudo sed -i -e 's|machine_type = "pc"|machine_type = "q35"|' "${runtime_config_path}"
+	sudo sed --follow-symlinks -i -e 's|machine_type = "pc"|machine_type = "q35"|' "${runtime_config_path}"
 fi
 
 # Enable experimental features if KATA_EXPERIMENTAL_FEATURES is set to true
 if [ "$KATA_EXPERIMENTAL_FEATURES" = true ]; then
 	echo "Enable runtime experimental features"
 	feature="newstore"
-	sudo sed -i -e "s|^experimental.*$|experimental=[ \"$feature\" ]|" "${runtime_config_path}"
+	sudo sed --follow-symlinks -i -e "s|^experimental.*$|experimental=[ \"$feature\" ]|" "${runtime_config_path}"
 fi
 
 # Enable virtio-blk device driver only for ubuntu with initrd for this moment
 # see https://github.com/kata-containers/tests/issues/1603
 if [ "$ID" == ubuntu ] && [ x"${TEST_INITRD}" == x"yes" ] && [ "$VERSION_ID" != "16.04" ] && [ "$arch" != "ppc64le" ]; then
 	echo "Set virtio-blk as the block device driver on $ID"
-	sudo sed -i 's/block_device_driver = "virtio-scsi"/block_device_driver = "virtio-blk"/' "${runtime_config_path}"
+	sudo sed --follow-symlinks -i 's/block_device_driver = "virtio-scsi"/block_device_driver = "virtio-blk"/' "${runtime_config_path}"
 fi
 
 if [ "$TEE_TYPE" == "tdx" ]; then
         echo "Use tdx enabled guest config in ${runtime_config_path}"
-        sudo sed -i -e 's/vmlinux.container/vmlinuz-tdx.container/' "${runtime_config_path}"
-        sudo sed -i -e 's/^# confidential_guest/confidential_guest/' "${runtime_config_path}"
-        sudo sed -i -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 force_tdx_guest tdx_disable_filter "/g' "${runtime_config_path}"
+        sudo sed --follow-symlinks -i -e 's/vmlinux.container/vmlinuz-tdx.container/' "${runtime_config_path}"
+        sudo sed --follow-symlinks -i -e 's/^# confidential_guest/confidential_guest/' "${runtime_config_path}"
+        sudo sed --follow-symlinks -i -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 force_tdx_guest tdx_disable_filter "/g' "${runtime_config_path}"
 
         case "${KATA_HYPERVISOR}" in
 		"cloud-hypervisor")
-			sudo sed -i -e 's/^firmware = ".*"/firmware = "\/usr\/share\/td-shim\/final-pe.bin"/' "${runtime_config_path}"
+			sudo sed --follow-symlinks -i -e 's/^firmware = ".*"/firmware = "\/usr\/share\/td-shim\/final-pe.bin"/' "${runtime_config_path}"
 			;;
 
 		"qemu")
-			sudo sed -i -e 's/^firmware = ".*"/firmware = "\/usr\/share\/qemu\/OVMF.fd"/' "${runtime_config_path}"
-			sudo sed -i -e 's/^firmware_volume = ".*"/firmware_volume = "\/usr\/share\/qemu\/OVMF_VARS.fd"/' "${runtime_config_path}"
+			sudo sed --follow-symlinks -i -e 's/^firmware = ".*"/firmware = "\/usr\/share\/qemu\/OVMF.fd"/' "${runtime_config_path}"
+			sudo sed --follow-symlinks -i -e 's/^firmware_volume = ".*"/firmware_volume = "\/usr\/share\/qemu\/OVMF_VARS.fd"/' "${runtime_config_path}"
 			;;
         esac
 fi

@@ -98,15 +98,15 @@ function config_kata() {
 	fi
 
 	echo "Enabling all debug options in file ${SYSCONFIG_FILE}"
-	sudo sed -i -e 's/^#\(enable_debug\).*=.*$/\1 = true/g' "${SYSCONFIG_FILE}"
-	sudo sed -i -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug"/g' "${SYSCONFIG_FILE}"
+	sudo sed --follow-symlinks -i -e 's/^#\(enable_debug\).*=.*$/\1 = true/g' "${SYSCONFIG_FILE}"
+	sudo sed --follow-symlinks -i -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug"/g' "${SYSCONFIG_FILE}"
 
 	if [ "$KATA_HYPERVISOR" != "dragonball" ]; then
-		sudo sed -i 's|^shared_fs.*|shared_fs = "virtio-fs-nydus"|g' "${SYSCONFIG_FILE}"
-		sudo sed -i 's|^virtio_fs_daemon.*|virtio_fs_daemon = "/usr/local/bin/nydusd"|g' "${SYSCONFIG_FILE}"
+		sudo sed --follow-symlinks -i 's|^shared_fs.*|shared_fs = "virtio-fs-nydus"|g' "${SYSCONFIG_FILE}"
+		sudo sed --follow-symlinks -i 's|^virtio_fs_daemon.*|virtio_fs_daemon = "/usr/local/bin/nydusd"|g' "${SYSCONFIG_FILE}"
 	fi
 
-	sudo sed -i 's|^virtio_fs_extra_args.*|virtio_fs_extra_args = []|g' "${SYSCONFIG_FILE}"
+	sudo sed --follow-symlinks -i 's|^virtio_fs_extra_args.*|virtio_fs_extra_args = []|g' "${SYSCONFIG_FILE}"
 }
 
 function config_containerd() {
@@ -189,6 +189,7 @@ function teardown() {
 	# restore kata configuratiom.toml if needed
 	if [ "${need_restore_kata_config}" == "true" ]; then
 		sudo mv "$kata_config_backup" "$default_config"
+		sudo ln -sf "$default_config" "${SYSCONFIG_FILE}"
 	else
 		sudo rm "$SYSCONFIG_FILE"
 	fi

@@ -72,14 +72,14 @@ ci_config() {
 	if [ "$ID" == ubuntu ] &&  [ -n "${CI}" ] ;then
 		# https://github.com/kata-containers/tests/issues/352
 		if [ -n "${FACTORY_TEST}" ]; then
-			sudo sed -i -e 's/^#enable_template.*$/enable_template = true/g' "${kata_config}"
+			sudo sed --follow-symlinks -i -e 's/^#enable_template.*$/enable_template = true/g' "${kata_config}"
 			echo "init vm template"
 			sudo -E PATH=$PATH "$RUNTIME" factory init
 		fi
 	fi
 
 	echo "enable debug for kata-runtime"
-	sudo sed -i 's/^#enable_debug =/enable_debug =/g' ${kata_config}
+	sudo sed --follow-symlinks -i 's/^#enable_debug =/enable_debug =/g' ${kata_config}
 }
 
 ci_cleanup() {
@@ -265,11 +265,11 @@ TestContainerMemoryUpdate() {
 		fi
 		info "Test container memory update with virtio-mem"
 
-		sudo sed -i -e 's/^#enable_virtio_mem.*$/enable_virtio_mem = true/g' "${kata_config}"
+		sudo sed --follow-symlinks -i -e 's/^#enable_virtio_mem.*$/enable_virtio_mem = true/g' "${kata_config}"
 	else
 		info "Test container memory update without virtio-mem"
 
-		sudo sed -i -e 's/^enable_virtio_mem.*$/#enable_virtio_mem = true/g' "${kata_config}"
+		sudo sed --follow-symlinks -i -e 's/^enable_virtio_mem.*$/#enable_virtio_mem = true/g' "${kata_config}"
 	fi
 
 	testContainerStart
@@ -321,7 +321,7 @@ TestContainerSwap() {
 	info "Test container with guest swap"
 
 	create_containerd_config "${containerd_runtime_test}" 1
-	sudo sed -i -e 's/^#enable_guest_swap.*$/enable_guest_swap = true/g' "${kata_config}"
+	sudo sed --follow-symlinks -i -e 's/^#enable_guest_swap.*$/enable_guest_swap = true/g' "${kata_config}"
 
 	# Test without swap device
 	testContainerStart

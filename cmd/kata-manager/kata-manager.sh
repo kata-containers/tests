@@ -141,14 +141,14 @@ disable_image()
 {
 	config_checks
 
-	sudo sed -i 's/^\(image *=.*\)/# \1/g' "$config_file"
+	sudo sed --follow-symlinks -i 's/^\(image *=.*\)/# \1/g' "$config_file"
 }
 
 disable_initrd()
 {
 	config_checks
 
-	sudo sed -i 's/^\(initrd *=.*\)/# \1/g' "$config_file"
+	sudo sed --follow-symlinks -i 's/^\(initrd *=.*\)/# \1/g' "$config_file"
 }
 
 add_hypervisor_config()
@@ -158,7 +158,7 @@ add_hypervisor_config()
 
 	local -r hypervisor="qemu"
 
-	sudo sed -i "/\[hypervisor\.${hypervisor}\]/a ${name} = $value" "$config_file"
+	sudo sed --follow-symlinks -i "/\[hypervisor\.${hypervisor}\]/a ${name} = $value" "$config_file"
 }
 
 enable_image()
@@ -169,7 +169,7 @@ enable_image()
 
 	config_checks
 
-	sudo sed -i "s!^#*.*image *=.*\$!image = \"$file\"!g" "$config_file"
+	sudo sed --follow-symlinks -i "s!^#*.*image *=.*\$!image = \"$file\"!g" "$config_file"
 
 	egrep -q "\<image\> *=" "$config_file" && return
 
@@ -185,7 +185,7 @@ enable_initrd()
 
 	config_checks
 
-	sudo sed -i "s!^#*.*initrd *=.*\$!initrd = \"$file\"!g" "$config_file"
+	sudo sed --follow-symlinks -i "s!^#*.*initrd *=.*\$!initrd = \"$file\"!g" "$config_file"
 
 	egrep -q "\<initrd\> *=" "$config_file" && return
 
@@ -199,8 +199,8 @@ cmd_enable_full_debug()
 
 	config_checks
 
-	sudo sed -i -e 's/^# *\(enable_debug\).*=.*$/\1 = true/g' "$config_file"
-	sudo sed -i -e "s/^kernel_params = \"\(.*\)\"/kernel_params = \"\1 ${agent_debug}\"/g" "$config_file"
+	sudo sed --follow-symlinks -i -e 's/^# *\(enable_debug\).*=.*$/\1 = true/g' "$config_file"
+	sudo sed --follow-symlinks -i -e "s/^kernel_params = \"\(.*\)\"/kernel_params = \"\1 ${agent_debug}\"/g" "$config_file"
 }
 
 cmd_disable_all_debug()
@@ -209,22 +209,22 @@ cmd_disable_all_debug()
 
 	config_checks
 
-	sudo sed -i -e 's/^\(enable_debug.*=.*$\)/# \1/g' "$config_file"
-	sudo sed -i -e "s/^\(kernel_params = \".*\)${agent_debug}\(.*\"\)/\1 \2/g" "$config_file"
+	sudo sed --follow-symlinks -i -e 's/^\(enable_debug.*=.*$\)/# \1/g' "$config_file"
+	sudo sed --follow-symlinks -i -e "s/^\(kernel_params = \".*\)${agent_debug}\(.*\"\)/\1 \2/g" "$config_file"
 }
 
 cmd_disable_vsock()
 {
 	info "disabling vsock"
 	config_checks
-	sudo sed -i -e 's/^\(use_vsock.*=.*true\)/# \1/g' "${config_file}"
+	sudo sed --follow-symlinks -i -e 's/^\(use_vsock.*=.*true\)/# \1/g' "${config_file}"
 }
 
 cmd_enable_vsock()
 {
 	info "enabling vsock"
 	config_checks
-	sudo sed -i -e 's/^# *\(use_vsock\).*/\1 = true/' "${config_file}"
+	sudo sed --follow-symlinks -i -e 's/^# *\(use_vsock\).*/\1 = true/' "${config_file}"
 
 	local -r vsock_module="vhost_vsock"
 	echo "Check if ${vsock_module} is loaded"

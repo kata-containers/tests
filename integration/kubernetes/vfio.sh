@@ -59,14 +59,14 @@ setup_configuration_file() {
 	# machine type applies to configuration.toml and configuration-qemu.toml
 	if [ -n "${machine_type}" ]; then
 		if [ "${hypervisor}" = "qemu" ]; then
-			sudo sed -i 's|^machine_type.*|machine_type = "'${machine_type}'"|g' "${SYSCONFIG_FILE}"
+			sudo sed --follow-symlinks -i 's|^machine_type.*|machine_type = "'${machine_type}'"|g' "${SYSCONFIG_FILE}"
 		else
 			info "Variable machine_type only applies to qemu. It will be ignored"
 		fi
 	fi
 
 	if [ -n "${sandbox_cgroup_only}" ]; then
-		sudo sed -i 's|^sandbox_cgroup_only.*|sandbox_cgroup_only='${sandbox_cgroup_only}'|g' "${SYSCONFIG_FILE}"
+		sudo sed --follow-symlinks -i 's|^sandbox_cgroup_only.*|sandbox_cgroup_only='${sandbox_cgroup_only}'|g' "${SYSCONFIG_FILE}"
 	fi
 
 	# Change to initrd or image depending on user input.
@@ -74,30 +74,30 @@ setup_configuration_file() {
 	if [ "${image_type}" = "initrd" ]; then
 		if $(grep -q "^image.*" "${SYSCONFIG_FILE}"); then
 			if $(grep -q "^initrd.*" "${SYSCONFIG_FILE}"); then
-				sudo sed -i '/^image.*/d' "${SYSCONFIG_FILE}"
+				sudo sed --follow-symlinks -i '/^image.*/d' "${SYSCONFIG_FILE}"
 			else
-				sudo sed -i 's|^image.*|initrd = "'${initrd_file}'"|g' "${SYSCONFIG_FILE}"
+				sudo sed --follow-symlinks -i 's|^image.*|initrd = "'${initrd_file}'"|g' "${SYSCONFIG_FILE}"
 			fi
 		fi
 	else
 		if $(grep -q "^initrd.*" "${SYSCONFIG_FILE}"); then
 			if $(grep -q "^image.*" "${SYSCONFIG_FILE}"); then
-				sudo sed -i '/^initrd.*/d' "${SYSCONFIG_FILE}"
+				sudo sed --follow-symlinks -i '/^initrd.*/d' "${SYSCONFIG_FILE}"
 			else
-				sudo sed -i 's|^initrd.*|image = "'${image_file}'"|g' "${SYSCONFIG_FILE}"
+				sudo sed --follow-symlinks -i 's|^initrd.*|image = "'${image_file}'"|g' "${SYSCONFIG_FILE}"
 			fi
 		fi
 	fi
 
 	# enable debug
-	sudo sed -i -e 's/^#\(enable_debug\).*=.*$/\1 = true/g' \
+	sudo sed --follow-symlinks -i -e 's/^#\(enable_debug\).*=.*$/\1 = true/g' \
 		-e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug"/g' \
 		"${SYSCONFIG_FILE}"
 
 	# Cloud-hypervisor workaround
 	# Issue: https://github.com/kata-containers/tests/issues/2963
 	if [ "${hypervisor}" = "cloud-hypervisor" ]; then
-		sudo sed -i -e 's|^default_memory.*|default_memory = 1024|g' \
+		sudo sed --follow-symlinks -i -e 's|^default_memory.*|default_memory = 1024|g' \
 		            -e 's|^virtio_fs_cache =.*|virtio_fs_cache = "none"|g' \
 		            "${SYSCONFIG_FILE}"
 	fi

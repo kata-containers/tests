@@ -187,14 +187,14 @@ setup_configuration_file() {
 	# machine type applies to configuration.toml and configuration-qemu.toml
 	if [ -n "$MACHINE_TYPE" ]; then
 		if [ "$HYPERVISOR" = "qemu" ]; then
-			sed -i 's|^machine_type.*|machine_type = "'${MACHINE_TYPE}'"|g' "${kata_config_file}"
+			sed --follow-symlinks -i 's|^machine_type.*|machine_type = "'${MACHINE_TYPE}'"|g' "${kata_config_file}"
 		else
 			warn "Variable machine_type only applies to qemu. It will be ignored"
 		fi
 	fi
 
 	if [ -n "${SANDBOX_CGROUP_ONLY}" ]; then
-	   sed -i 's|^sandbox_cgroup_only.*|sandbox_cgroup_only='${SANDBOX_CGROUP_ONLY}'|g' "${kata_config_file}"
+	   sed --follow-symlinks -i 's|^sandbox_cgroup_only.*|sandbox_cgroup_only='${SANDBOX_CGROUP_ONLY}'|g' "${kata_config_file}"
 	fi
 
 	# Change to initrd or image depending on user input.
@@ -202,29 +202,29 @@ setup_configuration_file() {
 	if [ "$IMAGE_TYPE" = "initrd" ]; then
 		if $(grep -q "^image.*" ${kata_config_file}); then
 			if $(grep -q "^initrd.*" ${kata_config_file}); then
-				sed -i '/^image.*/d' "${kata_config_file}"
+				sed --follow-symlinks -i '/^image.*/d' "${kata_config_file}"
 			else
-				sed -i 's|^image.*|initrd = "'${initrd_file}'"|g' "${kata_config_file}"
+				sed --follow-symlinks -i 's|^image.*|initrd = "'${initrd_file}'"|g' "${kata_config_file}"
 			fi
 		fi
 	else
 		if $(grep -q "^initrd.*" ${kata_config_file}); then
 			if $(grep -q "^image.*" ${kata_config_file}); then
-				sed -i '/^initrd.*/d' "${kata_config_file}"
+				sed --follow-symlinks -i '/^initrd.*/d' "${kata_config_file}"
 			else
-				sed -i 's|^initrd.*|image = "'${image_file}'"|g' "${kata_config_file}"
+				sed --follow-symlinks -i 's|^initrd.*|image = "'${image_file}'"|g' "${kata_config_file}"
 			fi
 		fi
 	fi
 
 	# enable debug
-	sed -i -e 's/^#\(enable_debug\).*=.*$/\1 = true/g' \
+	sed --follow-symlinks -i -e 's/^#\(enable_debug\).*=.*$/\1 = true/g' \
 	       -e 's/^#\(debug_console_enabled\).*=.*$/\1 = true/g' \
 	       -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 agent.log=debug"/g' \
 	       "${kata_config_file}"
 
 	# enable VFIO relevant hypervisor annotations
-	sed -i -e 's/^\(enable_annotations\).*=.*$/\1 = ["enable_iommu"]/' \
+	sed --follow-symlinks -i -e 's/^\(enable_annotations\).*=.*$/\1 = ["enable_iommu"]/' \
 		"${kata_config_file}"
 }
 

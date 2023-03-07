@@ -34,7 +34,7 @@ function setup() {
 	restart_containerd_service
 	check_processes
 	extract_kata_env
-	sudo sed -i "s/${name} = 1/${name} = 4/g" "${RUNTIME_CONFIG_PATH}"
+	sudo sed --follow-symlinks -i "s/${name} = 1/${name} = 4/g" "${RUNTIME_CONFIG_PATH}"
 }
 
 function test_ctr_with_vcpus() {
@@ -46,7 +46,7 @@ function test_ctr_with_vcpus() {
 
 function teardown() {
 	echo "Running teardown"
-	sudo sed -i "s/${name} = 4/${name} = 1/g" "${RUNTIME_CONFIG_PATH}"
+	sudo sed --follow-symlinks -i "s/${name} = 4/${name} = 1/g" "${RUNTIME_CONFIG_PATH}"
 	clean_env_ctr
 	check_processes
 }

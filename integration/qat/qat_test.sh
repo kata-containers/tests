@@ -66,7 +66,7 @@ build_install_qat_image_and_kernel() {
 	sudo cp -a output/vmlinux-* ${kata_vmlinux_path}
 	sudo cp -a output/kata-containers.img ${kata_image_path}
 
-	sudo sed -i -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 modules-load=usdm_drv,qat_c62xvf"/g' ${config_file}
+	sudo sed --follow-symlinks -i -e 's/^kernel_params = "\(.*\)"/kernel_params = "\1 modules-load=usdm_drv,qat_c62xvf"/g' ${config_file}
 	popd
 }
 
@@ -117,7 +117,7 @@ run_test() {
 	local qat_conf_dir="${GOPATH}/src/github.com/kata-containers/kata-containers/tools/osbuilder/dockerfiles/QAT/output/configs"
 	local config_file="/usr/share/defaults/kata-containers/configuration.toml"
 
-	sudo sed -i -e 's/^kernel_params =.*/kernel_params = "modules-load=usdm_drv,qat_c62xvf"/g' ${config_file}
+	sudo sed --follow-symlinks -i -e 's/^kernel_params =.*/kernel_params = "modules-load=usdm_drv,qat_c62xvf"/g' ${config_file}
 
 	sudo ctr run --runtime ${CTR_RUNTIME} --privileged -d --rm --device=/dev/vfio/${vfio_dev} \
 		 --mount type=bind,src=/dev,dst=/dev,options=rbind:rw \
@@ -130,7 +130,7 @@ run_test() {
 	local ssl_output=$(sudo ctr t exec --exec-id 2 qat openssl engine -c -t qat-hw)
 	echo "${ssl_output}" | grep "qat-hw"
 	echo "${ssl_output}" | grep "\[ available \]"
-	sudo sed -i -e 's/^kernel_params =.*/kernel_params = ""/g' ${config_file}
+	sudo sed --follow-symlinks -i -e 's/^kernel_params =.*/kernel_params = ""/g' ${config_file}
 }
 
 main() {
