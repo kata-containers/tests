@@ -238,7 +238,10 @@ run_unit_test() {
 }
 
 run_main_test() {
-	"${ci_dir_name}/setup.sh"
+	if [ "${CI_JOB}" != "SGX" ]; then
+		"${ci_dir_name}/setup.sh"
+
+	fi
 
 	if [ "${CI_JOB}" == "VFIO" ]; then
 		pushd "${GOPATH}/src/${tests_repo}"
@@ -262,6 +265,19 @@ run_main_test() {
 		#
 		# Note: this will run all classes of tests for ${tests_repo}.
 		"${ci_dir_name}/run.sh"
+	elif [  "${CI_JOB}" == "SGX" ]; then
+		echo "General setup"
+		sudo -E PATH=$PATH "${ci_dir_name}/setup_env_ubuntu.sh" "default"
+
+		echo "Install containerd"
+		sudo -E PATH=$PATH "${ci_dir_name}/install_cri_containerd.sh"
+		sudo -E PATH=$PATH "${ci_dir_name}/configure_containerd_for_kata.sh"
+
+		echo "Install kubernetes"
+		sudo -E PATH=$PATH "${ci_dir_name}/install_kubernetes.sh"
+
+		echo "Install kata components for SGX"
+		sudo -E PATH=$PATH "${ci_dir_name}/install_sgx.sh"
 	else
 		echo "Running the metrics tests:"
 		"${ci_dir_name}/run.sh"

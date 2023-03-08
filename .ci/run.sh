@@ -109,6 +109,10 @@ case "${CI_JOB}" in
 		echo "INFO: Running Kubernetes tests with Jailed Firecracker"
 		sudo -E PATH="$PATH" bash -c "make kubernetes"
 		;;
+	"SGX")
+		echo "INFO: Running SGX functional test"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make sgx"
+		;;
 	"VFIO")
 		echo "INFO: Running VFIO functional tests"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make vfio"

@@ -195,6 +195,14 @@ case "${CI_JOB}" in
 	export KUBERNETES="yes"
 	export USE_DEVMAPPER="true"
 	;;
+"SGX")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="cloud-hypervisor"
+	export INSTALL_KATA="no"
+	export KUBERNETES="yes"
+	;;
 "VFIO")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
