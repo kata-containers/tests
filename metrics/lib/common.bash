@@ -27,6 +27,8 @@ KSM_PAGES_FILE="${KSM_BASE}/pages_to_scan"
 KSM_SLEEP_FILE="${KSM_BASE}/sleep_millisecs"
 KSM_PAGES_SHARED="${KSM_BASE}/pages_shared"
 
+needs_restore=false
+
 # The settings we use for an 'aggresive' KSM setup
 # Scan 1000 pages every 50ms - 20,000 pages/s
 KSM_AGGRESIVE_PAGES=1000
@@ -241,17 +243,22 @@ set_ksm_aggressive(){
 	sudo bash -c "echo 1 > ${KSM_ENABLE_FILE}"
 
 	if [ "${KATA_HYPERVISOR}" == "qemu" ]; then
-		# Disable virtio-fs and save whether it was enabled previously
-		set_virtio_out=$(sudo -E PATH="$PATH" "${LIB_DIR}/../../.ci/set_kata_config.sh" shared_fs virtio-9p)
-		echo "${set_virtio_out}"
-		grep -q "already" <<< "${set_virtio_out}" || was_virtio_fs=true;
+		if [ "${HYPERVISOR_SHARED_FS}" == "virtio-fs" ]; then
+			sudo sed --follow-symlinks -i 's|^shared_fs.*|shared_fs = "virtio-9p"|g' "${RUNTIME_CONFIG_PATH}"
+			needs_restore=true
+		fi
 	fi
 }
 
 restore_virtio_fs(){
 	# Re-enable virtio-fs if it was enabled previously
-	[ -n "${was_virtio_fs}" ] && sudo -E PATH="$PATH" "${LIB_DIR}/../../.ci/set_kata_config.sh" shared_fs virtio-fs || \
-		info "Not restoring virtio-fs since it wasn't enabled previously"
+	
+	if [ "${needs_restore}" == "true" ] && [ "${KATA_HYPERVISOR}" == "qemu" ]; then
+		# This is the value that was gathered at the beginning of the test.
+		# So, in case it was set as virtio-fs at that point, let's restore it now.
+		[ "${HYPERVISOR_SHARED_FS}" == "virtio-fs" ] && \
+			sudo sed --follow-symlinks -i 's|^shared_fs.*|shared_fs = "virtio-fs"|g' "${RUNTIME_CONFIG_PATH}"
+	fi
 }
 
 restore_ksm_settings(){
@@ -262,13 +269,13 @@ restore_ksm_settings(){
 	sudo bash -c "echo ${ksm_stored_pages} > ${KSM_PAGES_FILE}"
 	sudo bash -c "echo ${ksm_stored_sleep} > ${KSM_SLEEP_FILE}"
 	sudo bash -c "echo ${ksm_stored_run} > ${KSM_ENABLE_FILE}"
-	[ "${KATA_HYPERVISOR}" == "qemu" ] && restore_virtio_fs
+	restore_virtio_fs
 }
 
 disable_ksm(){
 	echo "disabling KSM"
 	sudo bash -c "echo 0 > ${KSM_ENABLE_FILE}"
-	[ "${KATA_HYPERVISOR}" == "qemu" ] && restore_virtio_fs
+	restore_virtio_fs
 }
 
 # See if KSM is enabled.
