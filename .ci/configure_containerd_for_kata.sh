@@ -28,6 +28,7 @@ cat << EOF | sudo tee /etc/containerd/config.toml
              Root = ""
         [plugins.cri.containerd.runtimes.kata]
            runtime_type = "io.containerd.kata.v2"
+           pod_annotations = ["io.katacontainers.*"]
            privileged_without_host_devices = true
     [plugins.cri.registry.mirrors."localhost:5000"]
       endpoint = ["http://localhost:5000"]
