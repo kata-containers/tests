@@ -70,7 +70,7 @@ check_images()
 	local img req_images=( "$@" )
 	for img in "${req_images[@]}"; do
 		echo "ctr pull'ing: $img"
-		if ! ctr image pull "$img"; then
+		if ! sudo "${CTR_EXE}" image pull "$img"; then
 			die "Failed to pull image $img"
 		fi
 		echo "ctr pull'd: $img"
@@ -86,7 +86,7 @@ generate_build_dockerfile() {
 	for r in ${regs[@]}; do
 		sed 's|'${text_to_replace}'|'${r}'|g' \
 			"${dockerfile}.in" > "${dockerfile}"
-		if ${DOCKER_EXE} build --label "$image" --tag "${image}" -f "$dockerfile" "$dockerfile_dir"; then
+		if sudo "${DOCKER_EXE}" build --label "$image" --tag "${image}" -f "$dockerfile" "$dockerfile_dir"; then
 			return 0
 		fi
 	done
@@ -104,7 +104,7 @@ build_dockerfile_image()
 
 	if [ -f "$dockerfile_path" ]; then
 		echo "docker building $image"
-		if ! ${DOCKER_EXE} build --label "$image" --tag "${image}" -f "$dockerfile_path" "$dockerfile_dir"; then
+		if ! sudo "${DOCKER_EXE}" build --label "$image" --tag "${image}" -f "$dockerfile_path" "$dockerfile_dir"; then
 			die "Failed to docker build image $image"
 		fi
 		return 0
@@ -126,11 +126,11 @@ check_ctr_images()
 		die "Missing image or dockerfile path variable"
 	fi
 
-	ctr i rm "${ctr_image}"
+	sudo "${CTR_EXE}" i rm "${ctr_image}"
 	build_dockerfile_image "${docker_image}" "${dockerfile_path}"
-	${DOCKER_EXE} save -o "${docker_image}.tar" "${docker_image}"
-	ctr i import "${docker_image}.tar"
-	rm -rf ${docker_image}.tar
+	sudo "${DOCKER_EXE}" save -o "${docker_image}.tar" "${docker_image}"
+	sudo "${CTR_EXE}" i import "${docker_image}.tar"
+	rm -rf "${docker_image}".tar
 }
 
 # A one time (per uber test cycle) init that tries to get the
@@ -182,10 +182,10 @@ init_env()
 # shim/proxy/hypervisor processes up, if found, they are
 # killed to start test with clean environment.
 kill_processes_before_start() {
-	DOCKER_PROCS=$(${DOCKER_EXE} ps -q)
+	DOCKER_PROCS=$(sudo "${DOCKER_EXE}" ps -q)
 	[[ -n "${DOCKER_PROCS}" ]] && clean_env
 
-	CTR_PROCS=$(${CTR_EXE} t list -q)
+	CTR_PROCS=$(sudo "${CTR_EXE}" t list -q)
 	[[ -n "${CTR_PROCS}" ]] && clean_env_ctr
 
 	check_processes
@@ -200,9 +200,9 @@ random_name() {
 show_system_ctr_state() {
 	echo "Showing system state:"
 	echo " --Check containers--"
-	sudo ctr c list
+	sudo "${CTR_EXE}" c list
 	echo " --Check tasks--"
-	sudo ctr task list
+	sudo "${CTR_EXE}" task list
 
 	local processes="containerd-shim-kata-v2"
 

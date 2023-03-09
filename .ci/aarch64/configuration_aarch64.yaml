@@ -20,3 +20,4 @@ kubernetes:
   - k8s-block-volume
   - k8s-inotify
   - k8s-qos-pods
+  - k8s-footloose

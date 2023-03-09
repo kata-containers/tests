@@ -262,7 +262,7 @@ case "${CI_JOB}" in
 	export KUBERNETES="yes"
 	export experimental_qemu="true"
 	;;
-"METRICS")
+"METRICS"|"METRICS_CLH")
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
 	export CRI_RUNTIME="containerd"
