@@ -240,7 +240,6 @@ run_unit_test() {
 run_main_test() {
 	if [ "${CI_JOB}" != "SGX" ]; then
 		"${ci_dir_name}/setup.sh"
-
 	fi
 
 	if [ "${CI_JOB}" == "VFIO" ]; then
@@ -276,8 +275,8 @@ run_main_test() {
 		echo "Install kubernetes"
 		sudo -E PATH=$PATH "${ci_dir_name}/install_kubernetes.sh"
 
-		echo "Install kata components for SGX"
-		sudo -E PATH=$PATH "${ci_dir_name}/install_sgx.sh"
+		echo "Configure SGX"
+		sudo -E PATH=$PATH "${ci_dir_name}/configure_for_sgx.sh"
 	else
 		echo "Running the metrics tests:"
 		"${ci_dir_name}/run.sh"
