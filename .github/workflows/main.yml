@@ -14,10 +14,6 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       GO111MODULE: off
-      TRAVIS: "true"
-      TRAVIS_BRANCH: ${{ github.base_ref }}
-      TRAVIS_PULL_REQUEST_BRANCH: ${{ github.head_ref }}
-      TRAVIS_PULL_REQUEST_SHA : ${{ github.event.pull_request.head.sha }}
       GITHUB_USER : ${{ secrets.GITHUB_USER }}
       GITHUB_TOKEN : ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -32,10 +28,6 @@ jobs:
         gopath_org=$(go env GOPATH)/src/github.com/kata-containers/
         mkdir -p ${gopath_org}
         ln -s ${PWD} ${gopath_org}
-        echo "TRAVIS_BRANCH: ${TRAVIS_BRANCH}"
-        echo "TRAVIS_PULL_REQUEST_BRANCH: ${TRAVIS_PULL_REQUEST_BRANCH}"
-        echo "TRAVIS_PULL_REQUEST_SHA: ${TRAVIS_PULL_REQUEST_SHA}"
-        echo "TRAVIS: ${TRAVIS}"
     - name: Set env
       if: ${{ !contains(github.event.pull_request.labels.*.name, 'force-skip-ci') }}
       run: |
@@ -47,10 +39,6 @@ jobs:
       with:
         fetch-depth: 0
         path: ./src/github.com/${{ github.repository }}
-    - name: Setup travis references
-      if: ${{ !contains(github.event.pull_request.labels.*.name, 'force-skip-ci') }}
-      run: |
-        echo "TRAVIS_BRANCH=${TRAVIS_BRANCH:-$(echo $GITHUB_REF | awk 'BEGIN { FS = \"/\" } ; { print $3 }')}" 
     - name: Install dependencies
       if: ${{ !contains(github.event.pull_request.labels.*.name, 'force-skip-ci') }}
       run: |
