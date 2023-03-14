@@ -43,8 +43,6 @@ build_and_install_qemu() {
             # Add link from /usr/local/bin to /usr/bin
             sudo ln -sf $(command -v qemu-system-${QEMU_ARCH}) "/usr/bin/qemu-system-${QEMU_ARCH}"
         fi
-	sudo mkdir -p /usr/libexec/kata-qemu/
-	sudo ln -sf $(dirname ${qemu_bin})/../libexec/qemu/virtiofsd /usr/libexec/kata-qemu/virtiofsd
         popd
 
 	# Install UEFI ROM for qemu
