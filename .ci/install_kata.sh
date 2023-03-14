@@ -44,6 +44,18 @@ echo "rust image is default for Kata 2.0"
 echo "Install Kata Containers Kernel"
 "${cidir}/install_kata_kernel.sh" -t "${KATA_BUILD_KERNEL_TYPE}"
 
+if [ "${TEE_TYPE:-}" == "se" ]; then
+	# Set an environment variable HKD_PATH
+	[ -f "${CI_HKD_PATH}" ] || die "Host key document for SE image build not found"
+
+	export HKD_PATH="host-key-document"
+	local_hkd_path="${katacontainers_repo_dir}/${HKD_PATH}"
+	mkdir -p "${local_hkd_path}"
+	cp "${CI_HKD_PATH}" "${local_hkd_path}"
+
+	build_static_artifact_and_install "se-image"
+fi
+
 install_qemu(){
 	echo "Installing qemu"
 	if [ "$experimental_qemu" == "true" ]; then

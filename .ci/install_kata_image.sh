@@ -85,6 +85,8 @@ build_image_for_cc () {
 			# use the generic image.  QEMU, on the other hand, is using
 			# `eaa_kbc` and it requires the `tdx-rootfs-image`.
 			build_static_artifact_and_install "tdx-rootfs-image"
+		elif [ "${TEE_TYPE}" == "se" ]; then
+			build_static_artifact_and_install "rootfs-initrd"
 		else
 			build_static_artifact_and_install "rootfs-image"
 		fi

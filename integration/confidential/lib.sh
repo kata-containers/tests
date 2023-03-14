@@ -55,6 +55,13 @@ switch_image_service_offload() {
 #			      `kata-runtime env` and export its value.
 #
 switch_measured_rootfs_verity_scheme() {
+	# In the case of IBM Secure Execution for Linux, the ultravisor (trusted IBM zSystems CPU firmware),
+	# before bootstrapping, performs integrity checks by the measurements in the integrity-protected
+	# Secure Execution header which are calculated while a secure image is built based on kernel, cmdline, and initrd.
+	if [ "${TEE_TYPE}" == "se" ] && [ "$1" == "dm-verity" ]; then
+		skip "test for IBM zSystems & LinuxONE SE"
+	fi
+
 	# Load the RUNTIME_CONFIG_PATH variable.
 	load_runtime_config_path
 
@@ -85,6 +92,12 @@ add_kernel_params() {
 
 	sudo sed -i -e 's#^\(kernel_params\) = "\(.*\)"#\1 = "\2 '"$params"'"#g' \
 		"$RUNTIME_CONFIG_PATH"
+
+	if [ "${TEE_TYPE}" = "se" ]; then
+		local kernel_params=$(sed -n -e 's#^kernel_params = "\(.*\)"#\1#gp' \
+			"$RUNTIME_CONFIG_PATH")
+		build_se_image "${kernel_params}"
+	fi
 }
 
 # Get the 'kernel_params' property on kata's configuration.toml

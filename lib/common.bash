@@ -105,6 +105,24 @@ waitForProcess() {
 	return 1
 }
 
+# Build a IBM zSystems & LinuxONE secure execution image
+#
+# Parameters:
+#	$1		- existing kernel parameters to be wrapped in parmfile
+#
+build_se_image() {
+	source "${_script_dir}/../.ci/lib.sh"
+	[ -d "${katacontainers_repo_dir}" ] || clone_katacontainers_repo
+	source "${katacontainers_repo_dir}/ci/lib.sh"
+
+	export HKD_PATH=$(dirname ${CI_HKD_PATH})
+
+	kernel_params="${1:-}"
+	local base_dir="$(dirname $(sudo -E PATH=$PATH kata-runtime kata-env --json | \
+	jq -r .Kernel.Path))"
+	build_secure_image "${kernel_params}" "${base_dir}" "${base_dir}"
+}
+
 # Check if the $1 argument is the name of a 'known'
 # Kata runtime. Of course, the end user can choose any name they
 # want in reality, but this function knows the names of the default
@@ -296,13 +314,17 @@ cp_to_guest_img() {
 	else
 		local initrd_path="$(sudo -E PATH=$PATH kata-runtime kata-env --json | \
 			jq -r .Initrd.Path)"
+		if [ "${TEE_TYPE}" = "se" ]; then
+			initrd_path="$(dirname $(sudo -E PATH=$PATH kata-runtime kata-env --json | \
+			jq -r .Kernel.Path))/kata-containers-initrd.img"
+		fi
 		if [ ! -f "$initrd_path" ]; then
 			echo "Guest initrd and image not found"
 			rm -rf "$rootfs_dir"
 			return 1
 		fi
 
-                if ! cat "${initrd_path}" | cpio --extract --preserve-modification-time \
+                if ! zcat "${initrd_path}" | cpio --extract --preserve-modification-time \
                         --make-directories --directory="${rootfs_dir}"; then
                         echo "Failed to uncompress the image file: $initrd_path"
                         rm -rf "$rootfs_dir"
@@ -337,6 +359,15 @@ cp_to_guest_img() {
 			rm -rf "$rootfs_dir"
 			return 1
 		fi
+	fi
+
+	if [ "${TEE_TYPE}" = "se" ]; then
+		if [ -z "$RUNTIME_CONFIG_PATH" ]; then
+			extract_kata_env
+		fi
+		local kernel_params=$(sed -n -e 's#^kernel_params = "\(.*\)"#\1#gp' \
+			"$RUNTIME_CONFIG_PATH")
+		build_se_image "${kernel_params}"
 	fi
 
 	rm -rf "$rootfs_dir"
