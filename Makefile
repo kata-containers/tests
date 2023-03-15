@@ -64,8 +64,10 @@ kubernetes-e2e:
 
 sandbox-cgroup:
 	bash -f functional/sandbox_cgroup/sandbox_cgroup_test.sh
+
 sgx:
 	bash -f functional/sgx/run.sh
+
 stability:
 	cd stability && \
 	ITERATIONS=2 MAX_CONTAINERS=20 ./soak_parallel_rm.sh
