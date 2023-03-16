@@ -55,6 +55,11 @@ generate_service_yaml() {
   local name="${1}"
   local image="${2}"
 
+  # Default policy is 3:
+  # - NODBG (1): Debugging of the guest is disallowed when set
+  # - NOKS (2): Sharing keys with other guests is disallowed when set
+  local policy="${3:-3}"
+
   local kbs_ip="$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')"
   local service_yaml_template="${FIXTURES_DIR}/service.yaml.in"
 
@@ -63,6 +68,7 @@ generate_service_yaml() {
   
   NAME="${name}" IMAGE="${image}" RUNTIMECLASS="${RUNTIMECLASS}" \
     KBS_URI="${kbs_ip}:44444" \
+    POLICY="$policy" \
     envsubst < "${service_yaml_template}" > "${service_yaml}"
 }
 
@@ -143,15 +149,19 @@ delete_pods() {
   # Retrieve pod names
   local encrypted_pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $1;}' || true)
   local unencrypted_pod_name=$(esudo kubectl get pod -o wide | grep unencrypted-image-tests | awk '{print $1;}' || true)
+  local encrypted_pod_name_es=$(esudo kubectl get pod -o wide | grep encrypted-image-tests-es | awk '{print $1;}' || true)
 
   # Delete both encrypted and unencrypted pods
   esudo kubectl delete -f \
     "${TEST_DIR}/unencrypted-image-tests.yaml" 2>/dev/null || true
   esudo kubectl delete -f \
     "${TEST_DIR}/encrypted-image-tests.yaml" 2>/dev/null || true
+  esudo kubectl delete -f \
+    "${TEST_DIR}/encrypted-image-tests-es.yaml" 2>/dev/null || true
   
   [ -z "${encrypted_pod_name}" ] || (kubernetes_wait_for_pod_delete_state "${encrypted_pod_name}" || true)
   [ -z "${unencrypted_pod_name}" ] || (kubernetes_wait_for_pod_delete_state "${unencrypted_pod_name}" || true)
+  [ -z "${encrypted_pod_name_es}" ] || (kubernetes_wait_for_pod_delete_state "${encrypted_pod_name_es}" || true)
 }
 
 run_kbs() {
@@ -207,13 +217,11 @@ pull_unencrypted_image_and_set_keys() {
 }
 
 generate_firmware_measurement_with_append() {
-local append_default="tsc=reliable no_timer_check rcupdate.rcu_expedited=1 \
-i8042.direct=1 i8042.dumbkbd=1 i8042.nopnp=1 i8042.noaux=1 noreplace-smp reboot=k \
-cryptomgr.notests net.ifnames=0 pci=lastbus=0 console=hvc0 console=hvc1 quiet panic=1 \
-nr_cpus=1 scsi_mod.scan=none agent.config_file=/etc/agent-config.toml"
 
   # Gather firmware locations and kernel append for measurement
-  local append=${1:-${append_default}}
+  local append="${1}"
+  local mode="${2:-sev}"
+  local vcpu_sig=$(cpuid -1 --leaf 0x1 --raw | cut -s -f2 -d= | cut -f1 -d" ")
   local ovmf_path=$(grep "firmware = " $SEV_CONFIG | cut -d'"' -f2)
   local kernel_path="$(esudo /opt/confidential-containers/bin/kata-runtime \
     --config ${SEV_CONFIG} kata-env --json | jq -r .Kernel.Path)"
@@ -226,7 +234,11 @@ nr_cpus=1 scsi_mod.scan=none agent.config_file=/etc/agent-config.toml"
   [ -f "${initrd_path}" ] || return 1
 
   # Generate digest from sev-snp-measure output - this also inserts measurement values inside OVMF image
-  measurement=$(PATH="${PATH}:${HOME}/.local/bin" sev-snp-measure --mode=sev --output-format=base64 \
+  measurement=$(PATH="${PATH}:${HOME}/.local/bin" sev-snp-measure \
+    --mode="${mode}" \
+    --vcpus=1 \
+    --vcpu-sig="${vcpu_sig}" \
+    --output-format=base64 \
     --ovmf="${ovmf_path}" \
     --kernel="${kernel_path}" \
     --initrd="${initrd_path}" \
@@ -307,7 +319,8 @@ setup_file() {
     python3-pip \
     jq \
     mysql-client \
-    docker-compose
+    docker-compose \
+    cpuid
   pip install sev-snp-measure
   "${TESTS_REPO_DIR}/.ci/install_yq.sh" >&2
 
@@ -324,6 +337,12 @@ setup_file() {
 
   generate_service_yaml "unencrypted-image-tests" "${IMAGE_REPO}:unencrypted"
   generate_service_yaml "encrypted-image-tests" "${IMAGE_REPO}:encrypted"
+
+  # SEV-ES policy is 7:
+  # - NODBG (1): Debugging of the guest is disallowed when set
+  # - NOKS (2): Sharing keys with other guests is disallowed when set
+  # - ES (4): SEV-ES is required when set
+  generate_service_yaml "encrypted-image-tests-es" "${IMAGE_REPO}:encrypted" "7"
 
   echo "SETUP FILE - COMPLETE"
   echo "###############################################################################"
@@ -383,7 +402,7 @@ EOF
   update_kbs_uri
 
   # Generate firmware measurement
-  local append="INVALID INPUT"
+  local append="INVALID-INPUT"
   measurement=$(generate_firmware_measurement_with_append ${append})
   echo "Firmware Measurement: ${measurement}"
 
@@ -484,6 +503,45 @@ EOF
     echo -e "${GREEN}KATA CC TEST - PASS: SEV is Enabled${NC}"
   fi
 }
+
+@test "$test_tag Test SEV-ES encrypted container launch success with VALID measurement" {
+
+  # Generate firmware measurement
+  local append=$(cat ${TEST_DIR}/guest-kernel-append)
+  echo "Kernel Append: ${append}"
+  measurement=$(generate_firmware_measurement_with_append "${append}" "seves")
+  echo "Firmware Measurement: ${measurement}"
+
+  # Add key to KBS with policy measurement
+  add_key_to_kbs_db ${measurement}
+  
+  # Start the service/deployment/pod
+  esudo kubectl apply -f "${TEST_DIR}/encrypted-image-tests-es.yaml"
+
+  # Retrieve pod name, wait for it to come up, retrieve pod ip
+  pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests-es | awk '{print $1;}')
+  kubernetes_wait_for_pod_ready_state "$pod_name" 20
+  pod_ip=$(esudo kubectl get pod -o wide | grep encrypted-image-tests-es | awk '{print $6;}')
+
+  print_service_info
+
+  # Look for SEV-ES enabled in container dmesg output
+  seves_enabled=$(ssh -i ${SSH_KEY_FILE} \
+    -o "StrictHostKeyChecking no" \
+    -o "PasswordAuthentication=no" \
+    -t root@${pod_ip} \
+    'dmesg | grep SEV-ES' || true)
+
+  if [ -z "$seves_enabled" ]; then
+    >&2 echo -e "${RED}KATA CC TEST - FAIL: SEV-ES is NOT Enabled${NC}"
+    return 1
+  else
+    echo "DMESG REPORT: $seves_enabled"
+    echo -e "${GREEN}KATA CC TEST - PASS: SEV-ES is Enabled${NC}"
+  fi
+}
+
+
 
 teardown_file() {
   echo "###############################################################################"

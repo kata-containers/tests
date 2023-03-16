@@ -26,6 +26,7 @@ spec:
         app: $NAME
       annotations:
         io.katacontainers.config.pre_attestation.uri: "$KBS_URI"
+        io.katacontainers.config.sev.policy: "$POLICY"
     spec:
       runtimeClassName: $RUNTIMECLASS
       containers:
