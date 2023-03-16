@@ -30,6 +30,8 @@ KATA_TESTS_CACHEDIR="${KATA_TESTS_CACHEDIR:-${KATA_TESTS_BASEDIR}/cache}"
 
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 experimental_qemu="${experimental_qemu:-false}"
+RUNTIME="${RUNTIME:-kata-runtime}"
+
 
 # Display a message to stderr, a dump of lots of useful debug
 # information (including a full stacktrace) and exit 1.
@@ -250,6 +252,7 @@ clean_env_ctr()
 	[ "$res" == "ok" ] || sudo systemctl restart containerd
 
 	while (( remaining_attempts > 0 )); do
+		[ "${RUNTIME}" == "runc" ] && sudo ctr tasks rm -f $(sudo ctr task list -q)
 		sudo ctr c rm $(sudo ctr c list -q) >/dev/null 2>&1
 
 		count_running="$(sudo ctr c list -q | wc -l)"
