@@ -40,7 +40,7 @@ setup() {
 
 teardown() {
 	[ "${KATA_HYPERVISOR}" == "firecracker" ] && skip "test not working see: ${fc_limitations}"
+	kubectl delete pod "$pod_name"
 	rm -f $tmp_file
 	rm -f ${pod_config_dir}/test-pod-file-volume.yaml.yaml
-	kubectl delete pod "$pod_name"
 }
