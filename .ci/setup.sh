@@ -142,9 +142,9 @@ install_extra_tools() {
 main() {
 	local setup_type="default"
 
-	# Travis only needs a very basic setup
+	# github-actions only needs a very basic setup
 	set +o nounset
-	[ "$TRAVIS" = "true" ] && setup_type="minimal"
+	[ -n "$GITHUB_ACTION" ] && setup_type="minimal"
 	set -o nounset
 
 	[ "$setup_type" = "default" ] && bash -f "${cidir}/install_go.sh" -p -f
