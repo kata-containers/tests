@@ -186,7 +186,7 @@ main() {
 			install_kernel "${kernel_type}" $(get_version "assets.kernel.sev.tag")
 			;;
 		dragonball)
-			install_kernel "${kernel_type}" $(get_version "assets.dragonball-kernel-experimental.version")
+			install_kernel "${kernel_type}" $(get_version "assets.kernel-dragonball-experimental.version")
 			;;
 		*)
 			info "kernel type '${kernel_type}' not supported"
