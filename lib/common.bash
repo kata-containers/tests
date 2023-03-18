@@ -30,7 +30,7 @@ KATA_TESTS_CACHEDIR="${KATA_TESTS_CACHEDIR:-${KATA_TESTS_BASEDIR}/cache}"
 
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 experimental_qemu="${experimental_qemu:-false}"
-RUNTIME="${RUNTIME:-kata-runtime}"
+RUNTIME="${RUNTIME:-containerd-shim-kata-v2}"
 
 
 # Display a message to stderr, a dump of lots of useful debug
