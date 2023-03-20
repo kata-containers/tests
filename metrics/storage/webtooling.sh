@@ -19,7 +19,7 @@ TEST_NAME="web-tooling"
 IMAGE="docker.io/library/local-web-tooling:latest"
 DOCKERFILE="${SCRIPT_PATH}/web-tooling-dockerfile/Dockerfile"
 CI_JOB="${CI_JOB:-""}"
-configuration_file="/usr/share/defaults/kata-containers/configuration.toml"
+configuration_file="/opt/kata/share/defaults/kata-containers/configuration.toml"
 
 # Directory to run the test inside of the container
 TESTDIR="${TESTDIR:-/testdir}"

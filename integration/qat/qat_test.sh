@@ -49,9 +49,9 @@ init() {
 
 build_install_qat_image_and_kernel() {
 	local osbuilder_dir="${GOPATH}/src/github.com/kata-containers/kata-containers/tools/osbuilder/dockerfiles/QAT"
-	local kata_vmlinux_path="/usr/share/kata-containers/vmlinux.container"
-	local config_file="/usr/share/defaults/kata-containers/configuration.toml"
-	local kata_image_path="/usr/share/kata-containers/kata-containers.img"
+	local kata_vmlinux_path="/opt/kata/share/kata-containers/vmlinux.container"
+	local config_file="/opt/kata/share/defaults/kata-containers/configuration.toml"
+	local kata_image_path="/opt/kata/share/kata-containers/kata-containers.img"
 
 	pushd "${osbuilder_dir}"
 	sudo rm -rf output && mkdir -p output
@@ -115,7 +115,7 @@ run_test() {
 	local docker_ssl_img="docker.io/library/openssl-qat-engine:latest"
 	local vfio_dev=$(ls /dev/vfio/ | head -1)
 	local qat_conf_dir="${GOPATH}/src/github.com/kata-containers/kata-containers/tools/osbuilder/dockerfiles/QAT/output/configs"
-	local config_file="/usr/share/defaults/kata-containers/configuration.toml"
+	local config_file="/opt/kata/share/defaults/kata-containers/configuration.toml"
 
 	sudo sed -i -e 's/^kernel_params =.*/kernel_params = "modules-load=usdm_drv,qat_c62xvf"/g' ${config_file}
 
