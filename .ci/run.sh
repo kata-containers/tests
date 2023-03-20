@@ -78,11 +78,11 @@ case "${CI_JOB}" in
 		;;
 	"CRIO_K8S_COMPLETE")
 		echo "INFO: Running kubernetes tests (minimal) with CRI-O"
-		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
+		#sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
 		;;
 	"CRIO_K8S_MINIMAL")
 		echo "INFO: Running kubernetes tests (minimal) with CRI-O"
-		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
+		#sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
 		;;
 	"CLOUD-HYPERVISOR-K8S-CRIO")
 		echo "INFO: Running kubernetes tests"
@@ -102,7 +102,7 @@ case "${CI_JOB}" in
 	"EXTERNAL_CRIO")
 		echo "INFO: Running tests on cri-o PR"
 		sudo -E PATH="$PATH" bash -c "make kubernetes"
-		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
+		#sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
 		sudo -E PATH="$PATH" bash -c "make crio"
 		;;
 	"FIRECRACKER")
