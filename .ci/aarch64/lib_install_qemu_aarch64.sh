@@ -44,4 +44,8 @@ build_and_install_qemu() {
 	sudo mkdir -p /usr/libexec/kata-qemu/
 	sudo ln -sf $(dirname ${qemu_bin})/../libexec/qemu/virtiofsd /usr/libexec/kata-qemu/virtiofsd
         popd
+
+	# Install UEFI ROM for qemu
+	ENABLE_ARM64_UEFI="${ENABLE_ARM64_UEFI:-true}"
+	[ "${ENABLE_ARM64_UEFI}" == "true" ] && ${cidir}/aarch64/install_rom_aarch64.sh
 }

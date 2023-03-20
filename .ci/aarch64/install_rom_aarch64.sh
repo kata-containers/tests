@@ -123,6 +123,19 @@ clean_up()
 	sudo rm -rf "${EDK2_WORKSPACE}"
 }
 
+enable_pflash_in_config()
+{
+	runtime_config_prefix=("/etc" "/usr/share/defaults" "/opt/kata/defaults")
+	for con_pre in "${runtime_config_prefix[@]}"
+	do
+		config_path="${con_pre}/kata-containers/configuration.toml"
+		[ -f "${config_path}" ] || continue	
+		sudo sed -i 's|pflashes = \[\]|pflashes = ["/usr/share/kata-containers/kata-flash0.img", "/usr/share/kata-containers/kata-flash1.img"]|' "${config_path}"
+		#enable pflash
+		sudo sed -i 's|#pflashes|pflashes|' "${config_path}"
+	done
+}
+
 main()
 {
 	if [ "${arch}" != "aarch64" ]; then
@@ -145,6 +158,8 @@ main()
 
 	echo "Info: install uefi rom image successfully"
 	clean_up
+
+	enable_pflash_in_config
 }
 
 main
