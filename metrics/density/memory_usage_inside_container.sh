@@ -122,7 +122,7 @@ function main() {
 	metrics_json_init
 
 	for (( i=0; i<$iterations; i++ )) do
-		local output=$(ctr run --memory-limit $((MEMSIZE*1024)) --rm --runtime=$CTR_RUNTIME $IMAGE busybox sh -c "$CMD" 2>&1)
+		local output=$(sudo -E "${CTR_EXE}" run --memory-limit $((MEMSIZE*1024)) --rm --runtime=$CTR_RUNTIME $IMAGE busybox sh -c "$CMD" 2>&1)
 
 		if [ ${output_format} = "json" ]; then
 			parse_results "${output}" "${memtotalAvg}" "${memfreeAvg}" "${memavailableAvg}"

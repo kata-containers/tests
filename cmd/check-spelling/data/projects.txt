@@ -74,6 +74,7 @@ Podman/B
 PullApprove/B
 QuickAssist/B
 R/B
+raytracer/B
 rkt/B/B
 runc/B
 runV/B

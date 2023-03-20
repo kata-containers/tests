@@ -31,4 +31,3 @@ linters-settings:
     check-exported: true
   govet:
     enable:
-      - fieldalignment

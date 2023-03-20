@@ -210,11 +210,4 @@ if [ "$ID" == ubuntu ] && [ x"${TEST_INITRD}" == x"yes" ] && [ "$VERSION_ID" != 
 	sudo sed -i --follow-symlinks 's/block_device_driver = "virtio-scsi"/block_device_driver = "virtio-blk"/' "${runtime_config_path}"
 fi
 
-# Install UEFI ROM for arm64/qemu
-ENABLE_ARM64_UEFI="${ENABLE_ARM64_UEFI:-false}"
-if [ "$arch" == "aarch64" -a "${KATA_HYPERVISOR}" == "qemu" -a "${ENABLE_ARM64_UEFI}" == "true" ]; then
-	${cidir}/aarch64/install_rom_aarch64.sh
-	sudo sed -i --follow-symlinks 's|pflashes = \[\]|pflashes = ["/usr/share/kata-containers/kata-flash0.img", "/usr/share/kata-containers/kata-flash1.img"]|' "${runtime_config_path}"
-	#enable pflash
-	sudo sed -i --follow-symlinks 's|#pflashes|pflashes|' "${runtime_config_path}"
-fi
+
