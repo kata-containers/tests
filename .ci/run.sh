@@ -117,6 +117,10 @@ case "${CI_JOB}" in
 		echo "INFO: Running VFIO functional tests"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make vfio"
 		;;
+	"VFIO_AP")
+		echo "INFO: Running VFIO-AP functional tests"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make vfio-ap"
+		;;
 	"METRICS")
 		export RUNTIME="kata-runtime"
 		export CTR_RUNTIME="io.containerd.kata.v2"
