@@ -27,17 +27,31 @@ KATA_WITH_SYSTEM_QEMU=${KATA_WITH_SYSTEM_QEMU:-no}
 #
 KATA_WITH_HOST_KERNEL=${KATA_WITH_HOST_KERNEL:-no}
 
-# The daemonset name.
-#
-export DAEMONSET_NAME="kata-deploy"
-
-# The label attached to the nodes which should have Kata Containers installed.
-#
-export DAEMONSET_LABEL="kata-deploy"
-
 # The OpenShift Server version.
 #
 ocp_version="$(oc version -o json | jq -r '.openshiftVersion')"
+
+# Leverage kata-deploy to install Kata Containers in the cluster.
+#
+apply_kata_deploy() {
+	local deploy_file="tools/packaging/kata-deploy/kata-deploy/base/kata-deploy.yaml"
+	local old_img="quay.io/kata-containers/kata-deploy:latest"
+	# Use the kata-deploy CI image which is built for each pull request merged
+	local new_img="quay.io/kata-containers/kata-deploy-ci:kata-containers-latest"
+
+	pushd "$katacontainers_repo_dir"
+	sed -i "s#${old_img}#${new_img}#" "$deploy_file"
+
+	info "Applying kata-deploy"
+	oc apply -f tools/packaging/kata-deploy/kata-rbac/base/kata-rbac.yaml
+	oc apply -f "$deploy_file"
+	oc -n kube-system wait --timeout=10m --for=condition=Ready -l name=kata-deploy pod
+
+	info "Adding the kata runtime classes"
+	oc apply -f tools/packaging/kata-deploy/runtimeclasses/kata-runtimeClasses.yaml
+	popd
+}
+
 
 # Wait all worker nodes reboot.
 #
@@ -143,14 +157,6 @@ num_nodes=$(echo $worker_nodes | wc -w)
 [ $num_nodes -ne 0 ] || \
 	die "No worker nodes detected. Something is wrong with the cluster"
 
-info "Set installing state annotation and label on all worker nodes"
-for node in $worker_nodes; do
-	info "Deploy kata Containers in worker node $node"
-	oc annotate --overwrite nodes $node \
-		kata-install-daemon.v1.openshift.com/state=installing
-	oc label --overwrite node $node "${DAEMONSET_LABEL}=true"
-done
-
 if [ "${KATA_WITH_SYSTEM_QEMU}" == "yes" ]; then
 	# QEMU is deployed on the workers via RCHOS extension.
 	enable_sandboxedcontainers_extension
@@ -172,73 +178,7 @@ if [ "${KATA_WITH_HOST_KERNEL}" == "yes" ]; then
 	oc apply -f ${deployments_dir}/configmap_installer_kernel.yaml
 fi
 
-info "Applying the Kata Containers installer daemonset"
-if [ -z "$KATA_INSTALLER_IMG" ]; then
-	# The yaml file uses $IMAGE_FORMAT which gives the
-	# registry/image_stream:image format
-	export KATA_INSTALLER_IMG=$(echo $IMAGE_FORMAT"kata-installer" \
-		| envsubst)
-fi
-envsubst < ${deployments_dir}/daemonset_kata-installer.yaml.in | oc apply -f -
-
-oc get pods
-oc get ds
-ds_pods=($(oc get pods | awk -v ds=$DAEMONSET_NAME '{if ($1 ~ ds) { print $1 } }'))
-broken=0
-broken_ds_pods=()
-cnt=5
-while [[ ${#ds_pods[@]} -gt 0 && $cnt -ne 0 ]]; do
-	sleep 120
-	for i in ${!ds_pods[@]}; do
-		info "Check daemonset ${ds_pods[i]} is running"
-		rc=$(oc exec ${ds_pods[i]} -- cat /tmp/kata_install_status 2> \
-			/dev/null) || broken=1
-		if [ $broken -eq 1 ]; then
-			info "Daemonset seems broken"
-			broken_ds_pods+=(${ds_pods[i]})
-			unset ds_pods[i]
-			broken=0
-		elif [ -n "$rc" ]; then
-			info "Finished with status: $rc"
-			debug_pod "${ds_pods[i]}"
-			unset ds_pods[i]
-		else
-			info "Running"
-		fi
-	done
-	cnt=$((cnt-1))
-done
-
-if [[ $cnt -eq 0 || ${#broken_ds_pods[@]} -gt 0 ]]; then
-	for p in $ds_pods $broken_ds_pods; do
-		info "daemonset $p did not finish or is broken"
-		debug_pod "$p"
-	done
-	die "Kata Containers seems not installed on some nodes"
-fi
-
-# Finally remove the installer daemonset
-info "Deleting the Kata Containers installer daemonset"
-oc delete ds/${DAEMONSET_NAME}
-
-# Apply the CRI-O configuration
-info "Configuring Kata Containers runtime for CRI-O"
-if [ -z "$KATA_CRIO_CONF_BASE64" ]; then
-	export KATA_CRIO_CONF_BASE64=$(echo \
-		$(cat $configs_dir/crio_kata.conf|base64) | sed -e 's/\s//g')
-fi
-envsubst < ${deployments_dir}/machineconfig_kata_runtime.yaml.in | oc apply -f -
-oc get -f ${deployments_dir}/machineconfig_kata_runtime.yaml.in || \
-	die "kata machineconfig not found"
-
-# The machineconfig which installs the kata drop-in in CRI-O will trigger a
-# worker reboot.
-wait_for_reboot
-
-# Add a runtime class for kata
-info "Adding the kata runtime class"
-oc apply -f ${deployments_dir}/runtimeclass_kata.yaml
-oc get -f ${deployments_dir}/runtimeclass_kata.yaml || die "kata runtime class not found"
+apply_kata_deploy
 
 # Set SELinux to permissive mode
 if [ ${SELINUX_PERMISSIVE} == "yes" ]; then
@@ -255,10 +195,3 @@ if [ ${SELINUX_PERMISSIVE} == "yes" ]; then
 	# The new SELinux configuration will trigger another reboot.
 	wait_for_reboot
 fi
-
-# At this point kata is installed on workers
-info "Set state annotation to installed on all worker nodes"
-for node in $worker_nodes; do
-	oc annotate --overwrite nodes $node \
-		kata-install-daemon.v1.openshift.com/state=installed
-done
