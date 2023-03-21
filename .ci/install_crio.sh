@@ -91,6 +91,13 @@ unqualified-search-registries = ["registry.fedoraproject.org", "registry.access.
   "debian" = "docker.io/library/debian"
   # Oracle Linux
   "oraclelinux" = "container-registry.oracle.com/os/oraclelinux"
+
+# As done for containerd, we need to ensure we add support for the local
+# registry for CRI-O as well.
+# We mark it as "insecure" as we're not setting it up using TLS.
+[[registry]]
+location="localhost:5000"
+insecure=true
 EOF
 
 echo "Get CRI-O sources"
