@@ -248,26 +248,6 @@ generate_firmware_measurement_with_append() {
   echo ${measurement}
 }
 
-# KBS must be accessible from inside the guest, so update the config file
-# with the IP of the host
-update_kbs_uri() {
-
-  # If we have new config file, don't update the kernel params
-  local legacy_kbs_config=$(cat "${SEV_CONFIG}" | grep "guest_pre_attestation_proxy" || true)
-  if [ -z "${legacy_kbs_config}" ]; then
-    return 0
-  fi
-
-  local kbs_ip="$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')"
-  local aa_kbc_params="agent.aa_kbc_params=online_sev_kbc::${kbs_ip}:44444"
-
-  # Only add the aa_kbc_params if it is not already set
-  aa_kbc_params_set=$(cat "${SEV_CONFIG}" | grep "kernel_params" | grep "${aa_kbc_params}" || true)
-  if [ -z "${aa_kbc_params_set}" ]; then
-    esudo sed -i -e 's#^\(kernel_params\) = "\(.*\)"#\1 = "\2 '"${aa_kbc_params}"'"#g' "${SEV_CONFIG}"
-  fi
-}
-
 add_key_to_kbs_db() {
   measurement=${1}
 
@@ -393,11 +373,6 @@ EOF
 @test "$test_tag Test SEV encrypted container launch failure with INVALID measurement" {
   # Make sure pre-attestation is enabled. 
   esudo sed -i 's/guest_pre_attestation = false/guest_pre_attestation = true/g' ${SEV_CONFIG}
-
-  # Update kata config to point to KBS
-  # This test expects an invalid measurement, but we still update
-  # config so that the kernel params (which are saved) are correct
-  update_kbs_uri
 
   # Generate firmware measurement
   local append="INVALID-INPUT"
