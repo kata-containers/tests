@@ -275,13 +275,11 @@ add_key_to_kbs_db() {
   if [ -n "${measurement}" ]; then
     mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${KBS_DB_HOST} -D ${KBS_DB} <<EOF
       INSERT INTO secrets VALUES (10, 'key_id1', '${ENCRYPTION_KEY}', 10);
-      INSERT INTO keysets VALUES (10, 'KEYSET-1', '["key_id1"]', 10);
       INSERT INTO policy VALUES (10, '["${measurement}"]', '[]', 0, 0, '[]', now(), NULL, 1);
 EOF
   else
     mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${KBS_DB_HOST} -D ${KBS_DB} <<EOF
       INSERT INTO secrets VALUES (10, 'key_id1', '${ENCRYPTION_KEY}', NULL);
-      INSERT INTO keysets VALUES (10, 'KEYSET-1', '["key_id1"]', 10);
 EOF
   fi
 }
