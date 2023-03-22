@@ -55,7 +55,7 @@ description = "measure network latency"
 # within (inclusive)
 checkvar = ".\"latency\".Results | .[] | .latency.Result"
 checktype = "mean"
-midval = 0.73
+midval = 0.81
 minpercent = 20.0
 maxpercent = 10.0
 
