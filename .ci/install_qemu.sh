@@ -16,14 +16,7 @@ source "${cidir}/lib.sh"
 source "${cidir}/../lib/common.bash"
 source /etc/os-release || source /usr/lib/os-release
 
-<<<<<<< HEAD
-PREFIX=${PREFIX:-/usr}
-KATA_BUILD_CC="${KATA_BUILD_CC:-no}"
-KATA_DEV_MODE="${KATA_DEV_MODE:-}"
-
-=======
 PREFIX=${PREFIX:-/opt/kata}
->>>>>>> origin/main
 CURRENT_QEMU_VERSION=""
 QEMU_REPO_URL=""
 QEMU_ARCH=$(${cidir}/kata-arch.sh -d)
@@ -59,13 +52,9 @@ usage() {
 	exit_code="$1"
 	cat <<EOF
 Overview:
-
 	Build and install QEMU for Kata Containers
-
 Usage:
-
 	$script_name [options]
-
 Options:
     -d          : Enable bash debug.
     -h          : Display this help.
