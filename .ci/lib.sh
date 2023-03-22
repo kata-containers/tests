@@ -54,8 +54,6 @@ if [ "$(uname -m)" == "s390x" ] && grep -Eq "\<(fedora|suse)\>" /etc/os-release 
 	export CC=gcc
 fi
 
-[ -z "${USE_DOCKER:-}" ] && grep -Eq "\<fedora\>" /etc/os-release 2> /dev/null && export USE_PODMAN=true
-
 tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 lib_script="${GOPATH}/src/${tests_repo}/lib/common.bash"
 source "${lib_script}"
@@ -187,6 +185,7 @@ function build_static_artifact_and_install() {
 	pushd "$katacontainers_repo_dir" >/dev/null
 	sudo -E PATH=$PATH make "$make_target"
 	sudo tar -xvJpf "build/${tarball}" -C "${destdir}"
+	sudo rm -rf "build/"
 	popd >/dev/null
 }
 
@@ -394,7 +393,7 @@ gen_clean_arch() {
 		docker_storage_driver=$(timeout ${KATA_DOCKER_TIMEOUT} docker info --format='{{.Driver}}')
 		stale_docker_mount_point_union=( "/var/lib/docker/containers" "/var/lib/docker/${docker_storage_driver}" )
 		stale_docker_dir_union=( "/var/lib/docker" )
-		stale_kata_dir_union=( "/var/lib/vc" "/run/vc" "/usr/share/kata-containers" "/usr/share/defaults/kata-containers" )
+		stale_kata_dir_union=( "/var/lib/vc" "/run/vc" "/usr/share/kata-containers" "/usr/share/defaults/kata-containers"  "/opt/kata/share/kata-containers" "/opt/kata/share/defaults/kata-containers" )
 
 		info "kill stale process"
 		kill_stale_process

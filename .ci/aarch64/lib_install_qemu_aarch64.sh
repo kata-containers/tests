@@ -14,6 +14,8 @@ QEMU_REPO_URL=$(get_version "assets.hypervisor.qemu.url")
 # Remove 'https://' from the repo url to be able to git clone the repo
 QEMU_REPO=${QEMU_REPO_URL/https:\/\//}
 
+PREFIX=${PREFIX:-/opt/kata}
+
 build_and_install_qemu() {
         PACKAGING_DIR="${katacontainers_repo_dir}/tools/packaging"
         QEMU_CONFIG_SCRIPT="${PACKAGING_DIR}/scripts/configure-hypervisor.sh"
@@ -30,7 +32,7 @@ build_and_install_qemu() {
 	sudo -E ${PACKAGING_DIR}/scripts/patch_qemu.sh ${CURRENT_QEMU_VERSION} ${PACKAGING_DIR}/qemu/patches
 
         echo "Build Qemu"
-        "${QEMU_CONFIG_SCRIPT}" "qemu" | xargs sudo -E ./configure
+        PREFIX="${PREFIX}" "${QEMU_CONFIG_SCRIPT}" "qemu" | xargs sudo -E ./configure
         sudo -E make -j $(nproc)
 
         echo "Install Qemu"
@@ -41,7 +43,9 @@ build_and_install_qemu() {
             # Add link from /usr/local/bin to /usr/bin
             sudo ln -sf $(command -v qemu-system-${QEMU_ARCH}) "/usr/bin/qemu-system-${QEMU_ARCH}"
         fi
-	sudo mkdir -p /usr/libexec/kata-qemu/
-	sudo ln -sf $(dirname ${qemu_bin})/../libexec/qemu/virtiofsd /usr/libexec/kata-qemu/virtiofsd
         popd
+
+	# Install UEFI ROM for qemu
+	ENABLE_ARM64_UEFI="${ENABLE_ARM64_UEFI:-true}"
+	[ "${ENABLE_ARM64_UEFI}" == "true" ] && ${cidir}/aarch64/install_rom_aarch64.sh
 }

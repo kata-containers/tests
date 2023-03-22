@@ -30,6 +30,8 @@ KATA_TESTS_CACHEDIR="${KATA_TESTS_CACHEDIR:-${KATA_TESTS_BASEDIR}/cache}"
 
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 experimental_qemu="${experimental_qemu:-false}"
+RUNTIME="${RUNTIME:-containerd-shim-kata-v2}"
+
 
 # Display a message to stderr, a dump of lots of useful debug
 # information (including a full stacktrace) and exit 1.
@@ -155,7 +157,7 @@ extract_kata_env() {
 	RUNTIME_PATH=$(kata-runtime kata-env --json | jq -r .Runtime.Path)
 
 	# Shimv2 path is being affected by https://github.com/kata-containers/kata-containers/issues/1151
-	SHIM_PATH=$(command -v containerd-shim-kata-v2)
+	SHIM_PATH=$(readlink $(command -v containerd-shim-kata-v2))
 	SHIM_VERSION=${RUNTIME_VERSION}
 
 	HYPERVISOR_PATH=$(kata-runtime kata-env --json | jq -r .Hypervisor.Path)
@@ -268,6 +270,7 @@ clean_env_ctr()
 	[ "$res" == "ok" ] || sudo systemctl restart containerd
 
 	while (( remaining_attempts > 0 )); do
+		[ "${RUNTIME}" == "runc" ] && sudo ctr tasks rm -f $(sudo ctr task list -q)
 		sudo ctr c rm $(sudo ctr c list -q) >/dev/null 2>&1
 
 		count_running="$(sudo ctr c list -q | wc -l)"

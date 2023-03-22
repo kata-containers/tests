@@ -30,7 +30,7 @@ ACPICA_TAG_ID="R12_17_21"
 
 QEMU_EFI_BUILD_PATH="${EDK2_WORKSPACE}/Build/ArmVirtQemu-AARCH64/RELEASE_GCC5/FV/QEMU_EFI.fd"
 
-PREFIX="${PREFIX:-/usr}"
+PREFIX="${PREFIX:-/opt/kata}"
 INSTALL_PATH="${DESTDIR:-}${PREFIX}/share/kata-containers"
 
 EFI_NAME="QEMU_EFI.fd"
@@ -123,6 +123,19 @@ clean_up()
 	sudo rm -rf "${EDK2_WORKSPACE}"
 }
 
+enable_pflash_in_config()
+{
+	runtime_config_prefix=("/etc" "/usr/share/defaults" "/opt/kata/share/defaults")
+	for con_pre in "${runtime_config_prefix[@]}"
+	do
+		config_path="${con_pre}/kata-containers/configuration.toml"
+		[ -f "${config_path}" ] || continue	
+		sudo sed -i 's|pflashes = \[\]|pflashes = ["/opt/kata/share/kata-containers/kata-flash0.img", "/opt/kata/share/kata-containers/kata-flash1.img"]|' "${config_path}"
+		#enable pflash
+		sudo sed -i 's|#pflashes|pflashes|' "${config_path}"
+	done
+}
+
 main()
 {
 	if [ "${arch}" != "aarch64" ]; then
@@ -145,6 +158,8 @@ main()
 
 	echo "Info: install uefi rom image successfully"
 	clean_up
+
+	enable_pflash_in_config
 }
 
 main

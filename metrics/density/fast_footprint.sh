@@ -79,7 +79,7 @@ function init() {
 	restart_containerd_service
 
 	check_cmds $REQUIRED_COMMANDS
-	sudo ctr image pull "$PAYLOAD"
+	sudo -E "${CTR_EXE}" image pull "$PAYLOAD"
 
 	# Modify the test name if running with KSM enabled
 	check_for_ksm
@@ -303,7 +303,7 @@ launch_containers() {
 		echo "Launch iteration ${iter}"
 		for n in $(seq 1 $PARALLELISM); do
 			containers+=($(random_name))
-			sudo ctr run -d --runtime=$CTR_RUNTIME $PAYLOAD ${containers[-1]} sh -c $PAYLOAD_ARGS &
+			sudo -E "${CTR_EXE}" run -d --runtime=$CTR_RUNTIME $PAYLOAD ${containers[-1]} sh -c $PAYLOAD_ARGS &
 		done
 
 		if [[ $PAYLOAD_SLEEP ]]; then
@@ -319,7 +319,7 @@ launch_containers() {
 
 	for n in $(seq 1 $leftovers); do
 		containers+=($(random_name))
-		sudo ctr run -d --runtime=$CTR_RUNTIME $PAYLOAD ${containers[-1]} sh -c $PAYLOAD_ARGS &
+		sudo -E "${CTR_EXE}" run -d --runtime=$CTR_RUNTIME $PAYLOAD ${containers[-1]} sh -c $PAYLOAD_ARGS &
 	done
 }
 
@@ -330,7 +330,7 @@ wait_containers() {
 
 	for ((t=0; t<${CTR_POLL_TIMEOUT}; t+=step)); do
 
-		numcontainers=$(sudo ctr c list -q | wc -l)
+		numcontainers=$(sudo -E "${CTR_EXE}" c list -q | wc -l)
 
 		if (( numcontainers >=  ${NUM_CONTAINERS} )); then
 			echo "All containers now launched (${t}s)"

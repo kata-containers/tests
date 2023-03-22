@@ -65,6 +65,9 @@ kubernetes-e2e:
 sandbox-cgroup:
 	bash -f functional/sandbox_cgroup/sandbox_cgroup_test.sh
 
+sgx:
+	bash -f functional/sgx/run.sh
+
 stability:
 	cd stability && \
 	ITERATIONS=2 MAX_CONTAINERS=20 ./soak_parallel_rm.sh
@@ -77,7 +80,10 @@ stability-baremetal:
 # If hypervisor is dragonball, the default path to keep pod info is /run/kata. Meanwhile, there is 
 # no independent hypervisor process for dragonball, so disale hypervisor_stability_kill_test.sh
 dragonball-stability:
-	cd stability && ITERATIONS=2 MAX_CONTAINERS=20 VC_POD_DIR=/run/kata ./soak_parallel_rm.sh
+	mkdir -p /etc/kata-containers && \
+	cp -a /opt/kata/share/defaults/kata-containers/configuration-dragonball.toml /etc/kata-containers/configuration.toml && \
+	cd stability && ITERATIONS=2 MAX_CONTAINERS=20 VC_POD_DIR=/run/kata ./soak_parallel_rm.sh && \
+	rm -rf /etc/kata-containers
 
 # Run the static checks on this repository.
 static-checks:
@@ -145,6 +151,9 @@ vfio:
 #	bash -f functional/vfio/run.sh -s true -p clh -i image
 	bash -f functional/vfio/run.sh -s false -p qemu -m q35 -i image
 	bash -f functional/vfio/run.sh -s true -p qemu -m q35 -i image
+
+vfio-ap:
+	bash -f functional/vfio-ap/run.sh
 
 agent: bash -f functional/agent/agent_test.sh
 

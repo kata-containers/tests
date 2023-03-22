@@ -22,7 +22,7 @@ METRICS_CI="${METRICS_CI:-}"
 if [ "$KATA_BUILD_CC" == "yes" ]; then
 	PREFIX="${PREFIX:-/opt/confidential-containers}"
 fi
-PREFIX="${PREFIX:-/usr}"
+PREFIX="${PREFIX:-/opt/kata}"
 DESTDIR="${DESTDIR:-/}"
 TEST_INITRD="${TEST_INITRD:-}"
 USE_VSOCK="${USE_VSOCK:-yes}"
@@ -73,17 +73,14 @@ build_install_shim_v2(){
 		return
 	fi
 
-	pushd "$runtime_src_path"
-	make
-	sudo -E PATH=$PATH make install
-	popd
+	build_static_artifact_and_install "shim-v2"
+
+	sudo ln --force -s ${PREFIX}/bin/containerd-shim-kata-v2 /usr/local/bin/
+	sudo ln --force -s ${PREFIX}/bin/kata-monitor /usr/local/bin/
+	sudo ln --force -s ${PREFIX}/bin/kata-runtime /usr/local/bin/
+	sudo ln --force -s ${PREFIX}/bin/kata-collect-data.sh /usr/local/bin/main
 	if [ "$KATA_HYPERVISOR" == "dragonball" ]; then
-		bash "${cidir}/install_rust.sh" && source "$HOME/.cargo/env"
-		pushd "$runtime_rs_src_path"
-		sudo chown -R "${USER}:${GID}" "${katacontainers_repo_dir}"
-		make
-		sudo -E PATH=$PATH make install
-		popd
+		sudo ln --force -s ${PREFIX}/runtime-rs/bin/containerd-shim-kata-v2 /usr/local/bin/
 	fi
 }
 
@@ -151,7 +148,6 @@ case "${KATA_HYPERVISOR}" in
 		fi
 		;;
 	"dragonball")
-		sudo sed -i -e 's/vmlinux.container/vmlinux-dragonball-experimental.container/' "${PKGDEFAULTSDIR}/configuration-dragonball.toml"
 		enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-dragonball.toml"
 		;;
 	*)
@@ -210,11 +206,3 @@ if [ "$ID" == ubuntu ] && [ x"${TEST_INITRD}" == x"yes" ] && [ "$VERSION_ID" != 
 	sudo sed -i --follow-symlinks 's/block_device_driver = "virtio-scsi"/block_device_driver = "virtio-blk"/' "${runtime_config_path}"
 fi
 
-# Install UEFI ROM for arm64/qemu
-ENABLE_ARM64_UEFI="${ENABLE_ARM64_UEFI:-false}"
-if [ "$arch" == "aarch64" -a "${KATA_HYPERVISOR}" == "qemu" -a "${ENABLE_ARM64_UEFI}" == "true" ]; then
-	${cidir}/aarch64/install_rom_aarch64.sh
-	sudo sed -i --follow-symlinks 's|pflashes = \[\]|pflashes = ["/usr/share/kata-containers/kata-flash0.img", "/usr/share/kata-containers/kata-flash1.img"]|' "${runtime_config_path}"
-	#enable pflash
-	sudo sed -i --follow-symlinks 's|#pflashes|pflashes|' "${runtime_config_path}"
-fi
