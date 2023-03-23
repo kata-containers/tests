@@ -279,7 +279,7 @@ function go() {
 
 	for i in $(seq 1 $MAX_NUM_CONTAINERS); do
 		containers+=($(random_name))
-		sudo ctr run --rm --runtime=$CTR_RUNTIME $PAYLOAD ${containers[-1]} sh -c $PAYLOAD_ARGS
+		sudo -E "${CTR_EXE}" run --rm --runtime=$CTR_RUNTIME $PAYLOAD ${containers[-1]} sh -c $PAYLOAD_ARGS
 
 		if [[ $PAYLOAD_SLEEP ]]; then
 			sleep $PAYLOAD_SLEEP
