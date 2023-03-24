@@ -265,10 +265,10 @@ start_cri_runtime_service() {
 	# Sleep time between checks.
 	local wait_time_cri_socket_check=5
 
-	# stop containerd first and then restart it
-	if systemctl is-active --quiet containerd; then
-		info "Stop containerd service"
-		sudo systemctl stop containerd
+	# stop the service first and then restart it
+	if systemctl is-active --quiet ${cri}; then
+		info "Stop ${cri} service"
+		sudo systemctl stop ${cri}
 	fi
 
 	sudo systemctl enable --now ${cri}
