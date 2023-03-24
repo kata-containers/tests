@@ -292,11 +292,11 @@ main() {
 
 	case "${CRI_RUNTIME}" in
 	containerd)
-		cri_runtime_socket="/run/containerd/containerd.sock"
+		cri_runtime_socket="unix:///run/containerd/containerd.sock"
 		cgroup_driver="cgroupfs"
 		;;
 	crio)
-		cri_runtime_socket="/var/run/crio/crio.sock"
+		cri_runtime_socket="unix:///var/run/crio/crio.sock"
 		cgroup_driver="systemd"
 		;;
 	*)
