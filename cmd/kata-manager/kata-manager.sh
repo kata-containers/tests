@@ -68,6 +68,8 @@ Commands:
   configure-initrd      : Configure the runtime to use the specified initial ramdisk.
   disable-debug         : Turn off all debug options.
   enable-debug          : Turn on all debug options for all system components.
+  disable-vsock         : Turn off vsock config 'use_vsock'.
+  enable-vsock          : Turn on vsock config 'use_vsock'.
   install-docker        : Only install and configure Docker.
   install-docker-system : Install and configure Docker (implies 'install-packages').
   install-packages      : Install the packaged version of Kata Containers only.
