@@ -71,6 +71,7 @@ EOF
 
 function nginx_cleanup() {
 	kubectl delete deployment "${deployment}"
+	kubectl delete service "${deployment}"
 	if [ -z "${CI_JOB}" ]; then
 		end_kubernetes
 		check_processes
