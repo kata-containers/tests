@@ -3,5 +3,10 @@
   "Sigstore Config": "${SIGSTORE_CONFIG}",
   "GPG Keyring": "${GPG_KEYRING}",
   "Cosign Key": "${COSIGN_KEY}",
-  "Credential": "${CREDENTIAL}"
+  "Credential": "${CREDENTIAL}",
+  "default/security-policy/test": "${POLICY}",
+  "default/sigstore-config/test": "${SIGSTORE_CONFIG}",
+  "default/gpg-public-config/test": "${GPG_KEYRING}",
+  "default/cosign-public-key/test": "${COSIGN_KEY}",
+  "default/credential/test": "${CREDENTIAL}"
 }
