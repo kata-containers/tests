@@ -182,17 +182,14 @@ init () {
 	echo "Executing test: ${TEST_NAME} ${TEST_ARGS}"
 	check_cmds "${REQUIRED_CMDS[@]}"
 
-	# Only try to grab a dmesg boot time if we are pretty sure we are running a
-	# Kata runtime
-	local iskata=$(is_a_kata_runtime "$RUNTIME")
-	if [ "$iskata" == "1" ]; then
+	# For non-VM runtimes, we don't use the output of dmesg, and
+	# we have seen it cause some test instabilities, so do not invo>
+	# it if not needed.
+	if [ "${CTR_RUNTIME}" == "io.containerd.runc.v2" ]; then
+		DMESGCMD=""
+	else
 		CALCULATE_KERNEL=1
 		DMESGCMD="; dmesg"
-	else
-		# For non-VM runtimes, we don't use the output of dmesg, and
-		# we have seen it cause some test instabilities, so do not invoke
-		# it if not needed.
-		DMESGCMD=""
 	fi
 
 	# Start from a fairly clean environment
