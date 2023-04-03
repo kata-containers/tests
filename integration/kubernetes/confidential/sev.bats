@@ -29,7 +29,7 @@ test_tag="[cc][kubernetes][containerd][sev]"
 export SEV_CONFIG="/opt/confidential-containers/share/defaults/kata-containers/configuration-qemu-sev.toml"
 export RUNTIMECLASS=${RUNTIMECLASS:-"kata"}
 export FIXTURES_DIR="${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures"
-export IMAGE_REPO="ghcr.io/fitzthum/encrypted-image-tests"
+export IMAGE_REPO="ghcr.io/confidential-containers/test-container"
 
 esudo() {
   sudo -E PATH=$PATH "$@"
@@ -254,12 +254,12 @@ add_key_to_kbs_db() {
   # Add key and keyset to DB; If set, add policy with measurement to DB
   if [ -n "${measurement}" ]; then
     mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${KBS_DB_HOST} -D ${KBS_DB} <<EOF
-      INSERT INTO secrets VALUES (10, 'key_id1', '${ENCRYPTION_KEY}', 10);
+      INSERT INTO secrets VALUES (10, 'default/key/ssh-demo', '${ENCRYPTION_KEY}', 10);
       INSERT INTO policy VALUES (10, '["${measurement}"]', '[]', 0, 0, '[]', now(), NULL, 1);
 EOF
   else
     mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${KBS_DB_HOST} -D ${KBS_DB} <<EOF
-      INSERT INTO secrets VALUES (10, 'key_id1', '${ENCRYPTION_KEY}', NULL);
+      INSERT INTO secrets VALUES (10, 'default/key/ssh-demo', '${ENCRYPTION_KEY}', NULL);
 EOF
   fi
 }
