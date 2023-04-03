@@ -266,16 +266,18 @@ setup_offline_fs_kbc_signature_files_in_guest() {
 	cp_to_guest_img "etc" "${SHARED_FIXTURES_DIR}/offline-fs-kbc/$(uname -m)/aa-offline_fs_kbc-resources.json"
 }
 
-setup_eaa_kbc_signature_files_in_guest() {
+setup_cc_kbc_signature_files_in_guest() {
 	# Enable signature verification via kata-configuration by removing the param that disables it
 	remove_kernel_param "agent.enable_signature_verification"
 
 	# Set-up required files in guest image
 	setup_common_signature_files_in_guest
 
-	# EAA KBC is specified as: eaa_kbc::host_ip:port, and 50000 is the default port used
+	# CC KBC is specified as: cc_kbc::http://host_ip:port/, and 60000 is the default port used
 	# by the service, as well as the one configured in the Kata Containers rootfs.
-	add_kernel_params "agent.aa_kbc_params=eaa_kbc::$(hostname -I | awk '{print $1}'):50000"
+	CC_KBS_IP=${CC_KBS_IP:-"$(hostname -I | awk '{print $1}')"}
+	CC_KBS_PORT=${CC_KBS_PORT:-"60000"}
+	add_kernel_params "agent.aa_kbc_params=cc_kbc::http://${CC_KBS_IP}:${CC_KBS_PORT}/"
 }
 
 setup_cosign_signatures_files() {
@@ -295,10 +297,13 @@ setup_cosign_signatures_files() {
 			add_kernel_params "agent.aa_kbc_params=offline_fs_kbc::null"
 			cp_to_guest_img "etc" "${SHARED_FIXTURES_DIR}/cosign/offline-fs-kbc/aa-offline_fs_kbc-resources.json"
 			;;
-		"eaa_kbc")
-			# EAA KBC is specified as: eaa_kbc::host_ip:port, and 50000 is the default port used
+		"cc_kbc")
+			# CC KBC is specified as: cc_kbc::host_ip:port, and 60000 is the default port used
 			# by the service, as well as the one configured in the Kata Containers rootfs.
-			add_kernel_params "agent.aa_kbc_params=eaa_kbc::$(hostname -I | awk '{print $1}'):50000"
+
+			CC_KBS_IP=${CC_KBS_IP:-"$(hostname -I | awk '{print $1}')"}
+			CC_KBS_PORT=${CC_KBS_PORT:-"60000"}
+			add_kernel_params "agent.aa_kbc_params=cc_kbc::http://${CC_KBS_IP}:${CC_KBS_PORT}/"
 			;;
 		*)
 			;;
@@ -310,8 +315,8 @@ setup_signature_files() {
 		"offline_fs_kbc")
 			setup_offline_fs_kbc_signature_files_in_guest
 			;;
-		"eaa_kbc")
-			setup_eaa_kbc_signature_files_in_guest
+		"cc_kbc")
+			setup_cc_kbc_signature_files_in_guest
 			;;
 		*)
 			;;
