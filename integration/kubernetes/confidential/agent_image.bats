@@ -185,10 +185,12 @@ assert_logs_contain() {
 @test "$test_tag Test pull an unencrypted unsigned image from an authenticated registry with correct credentials" {
 	if [ "${AA_KBC}" = "offline_fs_kbc" ]; then
 		setup_credentials_files "quay.io/kata-containers/confidential-containers-auth"
-	elif [ "${AA_KBC}" = "eaa_kbc" ]; then
-		# EAA KBC is specified as: eaa_kbc::host_ip:port, and 50000 is the default port used
+	elif [ "${AA_KBC}" = "cc_kbc" ]; then
+		# CC KBC is specified as: cc_kbc::http://host_ip:port/, and 60000 is the default port used
 		# by the service, as well as the one configured in the Kata Containers rootfs.
-		add_kernel_params "agent.aa_kbc_params=eaa_kbc::$(hostname -I | awk '{print $1}'):50000"
+		CC_KBS_IP=${CC_KBS_IP:-"$(hostname -I | awk '{print $1}')"}
+		CC_KBS_PORT=${CC_KBS_PORT:-"60000"}
+		add_kernel_params "agent.aa_kbc_params=cc_kbc::http://${CC_KBS_IP}:${CC_KBS_PORT}/"
 	fi
 
 	pod_config="$(new_pod_config "${image_authenticated}")"
@@ -198,7 +200,7 @@ assert_logs_contain() {
 }
 
 @test "$test_tag Test cannot pull an image from an authenticated registry with incorrect credentials" {
-	if [ "${AA_KBC}" = "eaa_kbc" ]; then
+	if [ "${AA_KBC}" = "cc_kbc" ]; then
 		skip "As the test requires changing verdictd configuration and restarting its service"
 	fi
 
