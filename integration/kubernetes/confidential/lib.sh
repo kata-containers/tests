@@ -74,16 +74,12 @@ checkout_doc_repo_dir() {
         git clone https://${doc_repo} "${doc_repo_dir}"
         # Update runtimeClassName from kata-cc to "$RUNTIMECLASS"
         sudo sed -i -e 's/\([[:blank:]]*runtimeClassName: \).*/\1'${RUNTIMECLASS:-kata}'/g' "${doc_repo_dir}/demos/ssh-demo/k8s-cc-ssh.yaml"
-        if [ "$(uname -m)" != "x86_64" ]; then
-            sudo sed -i -e 's/^\(.*image: docker\.io.*\)$/\1:'$(uname -m)'/g' "${doc_repo_dir}/demos/ssh-demo/k8s-cc-ssh.yaml"
-        fi
         chmod 600 ${doc_repo_dir}/demos/ssh-demo/ccv0-ssh
     fi
 }
 
 kubernetes_create_ssh_demo_pod() {
 	checkout_doc_repo_dir
-	[ "${AA_KBC:-}" == "cc_kbc" ] && sed -i 's#katadocker/ccv0-ssh#ghcr.io/confidential-containers/test-container:encrypted#g' "${doc_repo_dir}/demos/ssh-demo/k8s-cc-ssh.yaml"
 	kubectl apply -f "${doc_repo_dir}/demos/ssh-demo/k8s-cc-ssh.yaml" && pod=$(kubectl get pods -o jsonpath='{.items..metadata.name}') && kubectl wait --timeout=120s --for=condition=ready pods/$pod
 	kubectl get pod $pod
 }
