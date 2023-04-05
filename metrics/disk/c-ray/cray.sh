@@ -29,7 +29,7 @@ function main() {
 	check_cmds "${cmds[@]}"
 	check_ctr_images "$IMAGE" "$DOCKERFILE"
 
-	sudo -E ctr run --rm --runtime="${CTR_RUNTIME}" "${IMAGE}" test sh -c "${CMD}" > "${cray_file}"
+	sudo -E "${CTR_EXE}" run --rm --runtime="${CTR_RUNTIME}" "${IMAGE}" test sh -c "${CMD}" > "${cray_file}"
 	metrics_json_init
 	results=$(cat "${cray_file}" | grep seconds | awk '{print $3}' | head -n 1)
 	metrics_json_start_array
