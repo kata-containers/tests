@@ -314,13 +314,13 @@ setup_file() {
   pull_unencrypted_image_and_set_keys
 
   generate_service_yaml "unencrypted-image-tests" "${IMAGE_REPO}:unencrypted"
-  generate_service_yaml "encrypted-image-tests" "${IMAGE_REPO}:encrypted"
+  generate_service_yaml "encrypted-image-tests" "${IMAGE_REPO}:multi-arch-encrypted"
 
   # SEV-ES policy is 7:
   # - NODBG (1): Debugging of the guest is disallowed when set
   # - NOKS (2): Sharing keys with other guests is disallowed when set
   # - ES (4): SEV-ES is required when set
-  generate_service_yaml "encrypted-image-tests-es" "${IMAGE_REPO}:encrypted" "7"
+  generate_service_yaml "encrypted-image-tests-es" "${IMAGE_REPO}:multi-arch-encrypted" "7"
 
   echo "SETUP FILE - COMPLETE"
   echo "###############################################################################"
