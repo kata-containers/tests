@@ -50,12 +50,18 @@ entropy_level="256"
 # Grabs the number of iterations performed
 num_iters=0
 
+# sets to this max number of repetitons for failed runs
+MAX_REPETITIONS=3
+
 # The individual results are stored in an array
 declare -a total_result_ds
 declare -a to_workload_ds
 declare -a in_kernel_ds
 declare -a to_kernel_ds
 declare -a to_quit_ds
+# data_is_valid value 1 represent not valid
+# data_is_valid value 0 represent is valid
+data_is_valid=0
 
 check_entropy_level() {
 	retries="10"
@@ -86,6 +92,10 @@ ns_to_s() {
 }
 
 run_workload() {
+	# L_CALC_SCALE is set to accounting a significant
+	# number of decimal digits after the decimal points
+	# for 'bc' performing math in kernel period estimation
+	L_CALC_SCALE=13
 	start_time=$($DATECMD)
 
 	# Check entropy level of the host
@@ -140,7 +150,7 @@ run_workload() {
 		kernel_period=$(echo $kernel_last_line | awk '{print $2}' | tr -d "]")
 
 		# And we can then work out how much time it took to get to the kernel
-		to_kernel_period=$(printf "%0f" $(bc <<<"scale=$CALC_SCALE; $(ns_to_s $workload_period) - $kernel_period"))
+		to_kernel_period=$(printf "%f" $(bc <<<"scale=$L_CALC_SCALE; $(ns_to_s $workload_period) - $kernel_period"))
 	else
 		kernel_period="0.0"
 		to_kernel_period="0.0"
@@ -152,12 +162,23 @@ run_workload() {
 	to_kernel=$to_kernel_period
 	to_quit=$(ns_to_s $shutdown_period)
 
-	# Insert results individually
-	total_result_ds+=($total_result)
-	to_workload_ds+=($to_workload)
-	in_kernel_ds+=($in_kernel)
-	to_kernel_ds+=($to_kernel)
-	to_quit_ds+=($to_quit)
+	tr_is_neg=$(echo $total_result'<='0.0 | bc -l)
+	tw_is_neg=$(echo $to_workload'<='0.0 | bc -l)
+	ik_is_neg=$(echo $in_kernel'<='0.0 | bc -l)
+	tk_is_neg=$(echo $to_kernel'<='0.0 | bc -l)
+	tq_is_neg=$(echo $to_quit'<='0.0 | bc -l)
+
+	data_is_valid=0
+	if [ $tr_is_neg -eq 1 ] || [ $tw_is_neg -eq 1 ] || [ $ik_is_neg -eq 1 ] || [ $tk_is_neg -eq 1 ] || [ $tq_is_neg -eq 1 ]; then
+		data_is_valid=1
+	else
+		# Insert results individually
+		total_result_ds+=($total_result)
+		to_workload_ds+=($to_workload)
+		in_kernel_ds+=($in_kernel)
+		to_kernel_ds+=($to_kernel)
+		to_quit_ds+=($to_quit)
+	fi
 
 	((num_iters+=1))
 
@@ -177,23 +198,23 @@ write_individual_results() {
 	{
 		"total": {
 			"Result": ${total_result_ds[i]},
-			"Units" : "s"
+			"Units": "s"
 		},
 		"to-workload": {
 			"Result": ${to_workload_ds[i]},
-			"Units" : "s"
+			"Units": "s"
 		},
 		"in-kernel": {
 			"Result": ${in_kernel_ds[i]},
-			"Units" : "s"
+			"Units": "s"
 		},
 		"to-kernel": {
 			"Result": ${to_kernel_ds[i]},
-			"Units" : "s"
+			"Units": "s"
 		},
 		"to-quit": {
 			"Result": ${to_quit_ds[i]},
-			"Units" : "s"
+			"Units": "s"
 		}
 	}
 EOF
@@ -232,30 +253,33 @@ init () {
 
 # Computes the average of the data
 calc_avg_array() {
-	total_result_ds=("$@")
+	data=("$@")
 	avg=0
-	CALC_SCALE=6
+	LSCALE=6
+	size="${#data[@]}"
 
-	[ -z "$total_result_ds" ] && die "List of results was not passed to the calc_avg_array() function when trying to calculate the average result".
+	[ -z "$data" ] && die "List of results was not passed to the calc_avg_array() function when trying to calculate the average result."
+	[ $size -eq 0 ] && die "Division by zero: The number of items is 0 when trying to calculate the average result."
 
-	sum=$(IFS='+'; echo "scale=4; ${total_result_ds[*]}" | bc)
-	avg=$(echo "scale=$CALC_SCALE; $sum / $num_iters" | bc)
+	sum=$(IFS='+'; echo "scale=4; ${data[*]}" | bc)
+	avg=$(echo "scale=$LSCALE; $sum / $size" | bc)
 	printf "%.0${CALC_SCALE}f" $avg
 }
+
 
 # Computes the standard deviation of the data
 calc_sd_array() {
 	data=("$@")
 	sum_sqr_n=0
+	size=${#data[@]}
 
 	# LSCALE is the scale used for calculations in the middle
 	# CALC_SCALE is the scale used for the result
 	LSCALE=13
 	CALC_SCALE=6
-	num_items_is_zero=$(echo $num_iters'=='0.0 | bc -l)
 
 	[ -z "$data" ] && die "List results was not passed to the calc_sd_result() function when trying to calculate the standard deviation result."
-	[ "$num_items_is_zero" -eq "1" ] && die "Division by zero: The number of items is 0 when trying to calculate the standard deviation result."
+	[ $size -eq 0 ] && die "Division by zero: The number of items is 0 when trying to calculate the standard deviation result."
 
 
 	# [1] sum data
@@ -265,7 +289,7 @@ calc_sd_array() {
 	pow_2_sum_data=$(echo "scale=$LSCALE; $sum_data ^ 2" | bc)
 
 	# [3] divide the square of data by the num of items
-	div_sqr_n=$(echo "scale=$LSCALE; $pow_2_sum_data / $num_iters" | bc)
+	div_sqr_n=$(echo "scale=$LSCALE; $pow_2_sum_data / $size" | bc)
 
 	# [4] Sum of the sqr of each item
 	for i in "${data[@]}"; do
@@ -277,7 +301,7 @@ calc_sd_array() {
 	subs=$(echo "scale=$LSCALE; $sum_sqr_n - $div_sqr_n" | bc)
 
 	# get variance
-	var=$(echo "scale=$LSCALE; $subs / $num_iters" | bc)
+	var=$(echo "scale=$LSCALE; $subs / $size" | bc)
 
 	# get standard deviation
 	sd=$(echo "scale=$LSCALE; sqrt($var)" | bc)
@@ -295,8 +319,8 @@ calc_cov_array() {
 	sd=$1
 	mean=$2
 
-	# LSCALE is the scale used for calculations in the middle
-	# CALC_SCALE is the scale used for the result
+	# LSCALE used for consider more decimals digits than usual in cov estimation.
+	# CALC_SCALE is the scale used to return the result.
 	LSCALE=13
 	CALC_SCALE=6
 
@@ -304,7 +328,7 @@ calc_cov_array() {
 
 	[ -z "$sd" ] && die "Standard deviation was not passed to the calc_cov_array() function when trying to calculate the CoV result."
 	[ -z "$mean" ] && die "Mean was not passed to the calc_cov_array() function when trying to calculate the CoV result."
-	[ "$mean_is_zero" -eq "1" ] && die "Division by zero: Mean value passed is 0 when trying to get CoV result."
+	[ $mean_is_zero -eq 1 ] && die "Division by zero: Mean value passed is 0 when trying to get CoV result."
 
 	cov=$(echo "scale=$LSCALE; $sd / $mean" | bc)
 	cov=$(echo "scale=$LSCALE; $cov * 100" | bc)
@@ -319,6 +343,7 @@ calc_cov_array() {
 # Writes a JSON with the statistics results
 # for each launch time metric
 write_stats_results() {
+	size="${#total_result_ds[@]}"
 	avg_total_result=$(calc_avg_array "${total_result_ds[@]}")
 	avg_to_workload=$(calc_avg_array "${to_workload_ds[@]}")
 	avg_in_kernel=$(calc_avg_array "${in_kernel_ds[@]}")
@@ -339,7 +364,7 @@ write_stats_results() {
 
 	local json="$(cat << EOF
 	{
-	"size": $num_iters,
+	"size": $size,
 	"total": {
 		"avg": $avg_total_result,
 		"sd": $sd_total_result,
@@ -362,7 +387,7 @@ write_stats_results() {
 	},
 	"to-quit": {
 		"avg": $avg_to_quit,
-		"sd" : $sd_to_quit,
+		"sd": $sd_to_quit,
 		"cov": $cov_to_quit
 	}
 	}
@@ -420,10 +445,27 @@ main() {
 	[ -z "$RUNTIME" ] && help && die "Mandatory runtime argument not supplied"
 
 	init
+	j=0
+	max_reps=$MAX_REPETITIONS
 
-	for i in $(seq 1 "$TIMES"); do
-		echo " run $i"
+	while [ $j -lt $TIMES ]; do
+
+		echo " run $num_iters"
 		run_workload
+
+		if [ $data_is_valid -eq 0 ]; then
+			j=$(( j + 1 ))
+			# if valid result then reset 'max_reps' to initial value
+			max_reps=$MAX_REPETITIONS
+			continue
+		fi
+
+		echo "Skipping run due to invalid result"
+		((max_reps-=1))
+
+		if [ $max_reps -lt 0 ]; then
+			die "Max. num of repetitions reached for run: $j"
+		fi
 	done
 
 	metrics_json_init
