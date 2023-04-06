@@ -134,7 +134,7 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
 	export KATA_BUILD_CC="yes"
-	export AA_KBC="eaa_kbc"
+	export AA_KBC="cc_kbc"
 	export TEE_TYPE="tdx"
 	export KATA_BUILD_KERNEL_TYPE="tdx"
 	export KATA_BUILD_QEMU_TYPE="tdx"
@@ -156,7 +156,7 @@ case "${CI_JOB}" in
 		export TEE_TYPE="tdx"
 		export KATA_BUILD_KERNEL_TYPE="tdx"
 		export KATA_BUILD_QEMU_TYPE="tdx"
-		export AA_KBC="eaa_kbc"
+		export AA_KBC="cc_kbc"
 	elif [[ "${CI_JOB}" =~ _SE_ ]]; then
 		if grep -q 'prot_virt=1' /proc/cmdline && grep -Eq '^facilities.* 158 .*' /proc/cpuinfo; then
 			export TEE_TYPE="se"
