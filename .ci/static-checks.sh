@@ -500,7 +500,7 @@ check_url()
 		curl_args+=("-u ${GITHUB_USER}:${GITHUB_TOKEN}")
 	fi
 
-	{ curl ${curl_args[*]} -sIL -A "${user_agent}" -H "Accept-Encoding: zstd, br, gzip, deflate" --max-time "$url_check_timeout_secs" \
+	{ curl ${curl_args[*]} -sIL -A "${user_agent}" -H "Accept-Encoding: zstd, none, gzip, deflate" --max-time "$url_check_timeout_secs" \
 		--retry "$url_check_max_tries" "$url" &>"$curl_out"; ret=$?; } || true
 
 	# A transitory error, or the URL is incorrect,
