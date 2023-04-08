@@ -118,3 +118,42 @@ setup_decryption_files_in_guest() {
 	add_kernel_params "agent.aa_kbc_params=offline_fs_kbc::null"
 	cp_to_guest_img "etc" "${doc_repo_dir}/demos/ssh-demo/aa-offline_fs_kbc-keys.json"
 }
+
+###############################################################################
+
+# Confidentiality - AMD
+
+# Generate the firmware measurement using sev-snp-measure
+generate_firmware_measurement_with_append() {
+  local config_file="${1}"
+  local append="${2}"
+  local mode="${3:-sev}"
+  
+  # Get vcpu sig, get ovmf, kernel and initrd paths
+  local vcpu_sig=$(cpuid -1 --leaf 0x1 --raw | cut -s -f2 -d= | cut -f1 -d" ")
+  local ovmf_path=$(grep "firmware = " ${config_file} | cut -d'"' -f2)
+  local kernel_path="$(esudo /opt/confidential-containers/bin/kata-runtime \
+    --config ${config_file} kata-env --json | jq -r .Kernel.Path)"
+  local initrd_path="$(esudo /opt/confidential-containers/bin/kata-runtime \
+    --config ${config_file} kata-env --json | jq -r .Initrd.Path)"
+  
+  # Return error if files don't exist
+  [ -f "${ovmf_path}" ] || return 1
+  [ -f "${kernel_path}" ] || return 1
+  [ -f "${initrd_path}" ] || return 1
+
+  # Generate digest from sev-snp-measure output - this also inserts measurement values inside OVMF image
+  # PATH setting here needed for pip installed binary to be found
+  measurement=$(PATH="${PATH}:${HOME}/.local/bin" sev-snp-measure \
+    --mode="${mode}" \
+    --vcpus=1 \
+    --vcpu-sig="${vcpu_sig}" \
+    --output-format=base64 \
+    --ovmf="${ovmf_path}" \
+    --kernel="${kernel_path}" \
+    --initrd="${initrd_path}" \
+    --append="${append}" \
+  )
+  if [[ -z "${measurement}" ]]; then return 1; fi
+  echo ${measurement}
+}

@@ -5,31 +5,28 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: $NAME
+  name: "$NAME"
 spec:
   selector:
-    app: $NAME
+    app: "$NAME"
   ports:
   - port: 22
 ---
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: $NAME
+  name: "$NAME"
 spec:
   selector:
     matchLabels:
-      app: $NAME
+      app: "$NAME"
   template:
     metadata:
       labels:
-        app: $NAME
-      annotations:
-        io.katacontainers.config.pre_attestation.uri: "$KBS_URI"
-        io.katacontainers.config.sev.policy: "$POLICY"
+        app: "$NAME"
     spec:
-      runtimeClassName: $RUNTIMECLASS
+      runtimeClassName: "$RUNTIMECLASS"
       containers:
-      - name: $NAME
-        image: $IMAGE
+      - name: "$NAME"
+        image: "$IMAGE"
         imagePullPolicy: Always
