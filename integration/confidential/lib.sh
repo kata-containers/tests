@@ -204,7 +204,7 @@ configure_cc_containerd() {
 	sudo systemctl stop containerd
 	sleep 5
 	[ -n "$saved_containerd_conf_file" ] && \
-		cp -f "$containerd_conf_file" "$saved_containerd_conf_file"
+		sudo cp -f "$containerd_conf_file" "$saved_containerd_conf_file"
 	sudo systemctl start containerd
 	waitForProcess 30 5 "sudo crictl info >/dev/null"
 
