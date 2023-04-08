@@ -113,6 +113,12 @@ cc-sev-kubernetes:
 	K8S_TEST_UNION="confidential/sev.bats" \
 	bash integration/kubernetes/run_kubernetes_tests.sh
 
+# Run the Confidential Containers AMD SNP specific tests.
+cc-snp-kubernetes:
+	bash -f .ci/install_bats.sh
+	K8S_TEST_UNION="confidential/snp.bats" \
+	bash integration/kubernetes/run_kubernetes_tests.sh
+
 log-parser:
 	make -C cmd/log-parser
 

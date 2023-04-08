@@ -106,7 +106,7 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
 	;;
-"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S"|"CC_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_K8S"|"CC_SEV_CRI_CONTAINERD_K8S")
+"CRI_CONTAINERD"|"CRI_CONTAINERD_K8S"|"CC_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_K8S")
 	# This job only tests containerd + k8s
 	init_ci_flags
 	export CRI_CONTAINERD="yes"
@@ -116,7 +116,7 @@ case "${CI_JOB}" in
 		"CRI_CONTAINERD_K8S")
 			export KUBERNETES="yes"
 			;;
-		"CC_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_K8S"|"CC_SEV_CRI_CONTAINERD_K8S")
+		"CC_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_K8S")
 			# Export any CC specific environment variables
 			export KATA_BUILD_CC="yes"
 			export MEASURED_ROOTFS="yes"
@@ -124,13 +124,30 @@ case "${CI_JOB}" in
 			if [[ "${CI_JOB}" =~ K8S ]]; then
 				export KUBERNETES=yes
 			fi
-			if [[ "${CI_JOB}" =~ SEV ]]; then
-				export TEE_TYPE="sev"
-				export AA_KBC="online_sev_kbc"
-				export TEST_INITRD="yes"
-			fi
 			;;
 	esac
+	;;
+"CC_SEV_CRI_CONTAINERD_K8S"|"CC_SNP_CRI_CONTAINERD_K8S")
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="qemu"
+	export KATA_BUILD_CC="yes"
+	export AA_KBC="offline_fs_kbc"
+	export TEST_INITRD="yes"
+	if [[ "${CI_JOB}" =~ K8S ]]; then
+		export KUBERNETES=yes
+	fi
+	if [[ "${CI_JOB}" =~ SEV ]]; then
+		export TEE_TYPE="sev"
+		export AA_KBC="online_sev_kbc"
+		export KATA_BUILD_KERNEL_TYPE="sev"
+	fi
+	if [[ "${CI_JOB}" =~ SNP ]]; then
+		export TEE_TYPE="snp"
+		export KATA_BUILD_QEMU_TYPE="snp"
+		export KATA_BUILD_KERNEL_TYPE="sev"
+	fi
 	;;
 "CC_CRI_CONTAINERD_TDX_QEMU"|"CC_CRI_CONTAINERD_TDX_CLOUD_HYPERVISOR")
 	init_ci_flags

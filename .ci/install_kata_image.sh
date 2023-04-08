@@ -21,7 +21,9 @@ TEE_TYPE="${TEE_TYPE:-}"
 
 build_image_for_cc () {
 	if [ "${TEST_INITRD}" == "yes" ]; then
-		[ "${TEE_TYPE}" == "sev" ] || die "SEV is the only TEE type that supports initrd"
+		if [ "${TEE_TYPE}" != "sev" ] && [ "${TEE_TYPE}" != "snp" ]; then
+		  die "SEV and SNP are the only TEE types that supports initrd"
+		fi
 		build_static_artifact_and_install "sev-rootfs-initrd"
 	else
 		[ "${osbuilder_distro:-ubuntu}" == "ubuntu" ] || \
