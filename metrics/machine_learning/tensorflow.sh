@@ -10,11 +10,18 @@ set -e
 SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
 source "${SCRIPT_PATH}/../lib/common.bash"
 
-TEST_NAME="tensorflow"
 IMAGE="docker.io/library/tensorflow:latest"
 DOCKERFILE="${SCRIPT_PATH}/tensorflow_dockerfile/Dockerfile"
-CMD="cd benchmarks/scripts/tf_cnn_benchmarks/ && python tf_cnn_benchmarks.py -data_format=NHWC --device cpu --batch_size 512 --num_batches=300"
+BATCH_SIZE="512"
+NUM_BATCHES="300"
+CMD_RUN="cd benchmarks/scripts/tf_cnn_benchmarks/ && python tf_cnn_benchmarks.py -data_format=NHWC --device cpu --batch_size ${BATCH_SIZE} --num_batches=${NUM_BATCHES} > result"
+CMD_RESULT="cd benchmarks/scripts/tf_cnn_benchmarks/ && cat result"
+CMD_FILE="cat benchmarks/scripts/tf_cnn_benchmarks/result | grep 'total images' | wc -l"
 tensorflow_file=$(mktemp tensorflowresults.XXXXXXXXXX)
+NUM_CONTAINERS="$1"
+TIMEOUT="$2"
+TEST_NAME="tensorflow"
+PAYLOAD_ARGS="tail -f /dev/null"
 
 function remove_tmp_file() {
 	rm -rf "${tensorflow_file}"
@@ -22,20 +29,48 @@ function remove_tmp_file() {
 
 trap remove_tmp_file EXIT
 
-function main() {
-	# Check tools/commands dependencies
-	cmds=("awk" "docker")
-	init_env
-	check_cmds "${cmds[@]}"
-	check_ctr_images "${IMAGE}" "${DOCKERFILE}"
-	sudo -E "${CTR_EXE}" run --rm --runtime="${CTR_RUNTIME}" "${IMAGE}" test sh -c "${CMD}" > "${tensorflow_file}"
-	results=$(cat "${tensorflow_file}" | grep "total images/sec" | cut -d ":" -f2 | sed -e 's/^[ \t]*//')
+function help() {
+cat << EOF
+Usage: $0 <count> <timeout>
+	Description:
+		This script launches n number of containers
+		to run the tf cnn benchmarks using a Tensorflow
+		container.
+	Options:
+		<count> : Number of containers to run.
+		<timeout> : Timeout to launch the containers.
+EOF
+}
+
+function nhwc_test() {
+	info "Running NHWC Tensorflow test"
+	for i in "${containers[@]}"; do
+		sudo -E "${CTR_EXE}" t exec -d --exec-id "$(random_name)" "${i}" sh -c "${CMD_RUN}"
+	done
+
+	for i in "${containers[@]}"; do
+		check_file=$(sudo -E "${CTR_EXE}" t exec --exec-id "$(random_name)" "${i}" sh -c "${CMD_FILE}")
+		retries="200"
+		for j in $(seq 1 "${retries}"); do
+			[ "${check_file}" -eq 1 ] && break
+			sleep 1
+		done
+	done
+
+	for i in "${containers[@]}"; do
+		sudo -E "${CTR_EXE}" t exec --exec-id "$(random_name)" "${i}" sh -c "${CMD_RESULT}"  >> "${tensorflow_file}"
+	done
+
+	local nhwc_results=$(cat "${tensorflow_file}" | grep "total images/sec" | cut -d ":" -f2 | sed -e 's/^[ \t]*//' | tr '\n' ',' | sed 's/.$//')
+	local average_nhwc=$(echo "${nhwc_results}" | sed "s/,/+/g;s/.*/(&)\/$NUM_CONTAINERS/g" | bc -l)
+
 	metrics_json_init
 	metrics_json_start_array
 	local json="$(cat << EOF
 	{
 		"NHWC": {
-			"Result": ${results},
+			"Result": "${nhwc_results}",
+			"Average": "${average_nhwc}",
 			"Units": "s"
 		}
 	}
@@ -44,8 +79,51 @@ EOF
 	metrics_json_add_array_element "$json"
 	metrics_json_end_array "Results"
 	metrics_json_save
+}
+
+function check_containers_are_up() {
+	local containers_launched=0
+	for i in $(seq "${TIMEOUT}") ; do
+		info "Verify that the containers are running"
+		containers_launched="$(sudo ${CTR_EXE} t list | grep -c "RUNNING")"
+		[ "${containers_launched}" -eq "${NUM_CONTAINERS}" ] && break
+		sleep 1
+		[ "${i}" == "${TIMEOUT}" ] && return 1
+	done
+}
+
+function main() {
+	# Verify enough arguments
+	if [ $# != 2 ]; then
+		echo >&2 "error: Not enough arguments [$@]"
+		help
+		exit 1
+	fi
+
+	local i=0
+	local containers=()
+	local not_started_count="${NUM_CONTAINERS}"
+
+	# Check tools/commands dependencies
+	cmds=("awk" "docker" "bc")
+	check_cmds "${cmds[@]}"
+	check_ctr_images "${IMAGE}" "${DOCKERFILE}"
+
+	init_env
+	info "Creating ${NUM_CONTAINERS} containers"
+
+	for ((i=1; i<= "${NUM_CONTAINERS}"; i++)); do
+		containers+=($(random_name))
+		sudo -E "${CTR_EXE}" run -d --runtime "${CTR_RUNTIME}" "${IMAGE}" "${containers[-1]}" sh -c "${PAYLOAD_ARGS}"
+		((not_started_count--))
+		info "$not_started_count remaining containers"
+	done
+
+	# Check that the requested number of containers are running
+	check_containers_are_up
+
+	nhwc_test
 
 	clean_env_ctr
 }
-
 main "$@"
