@@ -14,7 +14,6 @@ IMAGE="docker.io/library/tensorflow:latest"
 DOCKERFILE="${SCRIPT_PATH}/tensorflow_dockerfile/Dockerfile"
 BATCH_SIZE="512"
 NUM_BATCHES="300"
-CMD_RUN="cd benchmarks/scripts/tf_cnn_benchmarks/ && python tf_cnn_benchmarks.py -data_format=NHWC --device cpu --batch_size ${BATCH_SIZE} --num_batches=${NUM_BATCHES} > result"
 CMD_RESULT="cd benchmarks/scripts/tf_cnn_benchmarks/ && cat result"
 CMD_FILE="cat benchmarks/scripts/tf_cnn_benchmarks/result | grep 'total images' | wc -l"
 tensorflow_file=$(mktemp tensorflowresults.XXXXXXXXXX)
@@ -43,6 +42,7 @@ EOF
 }
 
 function nhwc_test() {
+	local CMD_RUN="cd benchmarks/scripts/tf_cnn_benchmarks/ && python tf_cnn_benchmarks.py -data_format=NHWC --device cpu --batch_size=${BATCH_SIZE} --num_batches=${NUM_BATCHES} > result"
 	info "Running NHWC Tensorflow test"
 	for i in "${containers[@]}"; do
 		sudo -E "${CTR_EXE}" t exec -d --exec-id "$(random_name)" "${i}" sh -c "${CMD_RUN}"
@@ -64,8 +64,6 @@ function nhwc_test() {
 	local nhwc_results=$(cat "${tensorflow_file}" | grep "total images/sec" | cut -d ":" -f2 | sed -e 's/^[ \t]*//' | tr '\n' ',' | sed 's/.$//')
 	local average_nhwc=$(echo "${nhwc_results}" | sed "s/,/+/g;s/.*/(&)\/$NUM_CONTAINERS/g" | bc -l)
 
-	metrics_json_init
-	metrics_json_start_array
 	local json="$(cat << EOF
 	{
 		"NHWC": {
@@ -78,7 +76,43 @@ EOF
 )"
 	metrics_json_add_array_element "$json"
 	metrics_json_end_array "Results"
-	metrics_json_save
+}
+
+function axelnet_test() {
+	local CMD_RUN="cd benchmarks/scripts/tf_cnn_benchmarks/ && python tf_cnn_benchmarks.py --num_batches=${NUM_BATCHES} --device=cpu --batch_size=${BATCH_SIZE} --forward_only=true --model=alexnet --data_format=NHWC > result"
+	info "Running AxelNet Tensorflow test"
+	for i in "${containers[@]}"; do
+		sudo -E "${CTR_EXE}" t exec -d --exec-id "$(random_name)" "${i}" sh -c "${CMD_RUN}"
+	done
+
+	for i in "${containers[@]}"; do
+		check_file=$(sudo -E "${CTR_EXE}" t exec --exec-id "$(random_name)" "${i}" sh -c "${CMD_FILE}")
+		retries="200"
+		for j in $(seq 1 "${retries}"); do
+			[ "${check_file}" -eq 1 ] && break
+			sleep 1
+		done
+	done
+
+	for i in "${containers[@]}"; do
+		sudo -E "${CTR_EXE}" t exec --exec-id "$(random_name)" "${i}" sh -c "${CMD_RESULT}"  >> "${tensorflow_file}"
+	done
+
+	local axelnet_results=$(cat "${tensorflow_file}" | grep "total images/sec" | cut -d ":" -f2 | sed -e 's/^[ \t]*//' | tr '\n' ',' | sed 's/.$//')
+	local average_axelnet=$(echo "${axelnet_results}" | sed "s/,/+/g;s/.*/(&)\/$NUM_CONTAINERS/g" | bc -l)
+
+	local json="$(cat << EOF
+	{
+		"AxelNet": {
+			"Result": "${axelnet_results}",
+			"Average": "${average_axelnet}",
+			"Units": "s"
+		}
+	}
+EOF
+)"
+	metrics_json_add_array_element "$json"
+	metrics_json_end_array "Results"
 }
 
 function check_containers_are_up() {
@@ -119,10 +153,17 @@ function main() {
 		info "$not_started_count remaining containers"
 	done
 
+	metrics_json_init
+	metrics_json_start_array
+
 	# Check that the requested number of containers are running
 	check_containers_are_up
 
 	nhwc_test
+
+	axelnet_test
+
+	metrics_json_save
 
 	clean_env_ctr
 }
