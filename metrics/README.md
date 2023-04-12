@@ -111,6 +111,13 @@ Test relating to measure reading and writing against clusters.
 
 For further details see the [disk tests documentation](disk).
 
+### Machine Learning
+
+Tests relating with TensorFlow implementations of several popular
+convolutional models.
+
+For further details see the [machine learning tests documentation](machine_learning).
+
 ## Saving Results
 
 
