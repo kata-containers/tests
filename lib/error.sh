@@ -143,6 +143,8 @@ show_stacktrace()
 # details of the environment (in YAML format), to help with debugging.
 dump_details()
 {
+	set +x
+
 	local err_line="${1:-}"
 	local err_func="${2:-}"
 	local err_path="${3:-}"
