@@ -1281,7 +1281,7 @@ validate_agent()
 	# Regular expression that describes possible agent failures
 	local regex="(slog::Fuse|Drain|Custom|serialization error|thread.*panicked|stack backtrace:)"
 
-	egrep -qi "$regex" "$log_file" && cat $log_file && die "Found agent error in log file: '$log_file'"
+	egrep -q "$regex" "$log_file" && cat $log_file && die "Found agent error in log file: '$log_file'"
 
 	local entry
 	entry=$(get_shutdown_test_type_entry "$shutdown_test_type" || true)
