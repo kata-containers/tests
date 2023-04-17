@@ -13,7 +13,7 @@ RUN apt-get update && \
 	apt-get remove -y unattended-upgrades && \
 	curl -OkL https://github.com/dionhaefner/pyhpc-benchmarks/archive/refs/tags/v3.0.tar.gz  && \
 	tar -xf v3.0.tar.gz && \
-	pip install click && \
-	cd pyhpc-benchmarks-3.0 && pip3 install --user torch==1.10.0
+	pip install --no-cache-dir click==8.1.3 && \
+	cd pyhpc-benchmarks-3.0 && pip3 install --no-cache-dir --user torch==1.10.0
 
 CMD ["/bin/bash"]
