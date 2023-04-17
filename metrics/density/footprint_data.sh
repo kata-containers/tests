@@ -65,7 +65,7 @@ function init() {
 	restart_containerd_service
 
 	check_cmds $REQUIRED_COMMANDS
-	sudo ctr image pull "$PAYLOAD"
+	sudo -E "${CTR_EXE}" image pull "$PAYLOAD"
 
 	# Modify the test name if running with KSM enabled
 	check_for_ksm
