@@ -12,6 +12,7 @@ Cassandra/B
 ccloudvm/B
 codecov/B
 containerd/B
+cnn/B
 cri-o/B
 CRI-O/B
 DevStack/B
@@ -87,6 +88,7 @@ SQLite/B
 SUSE/B
 Sysbench/B
 systemd/B
+tf/B
 TravisCI/B
 Tokio/B
 Vexxhost/B
