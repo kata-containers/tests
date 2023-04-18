@@ -85,7 +85,7 @@ EOF
 }
 
 verify_task_is_completed_on_all_containers() {
-	local containers=( $(sudo ctr c list -q) )
+	local containers=( $(sudo -E "${CTR_EXE}" c list -q) )
 	local sleep_secs=10
 	local max=$(bc <<<"$timeout / $sleep_secs")
 	local wip_list=()
@@ -97,7 +97,7 @@ verify_task_is_completed_on_all_containers() {
 
 	    for i in "${containers[@]}"; do
 		# Only check containers that have not completed the workload at this step
-		num_pids=$(sudo ctr t metrics "$i" | grep pids.current | grep pids.current | xargs | cut -d ' ' -f 2)
+		num_pids=$(sudo -E "${CTR_EXE}" t metrics "$i" | grep pids.current | grep pids.current | xargs | cut -d ' ' -f 2)
 
 	        if [ "$num_pids" -lt "$INITIAL_NUM_PIDS" ]; then
                     ((sum++))
@@ -120,7 +120,7 @@ check_containers_are_up() {
 	info "Verify that the containers are running"
 	local containers_launched=0
 	while (( $containers_launched < $NUM_CONTAINERS )); do
-		containers_launched="$(sudo ctr t list | grep -c "RUNNING")"
+		containers_launched="$(sudo -E ${CTR_EXE} t list | grep -c "RUNNING")"
 		sleep 1
 	done
 }
@@ -168,7 +168,7 @@ function main() {
 	for ((i=1; i<= "$NUM_CONTAINERS"; i++)); do
 		containers+=($(random_name))
 		# Web tool benchmark needs 2 cpus to run completely in its cpu utilization
-		sudo -E ctr run -d --runtime "${CTR_RUNTIME}" --cpu-quota "${cpu_quota}" --cpu-period "${cpu_period}" --mount="$MOUNT_OPTIONS" "$IMAGE" "${containers[-1]}" sh -c "$PAYLOAD_ARGS"
+		sudo -E "${CTR_EXE}" run -d --runtime "${CTR_RUNTIME}" --cpu-quota "${cpu_quota}" --cpu-period "${cpu_period}" --mount="$MOUNT_OPTIONS" "$IMAGE" "${containers[-1]}" sh -c "$PAYLOAD_ARGS"
 		((not_started_count--))
 		info "$not_started_count remaining containers"
 	done
@@ -187,14 +187,14 @@ function main() {
 	fi
 
 	# Get the initial number of pids in a single container before the workload starts
-        INITIAL_NUM_PIDS=$(sudo ctr t metrics "${containers[-1]}" | grep pids.current | grep pids.current | xargs | cut -d ' ' -f 2)
+        INITIAL_NUM_PIDS=$(sudo -E "${CTR_EXE}" t metrics "${containers[-1]}" | grep pids.current | grep pids.current | xargs | cut -d ' ' -f 2)
 	((INITIAL_NUM_PIDS++))
 
 	# Launch webtooling benchmark
 	local pids=()
 	local j=0
 	for i in "${containers[@]}"; do
-		$(sudo ctr t exec -d --exec-id "$(random_name)" "$i" sh -c "$CMD") &
+		$(sudo -E "${CTR_EXE}" t exec -d --exec-id "$(random_name)" "$i" sh -c "$CMD") &
 		pids[${j}]=$!
 		((j++))
 	done
@@ -220,7 +220,7 @@ function main() {
 
 	RESULTS_CMD="cat $file_path/$file_name"
 	for i in "${containers[@]}"; do
-		sudo ctr t exec --exec-id "$RANDOM" "$i" sh -c "$RESULTS_CMD" >> "$TMP_DIR/results"
+		sudo -E "${CTR_EXE}" t exec --exec-id "$RANDOM" "$i" sh -c "$RESULTS_CMD" >> "$TMP_DIR/results"
 	done
 
 	# Save configuration
