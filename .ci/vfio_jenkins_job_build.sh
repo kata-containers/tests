@@ -202,9 +202,6 @@ pull_fedora_cloud_image() {
 	loop=$(sudo losetup --show -Pf "${fedora_img}")
 	sudo mount "${loop}p1" /mnt
 
-	# disable selinux
-	sudo sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /mnt/etc/selinux/config
-
 	# add intel_iommu=on to the guest kernel command line
 	kernelopts="intel_iommu=on systemd.unified_cgroup_hierarchy=0 selinux=0 "
 	sudo sed -i 's|kernelopts="|kernelopts="'"${kernelopts}"'|g' /mnt/boot/grub2/grub.cfg
