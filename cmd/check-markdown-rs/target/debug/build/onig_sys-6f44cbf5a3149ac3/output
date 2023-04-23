@@ -1,0 +1,191 @@
+cargo:rerun-if-env-changed=RUSTONIG_DYNAMIC_LIBONIG
+cargo:rerun-if-env-changed=RUSTONIG_STATIC_LIBONIG
+cargo:rerun-if-env-changed=RUSTONIG_SYSTEM_LIBONIG
+TARGET = Some("x86_64-pc-windows-msvc")
+OPT_LEVEL = Some("0")
+HOST = Some("x86_64-pc-windows-msvc")
+cargo:rerun-if-env-changed=CC_x86_64-pc-windows-msvc
+CC_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=CC_x86_64_pc_windows_msvc
+CC_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_CC
+HOST_CC = None
+cargo:rerun-if-env-changed=CC
+CC = None
+cargo:rerun-if-env-changed=CFLAGS_x86_64-pc-windows-msvc
+CFLAGS_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=CFLAGS_x86_64_pc_windows_msvc
+CFLAGS_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_CFLAGS
+HOST_CFLAGS = None
+cargo:rerun-if-env-changed=CFLAGS
+CFLAGS = None
+cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
+CRATE_CC_NO_DEFAULTS = None
+CARGO_CFG_TARGET_FEATURE = Some("fxsr,sse,sse2")
+DEBUG = Some("true")
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regexec.o" "-c" "oniguruma\\src\\regexec.c"
+regexec.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regerror.o" "-c" "oniguruma\\src\\regerror.c"
+regerror.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regparse.o" "-c" "oniguruma\\src\\regparse.c"
+regparse.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regext.o" "-c" "oniguruma\\src\\regext.c"
+regext.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regcomp.o" "-c" "oniguruma\\src\\regcomp.c"
+regcomp.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\reggnu.o" "-c" "oniguruma\\src\\reggnu.c"
+reggnu.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regenc.o" "-c" "oniguruma\\src\\regenc.c"
+regenc.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regsyntax.o" "-c" "oniguruma\\src\\regsyntax.c"
+regsyntax.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regtrav.o" "-c" "oniguruma\\src\\regtrav.c"
+regtrav.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regversion.o" "-c" "oniguruma\\src\\regversion.c"
+regversion.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\st.o" "-c" "oniguruma\\src\\st.c"
+st.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\onig_init.o" "-c" "oniguruma\\src\\onig_init.c"
+onig_init.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\unicode.o" "-c" "oniguruma\\src\\unicode.c"
+unicode.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\ascii.o" "-c" "oniguruma\\src\\ascii.c"
+ascii.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\utf8.o" "-c" "oniguruma\\src\\utf8.c"
+utf8.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\utf16_be.o" "-c" "oniguruma\\src\\utf16_be.c"
+utf16_be.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\utf16_le.o" "-c" "oniguruma\\src\\utf16_le.c"
+utf16_le.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\utf32_be.o" "-c" "oniguruma\\src\\utf32_be.c"
+utf32_be.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\utf32_le.o" "-c" "oniguruma\\src\\utf32_le.c"
+utf32_le.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\euc_jp.o" "-c" "oniguruma\\src\\euc_jp.c"
+euc_jp.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\sjis.o" "-c" "oniguruma\\src\\sjis.c"
+sjis.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_1.o" "-c" "oniguruma\\src\\iso8859_1.c"
+iso8859_1.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_2.o" "-c" "oniguruma\\src\\iso8859_2.c"
+iso8859_2.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_3.o" "-c" "oniguruma\\src\\iso8859_3.c"
+iso8859_3.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_4.o" "-c" "oniguruma\\src\\iso8859_4.c"
+iso8859_4.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_5.o" "-c" "oniguruma\\src\\iso8859_5.c"
+iso8859_5.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_6.o" "-c" "oniguruma\\src\\iso8859_6.c"
+iso8859_6.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_7.o" "-c" "oniguruma\\src\\iso8859_7.c"
+iso8859_7.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_8.o" "-c" "oniguruma\\src\\iso8859_8.c"
+iso8859_8.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_9.o" "-c" "oniguruma\\src\\iso8859_9.c"
+iso8859_9.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_10.o" "-c" "oniguruma\\src\\iso8859_10.c"
+iso8859_10.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_11.o" "-c" "oniguruma\\src\\iso8859_11.c"
+iso8859_11.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_13.o" "-c" "oniguruma\\src\\iso8859_13.c"
+iso8859_13.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_14.o" "-c" "oniguruma\\src\\iso8859_14.c"
+iso8859_14.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_15.o" "-c" "oniguruma\\src\\iso8859_15.c"
+iso8859_15.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_16.o" "-c" "oniguruma\\src\\iso8859_16.c"
+iso8859_16.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\euc_tw.o" "-c" "oniguruma\\src\\euc_tw.c"
+euc_tw.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\euc_kr.o" "-c" "oniguruma\\src\\euc_kr.c"
+euc_kr.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\big5.o" "-c" "oniguruma\\src\\big5.c"
+big5.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\gb18030.o" "-c" "oniguruma\\src\\gb18030.c"
+gb18030.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\koi8_r.o" "-c" "oniguruma\\src\\koi8_r.c"
+koi8_r.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\cp1251.o" "-c" "oniguruma\\src\\cp1251.c"
+cp1251.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\euc_jp_prop.o" "-c" "oniguruma\\src\\euc_jp_prop.c"
+euc_jp_prop.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\sjis_prop.o" "-c" "oniguruma\\src\\sjis_prop.c"
+sjis_prop.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\unicode_unfold_key.o" "-c" "oniguruma\\src\\unicode_unfold_key.c"
+unicode_unfold_key.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\unicode_fold1_key.o" "-c" "oniguruma\\src\\unicode_fold1_key.c"
+unicode_fold1_key.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\unicode_fold2_key.o" "-c" "oniguruma\\src\\unicode_fold2_key.c"
+unicode_fold2_key.c
+exit code: 0
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\cl.exe" "-nologo" "-MD" "-Z7" "-Brepro" "-I" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out" "-I" "oniguruma\\src" "-FoD:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\unicode_fold3_key.o" "-c" "oniguruma\\src\\unicode_fold3_key.c"
+unicode_fold3_key.c
+exit code: 0
+cargo:rerun-if-env-changed=AR_x86_64-pc-windows-msvc
+AR_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=AR_x86_64_pc_windows_msvc
+AR_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_AR
+HOST_AR = None
+cargo:rerun-if-env-changed=AR
+AR = None
+cargo:rerun-if-env-changed=ARFLAGS_x86_64-pc-windows-msvc
+ARFLAGS_x86_64-pc-windows-msvc = None
+cargo:rerun-if-env-changed=ARFLAGS_x86_64_pc_windows_msvc
+ARFLAGS_x86_64_pc_windows_msvc = None
+cargo:rerun-if-env-changed=HOST_ARFLAGS
+HOST_ARFLAGS = None
+cargo:rerun-if-env-changed=ARFLAGS
+ARFLAGS = None
+running: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\lib.exe" "-out:D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\libonig.a" "-nologo" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regexec.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regerror.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regparse.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regext.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regcomp.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\reggnu.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regenc.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regsyntax.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regtrav.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\regversion.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\st.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\onig_init.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\unicode.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\ascii.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\utf8.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\utf16_be.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\utf16_le.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\utf32_be.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\utf32_le.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\euc_jp.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\sjis.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_1.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_2.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_3.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_4.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_5.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_6.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_7.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_8.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_9.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_10.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_11.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_13.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_14.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_15.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\iso8859_16.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\euc_tw.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\euc_kr.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\big5.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\gb18030.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\koi8_r.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\cp1251.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\euc_jp_prop.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\sjis_prop.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\unicode_unfold_key.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\unicode_fold1_key.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\unicode_fold2_key.o" "D:\\Programming Stuff\\Kata Containers\\ChristTestFork\\tests\\cmd\\check-markdown-rs\\target\\debug\\build\\onig_sys-6f44cbf5a3149ac3\\out\\oniguruma\\src\\unicode_fold3_key.o"
+exit code: 0
+cargo:rustc-link-search=native=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\atlmfc\lib\x64
+cargo:rustc-link-lib=static=onig
+cargo:rustc-link-search=native=D:\Programming Stuff\Kata Containers\ChristTestFork\tests\cmd\check-markdown-rs\target\debug\build\onig_sys-6f44cbf5a3149ac3\out
