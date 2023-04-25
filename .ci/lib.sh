@@ -15,6 +15,8 @@ export katacontainers_repo_git="https://${katacontainers_repo}.git"
 export katacontainers_repo_dir="${GOPATH}/src/${katacontainers_repo}"
 export kata_default_branch="${kata_default_branch:-main}"
 export CI_JOB="${CI_JOB:-}"
+export CROSS_BUILD="${CROSS_BUILD:-false}"
+export ARCH="${ARCH:-$(uname -m)}"
 
 # Name of systemd service for the throttler
 KATA_KSM_THROTTLER_JOB="kata-ksm-throttler"
