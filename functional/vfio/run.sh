@@ -295,6 +295,9 @@ main() {
 	host_pci=$(host_pci_addr)
 	[ -n "${host_pci}" ] || die "virtio ethernet controller PCI address not found"
 
+	cat /proc/cmdline | grep -q "intel_iommu=on" || \
+		die "intel_iommu=on not found in kernel cmdline"
+
 	sudo driverctl set-override "${host_pci}" vfio-pci
 
 	vfio_device="$(get_vfio_path "${host_pci}")"
