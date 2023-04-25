@@ -5,9 +5,25 @@ use comrak::{
 };
 use std::cell::RefCell;
 use std::env;
-use std::fs;
+use std::fs;use std::path::PathBuf;
 
-fn validate_document_structure<'a>(root: &'a Node<'a, RefCell<Ast>>) -> Result<(), String> {
+pub enum LinkType {
+    UrlLink,
+    MailLink,
+    InternalLink,
+    ExternalLink,
+    ExternalFile,
+    ImplicitReadme,
+}
+
+pub struct Link {
+    pub address: String,
+    pub description: String,
+    pub link_type: LinkType,
+    pub resolved_path: Option<PathBuf>,
+}
+
+pub fn validate_structure<'a>(root: &'a Node<'a, RefCell<Ast>>) -> Result<(), String> {
     let mut found_level_2 = false;
 
     for node in root.children() {
