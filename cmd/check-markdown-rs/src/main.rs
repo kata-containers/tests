@@ -126,8 +126,6 @@ fn validate_document_structure<'a>(root: &'a Node<'a, RefCell<Ast>>) -> Result<(
             _ => {}
         }
     }
-    // print 'The document structure is valid.' if the document structure is valid
-    println!("The document structure is valid.");
 
     Ok(())
 }
