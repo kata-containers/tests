@@ -181,11 +181,15 @@ create_config_iso() {
 
 pull_fedora_cloud_image() {
 	fedora_img="$1"
-	fedora_img_cache="${fedora_img}.cache"
-	fedora_version=32
+	fedora_version=37
+	# Add a version to the image cache, otherwise the tests are going to 
+	# use always the same image without rebuilding it, regardless the version
+	# set in fedora_version
+	fedora_img_cache="${fedora_img}.cache.${fedora_version}"
+	fedora_img_url="https://download.fedoraproject.org/pub/fedora/linux/releases/${fedora_version}/Cloud/${arch}/images/Fedora-Cloud-Base-${fedora_version}-1.7.${arch}.raw.xz"
 
 	if [ ! -f "${fedora_img_cache}" ]; then
-		curl -sL "https://download.fedoraproject.org/pub/fedora/linux/releases/${fedora_version}/Cloud/${arch}/images/Fedora-Cloud-Base-${fedora_version}-1.6.${arch}.raw.xz" -o "${fedora_img_cache}.xz"
+		curl -sL ${fedora_img_url} -o "${fedora_img_cache}.xz"
 		xz -f -d "${fedora_img_cache}.xz"
 		sync
 	fi
@@ -196,15 +200,16 @@ pull_fedora_cloud_image() {
 	# setup cloud image
 	sudo losetup -D
 	loop=$(sudo losetup --show -Pf "${fedora_img}")
-	sudo mount "${loop}p1" /mnt
-
-	# disable selinux
-	sudo sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /mnt/etc/selinux/config
+	sudo mount "${loop}p2" /mnt
 
 	# add intel_iommu=on to the guest kernel command line
-	kernelopts="intel_iommu=on systemd.unified_cgroup_hierarchy=0 selinux=0 "
-	sudo sed -i 's|kernelopts="|kernelopts="'"${kernelopts}"'|g' /mnt/boot/grub2/grub.cfg
-	sudo sed -i 's|kernelopts=|kernelopts='"${kernelopts}"'|g' /mnt/boot/grub2/grubenv
+	kernelopts="intel_iommu=on iommu=pt selinux=0"
+	entries=$(sudo ls /mnt/loader/entries/)
+	for entry in ${entries}; do
+		sudo sed -i '/^options /  s/$/ intel_iommu=on iommu=pt selinux=0 /g' /mnt/loader/entries/"${entry}"
+	done
+	sudo sed -i 's|kernelopts="|kernelopts="'"${kernelopts}"'|g' /mnt/grub2/grub.cfg
+	sudo sed -i 's|kernelopts=|kernelopts='"${kernelopts}"'|g' /mnt/grub2/grubenv
 
 	# cleanup
 	sudo umount -R /mnt/

@@ -13,6 +13,7 @@ ccloudvm/B
 codecov/B
 containerd/B
 crictl/B
+cnn/B
 cri-o/B
 CRI-O/B
 DevStack/B
@@ -88,6 +89,7 @@ SQLite/B
 SUSE/B
 Sysbench/B
 systemd/B
+tf/B
 TravisCI/B
 Tokio/B
 Vexxhost/B

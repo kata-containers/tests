@@ -75,6 +75,8 @@ boot into a workload or kill a container.
 This directory does *not* contain "speed" tests that measure network or storage
 for instance.
 
+For further details see the [time tests documentation](time).
+
 ### Density
 
 Tests that measure the size and overheads of the runtime. Generally this is looking at
@@ -108,6 +110,13 @@ For further details see the [storage tests documentation](storage).
 Test relating to measure reading and writing against clusters.
 
 For further details see the [disk tests documentation](disk).
+
+### Machine Learning
+
+Tests relating with TensorFlow implementations of several popular
+convolutional models.
+
+For further details see the [machine learning tests documentation](machine_learning).
 
 ## Saving Results
 

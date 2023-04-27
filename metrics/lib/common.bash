@@ -27,6 +27,9 @@ KSM_PAGES_FILE="${KSM_BASE}/pages_to_scan"
 KSM_SLEEP_FILE="${KSM_BASE}/sleep_millisecs"
 KSM_PAGES_SHARED="${KSM_BASE}/pages_shared"
 
+http_proxy="${http_proxy:-}"
+https_proxy="${https_proxy:-}"
+
 # The settings we use for an 'aggresive' KSM setup
 # Scan 1000 pages every 50ms - 20,000 pages/s
 KSM_AGGRESIVE_PAGES=1000
@@ -86,7 +89,7 @@ generate_build_dockerfile() {
 	for r in ${regs[@]}; do
 		sed 's|'${text_to_replace}'|'${r}'|g' \
 			"${dockerfile}.in" > "${dockerfile}"
-		if sudo "${DOCKER_EXE}" build --label "$image" --tag "${image}" -f "$dockerfile" "$dockerfile_dir"; then
+		if sudo "${DOCKER_EXE}" build --build-arg http_proxy="${http_proxy}" --build-arg https_proxy="${https_proxy}" --label "$image" --tag "${image}" -f "$dockerfile" "$dockerfile_dir"; then
 			return 0
 		fi
 	done

@@ -1106,15 +1106,6 @@ static_check_dockerfiles()
 	local ignore_files
 	# Put here a list of files which should be ignored.
         local ignore_files=(
-		"tools/osbuilder/rootfs-builder/debian/Dockerfile-aarch64.in"
-		"tools/osbuilder/rootfs-builder/centos/Dockerfile.in"
-		"tools/osbuilder/rootfs-builder/debian/Dockerfile.in"
-		"tools/osbuilder/rootfs-builder/fedora/Dockerfile.in"
-		"tools/osbuilder/rootfs-builder/template/Dockerfile.template"
-		"tools/osbuilder/rootfs-builder/ubuntu/Dockerfile.in"
-		"tools/osbuilder/rootfs-builder/ubuntu/Dockerfile-aarch64.in"
-		"tools/packaging/tests/Dockerfile/Dockerfile.in"
-		"tools/packaging/tests/Dockerfile/FedoraDockerfile.in"
         )
 	local linter_cmd="hadolint"
 
@@ -1195,7 +1186,7 @@ static_check_dockerfiles()
 			# effort approach. If the template file is still
 			# unparseable then it should be added in the
 			# `$ignore_files` list.
-			{ sed -e 's/@[A-Z_]*@//' "$file" | $linter_cmd -; ret=$?; }\
+			{ sed -e 's/^@[A-Z_]*@//' -e 's/@\([a-zA-Z_]*\)@/\1/g' "$file" | $linter_cmd -; ret=$?; }\
 				|| true
 		else
 			# Non-template Dockerfile.

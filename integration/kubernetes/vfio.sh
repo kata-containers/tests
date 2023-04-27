@@ -30,11 +30,11 @@ setup_configuration_file() {
 	local hypervisor="$3"
 	local sandbox_cgroup_only="$4"
 
-	local default_config_file="/usr/share/defaults/kata-containers/configuration.toml"
-	local qemu_config_file="/usr/share/defaults/kata-containers/configuration-qemu.toml"
-	local clh_config_file="/usr/share/defaults/kata-containers/configuration-clh.toml"
-	local image_file="/usr/share/kata-containers/kata-containers.img"
-	local initrd_file="/usr/share/kata-containers/kata-containers-initrd.img"
+	local default_config_file="/opt/kata/share/defaults/kata-containers/configuration.toml"
+	local qemu_config_file="/opt/kata/share/defaults/kata-containers/configuration-qemu.toml"
+	local clh_config_file="/opt/kata/share/defaults/kata-containers/configuration-clh.toml"
+	local image_file="/opt/kata/share/kata-containers/kata-containers.img"
+	local initrd_file="/opt/kata/share/kata-containers/kata-containers-initrd.img"
 
 	sudo mkdir -p $(dirname "${SYSCONFIG_FILE}")
 

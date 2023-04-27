@@ -265,10 +265,10 @@ start_cri_runtime_service() {
 	# Sleep time between checks.
 	local wait_time_cri_socket_check=5
 
-	# stop containerd first and then restart it
-	if systemctl is-active --quiet containerd; then
-		info "Stop containerd service"
-		sudo systemctl stop containerd
+	# stop the service first and then restart it
+	if systemctl is-active --quiet ${cri}; then
+		info "Stop ${cri} service"
+		sudo systemctl stop ${cri}
 	fi
 
 	sudo systemctl enable --now ${cri}
@@ -292,11 +292,11 @@ main() {
 
 	case "${CRI_RUNTIME}" in
 	containerd)
-		cri_runtime_socket="/run/containerd/containerd.sock"
+		cri_runtime_socket="unix:///run/containerd/containerd.sock"
 		cgroup_driver="cgroupfs"
 		;;
 	crio)
-		cri_runtime_socket="/var/run/crio/crio.sock"
+		cri_runtime_socket="unix:///var/run/crio/crio.sock"
 		cgroup_driver="systemd"
 		;;
 	*)
