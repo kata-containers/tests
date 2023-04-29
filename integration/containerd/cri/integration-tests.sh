@@ -461,7 +461,6 @@ main() {
 
 	git reset HEAD
 	git checkout ${containerd_tarball_version}
-	cp "${SCRIPT_PATH}/container_restart_test.go.patch" ./integration/container_restart_test.go
 
 	# Make sure the right artifacts are going to be built
 	make clean
