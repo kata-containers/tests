@@ -113,12 +113,12 @@ fn validate_document_structure<'a>(root: &'a Node<'a, RefCell<Ast>>) -> Result<(
                 if level == 1 {
                     h1_count += 1;
                     if h1_count > 1 {
-                        return Err(String::from("Error: More than one H1 heading found."));
+                        return Err(String::from("More than one H1 heading found."));
                     }
                 }
 
                 if level > last_seen_level + 1 {
-                    return Err(String::from("Error: Invalid heading level order."));
+                    return Err(String::from("Invalid heading level order."));
                 }
 
                 last_seen_level = level;
@@ -194,7 +194,7 @@ fn validate_links<'a>(root: &'a Node<'a, RefCell<Ast>>) -> Result<(), Vec<String
                     // Internal link
                     if !heading_ids.contains(&link_url[1..]) {
                         errors.push(format!(
-                            "Error: Internal link '{}' points to non-existing heading.",
+                            "Internal link '{}' points to non-existing heading.",
                             link_url
                         ));
                     }
@@ -202,7 +202,7 @@ fn validate_links<'a>(root: &'a Node<'a, RefCell<Ast>>) -> Result<(), Vec<String
                     // External link
                     if Url::parse(&link_url).is_err() {
                         errors.push(format!(
-                            "Error: External link '{}' has an invalid URL format.",
+                            "External link '{}' has an invalid URL format.",
                             link_url
                         ));
                     }
@@ -294,7 +294,7 @@ fn generate_output(
     println!("\nDocument Structure Validation:");
     match structure_validation_result {
         Ok(_) => println!("  The document structure is valid."),
-        Err(err) => println!("  Error: {}", err),
+        Err(err) => eprintln!("  ERROR: {}", err),
     }
 
     println!("\nTable of Contents:");
@@ -306,7 +306,7 @@ fn generate_output(
         Err(errors) => {
             println!("  Found {} invalid links:", errors.len());
             for error in errors {
-                println!("    {}", error);
+                eprintln!("  ERROR: {}", error);
             }
         }
     }
