@@ -32,7 +32,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let document_statistics = print_document_statistics(&root);
 
     // Call the generate_output function
-    let document_statistics = print_document_statistics(&root);
     generate_output(
         &toc,
         &link_validation_result,
