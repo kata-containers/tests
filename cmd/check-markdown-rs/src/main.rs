@@ -19,7 +19,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         eprintln!("Usage: {} <input_file>", args[0]);
     }
 
-    let input_file_path = env::current_dir()?.join("src").join(args[1].clone());
+    let input_file_path = env::current_dir()?.join(args[1].clone());
     let input = fs::read_to_string(input_file_path)?;
     let root = parse_document(&arena, &input, &ComrakOptions::default());
 
