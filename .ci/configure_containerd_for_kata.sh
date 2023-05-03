@@ -9,6 +9,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+if [ "$KATA_BUILD_CC" == "yes" ]; then
+	PREFIX="${PREFIX:-/opt/confidential-containers}"
+fi
 PREFIX="${PREFIX:-/opt/kata}"
 readonly runc_path=$(command -v runc)
 
