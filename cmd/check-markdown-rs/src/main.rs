@@ -3,6 +3,7 @@ use comrak::{
     nodes::{Ast, NodeValue},
     parse_document, Arena, ComrakOptions,
 };
+use comrak::nodes::LineColumn;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -25,7 +26,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let toc = generate_toc(&root, &arena);
 
-    let link_validation_result = validate_links(&root);
+    let link_validation_result = validate_links(&root, &input);
 
     let structure_validation_result = validate_document_structure(&root);
 
@@ -175,7 +176,10 @@ fn generate_toc_recursive<'a>(
 }
 
 // validate links method
-fn validate_links<'a>(root: &'a Node<'a, RefCell<Ast>>) -> Result<(), Vec<String>> {
+fn validate_links<'a>(
+    root: &'a Node<'a, RefCell<Ast>>,
+    input: &str,
+) -> Result<(), Vec<String>> {
     let mut heading_ids = HashSet::new();
     find_heading_ids(root, &mut heading_ids);
 
@@ -185,6 +189,11 @@ fn validate_links<'a>(root: &'a Node<'a, RefCell<Ast>>) -> Result<(), Vec<String
     let mut errors = Vec::new();
 
     for node in link_nodes {
+        let start_offset = node.data.borrow().sourcepos.start;
+
+        // Get the line and column numbers for the byte offset in the input string
+        let (line, column) = line_column(input, start_offset);
+
         match &node.data.borrow().value {
             NodeValue::Link(link) => {
                 let link_url = String::from_utf8_lossy(link.url.as_bytes()).into_owned();
@@ -193,16 +202,20 @@ fn validate_links<'a>(root: &'a Node<'a, RefCell<Ast>>) -> Result<(), Vec<String
                     // Internal link
                     if !heading_ids.contains(&link_url[1..]) {
                         errors.push(format!(
-                            "Internal link '{}' points to non-existing heading.",
-                            link_url
+                            "Internal link '{}' points to non-existing heading at line {}, column {}.",
+                            link_url,
+                            line + 1,
+                            column + 1
                         ));
                     }
                 } else {
                     // External link
                     if Url::parse(&link_url).is_err() {
                         errors.push(format!(
-                            "External link '{}' has an invalid URL format.",
-                            link_url
+                            "External link '{}' has an invalid URL format at line {}, column {}.",
+                            link_url,
+                            line + 1,
+                            column + 1
                         ));
                     }
                 }
@@ -217,6 +230,7 @@ fn validate_links<'a>(root: &'a Node<'a, RefCell<Ast>>) -> Result<(), Vec<String
         Err(errors)
     }
 }
+
 
 // Recursive function to find all heading nodes in the AST
 fn find_heading_ids<'a>(node: &'a Node<'a, RefCell<Ast>>, heading_ids: &mut HashSet<String>) {
@@ -282,6 +296,28 @@ fn gather_document_statistics<'a>(
         gather_document_statistics(&child, statistics);
     }
 }
+
+fn line_column(input: &str, line_col: LineColumn) -> (usize, usize) {
+    let mut line = 1;
+    let mut column = 1;
+
+    for (index, ch) in input.char_indices() {
+        let current_line_col = LineColumn { line, column };
+
+        if line_col == current_line_col {
+            break;
+        }
+        if ch == '\n' {
+            line += 1;
+            column = 1;
+        } else {
+            column += 1;
+        }
+    }
+
+    (line, column)
+}
+
 
 fn generate_output(
     toc: &str,
