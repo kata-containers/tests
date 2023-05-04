@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use comrak::arena_tree::Node;
 use comrak::{
     nodes::{Ast, NodeValue},
@@ -6,10 +7,36 @@ use comrak::{
 use comrak::nodes::LineColumn;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::env;
 use std::fs;
 use url::Url;
+use async_std::task;
+use std::path::{Path, PathBuf};
+use std::cmp::Ord;
+use std::cmp::Ordering;
+
+// Add a custom structure to hold the heading information
+#[derive(Debug, PartialEq, Eq, Clone)]
+struct HeadingInfo {
+    level: u32,
+    id: String,
+    text: String,
+}
+
+// Add implementation for PartialOrd and Ord to sort the HeadingInfo
+impl PartialOrd for HeadingInfo {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for HeadingInfo {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.level
+            .cmp(&other.level)
+            .then_with(|| self.text.cmp(&other.text))
+    }
+}
 
 // Main function
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -24,7 +51,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = fs::read_to_string(input_file_path)?;
     let root = parse_document(&arena, &input, &ComrakOptions::default());
 
-    let toc = generate_toc(&root, &arena);
+    let heading_infos: &[HeadingInfo] = &collect_heading_info(&root);
+    let toc = generate_toc(heading_infos);
 
     let link_validation_result = validate_links(&root, &input);
 
@@ -98,37 +126,46 @@ fn get_node_text<'a>(node: &'a Node<'a, RefCell<Ast>>) -> String {
 }
 
 // Function to validate the structure of the document
-fn validate_document_structure<'a>(root: &'a Node<'a, RefCell<Ast>>) -> Result<(), String> {
+fn validate_document_structure<'a>(
+    root: &'a Node<'a, RefCell<Ast>>,
+) -> Result<(), String> {
     let mut last_seen_level = 0;
     let mut h1_count = 0;
 
-    let mut heading_nodes = Vec::new();
-    find_heading_nodes(root, &mut heading_nodes);
+    let heading_nodes = collect_heading_info(root);
 
-    for node in heading_nodes {
-        match &node.data.borrow().value {
-            NodeValue::Heading(heading) => {
-                let level = heading.level;
+    // Add a HashMap to track heading texts at each level
+    let mut headings_at_level: HashMap<u32, HashSet<String>> = HashMap::new();
 
-                if level == 1 {
-                    h1_count += 1;
-                    if h1_count > 1 {
-                        return Err(String::from("More than one H1 heading found."));
-                    }
-                }
+    for heading_info in &heading_nodes {
+        let level = heading_info.level;
 
-                if level > last_seen_level + 1 {
-                    return Err(String::from("Invalid heading level order."));
-                }
-
-                last_seen_level = level;
+        if level == 1 {
+            h1_count += 1;
+            if h1_count > 1 {
+                return Err(String::from("More than one H1 heading found."));
             }
-            _ => {}
         }
+
+        if level > last_seen_level + 1 {
+            return Err(String::from("Invalid heading level order."));
+        }
+
+        // Check for repeated headings at the same level
+        let heading_texts = headings_at_level.entry(level).or_insert_with(HashSet::new);
+        if !heading_texts.insert(heading_info.text.clone()) {
+            return Err(format!(
+                "Repeated heading '{}' at level {}.",
+                heading_info.text, level
+            ));
+        }
+
+        last_seen_level = level;
     }
 
     Ok(())
 }
+
 
 // Recursive function to find all heading nodes in the AST
 fn find_heading_nodes<'a>(
@@ -146,12 +183,19 @@ fn find_heading_nodes<'a>(
 }
 
 // Generate a table of contents based on the headings present in the document
-fn generate_toc<'a>(
-    node: &'a Node<'a, RefCell<Ast>>,
-    arena: &'a Arena<Node<'a, RefCell<Ast>>>,
-) -> String {
+fn generate_toc(heading_infos: &[HeadingInfo]) -> String {
     let mut toc = String::new();
-    generate_toc_recursive(node, arena, &mut toc, 0);
+
+    for heading_info in heading_infos {
+        let indent = "  ".repeat((heading_info.level - 1) as usize);
+        toc.push_str(&format!(
+            "{}- [{}](#{})\n",
+            indent,
+            heading_info.text,
+            heading_info.id
+        ));
+    }
+
     toc
 }
 
@@ -176,6 +220,7 @@ fn generate_toc_recursive<'a>(
 }
 
 // validate links method
+// validate links method
 fn validate_links<'a>(
     root: &'a Node<'a, RefCell<Ast>>,
     input: &str,
@@ -187,6 +232,7 @@ fn validate_links<'a>(
     find_link_nodes(root, &mut link_nodes);
 
     let mut errors = Vec::new();
+    let mut external_urls = Vec::new();
 
     for node in link_nodes {
         let start_offset = node.data.borrow().sourcepos.start;
@@ -197,10 +243,12 @@ fn validate_links<'a>(
         match &node.data.borrow().value {
             NodeValue::Link(link) => {
                 let link_url = String::from_utf8_lossy(link.url.as_bytes()).into_owned();
+                let resolved_url = resolve_link_url(link_url.clone(), root);
 
-                if link_url.starts_with('#') {
+                if resolved_url.starts_with('#') {
                     // Internal link
-                    if !heading_ids.contains(&link_url[1..]) {
+                    let heading_id = &resolved_url[1..];
+                    if !heading_ids.contains(heading_id) {
                         errors.push(format!(
                             "Internal link '{}' points to non-existing heading at line {}, column {}.",
                             link_url,
@@ -210,19 +258,27 @@ fn validate_links<'a>(
                     }
                 } else {
                     // External link
-                    if Url::parse(&link_url).is_err() {
+                    if is_directory_link(&resolved_url) {
+                        continue; // Skip validation for directory links
+                    } else if Url::parse(&resolved_url).is_err() {
                         errors.push(format!(
                             "External link '{}' has an invalid URL format at line {}, column {}.",
                             link_url,
                             line + 1,
                             column + 1
                         ));
+                    } else {
+                        external_urls.push(resolved_url);
                     }
                 }
             }
             _ => {}
         }
     }
+
+    // Validate external URLs
+    let external_url_errors = task::block_on(validate_external_links(external_urls));
+    errors.extend(external_url_errors);
 
     if errors.is_empty() {
         Ok(())
@@ -231,14 +287,59 @@ fn validate_links<'a>(
     }
 }
 
+fn is_directory_link(url: &str) -> bool {
+    let args: Vec<String> = env::args().collect();
+    let readme_path = Path::new(&args[1]);
+    let parent_dir = readme_path.parent().expect("Failed to get parent directory");
+
+    // Resolve the link URL against the parent directory
+    let absolute_path = parent_dir.join(&Path::new(url.trim_start_matches('/')));
+
+    // Check if the resolved path is a directory
+    if let Ok(metadata) = fs::metadata(&absolute_path) {
+        metadata.is_dir()
+    } else {
+        false
+    }
+}
+
+fn resolve_link_url(link_url: String, root: &Node<RefCell<Ast>>) -> String {
+    let current_url = get_current_document_url(root);
+    let current_url = current_url.as_str();
+
+    // Resolve relative URLs to absolute URLs based on the current document's URL
+    if link_url.starts_with('.') {
+        let resolved_url = Url::parse(current_url)
+            .and_then(|base_url| base_url.join(&link_url))
+            .map(|url| url.into_string())
+            .unwrap_or(link_url);
+
+        // Check if the resolved URL corresponds to a directory
+        if is_directory_link(&resolved_url) {
+            return format!("{}/", resolved_url); // Modify URL to represent a directory link
+        }
+
+        return resolved_url;
+    }
+
+    link_url
+}
+
+
+
+fn get_current_document_url(root: &Node<RefCell<Ast>>) -> String {
+    // Replace `README.md` with the actual URL of the current document
+    let base_url = "https://github.com/kata-containers/tests/blob/main/README.md";
+    base_url.to_owned()
+}
 
 // Recursive function to find all heading nodes in the AST
 fn find_heading_ids<'a>(node: &'a Node<'a, RefCell<Ast>>, heading_ids: &mut HashSet<String>) {
     match &node.data.borrow().value {
         NodeValue::Heading(heading) => {
-            // Use one of the available fields for NodeHeading
-            let level = heading.level;
-            // Do something with level...
+            let text = get_node_text(&node);
+            let id = text.to_lowercase().replace(" ", "-");
+            heading_ids.insert(id);
         }
         _ => {}
     }
@@ -350,4 +451,61 @@ fn generate_output(
     for (stat, count) in document_statistics {
         println!("  {}: {}", stat, count);
     }
+}
+
+async fn validate_external_links(urls: Vec<String>) -> Vec<String> {
+    let mut errors = Vec::new();
+
+    for url in urls {
+        let response = surf::get(&url).await;
+
+        if response.is_err() {
+            errors.push(format!("External link '{}' is not reachable.", url));
+        }
+    }
+
+    errors
+}
+
+fn collect_heading_info<'a>(
+    node: &'a Node<'a, RefCell<Ast>>,
+) -> Vec<HeadingInfo> {
+    let mut heading_infos = Vec::new();
+    collect_heading_info_recursive(node, &mut heading_infos);
+    heading_infos
+}
+
+// Add a modified version of the 'generate_toc_recursive' function that collects heading information
+fn collect_heading_info_recursive<'a>(
+    node: &'a Node<'a, RefCell<Ast>>,
+    heading_infos: &mut Vec<HeadingInfo>,
+) {
+    match &node.data.borrow().value {
+        NodeValue::Heading(heading) => {
+            let text = get_node_text(&node);
+            let id = generate_unique_id(&text, heading_infos);
+            let heading_info = HeadingInfo {
+                level: heading.level as u32,
+                id,
+                text,
+            };
+            heading_infos.push(heading_info);
+        }
+        _ => {}
+    }
+    for child in node.children() {
+        collect_heading_info_recursive(&child, heading_infos);
+    }
+}
+
+fn generate_unique_id(text: &str, heading_infos: &[HeadingInfo]) -> String {
+    let mut id = text.to_lowercase().replace(" ", "-");
+    let mut count = 1;
+
+    while heading_infos.iter().any(|info| info.id == id) {
+        id = format!("{}-{}", text.to_lowercase().replace(" ", "-"), count);
+        count += 1;
+    }
+
+    id
 }

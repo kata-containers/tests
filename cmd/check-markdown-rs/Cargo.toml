@@ -9,3 +9,8 @@ edition = "2021"
 comrak = "0.18"
 clap = "3.0"
 url = "2.3.1"
+surf = "2.3.0"
+reqwest = { version = "0.11", features = ["blocking"] }
+tokio = { version = "1", features = ["full"] }
+async-std = "1.10.0"
+regex = "1.5.4"
