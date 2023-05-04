@@ -21,7 +21,6 @@ main() {
 	pushd $katacontainers_repo_dir
 	sudo -E PATH=$PATH bash ${buildscript} --build=cc-sev-ovmf
 	sudo tar -xvJpf build/kata-static-cc-sev-ovmf.tar.xz -C /
-	sudo ln -sf /opt/confidential-containers/share/ovmf /usr/share/ovmf
 	popd
 }
 
