@@ -15,6 +15,7 @@ use std::path::{Path, PathBuf};
 use std::cmp::Ord;
 use std::cmp::Ordering;
 
+
 // Add a custom structure to hold the heading information
 #[derive(Debug, PartialEq, Eq, Clone)]
 struct HeadingInfo {
@@ -40,33 +41,35 @@ impl Ord for HeadingInfo {
 
 // Main function
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let arena = Arena::new();
     let args: Vec<String> = env::args().collect();
+    let arena = Arena::new();
 
     if args.len() < 2 {
         eprintln!("Usage: {} <input_file>", args[0]);
+        return Ok(());
     }
 
     let input_file_path = env::current_dir()?.join(args[1].clone());
-    let input = fs::read_to_string(input_file_path)?;
+    let input = fs::read_to_string(&input_file_path)?;
     let root = parse_document(&arena, &input, &ComrakOptions::default());
 
     let heading_infos: &[HeadingInfo] = &collect_heading_info(&root);
     let toc = generate_toc(heading_infos);
 
     let link_validation_result = validate_links(&root, &input);
-
-    let structure_validation_result = validate_document_structure(&root);
+    let structure_validation_result = validate_document_structure(&root, &input_file_path);
 
     let document_statistics = print_document_statistics(&root);
 
-    // Call the generate_output function
     generate_output(
+        &input_file_path,
         &toc,
         &link_validation_result,
         &structure_validation_result,
         &document_statistics,
+        &heading_infos,
     );
+    
 
     Ok(())
 }
@@ -128,9 +131,18 @@ fn get_node_text<'a>(node: &'a Node<'a, RefCell<Ast>>) -> String {
 }
 
 // Function to validate the structure of the document
+// Struct to represent the error with file path, heading, and error message
+struct StructureError {
+    file: PathBuf,
+    heading: Option<String>,
+    error: String,
+}
+
+// Function to validate the structure of the document
 fn validate_document_structure<'a>(
     root: &'a Node<'a, RefCell<Ast>>,
-) -> Result<(), String> {
+    input_file: &PathBuf,
+) -> Result<(), Vec<StructureError>> {
     let mut last_seen_level = 0;
     let mut h1_count = 0;
 
@@ -138,6 +150,7 @@ fn validate_document_structure<'a>(
 
     // Add a HashMap to track heading texts at each level
     let mut headings_at_level: HashMap<u32, HashSet<String>> = HashMap::new();
+    let mut errors = Vec::new();
 
     for heading_info in &heading_nodes {
         let level = heading_info.level;
@@ -145,27 +158,43 @@ fn validate_document_structure<'a>(
         if level == 1 {
             h1_count += 1;
             if h1_count > 1 {
-                return Err(String::from("More than one H1 heading found."));
+                errors.push(StructureError {
+                    file: input_file.clone(),
+                    heading: Some(heading_info.text.clone()),
+                    error: String::from("More than one H1 heading found."),
+                });
             }
         }
 
         if level > last_seen_level + 1 {
-            return Err(String::from("Invalid heading level order."));
+            errors.push(StructureError {
+                file: input_file.clone(),
+                heading: Some(heading_info.text.clone()),
+                error: String::from("Invalid heading level order."),
+            });
         }
 
         // Check for repeated headings at the same level
         let heading_texts = headings_at_level.entry(level).or_insert_with(HashSet::new);
         if !heading_texts.insert(heading_info.text.clone()) {
-            return Err(format!(
-                "Repeated heading '{}' at level {}.",
-                heading_info.text, level
-            ));
+            errors.push(StructureError {
+                file: input_file.clone(),
+                heading: Some(heading_info.text.clone()),
+                error: format!(
+                    "Repeated heading '{}' at level {}.",
+                    heading_info.text, level
+                ),
+            });
         }
 
         last_seen_level = level;
     }
 
-    Ok(())
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(errors)
+    }
 }
 
 
@@ -422,17 +451,40 @@ fn line_column(input: &str, line_col: LineColumn) -> (usize, usize) {
 }
 
 
+// Function to generate the output
 fn generate_output(
+    input_file: &PathBuf,
     toc: &str,
     link_validation_result: &Result<(), Vec<String>>,
-    structure_validation_result: &Result<(), String>,
+    structure_validation_result: &Result<(), Vec<StructureError>>,
     document_statistics: &HashMap<&str, usize>,
+    heading_infos: &[HeadingInfo],
 ) {
-    println!("Final Output:");
+    println!("Final Output for file {:?}:", input_file);
+
     println!("\nDocument Structure Validation:");
     match structure_validation_result {
         Ok(_) => println!("  The document structure is valid."),
-        Err(err) => eprintln!("  ERROR: {}", err),
+        Err(errors) => {
+            println!("  Found {} file(s) with structure errors:", errors.len());
+            for error in errors {
+                if let Some(heading) = &error.heading {
+                    eprintln!(
+                        "  File: {:?}, Error: {}",
+                        error.file, error.error
+                    );
+                } else {
+                    eprintln!("  File: {:?}, Error: {}", error.file, error.error);
+                }
+            }
+        }
+    }
+
+    println!("  Level 1 Headings:");
+    for heading_info in heading_infos {
+        if heading_info.level == 1 {
+            println!("  - [{}](#{})", heading_info.text, heading_info.id,);
+        }
     }
 
     println!("\nTable of Contents:");
@@ -442,9 +494,9 @@ fn generate_output(
     match link_validation_result {
         Ok(_) => println!("  All links are valid."),
         Err(errors) => {
-            println!("  Found {} invalid links:", errors.len());
+            println!("  Found {} file(s) with link validation errors:", errors.len());
             for error in errors {
-                eprintln!("  ERROR: {}", error);
+                eprintln!("  Error: {}", error);
             }
         }
     }
@@ -454,6 +506,9 @@ fn generate_output(
         println!("  {}: {}", stat, count);
     }
 }
+
+
+
 
 async fn validate_external_links(urls: Vec<String>) -> Vec<String> {
     let mut errors = Vec::new();
