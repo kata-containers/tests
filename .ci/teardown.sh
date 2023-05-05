@@ -153,8 +153,9 @@ collect_logs()
 
 		if [ "${have_procenv}" = "yes" ]
 		then
-			procenv --file "${procenv_user_log_path}"
-			sudo -E procenv --file "${procenv_root_log_path}" && \
+			dnf install -y strace
+			strace -f procenv --file "${procenv_user_log_path}"
+			[ "${USER}" != "root" ] && sudo -E procenv --file "${procenv_root_log_path}" && \
 				sudo chown ${USER}: "${procenv_root_log_path}"
 		fi
 
