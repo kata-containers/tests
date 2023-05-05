@@ -71,40 +71,42 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-// Recursive function to print the nodes of the AST
+fn handle_heading_node(indent: &str, level: u32, text: String) {
+    println!("{}Header (level {}): {}", indent, level, text);
+}
+
+fn handle_text_node(indent: &str, text: String) {
+    println!("{}Text: {}", indent, text);
+}
+
+fn handle_link_node(indent: &str, title: String, url: String) {
+    println!("{}Link: [{}]({})", indent, title, url);
+}
+
 fn print_nodes<'a>(
     node: &'a Node<'a, RefCell<Ast>>,
     arena: &'a Arena<Node<'a, RefCell<Ast>>>,
     level: usize,
 ) {
-    // Create an indent string based on the current recursion level
     let indent = "  ".repeat(level);
-    // Match the node value to handle different node types
     match &node.data.borrow().value {
-        // If the node is a Heading node, print its level and text
-        NodeValue::Heading(heading) => println!(
-            "{}Header (level {}): {}",
-            indent,
-            heading.level,
-            get_node_text(&node)
-        ),
-        // If the node is a Text node, print its content
-        NodeValue::Text(text) => println!(
-            "{}Text: {}",
-            indent,
-            String::from_utf8_lossy(text.as_bytes())
-        ),
-        // If the node is a Link node, print its title and URL
-        NodeValue::Link(link) => println!(
-            "{}Link: [{}]({})",
-            indent,
-            String::from_utf8_lossy(link.title.as_bytes()),
-            String::from_utf8_lossy(link.url.as_bytes())
-        ),
-        // For other node types, print the debug output
+        NodeValue::Heading(heading) => {
+            let text = get_node_text(&node);
+            // Convert heading.level from u8 to u32
+            handle_heading_node(&indent, heading.level.into(), text);
+        },
+        NodeValue::Text(text) => {
+            let content = String::from_utf8_lossy(text.as_bytes()).to_string();
+            handle_text_node(&indent, content);
+        },
+        NodeValue::Link(link) => {
+            let title = String::from_utf8_lossy(link.title.as_bytes()).to_string();
+            // Replace the deprecated into_string method with Into<String>
+            let url = link.url.clone().into();
+            handle_link_node(&indent, title, url);
+        },
         _ => println!("{}{:?}", indent, node.data.borrow().value),
     }
-    // Iterate through the children of the current node and recursively print them
     for child in node.children() {
         print_nodes(&child, arena, level + 1);
     }
