@@ -4,7 +4,7 @@ This repository contains various types of tests and utilities (called
 "content" from now on) for testing the [Kata Containers](https://github.com/kata-containers)
 code repositories.
 
-## Getting the code
+# Getting the code
 
 ```
 $ go get -d github.com/kata-containers/tests
