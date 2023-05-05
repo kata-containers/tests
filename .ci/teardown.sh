@@ -251,6 +251,8 @@ check_collect_script()
 
 main()
 {
+	# TODO: remove when I figure out why this job is hanging.
+	set -x
 	# We always want to try to collect the logs at the end of a test run,
 	# so don't run with "set -e".
 	collect_logs "$@"
