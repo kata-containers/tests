@@ -1,3 +1,8 @@
+//
+// Copyright (c) 2023 Maxwell Wendlandt, Christopher Robinson
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 mod node;
 mod output;
 mod stats;

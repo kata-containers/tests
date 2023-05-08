@@ -1,3 +1,8 @@
+//
+// Copyright (c) 2023 Maxwell Wendlandt, Christopher Robinson
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 use std::collections::HashSet;                                                                                              
 use comrak::arena_tree::Node;                                                                                               
 use comrak::{                                                                                                               

@@ -1,3 +1,8 @@
+//
+// Copyright (c) 2023 Maxwell Wendlandt, Christopher Robinson
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 use crate::node::{find_heading_ids, find_link_nodes}; 
 use crate::toc::collect_heading_info;
 
