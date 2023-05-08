@@ -66,7 +66,6 @@ declare -A packages=( \
 	[ostree]="ostree-devel" \
 	[metrics_dependencies]="bc jq" \
 	[crudini]="crudini" \
-	[procenv]="procenv" \
 	[haveged]="haveged" \
 	[libsystemd]="systemd-devel" \
 	[redis]="redis" \
