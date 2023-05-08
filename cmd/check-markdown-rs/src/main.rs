@@ -1,9 +1,9 @@
-use std::collections::HashSet;
-use comrak::arena_tree::Node;
-use comrak::{
-    nodes::{Ast, NodeValue},
-    parse_document, Arena, ComrakOptions,
-};
+use std::collections::HashSet;                                                                                              
+use comrak::arena_tree::Node;                                                                                               
+use comrak::{                                                                                                               
+    nodes::{Ast, NodeValue},                                                                                                
+    parse_document, Arena, ComrakOptions,                                                                                   
+};                                                                                                                          
 use comrak::nodes::LineColumn;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -15,7 +15,7 @@ use std::path::{Path, PathBuf};
 use std::cmp::Ord;
 use std::cmp::Ordering;
 
-
+                                                                                                                            
 // Add a custom structure to hold the heading information
 #[derive(Debug, PartialEq, Eq, Clone)]
 struct HeadingInfo {
@@ -38,15 +38,14 @@ impl Ord for HeadingInfo {
             .then_with(|| self.text.cmp(&other.text))
     }
 }
-
+                                                                                                                            
 // Main function
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {  
     let args: Vec<String> = env::args().collect();
     let arena = Arena::new();
 
     if args.len() < 2 {
-        eprintln!("Usage: {} <input_file>", args[0]);
-        return Ok(());
+        return Err("Usage: <input_file>".into());
     }
 
     let input_file_path = env::current_dir()?.join(args[1].clone());
@@ -130,7 +129,6 @@ fn get_node_text<'a>(node: &'a Node<'a, RefCell<Ast>>) -> String {
         .join("")
 }
 
-// Function to validate the structure of the document
 // Struct to represent the error with file path, heading, and error message
 struct StructureError {
     file: PathBuf,
@@ -251,7 +249,6 @@ fn generate_toc_recursive<'a>(
 }
 
 // validate links method
-// validate links method
 fn validate_links<'a>(
     root: &'a Node<'a, RefCell<Ast>>,
     input: &str,
@@ -318,6 +315,7 @@ fn validate_links<'a>(
     }
 }
 
+// Recursive function to find all link nodes in the AST
 fn is_directory_link(url: &str) -> bool {
     let args: Vec<String> = env::args().collect();
     let readme_path = Path::new(&args[1]);
@@ -334,6 +332,7 @@ fn is_directory_link(url: &str) -> bool {
     }
 }
 
+// Resolve relative URLs to absolute URLs based on the current document's URL
 fn resolve_link_url(link_url: String, root: &Node<RefCell<Ast>>) -> String {
     let current_url = get_current_document_url(root);
     let current_url = current_url.as_str();
@@ -356,8 +355,7 @@ fn resolve_link_url(link_url: String, root: &Node<RefCell<Ast>>) -> String {
     link_url
 }
 
-
-
+// Get the URL of the current document
 fn get_current_document_url(root: &Node<RefCell<Ast>>) -> String {
     // Replace `README.md` with the actual URL of the current document
     let base_url = "https://github.com/kata-containers/tests/blob/main/README.md";
@@ -429,6 +427,7 @@ fn gather_document_statistics<'a>(
     }
 }
 
+// Function to gather and print heading information
 fn line_column(input: &str, line_col: LineColumn) -> (usize, usize) {
     let mut line = 1;
     let mut column = 1;
@@ -449,7 +448,6 @@ fn line_column(input: &str, line_col: LineColumn) -> (usize, usize) {
 
     (line, column)
 }
-
 
 // Function to generate the output
 fn generate_output(
@@ -480,10 +478,10 @@ fn generate_output(
         }
     }
 
-    println!("  Level 1 Headings:");
+    println!("    Level 1 Headings:");
     for heading_info in heading_infos {
         if heading_info.level == 1 {
-            println!("  - [{}](#{})", heading_info.text, heading_info.id,);
+            println!("    - [{}](#{})", heading_info.text, heading_info.id,);
         }
     }
 
@@ -507,9 +505,7 @@ fn generate_output(
     }
 }
 
-
-
-
+// Function to validate external links
 async fn validate_external_links(urls: Vec<String>) -> Vec<String> {
     let mut errors = Vec::new();
 
@@ -524,6 +520,7 @@ async fn validate_external_links(urls: Vec<String>) -> Vec<String> {
     errors
 }
 
+// Function to generate the table of contents
 fn collect_heading_info<'a>(
     node: &'a Node<'a, RefCell<Ast>>,
 ) -> Vec<HeadingInfo> {
@@ -555,6 +552,7 @@ fn collect_heading_info_recursive<'a>(
     }
 }
 
+// Function to generate a unique id for a heading
 fn generate_unique_id(text: &str, heading_infos: &[HeadingInfo]) -> String {
     let mut id = text.to_lowercase().replace(" ", "-");
     let mut count = 1;
