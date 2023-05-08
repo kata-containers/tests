@@ -13,8 +13,8 @@ This is a simple Markdown parser that reads a Markdown file, processes it, and o
 ## Usage
 
 ```
-cargo build --release
-./target/release/markdown_parser input_file.md
+$ cargo install --path .
+$ check-markdown-rs input_file.md
 ```
 
 To use the Markdown parser, compile the code and run the resulting binary with the input Markdown file as an argument:
