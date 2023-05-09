@@ -27,7 +27,6 @@ pub struct StructureError {
     pub error: String,                                                                                                                                             
 }      
 
-// Function to validate the structure of the document
 pub fn validate_document_structure<'a>(
     root: &'a Node<'a, RefCell<Ast>>,
     input_file: &PathBuf,
@@ -50,7 +49,9 @@ pub fn validate_document_structure<'a>(
                 errors.push(StructureError {
                     file: input_file.clone(),
                     heading: Some(heading_info.text.clone()),
-                    error: String::from("More than one H1 heading found."),
+                    error: format!(
+                        "More than one H1 heading found.",
+                    ),
                 });
             }
         }

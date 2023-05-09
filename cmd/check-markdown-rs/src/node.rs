@@ -15,11 +15,13 @@ use std::cmp::Ord;
 use std::cmp::Ordering;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct HeadingInfo {                                                                                                                                           
-    pub level: u32,                                                                                                                                                
-    pub id: String,                                                                                                                                                
-    pub text: String,                                                                                                                                              
-}       
+pub struct HeadingInfo {
+    pub level: u32,
+    pub id: String,
+    pub text: String,
+    pub line: usize,
+}
+     
 
 // Add implementation for PartialOrd and Ord to sort the HeadingInfo
 impl PartialOrd for HeadingInfo {

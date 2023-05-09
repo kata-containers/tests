@@ -18,7 +18,9 @@ pub struct HeadingInfo {
     pub level: u32,
     pub id: String,
     pub text: String,
+    pub line: usize,
 }
+
 
 impl PartialOrd for HeadingInfo {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
@@ -48,10 +50,12 @@ pub fn collect_heading_info_recursive<'a>(
         NodeValue::Heading(heading) => {
             let text = get_node_text(&node);
             let id = generate_unique_id(&text, heading_infos);
+            let line = node.data.borrow().sourcepos.start.line; // Add this line
             let heading_info = HeadingInfo {
                 level: heading.level as u32,
                 id,
                 text,
+                line, // Add this line
             };
             heading_infos.push(heading_info);
         }
@@ -61,6 +65,7 @@ pub fn collect_heading_info_recursive<'a>(
         collect_heading_info_recursive(&child, heading_infos);
     }
 }
+
 
 pub fn generate_unique_id(text: &str, heading_infos: &[HeadingInfo]) -> String {
     let mut id = text.to_lowercase().replace(" ", "-");

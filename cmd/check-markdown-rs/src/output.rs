@@ -34,7 +34,7 @@ pub fn generate_output(
     println!("    Level 1 Headings:");
     for heading_info in heading_infos {
         if heading_info.level == 1 {
-            println!("    - [{}](#{})", heading_info.text, heading_info.id,);
+            println!("    - [{}](#{}) at line {}", heading_info.text, heading_info.id, heading_info.line);
         }
     }
 
