@@ -501,7 +501,7 @@ check_url()
 	fi
 
 	# Some endpoints return 403 to HEAD but 200 for GET, so perform a GET but only read headers.
-	{ curl ${curl_args[*]} -sIL -X GET -A "${user_agent}" -H "Accept-Encoding: zstd, none, gzip, deflate" --max-time "$url_check_timeout_secs" \
+	{ curl ${curl_args[*]} -sIL -X GET -c - -A "${user_agent}" -H "Accept-Encoding: zstd, none, gzip, deflate" --max-time "$url_check_timeout_secs" \
 		--retry "$url_check_max_tries" "$url" &>"$curl_out"; ret=$?; } || true
 
 	# A transitory error, or the URL is incorrect,
