@@ -33,7 +33,7 @@ cleanup() {
 }
 
 host_pci_addr() {
-	lspci -D | grep "Ethernet controller" | grep "Virtio network device" | tail -1 | cut -d' ' -f1
+	lspci -D | grep "Ethernet controller" | grep "Virtio.*network device" | tail -1 | cut -d' ' -f1
 }
 
 get_vfio_path() {
