@@ -42,7 +42,6 @@ declare -A packages=(
 	[metrics_dependencies]="jq" \
 	[cri-containerd_dependencies]="libseccomp-devel" \
 	[crudini]="crudini" \
-	[procenv]="procenv" \
 	[haveged]="haveged" \
 	[libsystemd]="systemd-devel" \
 	[redis]="redis" \
