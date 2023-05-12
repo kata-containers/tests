@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Intel Corporation
+# Copyright (c) 2019-2023 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -72,6 +72,7 @@ packagecloud/B
 Pandoc/B
 Podman/B
 PullApprove/B
+Pytorch/B
 QuickAssist/B
 R/B
 raytracer/B
