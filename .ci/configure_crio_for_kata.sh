@@ -11,6 +11,9 @@ set -o pipefail
 
 source /etc/os-release || source /usr/lib/os-release
 
+if [ "$KATA_BUILD_CC" == "yes" ]; then
+	PREFIX="${PREFIX:-/opt/confidential-containers}"
+fi
 PREFIX="${PREFIX:-/opt/kata}"
 crio_config_dir="/etc/crio/crio.conf.d"
 
