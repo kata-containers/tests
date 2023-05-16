@@ -3,12 +3,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-use crate::node::{get_node_text};                                                                                             
-use comrak::arena_tree::Node;                                                                                               
-use comrak::{                                                                                                               
-    nodes::{Ast, NodeValue},                                                                                                
-    Arena                                                                                   
-};                                                                                                                          
+use crate::node::get_node_text;
+use comrak::arena_tree::Node;
+use comrak::{
+    nodes::{Ast, NodeValue}
+};
 use std::cell::RefCell;
 use std::cmp::Ord;
 use std::cmp::Ordering;
@@ -91,24 +90,4 @@ pub fn generate_toc(heading_infos: &[HeadingInfo]) -> String {
     }
 
     toc
-}
-
-// Recursive function to generate a table of contents
-pub fn generate_toc_recursive<'a>(
-    node: &'a Node<'a, RefCell<Ast>>,
-    arena: &'a Arena<Node<'a, RefCell<Ast>>>,
-    toc: &mut String,
-    level: usize,
-) {
-    match &node.data.borrow().value {
-        NodeValue::Heading(heading) => {
-            let indent = "  ".repeat(level);
-            let text = get_node_text(&node);
-            toc.push_str(&format!("{}- [{}](#)\n", indent, text));
-        }
-        _ => {}
-    }
-    for child in node.children() {
-        generate_toc_recursive(&child, arena, toc, level + 1);
-    }
 }

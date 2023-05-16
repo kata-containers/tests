@@ -92,7 +92,7 @@ pub fn line_column(input: &str, line_col: LineColumn) -> (usize, usize) {
     let mut line = 1;
     let mut column = 1;
 
-    for (index, ch) in input.char_indices() {
+    for (_index, ch) in input.char_indices() {
         let current_line_col = LineColumn { line, column };
 
         if line_col == current_line_col {
@@ -202,22 +202,21 @@ pub fn resolve_link_url(link_url: String, root: &Node<RefCell<Ast>>) -> String {
     if link_url.starts_with('.') {
         let resolved_url = Url::parse(current_url)
             .and_then(|base_url| base_url.join(&link_url))
-            .map(|url| url.into_string())
+            .map(|url| url.into())
             .unwrap_or(link_url);
 
         // Check if the resolved URL corresponds to a directory
         if is_directory_link(&resolved_url) {
             return format!("{}/", resolved_url); // Modify URL to represent a directory link
         }
-
         return resolved_url;
     }
-
     link_url
 }
 
+
 // Get the URL of the current document
-pub fn get_current_document_url(root: &Node<RefCell<Ast>>) -> String {
+pub fn get_current_document_url(_root: &Node<RefCell<Ast>>) -> String {
     // Replace `README.md` with the actual URL of the current document
     let base_url = "https://github.com/kata-containers/tests/blob/main/README.md";
     base_url.to_owned()

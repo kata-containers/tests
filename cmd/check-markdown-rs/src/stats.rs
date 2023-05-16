@@ -3,12 +3,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-use comrak::arena_tree::Node;                                                                                                                                      
-use comrak::{                                                                                                                                                      
-     nodes::{Ast, NodeValue},                                                                                                                                       
- };                                                                                                                                                                 
-use std::cell::RefCell;                                                                                                                                            
-use std::collections::HashMap;   
+use comrak::arena_tree::Node;
+use comrak::nodes::{Ast, NodeValue};
+use std::cell::RefCell;
+use std::collections::HashMap;
 
 // Function to gather and print document statistics
 pub fn print_document_statistics<'a>(root: &'a Node<'a, RefCell<Ast>>) -> HashMap<&'a str, usize> {

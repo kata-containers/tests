@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 use std::collections::HashMap;
-use std::path::{PathBuf};
+use std::path::PathBuf;
 
 pub fn generate_output(
     input_file: &PathBuf,
@@ -22,7 +22,7 @@ pub fn generate_output(
         Err(errors) => {
             println!("  Found {} file(s) with structure errors:", errors.len());
             for error in errors {
-                if let Some(heading) = &error.heading {
+                if let Some(_heading) = &error.heading {
                     eprintln!("  File: {:?}, Error: {}", error.file, error.error);
                 } else {
                     eprintln!("  File: {:?}, Error: {}", error.file, error.error);
@@ -60,4 +60,3 @@ pub fn generate_output(
         println!("  {}: {}", stat, count);
     }
 }
-
