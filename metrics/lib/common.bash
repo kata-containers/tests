@@ -107,7 +107,7 @@ build_dockerfile_image()
 
 	if [ -f "$dockerfile_path" ]; then
 		echo "docker building $image"
-		if ! sudo "${DOCKER_EXE}" build --label "$image" --tag "${image}" -f "$dockerfile_path" "$dockerfile_dir"; then
+		if ! sudo "${DOCKER_EXE}" build --build-arg http_proxy="${http_proxy}" --build-arg https_proxy="${https_proxy}" --label "$image" --tag "${image}" -f "$dockerfile_path" "$dockerfile_dir"; then
 			die "Failed to docker build image $image"
 		fi
 		return 0
