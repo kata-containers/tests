@@ -9,6 +9,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+if [ "$KATA_BUILD_CC" == "yes" ]; then
+	PREFIX="${PREFIX:-/opt/confidential-containers}"
+fi
+PREFIX="${PREFIX:-/opt/kata}"
 readonly runc_path=$(command -v runc)
 
 sudo mkdir -p /etc/containerd/
@@ -30,6 +34,8 @@ cat << EOF | sudo tee /etc/containerd/config.toml
            runtime_type = "io.containerd.kata.v2"
            pod_annotations = ["io.katacontainers.*"]
            privileged_without_host_devices = true
+           [plugins.cri.containerd.runtimes.kata.options]
+              ConfigPath = "${PREFIX}/share/defaults/kata-containers/configuration.toml"
     [plugins.cri.registry.mirrors."localhost:5000"]
       endpoint = ["http://localhost:5000"]
 EOF

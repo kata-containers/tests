@@ -39,7 +39,7 @@ function main() {
 
 	metrics_json_init
 
-	local output=$(ctr run --rm --runtime=${CTR_RUNTIME} $IMAGE test $CMD)
+	local output=$(sudo -E ${CTR_EXE} run --rm --runtime=${CTR_RUNTIME} $IMAGE test $CMD)
 
 	# Save configuration
 	metrics_json_start_array

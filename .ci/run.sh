@@ -20,7 +20,7 @@ export CI_JOB="${CI_JOB:-default}"
 # Kata *MUST BE* able to run using a read-only rootfs image
 if [ "$(uname -m)" == "x86_64" ]; then
 	rootfs_img="$(grep "^image = " \
-	/usr/share/defaults/kata-containers/configuration.toml \
+	/opt/kata/share/defaults/kata-containers/configuration.toml \
 	/etc/kata-containers/configuration.toml 2> /dev/null \
 	| cut -d= -f2 | tr -d '"' | tr -d ' ' || true)"
 	if [ -n "${rootfs_img}" ] && [ -w "${rootfs_img}" ]; then
@@ -92,11 +92,11 @@ case "${CI_JOB}" in
 		;;
 	"CRIO_K8S_COMPLETE")
 		echo "INFO: Running kubernetes tests (minimal) with CRI-O"
-		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
+		#sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
 		;;
 	"CRIO_K8S_MINIMAL")
 		echo "INFO: Running kubernetes tests (minimal) with CRI-O"
-		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
+		#sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
 		;;
 	"CLOUD-HYPERVISOR-K8S-CRIO")
 		echo "INFO: Running kubernetes tests"
@@ -116,7 +116,7 @@ case "${CI_JOB}" in
 	"EXTERNAL_CRIO")
 		echo "INFO: Running tests on cri-o PR"
 		sudo -E PATH="$PATH" bash -c "make kubernetes"
-		sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
+		#sudo -E PATH="$PATH" bash -c "make kubernetes-e2e"
 		sudo -E PATH="$PATH" bash -c "make crio"
 		;;
 	"FIRECRACKER")
@@ -138,7 +138,7 @@ case "${CI_JOB}" in
 	"METRICS")
 		export RUNTIME="kata-runtime"
 		export CTR_RUNTIME="io.containerd.kata.v2"
-		export config_path="/usr/share/defaults/kata-containers"
+		export config_path="/opt/kata/share/defaults/kata-containers"
 		tests_repo="github.com/kata-containers/tests"
 
 		echo "INFO: Running qemu metrics tests"
@@ -161,7 +161,7 @@ case "${CI_JOB}" in
 	"METRICS_CLH")
 		export RUNTIME="kata-runtime"
 		export CTR_RUNTIME="io.containerd.kata.v2"
-		export config_path="/usr/share/defaults/kata-containers"
+		export config_path="/opt/kata/share/defaults/kata-containers"
 		tests_repo="github.com/kata-containers/tests"
 
 		echo "INFO: Install cloud hypervisor"

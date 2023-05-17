@@ -67,7 +67,7 @@ externals:
   hadolint:
     description: "the dockerfile linter used by static-checks"
     url: "https://github.com/hadolint/hadolint"
-    version: "2.7.0"
+    version: "2.12.0"
 
   simple-kbs:
     description: "Simple KBS that hosts key storage with release policies"

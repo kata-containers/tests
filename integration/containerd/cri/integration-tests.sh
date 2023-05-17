@@ -60,7 +60,7 @@ readonly default_containerd_config="/etc/containerd/config.toml"
 readonly default_containerd_config_backup="$CONTAINERD_CONFIG_FILE.backup"
 readonly kata_config="/etc/kata-containers/configuration.toml"
 readonly kata_config_backup="$kata_config.backup"
-readonly default_kata_config="/usr/share/defaults/kata-containers/configuration.toml"
+readonly default_kata_config="/opt/kata/share/defaults/kata-containers/configuration.toml"
 
 ci_config() {
 	sudo mkdir -p $(dirname "${kata_config}")

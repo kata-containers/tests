@@ -51,9 +51,10 @@ arch_to_rust()
 
 	if [ "${arch}" == "ppc64le" ]; then
 		arch="powerpc64le"
+		ARCH="${arch}"
 	fi
 
-	echo "${arch}"
+	[ "${CROSS_BUILD}" == "false" ] && echo "${arch}" || echo "${ARCH}"
 }
 
 # Convert architecture to the name used by the Linux kernel build system

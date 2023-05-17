@@ -22,12 +22,12 @@ setup() {
 	sudo chown root:kvm /dev/kvm
 	sudo chmod g+rw /dev/kvm
 	sudo systemctl start crio
-	sudo sed -i -e 's/^# *\(rootless\).*=.*$/\1 = true/g' /usr/share/defaults/kata-containers/configuration.toml
+	sudo sed -i -e 's/^# *\(rootless\).*=.*$/\1 = true/g' /opt/kata/share/defaults/kata-containers/configuration.toml
 	sudo rm -rf /run/kata-containers/ /run/vc/
 }
 
 cleanup() {
-	sudo sed -i -e 's/^.*\(rootless\)/# \1/g' /usr/share/defaults/kata-containers/configuration.toml
+	sudo sed -i -e 's/^.*\(rootless\)/# \1/g' /opt/kata/share/defaults/kata-containers/configuration.toml
 	sudo crictl stopp "$pod_id" &>/dev/null || true
 	sudo crictl rmp "$pod_id" &>/dev/null || true
 }
