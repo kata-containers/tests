@@ -35,6 +35,9 @@ fi
 #cleanup stale file under /run
 sudo sh -c 'rm -rf /run/flannel'
 
+#cleanup the kubernetes apt list file
+sudo rm -f /etc/apt/sources.list.d/kubernetes.list
+
 # delete containers resource created by runc
 cri_runtime="${CRI_RUNTIME:-crio}"
 case "${cri_runtime}" in
