@@ -104,6 +104,7 @@ main() {
 
 	if [ "${KATA_BUILD_CC}" == "yes" ]; then
 		build_and_install_qemu_for_cc
+		return 0
 	fi
 
 	export qemu_type
