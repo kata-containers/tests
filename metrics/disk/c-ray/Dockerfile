@@ -8,6 +8,8 @@ FROM ubuntu:20.04
 # Version of the Dockerfile
 LABEL DOCKERFILE_VERSION="1.0"
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 # URL for c-ray benchmark
 ENV CRAY_URL "http://www.phoronix-test-suite.com/benchmark-files/c-ray-1.1.tar.gz"
 
