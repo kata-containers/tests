@@ -45,8 +45,9 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" bash -c "make cri-containerd"
 		echo "INFO: Running nydus test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make nydus"
-		[[ "${CI_JOB}" =~ DEVMAPPER ]] && \
+		if [[ "${CI_JOB}" =~ DEVMAPPER ]]; then
 			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
+		fi
 		echo "INFO: Running vcpus test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make vcpus"
 		echo "INFO: Skipping pmem test: Issue: https://github.com/kata-containers/tests/issues/3223"
@@ -92,9 +93,10 @@ case "${CI_JOB}" in
 		echo "INFO: Containerd checks"
 		sudo -E PATH="$PATH" bash -c "make cri-containerd"
 
-		[[ "${CI_JOB}" =~ DEVMAPPER ]] && \
-			echo "INFO: Running kubernetes tests with containerd" && \
+		if [[ "${CI_JOB}" =~ DEVMAPPER ]]; then
+			echo "INFO: Running kubernetes tests with containerd"
 			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
+		fi
 		;;
 	"EXTERNAL_CLOUD_HYPERVISOR")
 		echo "INFO:n Running tests on Cloud Hypervisor PR"
