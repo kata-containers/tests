@@ -45,7 +45,7 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" bash -c "make cri-containerd"
 		echo "INFO: Running nydus test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make nydus"
-		[[ "${CI_JOB}" =~ K8S ]] && \
+		[[ "${CI_JOB}" =~ DEVMAPPER ]] && \
 			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
 		echo "INFO: Running vcpus test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make vcpus"
@@ -92,8 +92,9 @@ case "${CI_JOB}" in
 		echo "INFO: Containerd checks"
 		sudo -E PATH="$PATH" bash -c "make cri-containerd"
 
-		echo "INFO: Running kubernetes tests with containerd"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
+		[[ "${CI_JOB}" =~ DEVMAPPER ]] && \
+			echo "INFO: Running kubernetes tests with containerd" && \
+			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
 		;;
 	"EXTERNAL_CLOUD_HYPERVISOR")
 		echo "INFO:n Running tests on Cloud Hypervisor PR"
@@ -172,8 +173,6 @@ case "${CI_JOB}" in
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make dragonball-stability"
 		echo "INFO: Containerd checks"
 		sudo -E PATH="$PATH" bash -c "make cri-containerd"
-		echo "INFO: Running kubernetes tests"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
 		;;
 	*)
 		echo "INFO: Running checks"
