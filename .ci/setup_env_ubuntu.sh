@@ -42,7 +42,6 @@ declare -A packages=( \
 	[metrics_dependencies]="smem jq" \
 	[cri-containerd_dependencies]="btrfs-progs libseccomp-dev libapparmor-dev make gcc pkg-config" \
 	[crudini]="crudini" \
-	[procenv]="procenv" \
 	[haveged]="haveged" \
 	[libsystemd]="libsystemd-dev" \
 	[redis]="redis-server" \

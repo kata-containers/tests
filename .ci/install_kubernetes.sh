@@ -29,7 +29,7 @@ if [ "$ID" == "ubuntu" ]; then
 EOF"
 
 	chronic sudo -E sed -i 's/^[ \t]*//' /etc/apt/sources.list.d/kubernetes.list
-	curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+	curl -fsSL https://dl.k8s.io/apt/doc/apt-key.gpg | sudo apt-key add -
 	chronic sudo -E apt update
 	chronic sudo -E apt install --allow-downgrades -y kubelet="$kubernetes_version" kubeadm="$kubernetes_version" kubectl="$kubernetes_version"
 elif [[ "$ID" =~ ^(alinux|centos|fedora|rhel)$ ]]; then

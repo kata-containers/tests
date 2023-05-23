@@ -469,7 +469,6 @@ main() {
 	
 	# switch to the default pause image set by containerd:1.6.x
 	sed -i 's#k8s.gcr.io/pause:3.[0-9]#k8s.gcr.io/pause:3.6#' integration/main_test.go
-	cp "${SCRIPT_PATH}/container_restart_test.go.patch" ./integration/container_restart_test.go
 
 	# Make sure the right artifacts are going to be built
 	make clean
