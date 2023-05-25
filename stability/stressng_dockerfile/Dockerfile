@@ -7,6 +7,8 @@ FROM ubuntu:20.04
 # Version of the Dockerfile
 LABEL DOCKERFILE_VERSION="1.0"
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && \
 	apt-get install -y --no-install-recommends sudo build-essential curl && \
 	apt-get remove -y unattended-upgrades && \
