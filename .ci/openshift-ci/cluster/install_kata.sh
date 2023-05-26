@@ -44,6 +44,7 @@ apply_kata_deploy() {
 
 	info "Applying kata-deploy"
 	oc apply -f tools/packaging/kata-deploy/kata-rbac/base/kata-rbac.yaml
+	oc label --overwrite ns kube-system pod-security.kubernetes.io/enforce=privileged pod-security.kubernetes.io/warn=baseline pod-security.kubernetes.io/audit=baseline
 	oc apply -f "$deploy_file"
 	oc -n kube-system wait --timeout=10m --for=condition=Ready -l name=kata-deploy pod
 
