@@ -72,7 +72,7 @@ externals:
   sonobuoy:
     description: "Tool to run kubernetes e2e conformance tests"
     url: "https://github.com/vmware-tanzu/sonobuoy"
-    version: "0.50.0"
+    version: "0.56.16"
 
 # This section contains versions used by the OpenShift CI jobs scripts.
 openshift-ci:
