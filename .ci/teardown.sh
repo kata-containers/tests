@@ -69,18 +69,8 @@ collect_logs()
 
 	local -r collect_script="kata-collect-data.sh"
 
-	# If available, procenv will be run twice - once as the current user
-	# and once as the superuser.
-	local -r procenv_user_log_filename="procenv-${USER}.log"
-	local -r procenv_user_log_path="${log_copy_dest}/${procenv_user_log_filename}"
-	local -r procenv_root_log_filename="procenv-root.log"
-	local -r procenv_root_log_path="${log_copy_dest}/${procenv_root_log_filename}"
-
 	have_collect_script="no"
 	collect_script_path="$(command -v $collect_script)" && have_collect_script="yes"
-
-	have_procenv="no"
-	[ -n "$(command -v procenv)" ] && have_procenv="yes"
 
 	local -r mounts_log_filename="mounts.log"
 	local -r mounts_log_path="${log_copy_dest}/${mounts_log_filename}"
@@ -151,13 +141,6 @@ collect_logs()
 
 		[ "${have_collect_script}" = "yes" ] && prefixes+=" ${collect_data_log_prefix}"
 
-		if [ "${have_procenv}" = "yes" ]
-		then
-			procenv --file "${procenv_user_log_path}"
-			sudo -E procenv --file "${procenv_root_log_path}" && \
-				sudo chown ${USER}: "${procenv_root_log_path}"
-		fi
-
 		sudo mount > "${mounts_log_path}" && gzip -9 "${mounts_log_path}"
 		ps -efwww > "${procs_log_path}" && gzip -9 "${procs_log_path}"
 
@@ -168,9 +151,6 @@ collect_logs()
 		do
 			gzip -9 "$prefix"*
 		done
-
-		# The procenv logs are tiny so don't require chunking
-		gzip -9 "${procenv_user_log_path}" "${procenv_root_log_path}"
 
 		# Remove *.log files, which contain the uncompressed data.
 		rm -f *".log"
@@ -216,15 +196,6 @@ collect_logs()
 		then
 			echo "Kata Collect Data script output"
 			sudo -E PATH="$PATH" $collect_script || true
-		fi
-
-		if [ "${have_procenv}" = "yes" ]
-		then
-			echo "Procenv output (user $USER):"
-			procenv
-
-			echo "Procenv output (superuser):"
-			sudo -E procenv
 		fi
 
 		echo "Mounts:"

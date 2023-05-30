@@ -75,7 +75,6 @@ function nhwc_test() {
 EOF
 )"
 	metrics_json_add_array_element "$json"
-	metrics_json_end_array "Results"
 }
 
 function axelnet_test() {
