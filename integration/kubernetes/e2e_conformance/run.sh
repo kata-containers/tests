@@ -28,6 +28,7 @@ CRI_RUNTIME="${CRI_RUNTIME:-containerd}"
 MINIMAL_K8S_E2E="${MINIMAL_K8S_E2E:-false}"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-}"
 RUNTIME_CLASS="${RUNTIME_CLASS:-kata}"
+E2E_PARALLEL="${E2E_PARALLEL:-false}"
 
 # Overall Sonobuoy timeout in minutes.
 WAIT_TIME=${WAIT_TIME:-180}
@@ -121,6 +122,9 @@ run_sonobuoy() {
 			cmd+=" --e2e-skip=\"${skip_options}\""
 		fi
 	fi
+
+	cmd+=" --plugin-env e2e.E2E_PARALLEL=${E2E_PARALLEL}"
+
 	echo "running: ${cmd}"
 	eval "${cmd}"
 
