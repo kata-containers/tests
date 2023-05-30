@@ -27,6 +27,7 @@ RUNTIME="${RUNTIME:-containerd-shim-kata-v2}"
 CRI_RUNTIME="${CRI_RUNTIME:-containerd}"
 MINIMAL_K8S_E2E="${MINIMAL_K8S_E2E:-false}"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-}"
+RUNTIME_CLASS="${RUNTIME_CLASS:-kata}"
 
 # Overall Sonobuoy timeout in minutes.
 WAIT_TIME=${WAIT_TIME:-180}
