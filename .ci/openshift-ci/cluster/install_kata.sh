@@ -27,10 +27,6 @@ KATA_WITH_SYSTEM_QEMU=${KATA_WITH_SYSTEM_QEMU:-no}
 #
 KATA_WITH_HOST_KERNEL=${KATA_WITH_HOST_KERNEL:-no}
 
-# The OpenShift Server version.
-#
-ocp_version="$(oc version -o json | jq -r '.openshiftVersion')"
-
 # Leverage kata-deploy to install Kata Containers in the cluster.
 #
 apply_kata_deploy() {
@@ -161,18 +157,7 @@ num_nodes=$(echo $worker_nodes | wc -w)
 if [ "${KATA_WITH_SYSTEM_QEMU}" == "yes" ]; then
 	# QEMU is deployed on the workers via RCHOS extension.
 	enable_sandboxedcontainers_extension
-	# Export additional information for the installer to deal with
-	# the QEMU path, for example.
-	case $ocp_version in
-		4.10*)
-			oc apply -f ${deployments_dir}/configmap_installer_qemu_4_10.yaml
-			;;
-		4.11*)
-			oc apply -f ${deployments_dir}/configmap_installer_qemu.yaml
-			;;
-		*)
-			die "Unsupported OpenShift version: $ocp_version"
-	esac
+	oc apply -f ${deployments_dir}/configmap_installer_qemu.yaml
 fi
 
 if [ "${KATA_WITH_HOST_KERNEL}" == "yes" ]; then
