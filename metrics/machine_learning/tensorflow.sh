@@ -41,9 +41,9 @@ Usage: $0 <count> <timeout>
 EOF
 }
 
-function nhwc_test() {
+function resnet50_test() {
 	local CMD_RUN="cd benchmarks/scripts/tf_cnn_benchmarks/ && python tf_cnn_benchmarks.py -data_format=NHWC --device cpu --batch_size=${BATCH_SIZE} --num_batches=${NUM_BATCHES} > result"
-	info "Running NHWC Tensorflow test"
+	info "Running Resnet50 Tensorflow test"
 	for i in "${containers[@]}"; do
 		sudo -E "${CTR_EXE}" t exec -d --exec-id "$(random_name)" "${i}" sh -c "${CMD_RUN}"
 	done
@@ -61,14 +61,14 @@ function nhwc_test() {
 		sudo -E "${CTR_EXE}" t exec --exec-id "$(random_name)" "${i}" sh -c "${CMD_RESULT}"  >> "${tensorflow_file}"
 	done
 
-	local nhwc_results=$(cat "${tensorflow_file}" | grep "total images/sec" | cut -d ":" -f2 | sed -e 's/^[ \t]*//' | tr '\n' ',' | sed 's/.$//')
-	local average_nhwc=$(echo "${nhwc_results}" | sed "s/,/+/g;s/.*/(&)\/$NUM_CONTAINERS/g" | bc -l)
+	local resnet50_results=$(cat "${tensorflow_file}" | grep "total images/sec" | cut -d ":" -f2 | sed -e 's/^[ \t]*//' | tr '\n' ',' | sed 's/.$//')
+	local average_resnet50=$(echo "${resnet50_results}" | sed "s/,/+/g;s/.*/(&)\/$NUM_CONTAINERS/g" | bc -l)
 
 	local json="$(cat << EOF
 	{
-		"NHWC": {
-			"Result": "${nhwc_results}",
-			"Average": "${average_nhwc}",
+		"Resnet50": {
+			"Result": "${resnet50_results}",
+			"Average": "${average_resnet50}",
 			"Units": "s"
 		}
 	}
@@ -158,7 +158,7 @@ function main() {
 	# Check that the requested number of containers are running
 	check_containers_are_up
 
-	nhwc_test
+	resnet50_test
 
 	axelnet_test
 
