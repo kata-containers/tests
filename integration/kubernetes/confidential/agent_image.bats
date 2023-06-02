@@ -7,16 +7,18 @@
 load "${BATS_TEST_DIRNAME}/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../confidential/lib.sh"
 
-# Images used on the tests.
-## Cosign
-image_cosigned="quay.io/kata-containers/confidential-containers:cosign-signed"
-image_cosigned_other="quay.io/kata-containers/confidential-containers:cosign-signed-key2"
-
-## Simple Signing
 tag_suffix=""
 if [ "$(uname -m)" != "x86_64" ]; then
 	tag_suffix="-$(uname -m)"
 fi
+
+# Images used on the tests.
+## Cosign 
+image_cosigned="quay.io/kata-containers/confidential-containers:cosign-signed${tag_suffix}"
+image_cosigned_other="quay.io/kata-containers/confidential-containers:cosign-signed-key2"
+
+## Simple Signing
+
 image_simple_signed="quay.io/kata-containers/confidential-containers:signed${tag_suffix}"
 image_signed_protected_other="quay.io/kata-containers/confidential-containers:other_signed${tag_suffix}"
 image_unsigned_protected="quay.io/kata-containers/confidential-containers:unsigned${tag_suffix}"
@@ -178,7 +180,7 @@ assert_logs_contain() {
 	echo $container_config
 
 	assert_pod_fail "$container_config"
-	assert_logs_contain 'Validate image failed: \[PublicKeyVerifier { key: CosignVerificationKey'
+	assert_logs_contain 'Validate image failed: \[PublicKeyVerifier { key: ECDSA_P256_SHA256_ASN1'
 }
 
 

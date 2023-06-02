@@ -281,13 +281,6 @@ setup_cc_kbc_signature_files_in_guest() {
 }
 
 setup_cosign_signatures_files() {
-
-	# Currently (kata-containers#5582) the support or cosign in image-rs introduce a dependency on
-	# the `ring` crate, so we can't support these features on s390x
-	if [ "$(uname -m)" == "s390x" ]; then
-		skip "Cannot run test on s390x"
-	fi
-
 	# Enable signature verification via kata-configuration by removing the param that disables it
 	remove_kernel_param "agent.enable_signature_verification"
 
@@ -295,7 +288,7 @@ setup_cosign_signatures_files() {
 	case "${AA_KBC:-}" in
 		"offline_fs_kbc")
 			add_kernel_params "agent.aa_kbc_params=offline_fs_kbc::null"
-			cp_to_guest_img "etc" "${SHARED_FIXTURES_DIR}/cosign/offline-fs-kbc/aa-offline_fs_kbc-resources.json"
+			cp_to_guest_img "etc" "${SHARED_FIXTURES_DIR}/cosign/offline-fs-kbc/$(uname -m)/aa-offline_fs_kbc-resources.json"
 			;;
 		"cc_kbc")
 			# CC KBC is specified as: cc_kbc::host_ip:port, and 60000 is the default port used
