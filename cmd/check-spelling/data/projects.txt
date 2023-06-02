@@ -6,6 +6,7 @@
 
 Ansible/B
 AppArmor/B
+AxelNet/B
 blogbench/B
 BusyBox/B
 Cassandra/B
@@ -90,6 +91,7 @@ SUSE/B
 Sysbench/B
 systemd/B
 tf/B
+Tensorflow/B
 TravisCI/B
 Tokio/B
 Vexxhost/B

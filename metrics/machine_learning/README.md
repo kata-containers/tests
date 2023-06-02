@@ -19,7 +19,7 @@ $ ./tensorflow.sh 25 60
 # Kata Containers Pytorch Metrics
 
 Based on a suite of Python high performance computing benchmarks that uses
-varios popular Python HPC libraries using Python https://github.com/dionhaefner/pyhpc-benchmarks.
+various popular Python HPC libraries using Python https://github.com/dionhaefner/pyhpc-benchmarks.
 
 ## Running the Pytorch test
 
