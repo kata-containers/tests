@@ -150,18 +150,26 @@ delete_pods() {
   local encrypted_pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $1;}' || true)
   local unencrypted_pod_name=$(esudo kubectl get pod -o wide | grep unencrypted-image-tests | awk '{print $1;}' || true)
   local encrypted_pod_name_es=$(esudo kubectl get pod -o wide | grep encrypted-image-tests-es | awk '{print $1;}' || true)
+  local signed_pod_name=$(esudo kubectl get pod -o wide | grep signed-image-tests | awk '{print $1;}' || true)
+    local signed_pod_wrong_name=$(esudo kubectl get pod -o wide | grep signed-image-tests | awk '{print $1;}' || true)
 
-  # Delete both encrypted and unencrypted pods
+  # Delete encrypted, unencrypted, and signed pods
   esudo kubectl delete -f \
     "${TEST_DIR}/unencrypted-image-tests.yaml" 2>/dev/null || true
   esudo kubectl delete -f \
     "${TEST_DIR}/encrypted-image-tests.yaml" 2>/dev/null || true
   esudo kubectl delete -f \
     "${TEST_DIR}/encrypted-image-tests-es.yaml" 2>/dev/null || true
-  
+  esudo kubectl delete -f \
+    "${TEST_DIR}/signed-image-tests.yaml" 2>/dev/null || true
+  esudo kubectl delete -f \
+    "${TEST_DIR}/signed-image-wrong.yaml" 2>/dev/null || true
+
   [ -z "${encrypted_pod_name}" ] || (kubernetes_wait_for_pod_delete_state "${encrypted_pod_name}" || true)
   [ -z "${unencrypted_pod_name}" ] || (kubernetes_wait_for_pod_delete_state "${unencrypted_pod_name}" || true)
   [ -z "${encrypted_pod_name_es}" ] || (kubernetes_wait_for_pod_delete_state "${encrypted_pod_name_es}" || true)
+  [ -z "${signed_pod_name}" ] || (kubernetes_wait_for_pod_delete_state "${signed_pod_name}" || true)
+  [ -z "${signed_pod_wrong_name}" ] || (kubernetes_wait_for_pod_delete_state "${signed_pod_wrong_name}" || true)
 }
 
 run_kbs() {
@@ -177,6 +185,13 @@ run_kbs() {
 
   pushd simple-kbs
   git checkout -b "branch_${simple_kbs_tag}" "${simple_kbs_tag}"
+
+  #copy resources
+  mkdir -p resources/default/security-policy
+  mkdir -p resources/default/cosign-public-key
+  cp ${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures/policy.json resources/default/security-policy/test
+  cp ${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures/cosign.pub resources/default/cosign-public-key/test
+  
   esudo docker-compose build
 
   esudo docker-compose up -d
@@ -315,6 +330,8 @@ setup_file() {
 
   generate_service_yaml "unencrypted-image-tests" "${IMAGE_REPO}:unencrypted"
   generate_service_yaml "encrypted-image-tests" "${IMAGE_REPO}:multi-arch-encrypted"
+  generate_service_yaml "signed-image-tests" "quay.io/kata-containers/confidential-containers:cosign-signed"
+  generate_service_yaml "signed-image-wrong" "quay.io/kata-containers/confidential-containers:cosign-signed-key2"
 
   # SEV-ES policy is 7:
   # - NODBG (1): Debugging of the guest is disallowed when set
@@ -336,12 +353,34 @@ setup() {
     DELETE FROM secrets WHERE id = 10;
     DELETE FROM keysets WHERE id = 10;
     DELETE FROM policy WHERE id = 10;
+    DELETE FROM resources WHERE id = 10;
 EOF
+}
+
+setup_cosign_signatures_files() {
+    measurement=${1}
+
+    if [ -n "${measurement}" ]; then
+        mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${KBS_DB_HOST} -D ${KBS_DB} <<EOF
+        INSERT INTO resources SET resource_type="Policy", resource_path="default/security-policy/test", polid=10;
+        INSERT INTO resources SET resource_type="Cosign Key", resource_path="default/cosign-public-key/test", polid=10;
+        INSERT INTO policy VALUES (10, '["${measurement}"]', '[]', 0, 0, '[]', now(), NULL, 1);
+EOF
+
+    else
+        mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${KBS_DB_HOST} -D ${KBS_DB} <<EOF
+        INSERT INTO resources SET resource_type="Policy", resource_path="default/security-policy/test";
+        INSERT INTO resources SET resource_type="Cosign Key", resource_path="default/cosign-public-key/test";
+EOF
+    fi
 }
 
 @test "$test_tag Test SEV unencrypted container launch success" {
   # Turn off pre-attestation. It is not necessary for an unencrypted image.
   esudo sed -i 's/guest_pre_attestation = true/guest_pre_attestation = false/g' ${SEV_CONFIG}
+  
+  # Turn off signature verification
+  esudo sed -i 's/agent.enable_signature_verification=true/agent.enable_signature_verification=false/g' ${SEV_CONFIG}
   
   # Start the service/deployment/pod
   esudo kubectl apply -f "${TEST_DIR}/unencrypted-image-tests.yaml"
@@ -514,7 +553,110 @@ EOF
   fi
 }
 
+@test "$test_tag Test signed image with no required measurement" {
+  # Add resource files to KBS
+  setup_cosign_signatures_files
 
+  #change kernel command line for signature validation
+  esudo sed -i 's/agent.enable_signature_verification=false/agent.enable_signature_verification=true/g' ${SEV_CONFIG}
+
+  # Start the service/deployment/pod
+  esudo kubectl apply -f "${TEST_DIR}/signed-image-tests.yaml"
+
+  # Retrieve pod name, wait for it to come up, retrieve pod ip
+  pod_name=$(esudo kubectl get pod -o wide | grep signed-image-tests | awk '{print $1;}')
+  kubernetes_wait_for_pod_ready_state "$pod_name" 20
+
+  print_service_info
+
+  # Save guest qemu kernel append to file, overriding previous to include signature verification
+  kernel_append=$(get_guest_kernel_append "${pod_name}")
+  echo "${kernel_append}" > "${TEST_DIR}/guest-kernel-append"
+  echo "Kernel Append Retrieved from QEMU Process: ${kernel_append}"
+}
+
+@test "$test_tag Test signed image with no required measurement, but wrong key (failure)" {
+  # Add resource files to KBS
+  setup_cosign_signatures_files
+
+  #change kernel command line for signature validation
+  esudo sed -i 's/agent.enable_signature_verification=false/agent.enable_signature_verification=true/g' ${SEV_CONFIG}
+
+  # Start the service/deployment/pod
+  esudo kubectl apply -f "${TEST_DIR}/signed-image-wrong.yaml"
+
+  # Retrieve pod name, wait for it to come up, retrieve pod ip
+  pod_name=$(esudo kubectl get pod -o wide | grep signed-image-wrong | awk '{print $1;}')
+  kubernetes_wait_for_pod_ready_state "$pod_name" 30 || true
+
+  print_service_info
+
+  # Get pod info
+  pod_info=$(esudo kubectl describe pod ${pod_name})
+
+  # Check failure condition
+  if [[ ! ${pod_info} =~ "Validate image failed" ]]; then
+    >&2 echo -e "${RED}TEST - FAIL${NC}"
+    return 1
+  else
+    echo "Pod message contains: Validate image failed"
+    echo -e "${GREEN}TEST - PASS${NC}"
+  fi
+}
+
+@test "$test_tag Test signed image with required measurement" {
+  #change kernel command line for signature validation
+  esudo sed -i 's/agent.enable_signature_verification=false/agent.enable_signature_verification=true/g' ${SEV_CONFIG}
+
+  # Generate firmware measurement
+  local append=$(cat ${TEST_DIR}/guest-kernel-append)
+  echo "Kernel Append: ${append}"
+  measurement=$(generate_firmware_measurement_with_append "${append}")
+  echo "Firmware Measurement: ${measurement}"
+
+  # Add resource files to KBS
+  setup_cosign_signatures_files ${measurement}
+
+  # Start the service/deployment/pod
+  esudo kubectl apply -f "${TEST_DIR}/signed-image-tests.yaml"
+
+  # Retrieve pod name, wait for it to come up, retrieve pod ip
+  pod_name=$(esudo kubectl get pod -o wide | grep signed-image-tests | awk '{print $1;}')
+  kubernetes_wait_for_pod_ready_state "$pod_name" 50
+
+  print_service_info
+}
+
+@test "$test_tag Test signed image with INVALID measurement" {
+  #change kernel command line for signature validation
+  esudo sed -i 's/agent.enable_signature_verification=false/agent.enable_signature_verification=true/g' ${SEV_CONFIG}
+
+  # Generate firmware measurement
+  local append="INVALID-INPUT"
+  measurement=$(generate_firmware_measurement_with_append ${append})
+  echo "Firmware Measurement: ${measurement}"
+
+  # Add resource files to KBS
+  setup_cosign_signatures_files ${measurement}
+
+  # Start the service/deployment/pod
+  esudo kubectl apply -f "${TEST_DIR}/signed-image-tests.yaml"
+
+  # Retrieve pod name, wait for it to come up, retrieve pod ip
+  pod_name=$(esudo kubectl get pod -o wide | grep signed-image-tests | awk '{print $1;}')
+  kubernetes_wait_for_pod_ready_state "$pod_name" 20 || true
+
+  print_service_info
+
+  # Check failure condition
+  if [[ ! ${pod_info} =~ "Policy validation" ]]; then
+    >&2 echo -e "${RED}TEST - FAIL${NC}"
+    return 1
+  else
+    echo "Pod message contains: Policy validation failed"
+    echo -e "${GREEN}TEST - PASS${NC}"
+  fi
+}
 
 teardown_file() {
   echo "###############################################################################"
