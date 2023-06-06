@@ -25,7 +25,7 @@ if [ "$ID" == "ubuntu" ]; then
 		sudo -E apt purge kubelet -y
 	fi
 	sudo bash -c "cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
-	deb http://apt.kubernetes.io/ kubernetes-xenial-unstable main
+	deb http://packages.cloud.google.com/apt/ kubernetes-xenial-unstable main
 EOF"
 
 	chronic sudo -E sed -i 's/^[ \t]*//' /etc/apt/sources.list.d/kubernetes.list
