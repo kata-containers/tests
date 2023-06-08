@@ -65,9 +65,16 @@ setup() {
 	kubectl describe pod "$pod_name" || true
 	kubectl get pods --all-namespaces
 
+
+	date >&3
 	# Copy file from pod to host
 	kubectl cp "$pod_name":/tmp/"$file_name" "$file_name"
+	date >&3
 
+	echo "# ===============cat $file_name =========" >&3
+	ls -al >&3  
+	cat $file_name >&3
+	echo "# ============end" >&3
 	# Verify content
 	cat "$file_name" | grep "$content"
 }
