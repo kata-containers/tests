@@ -58,6 +58,9 @@ init_ci_flags() {
 	# Use devmapper snapshotter
 	# Only works with containerd
 	export USE_DEVMAPPER="false"
+	# Enable dm verity protection of rootfs
+	# Values: "yes|no"
+	export MEASURED_ROOTFS=no
 
 	# METRICS_CI flags
 	# Request to run METRICS_CI
@@ -116,6 +119,7 @@ case "${CI_JOB}" in
 		"CC_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_K8S"|"CC_SEV_CRI_CONTAINERD_K8S")
 			# Export any CC specific environment variables
 			export KATA_BUILD_CC="yes"
+			export MEASURED_ROOTFS="yes"
 			export AA_KBC="offline_fs_kbc"
 			if [[ "${CI_JOB}" =~ K8S ]]; then
 				export KUBERNETES=yes
@@ -134,6 +138,7 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
 	export KATA_BUILD_CC="yes"
+	export MEASURED_ROOTFS="yes"
 	export AA_KBC="cc_kbc"
 	export TEE_TYPE="tdx"
 	export KATA_BUILD_KERNEL_TYPE="tdx"
@@ -152,6 +157,7 @@ case "${CI_JOB}" in
 	export KUBERNETES="yes"
 	export AA_KBC="offline_fs_kbc"
 	export KATA_BUILD_CC="yes"
+	export MEASURED_ROOTFS="yes"
 	if [[ "${CI_JOB}" =~ TDX ]]; then
 		export TEE_TYPE="tdx"
 		export KATA_BUILD_KERNEL_TYPE="tdx"
@@ -176,6 +182,7 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	# Export any CC specific environment variables
 	export KATA_BUILD_CC="yes"
+	export MEASURED_ROOTFS="yes"
 	export AA_KBC="offline_fs_kbc"
 	;;
 "CRI_CONTAINERD_K8S_DEVMAPPER")
