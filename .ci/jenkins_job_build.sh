@@ -31,7 +31,7 @@ REPOSITORY
 	repository name: github.com/kata-containers/(kata-containers|tests)
 
 OPTION:
-	-t, --type      test type: (all|unit|main|snap) (default: all)
+	-t, --type      test type: (all|unit|main) (default: all)
 
 	Examples:
 	jenkins_job_build.sh "github.com/kata-containers/tests"
@@ -76,7 +76,7 @@ while [[ $# -ne 0 ]]; do
 		shift
 		test_type=$1
 		case ${test_type} in
-		all|unit|main|snap) : ;;
+		all|unit|main) : ;;
 		*) echo "Unknown parameter ${test_type} for the option ${option}" >&2 && exit 1 ;;
 		esac
 		;;
@@ -293,36 +293,16 @@ run_main_test() {
 	fi
 }
 
-test_snap_build() {
-	if [[ "${ID}" == "ubuntu" && "$(uname -m)" != "x86_64" ]]; then
-		echo "Test snap build"
-		sudo apt install -y snapcraft
-		clone_katacontainers_repo
-
-		pushd "${katacontainers_repo_dir}"
-		sudo snapcraft snap --debug --destructive-mode
-		# PREFIX is changed in snap build, change it back
-		PREFIX=
-		popd
-	else
-		echo "Skipping snap test because it is assumed to run elsewhere"
-	fi
-}
-
 case ${test_type} in
 	all)
 		run_main_test
 		run_unit_test
-		test_snap_build
 		;;
 	unit)
 		run_unit_test
 		;;
 	main)
 		run_main_test
-		;;
-	snap)
-		test_snap_build
 		;;
 	*) echo "Unknown test type." >&2 && exit 1 ;;
 esac
