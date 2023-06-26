@@ -14,6 +14,8 @@ backtrace
 bootloader/AB
 centric/B
 checkbox/A
+checkmetrics/AB
+checktypes
 chipset/AB
 codebase
 commandline
@@ -51,6 +53,7 @@ iodepth/A
 ioengine/A
 iptables
 Itanium/AB
+json/AB
 kata
 Kat/AB		# "Kat Herding Team" :)
 keypair/A
@@ -60,11 +63,13 @@ logfile/A
 Longterm
 longterm
 loopback
+maxval
 memcpy/A
 mergeable
 metadata
 microcontroller/AB
 miniOS
+minval
 mmap/AB
 nack/AB
 namespace/ABCD
