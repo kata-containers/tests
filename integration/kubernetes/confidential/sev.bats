@@ -72,7 +72,8 @@ setup_file() {
 
   # SEV unencrypted service yaml generation
   k8s_generate_service_yaml "${TEST_DIR}/sev-unencrypted.yaml" "${IMAGE_REPO}:unencrypted"
-  
+  k8s_yaml_set_annotation "${TEST_DIR}/sev-unencrypted.yaml" "io.katacontainers.config.guest_pre_attestation.enabled" "false"
+
   # SEV encrypted service yaml generation
   # SEV policy is 3 (default):
   # - NODBG (1): Debugging of the guest is disallowed when set
@@ -118,10 +119,7 @@ setup() {
 }
 
 
-@test "${TEST_TAG} Test SEV unencrypted container launch success" {
-  # Turn off pre-attestation. It is not necessary for an unencrypted image.
-  esudo sed -i 's/guest_pre_attestation = true/guest_pre_attestation = false/g' ${SEV_CONFIG_FILE}
-  
+@test "${TEST_TAG} Test SEV unencrypted container launch success" {  
   # Start the service/deployment/pod
   esudo kubectl apply -f "${TEST_DIR}/sev-unencrypted.yaml"
   
@@ -148,9 +146,6 @@ setup() {
 }
 
 @test "${TEST_TAG} Test SEV encrypted container launch failure with INVALID measurement" {
-  # Make sure pre-attestation is enabled. 
-  esudo sed -i 's/guest_pre_attestation = false/guest_pre_attestation = true/g' ${SEV_CONFIG_FILE}
-
   # Generate firmware measurement
   local append="INVALID-INPUT"
   local measurement=$(generate_firmware_measurement_with_append "${SEV_CONFIG_FILE}" "${append}")
