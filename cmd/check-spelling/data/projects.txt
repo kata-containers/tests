@@ -95,6 +95,7 @@ Tokio/B
 Vexxhost/B
 virtcontainers/B
 VMWare/B
+vSphere/B
 Yamux/B
 yq/B
 Zun/B
