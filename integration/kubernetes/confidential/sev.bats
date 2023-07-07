@@ -31,7 +31,7 @@ k8s_delete_all() {
   for file in $(ls "${TEST_DIR}/*.yaml") ; do
     # Removing extension to get the pod name
     local pod_name="${file%.*}"
-    k8s_delete_by_yaml "${pod_name}" "${TEST_DIR}/${file}"
+    kubernetes_delete_by_yaml "${pod_name}" "${TEST_DIR}/${file}"
   done
 }
 
@@ -71,24 +71,24 @@ setup_file() {
   local kbs_uri="${kbs_ip}:44444"
 
   # SEV unencrypted service yaml generation
-  k8s_generate_service_yaml "${TEST_DIR}/sev-unencrypted.yaml" "${IMAGE_REPO}:unencrypted"
-  k8s_yaml_set_annotation "${TEST_DIR}/sev-unencrypted.yaml" "io.katacontainers.config.guest_pre_attestation.enabled" "false"
+  kubernetes_generate_service_yaml "${TEST_DIR}/sev-unencrypted.yaml" "${IMAGE_REPO}:unencrypted"
+  kubernetes_yaml_set_annotation "${TEST_DIR}/sev-unencrypted.yaml" "io.katacontainers.config.guest_pre_attestation.enabled" "false"
 
   # SEV encrypted service yaml generation
   # SEV policy is 3 (default):
   # - NODBG (1): Debugging of the guest is disallowed when set
   # - NOKS (2): Sharing keys with other guests is disallowed when set
-  k8s_generate_service_yaml "${TEST_DIR}/sev-encrypted.yaml" "${IMAGE_REPO}:multi-arch-encrypted"
-  k8s_yaml_set_annotation "${TEST_DIR}/sev-encrypted.yaml" "io.katacontainers.config.pre_attestation.uri" "${kbs_uri}"
-  k8s_yaml_set_annotation "${TEST_DIR}/sev-encrypted.yaml" "io.katacontainers.config.sev.policy" "3"
+  kubernetes_generate_service_yaml "${TEST_DIR}/sev-encrypted.yaml" "${IMAGE_REPO}:multi-arch-encrypted"
+  kubernetes_yaml_set_annotation "${TEST_DIR}/sev-encrypted.yaml" "io.katacontainers.config.pre_attestation.uri" "${kbs_uri}"
+  kubernetes_yaml_set_annotation "${TEST_DIR}/sev-encrypted.yaml" "io.katacontainers.config.sev.policy" "3"
   
   # SEV-ES policy is 7:
   # - NODBG (1): Debugging of the guest is disallowed when set
   # - NOKS (2): Sharing keys with other guests is disallowed when set
   # - ES (4): SEV-ES is required when set
-  k8s_generate_service_yaml "${TEST_DIR}/sev-es-encrypted.yaml" "${IMAGE_REPO}:multi-arch-encrypted"
-  k8s_yaml_set_annotation "${TEST_DIR}/sev-es-encrypted.yaml" "io.katacontainers.config.pre_attestation.uri" "${kbs_uri}"
-  k8s_yaml_set_annotation "${TEST_DIR}/sev-es-encrypted.yaml" "io.katacontainers.config.sev.policy" "7"
+  kubernetes_generate_service_yaml "${TEST_DIR}/sev-es-encrypted.yaml" "${IMAGE_REPO}:multi-arch-encrypted"
+  kubernetes_yaml_set_annotation "${TEST_DIR}/sev-es-encrypted.yaml" "io.katacontainers.config.pre_attestation.uri" "${kbs_uri}"
+  kubernetes_yaml_set_annotation "${TEST_DIR}/sev-es-encrypted.yaml" "io.katacontainers.config.sev.policy" "7"
 }
 
 teardown_file() {
@@ -125,10 +125,10 @@ setup() {
   
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   local pod_name=$(esudo kubectl get pod -o wide | grep sev-unencrypted | awk '{print $1;}')
-  k8s_wait_for_pod_ready_state "$pod_name" 20
+  kubernetes_wait_for_pod_ready_state "$pod_name" 20
   local pod_ip=$(esudo kubectl get pod -o wide | grep sev-unencrypted | awk '{print $6;}')
 
-  k8s_print_info "sev-unencrypted"
+  kubernetes_print_info "sev-unencrypted"
 
   # Look for SEV enabled in container dmesg output
   local sev_enabled=$(ssh_dmesg_grep \
@@ -159,9 +159,9 @@ setup() {
   
   # Retrieve pod name, wait for it to fail
   local pod_name=$(esudo kubectl get pod -o wide | grep sev-encrypted | awk '{print $1;}')
-  k8s_wait_for_pod_ready_state "$pod_name" 20 || true
+  kubernetes_wait_for_pod_ready_state "$pod_name" 20 || true
 
-  k8s_print_info "sev-encrypted"
+  kubernetes_print_info "sev-encrypted"
 
   # Save guest qemu kernel append to file
   local kernel_append=$(kata_get_guest_kernel_append "${pod_name}")
@@ -190,10 +190,10 @@ setup() {
 
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   local pod_name=$(esudo kubectl get pod -o wide | grep sev-encrypted | awk '{print $1;}')
-  k8s_wait_for_pod_ready_state "$pod_name" 20
+  kubernetes_wait_for_pod_ready_state "$pod_name" 20
   local pod_ip=$(esudo kubectl get pod -o wide | grep sev-encrypted | awk '{print $6;}')
 
-  k8s_print_info "sev-encrypted"
+  kubernetes_print_info "sev-encrypted"
 
   # Look for SEV enabled in container dmesg output
   local sev_enabled=$(ssh_dmesg_grep \
@@ -225,10 +225,10 @@ setup() {
 
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   local pod_name=$(esudo kubectl get pod -o wide | grep sev-encrypted | awk '{print $1;}')
-  k8s_wait_for_pod_ready_state "$pod_name" 20
+  kubernetes_wait_for_pod_ready_state "$pod_name" 20
   local pod_ip=$(esudo kubectl get pod -o wide | grep sev-encrypted | awk '{print $6;}')
 
-  k8s_print_info "sev-encrypted"
+  kubernetes_print_info "sev-encrypted"
 
   # Look for SEV enabled in container dmesg output
   local sev_enabled=$(ssh_dmesg_grep \
@@ -260,10 +260,10 @@ setup() {
 
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   local pod_name=$(esudo kubectl get pod -o wide | grep sev-es-encrypted | awk '{print $1;}')
-  k8s_wait_for_pod_ready_state "$pod_name" 20
+  kubernetes_wait_for_pod_ready_state "$pod_name" 20
   local pod_ip=$(esudo kubectl get pod -o wide | grep sev-es-encrypted | awk '{print $6;}')
 
-  k8s_print_info "sev-es-encrypted"
+  kubernetes_print_info "sev-es-encrypted"
 
   # Look for SEV-ES enabled in container dmesg output
   local sev_es_enabled=$(ssh_dmesg_grep \

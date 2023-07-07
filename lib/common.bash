@@ -629,7 +629,7 @@ kata_get_guest_kernel_append() {
 
   # Attempt to get qemu command line from qemu process
   while [ $SECONDS -lt $duration ]; do
-    container_id=$(k8s_get_container_id "${pod_name}")
+    container_id=$(kubernetes_get_container_id "${pod_name}")
     sandbox_id=$(kata_get_sandbox_id "${container_id}")
     qemu_process=$(ps aux | grep qemu | grep ${sandbox_id} | grep append || true)
     if [ -n "${qemu_process}" ]; then

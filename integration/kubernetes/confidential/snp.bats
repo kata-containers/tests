@@ -24,7 +24,7 @@ load "${TESTS_REPO_DIR}/integration/kubernetes/lib.sh"
 
 # Delete all test services
 k8s_delete_all() {
-	k8s_delete_by_yaml "snp-unencrypted" "${TEST_DIR}/snp-unencrypted.yaml"
+	kubernetes_delete_by_yaml "snp-unencrypted" "${TEST_DIR}/snp-unencrypted.yaml"
 }
 
 setup_file() {
@@ -44,7 +44,7 @@ setup_file() {
   docker_image_label_save_ssh_key "${UNENCRYPTED_IMAGE_URL}" "${SSH_KEY_FILE}"
 
   # SEV service yaml generation
-  k8s_generate_service_yaml "${TEST_DIR}/snp-unencrypted.yaml" "${IMAGE_REPO}:unencrypted"
+  kubernetes_generate_service_yaml "${TEST_DIR}/snp-unencrypted.yaml" "${IMAGE_REPO}:unencrypted"
 }
 
 teardown_file() {
@@ -74,10 +74,10 @@ setup() {
   
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   local pod_name=$(esudo kubectl get pod -o wide | grep snp-unencrypted | awk '{print $1;}')
-  k8s_wait_for_pod_ready_state "$pod_name" 20
+  kubernetes_wait_for_pod_ready_state "$pod_name" 20
   local pod_ip=$(esudo kubectl get pod -o wide | grep snp-unencrypted | awk '{print $6;}')
 
-  k8s_print_info "snp-unencrypted"
+  kubernetes_print_info "snp-unencrypted"
 
   # Look for SEV enabled in container dmesg output
   local snp_enabled=$(ssh_dmesg_grep \

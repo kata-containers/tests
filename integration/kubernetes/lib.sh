@@ -8,7 +8,7 @@ TESTS_REPO_DIR=$(realpath $(dirname "${BASH_SOURCE[0]}")/../..)
 FIXTURES_DIR="${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures"
 
 # Generate kubernetes service yaml from template
-k8s_generate_service_yaml() {
+kubernetes_generate_service_yaml() {
   local service_yaml="${1}"
   local image="${2}"
 
@@ -22,7 +22,7 @@ k8s_generate_service_yaml() {
 }
 
 # Set annotation for yaml
-k8s_yaml_set_annotation() {
+kubernetes_yaml_set_annotation() {
   local yaml="${1}"
   local key="${2}"
   local value="${3}"
@@ -35,7 +35,7 @@ k8s_yaml_set_annotation() {
 }
 
 # Wait until the pod is 'Ready'. Fail if it hits the timeout.
-k8s_wait_for_pod_ready_state() {
+kubernetes_wait_for_pod_ready_state() {
   local pod_name="${1}"
   local wait_time="${2:-10}"
 
@@ -43,7 +43,7 @@ k8s_wait_for_pod_ready_state() {
 }
 
 # Wait until the pod is 'Deleted'. Fail if it hits the timeout.
-k8s_wait_for_pod_delete_state() {
+kubernetes_wait_for_pod_delete_state() {
   local pod_name="${1}"
   local wait_time="${2:-10}"
 
@@ -51,7 +51,7 @@ k8s_wait_for_pod_delete_state() {
 }
 
 # Find container id
-k8s_get_container_id() {
+kubernetes_get_container_id() {
   local pod_name="${1}"
 
   # Get container id from pod info
@@ -63,7 +63,7 @@ k8s_get_container_id() {
 }
 
 # Delete k8s entity by yaml
-k8s_delete_by_yaml() {
+kubernetes_delete_by_yaml() {
   local partial_pod_name="${1}"
   local yaml="${2}"
 
@@ -74,12 +74,12 @@ k8s_delete_by_yaml() {
   kubectl delete -f "${yaml}" 2>/dev/null || true
   
   # Verify pod deleted
-  [ -z "${pod_name}" ] || (k8s_wait_for_pod_delete_state "${pod_name}" || true)
+  [ -z "${pod_name}" ] || (kubernetes_wait_for_pod_delete_state "${pod_name}" || true)
 }
 
 # Retrieve pod name and log kubernetes environment information: 
 # nodes, services, deployments, pods
-k8s_print_info() {
+kubernetes_print_info() {
   local partial_pod_name="${1}"
   
   echo "-------------------------------------------------------------------------------"
