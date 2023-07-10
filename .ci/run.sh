@@ -79,6 +79,10 @@ case "${CI_JOB}" in
 		info "Running Confidential Containers tests for AMD SEV"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-sev-kubernetes"
 		;;
+	"CC_SNP_CRI_CONTAINERD_K8S")
+		info "Running Confidential Containers tests for AMD SEV-SNP"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-snp-kubernetes"
+		;;
 	"CC_CRI_CONTAINERD_K8S"|"CC_CRI_CONTAINERD_K8S_TDX_QEMU"|"CC_CRI_CONTAINERD_K8S_SE_QEMU"|"CC_CRI_CONTAINERD_K8S_TDX_CLOUD_HYPERVISOR")
 		info "Running Confidential Container tests"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-kubernetes"

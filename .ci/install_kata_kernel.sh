@@ -34,8 +34,11 @@ build_and_install_kernel_for_cc() {
 	local artifact="kernel"
 
 	case "$kernel_type" in
-		tdx|sev)
+		tdx)
 			artifact="${kernel_type}-${artifact}"
+			;;
+		sev|snp)
+			artifact="sev-${artifact}"
 			;;
 		vanilla) ;;
 		*)
@@ -67,7 +70,7 @@ Usage:
 Options:
     -d          : Enable bash debug.
     -h          : Display this help.
-    -t <kernel> : kernel type, such as vanilla, experimental, dragonball, etc
+    -t <kernel> : kernel type, such as vanilla, experimental, dragonball, tdx, sev, snp.
 EOF
 	exit "$exit_code"
 }

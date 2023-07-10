@@ -204,7 +204,7 @@ configure_cc_containerd() {
 	sudo systemctl stop containerd
 	sleep 5
 	[ -n "$saved_containerd_conf_file" ] && \
-		cp -f "$containerd_conf_file" "$saved_containerd_conf_file"
+		sudo cp -f "$containerd_conf_file" "$saved_containerd_conf_file"
 	sudo systemctl start containerd
 	waitForProcess 30 5 "sudo crictl info >/dev/null"
 
@@ -352,4 +352,91 @@ setup_credentials_files() {
 	auth_json=$(REGISTRY=$1 CREDENTIALS="${REGISTRY_CREDENTIAL_ENCODED}" envsubst < "${SHARED_FIXTURES_DIR}/offline-fs-kbc/auth.json.in" | base64 -w 0)
 	CREDENTIAL="${auth_json}" envsubst < "${SHARED_FIXTURES_DIR}/offline-fs-kbc/aa-offline_fs_kbc-resources.json.in" > "${dest_file}"
 	cp_to_guest_img "etc" "${dest_file}"
+}
+
+###############################################################################
+
+# simple-kbs
+
+SIMPLE_KBS_DIR="${SIMPLE_KBS_DIR:-/tmp/simple-kbs}"
+KBS_DB_USER="${KBS_DB_USER:-kbsuser}"
+KBS_DB_PW="${KBS_DB_PW:-kbspassword}"
+KBS_DB="${KBS_DB:-simple_kbs}"
+#KBS_DB_TYPE="{KBS_DB_TYPE:-mysql}"
+
+# Run the simple-kbs
+simple_kbs_run() {
+  # Retrieve simple-kbs repo and tag from versions.yaml
+  local simple_kbs_url=$(get_test_version "externals.simple-kbs.url")
+  local simple_kbs_tag=$(get_test_version "externals.simple-kbs.tag")
+
+  # Cleanup and create installation directory
+  esudo rm -rf "${SIMPLE_KBS_DIR}" 
+  mkdir -p "${SIMPLE_KBS_DIR}"
+  pushd "${SIMPLE_KBS_DIR}"
+
+  # Clone and run
+  git clone "${simple_kbs_url}" --branch main
+  pushd simple-kbs
+
+  # Checkout, build and start
+  git checkout -b "branch_${simple_kbs_tag}" "${simple_kbs_tag}"
+  esudo docker-compose build
+  esudo docker-compose up -d
+
+  # Wait for simple-kbs to start
+  waitForProcess 15 1 "esudo docker-compose top | grep -q simple-kbs"
+  popd
+  
+  # Get simple-kbs database container ip
+  local kbs_db_host=$(simple_kbs_get_db_ip)
+
+  # Confirm connection to the database is possible
+  waitForProcess 5 1 "mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${kbs_db_host} -D ${KBS_DB} -e '\q'"
+  popd
+}
+
+# Stop simple-kbs and database containers
+simple_kbs_stop() {
+  (cd ${SIMPLE_KBS_DIR}/simple-kbs && esudo docker-compose down 2>/dev/null)
+}
+
+# Delete all test inserted data in the simple-kbs
+simple_kbs_delete_data() {
+  # Get simple-kbs database container ip
+  local kbs_db_host=$(simple_kbs_get_db_ip)
+
+  # Delete all data with 'id = 10'
+  mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${kbs_db_host} -D ${KBS_DB} <<EOF
+    DELETE FROM secrets WHERE id = 10;
+    DELETE FROM policy WHERE id = 10;
+EOF
+}
+
+# Get the ip of the simple-kbs database docker container
+simple_kbs_get_db_ip() {
+  esudo docker network inspect simple-kbs_default \
+    | jq -r '.[].Containers[] | select(.Name | test("simple-kbs[_-]db.*")).IPv4Address' \
+    | sed "s|/.*$||g"
+}
+
+# Add key and keyset to database
+# If measurement is provided, add policy with measurement to database
+simple_kbs_add_key_to_db() {
+  local encryption_key="${1}"
+  local measurement="${2}"
+  
+  # Get simple-kbs database container ip
+  local kbs_db_host=$(simple_kbs_get_db_ip)
+
+  if [ -n "${measurement}" ]; then
+    mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${kbs_db_host} -D ${KBS_DB} <<EOF
+      INSERT INTO secrets VALUES (10, 'default/key/ssh-demo', '${encryption_key}', 10);
+      INSERT INTO policy VALUES (10, '["${measurement}"]', '[]', 0, 0, '[]', now(), NULL, 1);
+EOF
+  else
+    mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${kbs_db_host} -D ${KBS_DB} <<EOF
+      INSERT INTO secrets VALUES (10, 'default/key/ssh-demo', '${encryption_key}', NULL);
+EOF
+  fi
 }

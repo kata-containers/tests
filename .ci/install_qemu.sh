@@ -29,7 +29,7 @@ build_and_install_qemu_for_cc() {
 	local artifact="qemu"
 
 	case "${qemu_type}" in
-		tdx)
+		tdx|snp)
 			artifact="${qemu_type}-${artifact}"
 			;;
 		vanilla) ;;
@@ -109,6 +109,12 @@ main() {
 
 	export qemu_type
 	case "${qemu_type}" in
+		snp)
+			CURRENT_QEMU_VERSION=$(get_version "assets.hypervisor.qemu-snp-experimental.tag")
+			QEMU_REPO_URL=$(get_version "assets.hypervisor.qemu-snp-experimental.url")
+			qemu_latest_build_url="${jenkins_url}/job/kata-containers-2.0-qemu-snp-$(uname -m)/${cached_artifacts_path}"
+			qemu_type="snp-qemu"
+			;;
 		vanilla)
 			qemu_type="qemu"
 			;;

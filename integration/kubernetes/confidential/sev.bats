@@ -1,294 +1,44 @@
 #!/usr/bin/env bats
-# Copyright 2022 Advanced Micro Devices, Inc.
+# Copyright 2022-2023 Advanced Micro Devices, Inc.
 #
 # SPDX-License-Identifier: Apache-2.0
 #
 
-load "${BATS_TEST_DIRNAME}/../../confidential/lib.sh"
+# Environment variables
+TEST_TAG="[cc][kubernetes][containerd][sev]"
+TESTS_REPO_DIR=$(realpath "${BATS_TEST_DIRNAME}/../../..")
+SIMPLE_KBS_DIR="${SIMPLE_KBS_DIR:-/tmp/simple-kbs}"
+RUNTIMECLASS="${RUNTIMECLASS:-"kata"}"
+SEV_CONFIG_FILE="/opt/confidential-containers/share/defaults/kata-containers/configuration-qemu-sev.toml"
+IMAGE_REPO="ghcr.io/confidential-containers/test-container"
+UNENCRYPTED_IMAGE_URL="${IMAGE_REPO}:unencrypted"
+
+# Text to grep for active feature in guest dmesg output
+SEV_DMESG_GREP_TEXT="Memory Encryption Features active:.*\(SEV$\|SEV \)"
+SEV_ES_DMESG_GREP_TEXT="Memory Encryption Features active:.*SEV-ES"
 
 export TEST_DIR
 export ENCRYPTION_KEY
 export SSH_KEY_FILE
 
-export KBS_DIR
-export KBS_DB_HOST
-export KBS_DB_USER="kbsuser"
-export KBS_DB_PW="kbspassword"
-export KBS_DB="simple_kbs"
-export KBS_DB_TYPE="mysql"
-
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-NC='\033[0m'
-
-TESTS_REPO_DIR=$(realpath "$BATS_TEST_DIRNAME/../../..")
+load "${BATS_TEST_DIRNAME}/../../confidential/lib.sh"
 load "${TESTS_REPO_DIR}/lib/common.bash"
-#load "${TESTS_REPO_DIR}/.ci/lib.sh"
-test_tag="[cc][kubernetes][containerd][sev]"
+load "${TESTS_REPO_DIR}/integration/kubernetes/lib.sh"
+load "${TESTS_REPO_DIR}/integration/kubernetes/confidential/lib.sh"
 
-export SEV_CONFIG="/opt/confidential-containers/share/defaults/kata-containers/configuration-qemu-sev.toml"
-export RUNTIMECLASS=${RUNTIMECLASS:-"kata"}
-export FIXTURES_DIR="${TESTS_REPO_DIR}/integration/kubernetes/confidential/fixtures"
-export IMAGE_REPO="ghcr.io/confidential-containers/test-container"
-
-esudo() {
-  sudo -E PATH=$PATH "$@"
-}
-
-get_version() {
-  local dependency="${1}"
-  local versions_file="${TESTS_REPO_DIR}/versions.yaml"
-
-  # Error if versions file not present
-  [ -f "${versions_file}" ] || (>&2 echo "Cannot find ${versions_file}"; return 1)
-
-  # Install yq
-  #"${TESTS_REPO_DIR}/.ci/install_yq.sh" >&2
-
-  # Parse versions file with yq for dependency
-  result=$("${GOPATH}/bin/yq" r -X "$versions_file" "$dependency")
-  [ "$result" = "null" ] && result=""
-  echo "$result"
-}
-
-generate_service_yaml() {
-  local name="${1}"
-  local image="${2}"
-
-  # Default policy is 3:
-  # - NODBG (1): Debugging of the guest is disallowed when set
-  # - NOKS (2): Sharing keys with other guests is disallowed when set
-  local policy="${3:-3}"
-
-  local kbs_ip="$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')"
-  local service_yaml_template="${FIXTURES_DIR}/service.yaml.in"
-
-  local service_yaml="${TEST_DIR}/${name}.yaml"
-  rm -f "${service_yaml}"
-  
-  NAME="${name}" IMAGE="${image}" RUNTIMECLASS="${RUNTIMECLASS}" \
-    KBS_URI="${kbs_ip}:44444" \
-    POLICY="$policy" \
-    envsubst < "${service_yaml_template}" > "${service_yaml}"
-}
-
-# Wait until the pod is 'Ready'. Fail if it hits the timeout.
-kubernetes_wait_for_pod_ready_state() {
-  local pod_name="${1}"
-  local wait_time="${2:-60}"
-
-  esudo kubectl wait --for=condition=ready pod/$pod_name --timeout=${wait_time}s
-}
-
-# Wait until the pod is 'Deleted'. Fail if it hits the timeout.
-kubernetes_wait_for_pod_delete_state() {
-  local pod_name="${1}"
-  local wait_time="${2:-60}"
-
-  esudo kubectl wait --for=delete pod/$pod_name --timeout=${wait_time}s
-}
-
-# Find container id
-get_container_id() {
-  local pod_name="${1}"
-
-  # Get container id from pod info
-  local container_id=$(esudo kubectl get pod "${pod_name}" \
-    -o jsonpath='{.status.containerStatuses..containerID}' \
-    | sed "s|containerd://||g")
-
-  echo "${container_id}"
-}
-
-# Find sandbox id using container ID
-get_sandbox_id() {
-  local container_id="${1}"
-  local sandbox_dir="/run/kata-containers/shared/sandboxes"
-
-  # Find container directory inside sandbox directory
-  local container_dir=$(esudo find "${sandbox_dir}" -name "${container_id}" | head -1)
-
-  # Ensure directory path pattern is correct
-  [[ ${container_dir} =~ ^${sandbox_dir}/.*/.*/${container_id} ]] \
-    || (>&2 echo "Incorrect container folder path: ${container_dir}"; return 1)
-
-  # Two levels up, and trim the sandbox dir off the front
-  local sandbox_id=$(dirname $(dirname "${container_dir}") | sed "s|${sandbox_dir}/||g")
-
-  echo "${sandbox_id}"
-}
-
-# Get guest kernel append from qemu command line
-get_guest_kernel_append() {
-  local pod_name="${1}"
-  local duration=$((SECONDS+20))
-  local kernel_append
-
-  # Attempt to get qemu command line from qemu process
-  while [ $SECONDS -lt $duration ]; do
-    container_id=$(get_container_id "${pod_name}")
-    sandbox_id=$(get_sandbox_id "${container_id}")
-    qemu_process=$(ps aux | grep qemu | grep ${sandbox_id} | grep append || true)
-    if [ -n "${qemu_process}" ]; then
-      kernel_append=$(echo ${qemu_process} \
-        | sed "s|.*-append \(.*$\)|\1|g" \
-        | sed "s| -.*$||")
-      break
-    fi
-    sleep 1
+# Delete all test services
+k8s_delete_all() {
+  for file in $(ls "${TEST_DIR}/*.yaml") ; do
+    # Removing extension to get the pod name
+    local pod_name="${file%.*}"
+    kubernetes_delete_by_yaml "${pod_name}" "${TEST_DIR}/${file}"
   done
-
-  [ -n "${kernel_append}" ] \
-    || (>&2 echo "Could not retrieve guest kernel append parameters"; return 1)
-
-  echo "${kernel_append}"
 }
 
-# Delete pods
-delete_pods() {
-  # Retrieve pod names
-  local encrypted_pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $1;}' || true)
-  local unencrypted_pod_name=$(esudo kubectl get pod -o wide | grep unencrypted-image-tests | awk '{print $1;}' || true)
-  local encrypted_pod_name_es=$(esudo kubectl get pod -o wide | grep encrypted-image-tests-es | awk '{print $1;}' || true)
-
-  # Delete both encrypted and unencrypted pods
-  esudo kubectl delete -f \
-    "${TEST_DIR}/unencrypted-image-tests.yaml" 2>/dev/null || true
-  esudo kubectl delete -f \
-    "${TEST_DIR}/encrypted-image-tests.yaml" 2>/dev/null || true
-  esudo kubectl delete -f \
-    "${TEST_DIR}/encrypted-image-tests-es.yaml" 2>/dev/null || true
-  
-  [ -z "${encrypted_pod_name}" ] || (kubernetes_wait_for_pod_delete_state "${encrypted_pod_name}" || true)
-  [ -z "${unencrypted_pod_name}" ] || (kubernetes_wait_for_pod_delete_state "${unencrypted_pod_name}" || true)
-  [ -z "${encrypted_pod_name_es}" ] || (kubernetes_wait_for_pod_delete_state "${encrypted_pod_name_es}" || true)
-}
-
-run_kbs() {
-  KBS_DIR="$(mktemp -d /tmp/kbs.XXXXXXXX)"
-  pushd "${KBS_DIR}"
-
-  # Retrieve simple-kbs repo and tag from versions.yaml
-  local simple_kbs_url=$(get_version "externals.simple-kbs.url")
-  local simple_kbs_tag=$(get_version "externals.simple-kbs.tag")
-
-  # Clone and run
-  git clone "${simple_kbs_url}" --branch main
-
-  pushd simple-kbs
-  git checkout -b "branch_${simple_kbs_tag}" "${simple_kbs_tag}"
-  esudo docker-compose build
-
-  esudo docker-compose up -d
-  until docker-compose top | grep -q "simple-kbs"
-  do
-    echo "waiting for simple-kbs to start"
-    sleep 5
-  done
-  popd
-  
-  # Set KBS_DB_HOST to kbs db container IP
-  KBS_DB_HOST=$(esudo docker network inspect simple-kbs_default \
-    | jq -r '.[].Containers[] | select(.Name | test("simple-kbs[_-]db.*")).IPv4Address' \
-    | sed "s|/.*$||g")
-
-  waitForProcess 15 1 "mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${KBS_DB_HOST} -D ${KBS_DB} -e '\q'"
-  popd
-}
-
-pull_unencrypted_image_and_set_keys() {
-  # Pull unencrypted test image to get labels
-  local unencrypted_image_url="${IMAGE_REPO}:unencrypted"
-  esudo docker pull "${unencrypted_image_url}"
-
-  # Get encryption key from docker image label
-  ENCRYPTION_KEY=$(esudo docker inspect ${unencrypted_image_url} \
-    | jq -r '.[0].Config.Labels.enc_key')
-
-  # Get ssh key from docker image label and save to file
-  esudo docker inspect ${unencrypted_image_url} \
-    | jq -r '.[0].Config.Labels.ssh_key' \
-    | sed "s|\(-----BEGIN OPENSSH PRIVATE KEY-----\)|\1\n|g" \
-    | sed "s|\(-----END OPENSSH PRIVATE KEY-----\)|\n\1|g" \
-    > "${SSH_KEY_FILE}"
-
-  # Set permissions on private key file
-  chmod 600 "${SSH_KEY_FILE}"
-}
-
-generate_firmware_measurement_with_append() {
-
-  # Gather firmware locations and kernel append for measurement
-  local append="${1}"
-  local mode="${2:-sev}"
-  local vcpu_sig=$(cpuid -1 --leaf 0x1 --raw | cut -s -f2 -d= | cut -f1 -d" ")
-  local ovmf_path=$(grep "firmware = " $SEV_CONFIG | cut -d'"' -f2)
-  local kernel_path="$(esudo /opt/confidential-containers/bin/kata-runtime \
-    --config ${SEV_CONFIG} kata-env --json | jq -r .Kernel.Path)"
-  local initrd_path="$(esudo /opt/confidential-containers/bin/kata-runtime \
-    --config ${SEV_CONFIG} kata-env --json | jq -r .Initrd.Path)"
-  
-  # Return error if files don't exist
-  [ -f "${ovmf_path}" ] || return 1
-  [ -f "${kernel_path}" ] || return 1
-  [ -f "${initrd_path}" ] || return 1
-
-  # Generate digest from sev-snp-measure output - this also inserts measurement values inside OVMF image
-  measurement=$(PATH="${PATH}:${HOME}/.local/bin" sev-snp-measure \
-    --mode="${mode}" \
-    --vcpus=1 \
-    --vcpu-sig="${vcpu_sig}" \
-    --output-format=base64 \
-    --ovmf="${ovmf_path}" \
-    --kernel="${kernel_path}" \
-    --initrd="${initrd_path}" \
-    --append="${append}" \
-  )
-  if [[ -z "${measurement}" ]]; then return 1; fi
-  echo ${measurement}
-}
-
-add_key_to_kbs_db() {
-  measurement=${1}
-
-  # Add key and keyset to DB; If set, add policy with measurement to DB
-  if [ -n "${measurement}" ]; then
-    mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${KBS_DB_HOST} -D ${KBS_DB} <<EOF
-      INSERT INTO secrets VALUES (10, 'default/key/ssh-demo', '${ENCRYPTION_KEY}', 10);
-      INSERT INTO policy VALUES (10, '["${measurement}"]', '[]', 0, 0, '[]', now(), NULL, 1);
-EOF
-  else
-    mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${KBS_DB_HOST} -D ${KBS_DB} <<EOF
-      INSERT INTO secrets VALUES (10, 'default/key/ssh-demo', '${ENCRYPTION_KEY}', NULL);
-EOF
-  fi
-}
-
-print_service_info() {
-  # Log kubectl environment information: nodes, services, deployments, pods
-  # Retrieve pod name and IP
-  echo "-------------------------------------------------------------------------------"
-  esudo kubectl get nodes -o wide
-  echo "-------------------------------------------------------------------------------"
-  esudo kubectl get services -o wide
-  echo "-------------------------------------------------------------------------------"
-  esudo kubectl get deployments -o wide
-  echo "-------------------------------------------------------------------------------"
-  esudo kubectl get pods -o wide
-  echo "-------------------------------------------------------------------------------"
-  pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $1;}')
-  esudo kubectl describe pod ${pod_name}
-  echo "-------------------------------------------------------------------------------"
-}
 
 setup_file() {
-  echo "###############################################################################"
-  echo -e "SETUP FILE - STARTED\n"
-
-  start_date=$(date +"%Y-%m-%d %H:%M:%S")
-
-  TEST_DIR="$(mktemp -d /tmp/test.XXXXXXXX)"
-  SSH_KEY_FILE="${TEST_DIR}/encrypted-image-tests"
+  TEST_DIR="$(mktemp -d /tmp/test-kata-sev.XXXXXXXX)"
+  SSH_KEY_FILE="${TEST_DIR}/container-ssh-key"
 
   # Install package dependencies
   echo "Installing required packages..."
@@ -302,240 +52,230 @@ setup_file() {
   pip install sev-snp-measure
   "${TESTS_REPO_DIR}/.ci/install_yq.sh" >&2
 
-  SAVED_CONTAINERD_CONF_FILE="/etc/containerd/config.toml.$$"
-  configure_cc_containerd "$SAVED_CONTAINERD_CONF_FILE"
+  # Configure CoCo settings in containerd config
+  local saved_containerd_conf_file="/etc/containerd/config.toml.$$"
+  configure_cc_containerd "${saved_containerd_conf_file}"
 
   # KBS setup and run
   echo "Setting up simple-kbs..."
-  run_kbs
+  simple_kbs_run
 
   # Pull unencrypted image and retrieve encryption and ssh keys
-  echo "Pulling unencrypted image and setting keys..."
-  pull_unencrypted_image_and_set_keys
+  echo "Pulling unencrypted image and retrieving keys..."
+  ENCRYPTION_KEY=$(docker_image_label_get_encryption_key "${UNENCRYPTED_IMAGE_URL}")
+  docker_image_label_save_ssh_key "${UNENCRYPTED_IMAGE_URL}" "${SSH_KEY_FILE}"
 
-  generate_service_yaml "unencrypted-image-tests" "${IMAGE_REPO}:unencrypted"
-  generate_service_yaml "encrypted-image-tests" "${IMAGE_REPO}:multi-arch-encrypted"
+  # Get host ip and set as simple-kbs ip; uri uses default port 44444
+  # These values will be set as k8s annotations in the service yamls
+  local kbs_ip="$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')"
+  local kbs_uri="${kbs_ip}:44444"
 
+  # SEV unencrypted service yaml generation
+  kubernetes_generate_service_yaml "${TEST_DIR}/sev-unencrypted.yaml" "${IMAGE_REPO}:unencrypted"
+  kubernetes_yaml_set_annotation "${TEST_DIR}/sev-unencrypted.yaml" "io.katacontainers.config.guest_pre_attestation.enabled" "false"
+
+  # SEV encrypted service yaml generation
+  # SEV policy is 3 (default):
+  # - NODBG (1): Debugging of the guest is disallowed when set
+  # - NOKS (2): Sharing keys with other guests is disallowed when set
+  kubernetes_generate_service_yaml "${TEST_DIR}/sev-encrypted.yaml" "${IMAGE_REPO}:multi-arch-encrypted"
+  kubernetes_yaml_set_annotation "${TEST_DIR}/sev-encrypted.yaml" "io.katacontainers.config.pre_attestation.uri" "${kbs_uri}"
+  kubernetes_yaml_set_annotation "${TEST_DIR}/sev-encrypted.yaml" "io.katacontainers.config.sev.policy" "3"
+  
   # SEV-ES policy is 7:
   # - NODBG (1): Debugging of the guest is disallowed when set
   # - NOKS (2): Sharing keys with other guests is disallowed when set
   # - ES (4): SEV-ES is required when set
-  generate_service_yaml "encrypted-image-tests-es" "${IMAGE_REPO}:multi-arch-encrypted" "7"
-
-  echo "SETUP FILE - COMPLETE"
-  echo "###############################################################################"
+  kubernetes_generate_service_yaml "${TEST_DIR}/sev-es-encrypted.yaml" "${IMAGE_REPO}:multi-arch-encrypted"
+  kubernetes_yaml_set_annotation "${TEST_DIR}/sev-es-encrypted.yaml" "io.katacontainers.config.pre_attestation.uri" "${kbs_uri}"
+  kubernetes_yaml_set_annotation "${TEST_DIR}/sev-es-encrypted.yaml" "io.katacontainers.config.sev.policy" "7"
 }
-
-setup() {
-  # Remove the service/deployment/pod if it exists
-  echo "Deleting previous test pods..."
-  delete_pods
-
-  # Delete any previous data in the DB
-  mysql -u${KBS_DB_USER} -p${KBS_DB_PW} -h ${KBS_DB_HOST} -D ${KBS_DB} <<EOF
-    DELETE FROM secrets WHERE id = 10;
-    DELETE FROM keysets WHERE id = 10;
-    DELETE FROM policy WHERE id = 10;
-EOF
-}
-
-@test "$test_tag Test SEV unencrypted container launch success" {
-  # Turn off pre-attestation. It is not necessary for an unencrypted image.
-  esudo sed -i 's/guest_pre_attestation = true/guest_pre_attestation = false/g' ${SEV_CONFIG}
-  
-  # Start the service/deployment/pod
-  esudo kubectl apply -f "${TEST_DIR}/unencrypted-image-tests.yaml"
-  
-  # Retrieve pod name, wait for it to come up, retrieve pod ip
-  pod_name=$(esudo kubectl get pod -o wide | grep unencrypted-image-tests | awk '{print $1;}')
-  kubernetes_wait_for_pod_ready_state "$pod_name" 20
-  pod_ip=$(esudo kubectl get pod -o wide | grep unencrypted-image-tests | awk '{print $6;}')
-
-  print_service_info
-
-  # Look for SEV enabled in container dmesg output
-  sev_enabled=$(ssh -i ${SSH_KEY_FILE} \
-    -o "StrictHostKeyChecking no" \
-    -o "PasswordAuthentication=no" \
-    -t root@${pod_ip} \
-    'dmesg | grep SEV' || true)
-
-  if [ -z "$sev_enabled" ]; then
-    >&2 echo -e "${RED}KATA CC TEST - FAIL: SEV is NOT Enabled${NC}"
-    return 1
-  else
-    echo "DMESG REPORT: $sev_enabled"
-    echo -e "${GREEN}KATA CC TEST - PASS: SEV is Enabled${NC}"
-  fi
-
-}
-
-@test "$test_tag Test SEV encrypted container launch failure with INVALID measurement" {
-  # Make sure pre-attestation is enabled. 
-  esudo sed -i 's/guest_pre_attestation = false/guest_pre_attestation = true/g' ${SEV_CONFIG}
-
-  # Generate firmware measurement
-  local append="INVALID-INPUT"
-  measurement=$(generate_firmware_measurement_with_append ${append})
-  echo "Firmware Measurement: ${measurement}"
-
-  # Add key to KBS with policy measurement
-  add_key_to_kbs_db ${measurement}
-  
-  # Start the service/deployment/pod
-  esudo kubectl apply -f "${TEST_DIR}/encrypted-image-tests.yaml"
-  
-  # Retrieve pod name, wait for it to fail
-  pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $1;}')
-  kubernetes_wait_for_pod_ready_state "$pod_name" 20 || true
-
-  print_service_info
-
-  # Save guest qemu kernel append to file
-  kernel_append=$(get_guest_kernel_append "${pod_name}")
-  echo "${kernel_append}" > "${TEST_DIR}/guest-kernel-append"
-  echo "Kernel Append Retrieved from QEMU Process: ${kernel_append}"
-
-  # Get pod info
-  pod_info=$(esudo kubectl describe pod ${pod_name})
-
-  # Check failure condition
-  if [[ ! ${pod_info} =~ "Failed to pull image" ]]; then
-    >&2 echo -e "${RED}TEST - FAIL${NC}"
-    return 1
-  else
-    echo "Pod message contains: Failed to pull image"
-    echo -e "${GREEN}TEST - PASS${NC}"
-  fi
-}
-
-@test "$test_tag Test SEV encrypted container launch success with NO measurement" {
-
-  # Add key to KBS without a policy measurement
-  add_key_to_kbs_db
-  
-  # Start the service/deployment/pod
-  esudo kubectl apply -f "${TEST_DIR}/encrypted-image-tests.yaml"
-
-  # Retrieve pod name, wait for it to come up, retrieve pod ip
-  pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $1;}')
-  kubernetes_wait_for_pod_ready_state "$pod_name" 20
-  pod_ip=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $6;}')
-
-  print_service_info
-
-  # Look for SEV enabled in container dmesg output
-  sev_enabled=$(ssh -i ${SSH_KEY_FILE} \
-    -o "StrictHostKeyChecking no" \
-    -o "PasswordAuthentication=no" \
-    -t root@${pod_ip} \
-    'dmesg | grep SEV' || true)
-
-  if [ -z "$sev_enabled" ]; then
-    >&2 echo -e "${RED}KATA CC TEST - FAIL: SEV is NOT Enabled${NC}"
-    return 1
-  else
-    echo "DMESG REPORT: $sev_enabled"
-    echo -e "${GREEN}KATA CC TEST - PASS: SEV is Enabled${NC}"
-  fi
-}
-
-@test "$test_tag Test SEV encrypted container launch success with VALID measurement" {
-
-  # Generate firmware measurement
-  local append=$(cat ${TEST_DIR}/guest-kernel-append)
-  echo "Kernel Append: ${append}"
-  measurement=$(generate_firmware_measurement_with_append "${append}")
-  echo "Firmware Measurement: ${measurement}"
-
-  # Add key to KBS with policy measurement
-  add_key_to_kbs_db ${measurement}
-  
-  # Start the service/deployment/pod
-  esudo kubectl apply -f "${TEST_DIR}/encrypted-image-tests.yaml"
-
-  # Retrieve pod name, wait for it to come up, retrieve pod ip
-  pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $1;}')
-  kubernetes_wait_for_pod_ready_state "$pod_name" 20
-  pod_ip=$(esudo kubectl get pod -o wide | grep encrypted-image-tests | awk '{print $6;}')
-
-  print_service_info
-
-  # Look for SEV enabled in container dmesg output
-  sev_enabled=$(ssh -i ${SSH_KEY_FILE} \
-    -o "StrictHostKeyChecking no" \
-    -o "PasswordAuthentication=no" \
-    -t root@${pod_ip} \
-    'dmesg | grep SEV' || true)
-
-  if [ -z "$sev_enabled" ]; then
-    >&2 echo -e "${RED}KATA CC TEST - FAIL: SEV is NOT Enabled${NC}"
-    return 1
-  else
-    echo "DMESG REPORT: $sev_enabled"
-    echo -e "${GREEN}KATA CC TEST - PASS: SEV is Enabled${NC}"
-  fi
-}
-
-@test "$test_tag Test SEV-ES encrypted container launch success with VALID measurement" {
-
-  # Generate firmware measurement
-  local append=$(cat ${TEST_DIR}/guest-kernel-append)
-  echo "Kernel Append: ${append}"
-  measurement=$(generate_firmware_measurement_with_append "${append}" "seves")
-  echo "Firmware Measurement: ${measurement}"
-
-  # Add key to KBS with policy measurement
-  add_key_to_kbs_db ${measurement}
-  
-  # Start the service/deployment/pod
-  esudo kubectl apply -f "${TEST_DIR}/encrypted-image-tests-es.yaml"
-
-  # Retrieve pod name, wait for it to come up, retrieve pod ip
-  pod_name=$(esudo kubectl get pod -o wide | grep encrypted-image-tests-es | awk '{print $1;}')
-  kubernetes_wait_for_pod_ready_state "$pod_name" 20
-  pod_ip=$(esudo kubectl get pod -o wide | grep encrypted-image-tests-es | awk '{print $6;}')
-
-  print_service_info
-
-  # Look for SEV-ES enabled in container dmesg output
-  seves_enabled=$(ssh -i ${SSH_KEY_FILE} \
-    -o "StrictHostKeyChecking no" \
-    -o "PasswordAuthentication=no" \
-    -t root@${pod_ip} \
-    'dmesg | grep SEV-ES' || true)
-
-  if [ -z "$seves_enabled" ]; then
-    >&2 echo -e "${RED}KATA CC TEST - FAIL: SEV-ES is NOT Enabled${NC}"
-    return 1
-  else
-    echo "DMESG REPORT: $seves_enabled"
-    echo -e "${GREEN}KATA CC TEST - PASS: SEV-ES is Enabled${NC}"
-  fi
-}
-
-
 
 teardown_file() {
-  echo "###############################################################################"
-  echo -e "TEARDOWN - STARTED\n"
-
   # Allow to not destroy the environment if you are developing/debugging tests
   if [[ "${CI:-false}" == "false" && "${DEBUG:-}" == true ]]; then
     echo "Leaving changes and created resources untouched"
     return
   fi
 
-  # Remove the service/deployment/pod
-  delete_pods
+  # Remove all k8s test services
+  k8s_delete_all
 
-  # Stop KBS and KBS DB containers
-  (cd ${KBS_DIR}/simple-kbs && esudo docker-compose down 2>/dev/null)
+  # Stop the simple-kbs
+  simple_kbs_stop
 
   # Cleanup directories
-  esudo rm -rf "${KBS_DIR}"
+  esudo rm -rf "${SIMPLE_KBS_DIR}"
   esudo rm -rf "${TEST_DIR}"
+}
 
-  echo "TEARDOWN - COMPLETE"
-  echo "###############################################################################"
+setup() {
+  # Remove any previous k8s test services
+  echo "Deleting previous test services..."
+  k8s_delete_all
+
+  # Delete any previous data in the simple-kbs database
+  simple_kbs_delete_data
+}
+
+
+@test "${TEST_TAG} Test SEV unencrypted container launch success" {  
+  # Start the service/deployment/pod
+  esudo kubectl apply -f "${TEST_DIR}/sev-unencrypted.yaml"
+  
+  # Retrieve pod name, wait for it to come up, retrieve pod ip
+  local pod_name=$(esudo kubectl get pod -o wide | grep sev-unencrypted | awk '{print $1;}')
+  kubernetes_wait_for_pod_ready_state "$pod_name" 20
+  local pod_ip=$(esudo kubectl get pod -o wide | grep sev-unencrypted | awk '{print $6;}')
+
+  kubernetes_print_info "sev-unencrypted"
+
+  # Look for SEV enabled in container dmesg output
+  local sev_enabled=$(ssh_dmesg_grep \
+    "${SSH_KEY_FILE}" \
+    "${pod_ip}" \
+    "${SEV_DMESG_GREP_TEXT}")
+
+  if [ -z "${sev_enabled}" ]; then
+    >&2 echo -e "KATA SEV TEST - FAIL: SEV is NOT Enabled"
+    return 1
+  else
+    echo "DMESG REPORT: ${sev_enabled}"
+    echo -e "KATA SEV TEST - PASS: SEV is Enabled"
+  fi
+}
+
+@test "${TEST_TAG} Test SEV encrypted container launch failure with INVALID measurement" {
+  # Generate firmware measurement
+  local append="INVALID-INPUT"
+  local measurement=$(generate_firmware_measurement_with_append "${SEV_CONFIG_FILE}" "${append}")
+  echo "Firmware Measurement: ${measurement}"
+
+  # Add key to KBS with policy measurement
+  simple_kbs_add_key_to_db "${ENCRYPTION_KEY}" "${measurement}"
+  
+  # Start the service/deployment/pod
+  esudo kubectl apply -f "${TEST_DIR}/sev-encrypted.yaml"
+  
+  # Retrieve pod name, wait for it to fail
+  local pod_name=$(esudo kubectl get pod -o wide | grep sev-encrypted | awk '{print $1;}')
+  kubernetes_wait_for_pod_ready_state "$pod_name" 20 || true
+
+  kubernetes_print_info "sev-encrypted"
+
+  # Save guest qemu kernel append to file
+  local kernel_append=$(kata_get_guest_kernel_append "${pod_name}")
+  echo "${kernel_append}" > "${TEST_DIR}/guest-kernel-append"
+  echo "Kernel Append Retrieved from QEMU Process: ${kernel_append}"
+
+  # Get pod info
+  local pod_info=$(esudo kubectl describe pod ${pod_name})
+
+  # Check failure condition
+  if [[ ! ${pod_info} =~ "Failed to pull image" ]]; then
+    >&2 echo -e "TEST - FAIL"
+    return 1
+  else
+    echo "Pod message contains: Failed to pull image"
+    echo -e "TEST - PASS"
+  fi
+}
+
+@test "${TEST_TAG} Test SEV encrypted container launch success with NO measurement" {
+  # Add key to KBS without a policy measurement
+  simple_kbs_add_key_to_db "${ENCRYPTION_KEY}"
+  
+  # Start the service/deployment/pod
+  esudo kubectl apply -f "${TEST_DIR}/sev-encrypted.yaml"
+
+  # Retrieve pod name, wait for it to come up, retrieve pod ip
+  local pod_name=$(esudo kubectl get pod -o wide | grep sev-encrypted | awk '{print $1;}')
+  kubernetes_wait_for_pod_ready_state "$pod_name" 20
+  local pod_ip=$(esudo kubectl get pod -o wide | grep sev-encrypted | awk '{print $6;}')
+
+  kubernetes_print_info "sev-encrypted"
+
+  # Look for SEV enabled in container dmesg output
+  local sev_enabled=$(ssh_dmesg_grep \
+    "${SSH_KEY_FILE}" \
+    "${pod_ip}" \
+    "${SEV_DMESG_GREP_TEXT}")
+
+  if [ -z "${sev_enabled}" ]; then
+    >&2 echo -e "KATA SEV TEST - FAIL: SEV is NOT Enabled"
+    return 1
+  else
+    echo "DMESG REPORT: ${sev_enabled}"
+    echo -e "KATA SEV TEST - PASS: SEV is Enabled"
+  fi
+}
+
+@test "${TEST_TAG} Test SEV encrypted container launch success with VALID measurement" {
+  # Generate firmware measurement
+  local append=$(cat ${TEST_DIR}/guest-kernel-append)
+  echo "Kernel Append: ${append}"
+  local measurement=$(generate_firmware_measurement_with_append "${SEV_CONFIG_FILE}" "${append}")
+  echo "Firmware Measurement: ${measurement}"
+
+  # Add key to KBS with policy measurement
+  simple_kbs_add_key_to_db "${ENCRYPTION_KEY}" "${measurement}"
+  
+  # Start the service/deployment/pod
+  esudo kubectl apply -f "${TEST_DIR}/sev-encrypted.yaml"
+
+  # Retrieve pod name, wait for it to come up, retrieve pod ip
+  local pod_name=$(esudo kubectl get pod -o wide | grep sev-encrypted | awk '{print $1;}')
+  kubernetes_wait_for_pod_ready_state "$pod_name" 20
+  local pod_ip=$(esudo kubectl get pod -o wide | grep sev-encrypted | awk '{print $6;}')
+
+  kubernetes_print_info "sev-encrypted"
+
+  # Look for SEV enabled in container dmesg output
+  local sev_enabled=$(ssh_dmesg_grep \
+    "${SSH_KEY_FILE}" \
+    "${pod_ip}" \
+    "${SEV_DMESG_GREP_TEXT}")
+
+  if [ -z "${sev_enabled}" ]; then
+    >&2 echo -e "KATA SEV TEST - FAIL: SEV is NOT Enabled"
+    return 1
+  else
+    echo "DMESG REPORT: ${sev_enabled}"
+    echo -e "KATA SEV TEST - PASS: SEV is Enabled"
+  fi
+}
+
+@test "${TEST_TAG} Test SEV-ES encrypted container launch success with VALID measurement" {
+  # Generate firmware measurement
+  local append=$(cat ${TEST_DIR}/guest-kernel-append)
+  echo "Kernel Append: ${append}"
+  local measurement=$(generate_firmware_measurement_with_append "${SEV_CONFIG_FILE}" "${append}" "seves")
+  echo "Firmware Measurement: ${measurement}"
+
+  # Add key to KBS with policy measurement
+  simple_kbs_add_key_to_db "${ENCRYPTION_KEY}" "${measurement}"
+  
+  # Start the service/deployment/pod
+  esudo kubectl apply -f "${TEST_DIR}/sev-es-encrypted.yaml"
+
+  # Retrieve pod name, wait for it to come up, retrieve pod ip
+  local pod_name=$(esudo kubectl get pod -o wide | grep sev-es-encrypted | awk '{print $1;}')
+  kubernetes_wait_for_pod_ready_state "$pod_name" 20
+  local pod_ip=$(esudo kubectl get pod -o wide | grep sev-es-encrypted | awk '{print $6;}')
+
+  kubernetes_print_info "sev-es-encrypted"
+
+  # Look for SEV-ES enabled in container dmesg output
+  local sev_es_enabled=$(ssh_dmesg_grep \
+    "${SSH_KEY_FILE}" \
+    "${pod_ip}" \
+    "${SEV_ES_DMESG_GREP_TEXT}")
+
+  if [ -z "${sev_es_enabled}" ]; then
+    >&2 echo -e "KATA SEV-ES TEST - FAIL: SEV-ES is NOT Enabled"
+    return 1
+  else
+    echo "DMESG REPORT: ${sev_es_enabled}"
+    echo -e "KATA SEV-ES TEST - PASS: SEV-ES is Enabled"
+  fi
 }

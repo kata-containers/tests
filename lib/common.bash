@@ -532,3 +532,117 @@ check_dockerfiles_images()
 		build_dockerfile_image "$image" "$dockerfile_path"
 	fi
 }
+
+###############################################################################
+
+# Misc functions.
+
+TESTS_REPO_DIR=$(realpath $(dirname "${BASH_SOURCE[0]}")/..)
+
+# sudo shortcut function with environment
+esudo() {
+  sudo -E PATH=$PATH "${@}"
+}
+
+
+# SSH grep for a string in the target dmesg output
+ssh_dmesg_grep() {
+  local private_key_file="${1}"
+  local pod_ip="${2}"
+  local grep_text="${3}"
+
+  ssh -i ${private_key_file} \
+    -o "StrictHostKeyChecking no" \
+    -o "PasswordAuthentication=no" \
+    -o ConnectTimeout=1 \
+    -t root@${pod_ip} \
+    "dmesg 2>&1 | grep \"${grep_text}\"" || true
+}
+
+
+###############################################################################
+
+# docker Image Handling
+
+# Retrieve encryption key from docker image label
+# 'enc_key' image label must be set when image created or uploaded
+docker_image_label_get_encryption_key() {
+  local image_url="${1}"
+
+  # Pull image
+  esudo docker pull "${image_url}" &>/dev/null
+
+  # Get encryption key from docker image label
+  esudo docker inspect ${image_url} \
+    | jq -r '.[0].Config.Labels.enc_key'
+}
+
+# Retrieve ssh key from docker image label
+# 'ssh_key' image label must be set when image created or uploaded
+docker_image_label_save_ssh_key() {
+  local image_url="${1}"
+  local ssh_key_file="${2}"
+
+  # Pull image
+  esudo docker pull "${image_url}"
+
+  # Get ssh key from docker image label and save to file
+  esudo docker inspect ${image_url} \
+    | jq -r '.[0].Config.Labels.ssh_key' \
+    | sed "s|\(-----BEGIN OPENSSH PRIVATE KEY-----\)|\1\n|g" \
+    | sed "s|\(-----END OPENSSH PRIVATE KEY-----\)|\n\1|g" \
+    > "${ssh_key_file}"
+
+  # Set permissions on private key file
+  chmod 600 "${ssh_key_file}"
+}
+
+
+
+###############################################################################
+
+# kata
+
+# Find sandbox id using container ID
+kata_get_sandbox_id() {
+  local container_id="${1}"
+  local sandbox_dir="/run/kata-containers/shared/sandboxes"
+
+  # Find container directory inside sandbox directory
+  local container_dir=$(esudo find "${sandbox_dir}" -name "${container_id}" | head -1)
+
+  # Ensure directory path pattern is correct
+  [[ ${container_dir} =~ ^${sandbox_dir}/.*/.*/${container_id} ]] \
+    || (>&2 echo "Incorrect container folder path: ${container_dir}"; return 1)
+
+  # Two levels up, and trim the sandbox dir off the front
+  local sandbox_id=$(dirname $(dirname "${container_dir}") | sed "s|${sandbox_dir}/||g")
+
+  echo "${sandbox_id}"
+}
+
+# Get guest kernel append from qemu command line
+kata_get_guest_kernel_append() {
+  local pod_name="${1}"
+  local duration=$((SECONDS+20))
+  local kernel_append
+
+  # Attempt to get qemu command line from qemu process
+  while [ $SECONDS -lt $duration ]; do
+    container_id=$(kubernetes_get_container_id "${pod_name}")
+    sandbox_id=$(kata_get_sandbox_id "${container_id}")
+    qemu_process=$(ps aux | grep qemu | grep ${sandbox_id} | grep append || true)
+    if [ -n "${qemu_process}" ]; then
+      kernel_append=$(echo ${qemu_process} \
+        | sed "s|.*-append \(.*$\)|\1|g" \
+        | sed "s| -.*$||")
+      break
+    fi
+    sleep 1
+  done
+
+  [ -n "${kernel_append}" ] \
+    || (>&2 echo "Could not retrieve guest kernel append parameters"; return 1)
+
+  echo "${kernel_append}"
+}

@@ -134,6 +134,8 @@ case "${KATA_HYPERVISOR}" in
 			enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-qemu-tdx.toml"
 		elif [ "$TEE_TYPE" == "sev" ]; then
 			enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-qemu-sev.toml"
+		elif [ "$TEE_TYPE" == "snp" ]; then
+			enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-qemu-snp.toml"
 		elif [ "$TEE_TYPE" == "se" ]; then
 			enable_hypervisor_config "${PKGDEFAULTSDIR}/configuration-qemu-se.toml"
 		else

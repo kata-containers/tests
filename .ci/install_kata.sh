@@ -33,6 +33,11 @@ if [ "${TEE_TYPE:-}" == "sev" ]; then
 	KATA_BUILD_KERNEL_TYPE=sev
 fi
 
+if [ "${TEE_TYPE:-}" == "snp" ]; then
+	KATA_BUILD_KERNEL_TYPE=snp
+	KATA_BUILD_QEMU_TYPE="${KATA_BUILD_QEMU_TYPE:-snp}"
+fi
+
 if [ "${KATA_HYPERVISOR:-}" == "dragonball" ]; then
 	KATA_BUILD_KERNEL_TYPE=dragonball
 fi
@@ -89,6 +94,8 @@ case "${KATA_HYPERVISOR}" in
 			"${cidir}/install_tdvf.sh"
 		elif [ "${TEE_TYPE:-}" == "sev" ]; then
 			"${cidir}/install_ovmf_sev.sh"
+		elif [ "${TEE_TYPE:-}" == "snp" ]; then
+			"${cidir}/install_ovmf_x86_64.sh"
 		fi
 		;;
 	"dragonball")

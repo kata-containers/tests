@@ -56,7 +56,6 @@ if [ "$(uname -m)" == "s390x" ] && grep -Eq "\<(fedora|suse)\>" /etc/os-release 
 	export CC=gcc
 fi
 
-tests_repo="${tests_repo:-github.com/kata-containers/tests}"
 lib_script="${GOPATH}/src/${tests_repo}/lib/common.bash"
 source "${lib_script}"
 
