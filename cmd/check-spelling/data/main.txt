@@ -47,6 +47,7 @@ hypercall/A
 hypervisor/AB
 implementer/A
 implementor/A
+Infiniband
 iodepth/A
 ioengine/A
 iptables
@@ -69,7 +70,8 @@ mmap/AB
 nack/AB
 namespace/ABCD
 netlink
-NVIDIA
+NVIDIA/A
+nvidia/A
 onwards
 OpenAPI
 OS/AB
@@ -80,6 +82,7 @@ pluggable/AB
 portmapper/AB
 portmapping/A
 pre
+prefetch/ACD
 prestart
 programmatically
 proxying
