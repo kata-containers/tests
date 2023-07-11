@@ -34,10 +34,7 @@ source "${SCRIPT_DIR}/../metrics/lib/common.bash"
 
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 
-# Density paramter to set the number of iterations of the test
-DENSITY_FORMAT_RESULTS="${DENSITY_FORMAT_RESULTS:-json}"
-
-# Density parameters to select between 'csv' and 'json' results format
+# Num of repetitions for the 'memory inside container' metrics check.
 DENSITY_TEST_REPETITIONS="${DENSITY_TEST_REPETITIONS:-1}"
 
 # metrics selector among: density, boot, blogbench, all
@@ -93,7 +90,7 @@ run() {
 	fi
 	# Run the density test inside the container
 	if [ "${TEST_SELECTOR}" = "all" ] || [ "${TEST_SELECTOR}" = "${TEST_DENSITY}" ]; then
-		bash density/memory_usage_inside_container.sh ${DENSITY_FORMAT_RESULTS} ${DENSITY_TEST_REPETITIONS}
+		bash density/memory_usage_inside_container.sh ${DENSITY_TEST_REPETITIONS}
 	fi
 
 	# Run the time tests
