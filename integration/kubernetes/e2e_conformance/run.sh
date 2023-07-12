@@ -27,6 +27,8 @@ RUNTIME="${RUNTIME:-containerd-shim-kata-v2}"
 CRI_RUNTIME="${CRI_RUNTIME:-containerd}"
 MINIMAL_K8S_E2E="${MINIMAL_K8S_E2E:-false}"
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-}"
+RUNTIME_CLASS="${RUNTIME_CLASS:-kata}"
+E2E_PARALLEL="${E2E_PARALLEL:-false}"
 
 # Overall Sonobuoy timeout in minutes.
 WAIT_TIME=${WAIT_TIME:-180}
@@ -34,7 +36,7 @@ WAIT_TIME=${WAIT_TIME:-180}
 JOBS_FILE="${SCRIPT_PATH}/e2e_k8s_jobs.yaml"
 
 create_kata_webhook() {
-	pushd "${SCRIPT_PATH}/../../../kata-webhook" >> /dev/null
+	pushd "${SCRIPT_PATH}/../../../kata-webhook" >>/dev/null
 	# Create certificates for the kata webhook
 	./create-certs.sh
 
@@ -43,6 +45,15 @@ create_kata_webhook() {
 
 	# Ensure the kata-webhook is working
 	./webhook-check.sh
+	popd
+}
+
+delete_kata_webhook() {
+	pushd "${SCRIPT_PATH}/../../../kata-webhook" >>/dev/null
+
+	# Apply kata-webhook deployment
+	kubectl delete -f deploy/
+
 	popd
 }
 
@@ -84,12 +95,12 @@ run_sonobuoy() {
 	skip_options="Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]"
 	local skip_list
 	skip_list=$(yaml_list_to_str_regex "\"${CRI_RUNTIME}\"" "${skipped_tests_file}")
-	if [ "${skip_list}" != "" ];then
+	if [ "${skip_list}" != "" ]; then
 		skip_options+="|${skip_list}"
 	fi
 
 	skip_list=$(yaml_list_to_str_regex "hypervisor.\"${KATA_HYPERVISOR}\"" "${skipped_tests_file}")
-	if [ "${skip_list}" != "" ];then
+	if [ "${skip_list}" != "" ]; then
 		skip_options+="|${skip_list}"
 	fi
 
@@ -111,6 +122,9 @@ run_sonobuoy() {
 			cmd+=" --e2e-skip=\"${skip_options}\""
 		fi
 	fi
+
+	cmd+=" --plugin-env e2e.E2E_PARALLEL=${E2E_PARALLEL}"
+
 	echo "running: ${cmd}"
 	eval "${cmd}"
 
@@ -140,10 +154,10 @@ run_sonobuoy() {
 		fi
 		local expected_passed_query="jobs.${CI_JOB:-}.passed"
 		local expected_passed=$("${GOPATH}/bin/yq" read "${JOBS_FILE}" "${expected_passed_query}")
-		if [ "${expected_passed}" != "" ];then
+		if [ "${expected_passed}" != "" ]; then
 			passed_query='.plugins | [ .[]."result-counts".passed] | add'
 			passed=$(sonobuoy status --json | jq "${passed_query}")
-			if [ "${expected_passed}" != "${passed}" ];then
+			if [ "${expected_passed}" != "${passed}" ]; then
 				die "expected ${expected_passed} tests to pass, but ${passed} passed"
 			else
 				info "All ${passed} tests passed as expected"
@@ -151,7 +165,7 @@ run_sonobuoy() {
 		else
 			info "Not found ${expected_passed_query} for job ${CI_JOB:-} in ${JOBS_FILE}"
 		fi
-	} |  tee "${e2e_result_dir}/summary"
+	} | tee "${e2e_result_dir}/summary"
 }
 
 cleanup() {
@@ -173,6 +187,10 @@ cleanup() {
 			sonobuoy delete
 		fi
 	} || true
+
+	if [ "$RUNTIME" == "containerd-shim-kata-v2" ]; then
+		delete_kata_webhook
+	fi
 
 	# Revert the changes applied by the integration/kubernetes/init.sh
 	# script when it was called in our setup.sh.
