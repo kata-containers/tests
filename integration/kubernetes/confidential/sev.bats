@@ -110,6 +110,7 @@ teardown_file() {
 }
 
 setup() {
+  start_date=$(date +"%Y-%m-%d %H:%M:%S")
   # Remove any previous k8s test services
   echo "Deleting previous test services..."
   k8s_delete_all
@@ -118,6 +119,11 @@ setup() {
   simple_kbs_delete_data
 }
 
+teardown() {
+  # Print the logs and cleanup resources.
+  echo "-- Kata logs:"
+  sudo journalctl -xe -t kata --since "$start_date" -n 100000
+}
 
 @test "${TEST_TAG} Test SEV unencrypted container launch success" {  
   # Start the service/deployment/pod
