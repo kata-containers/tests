@@ -70,6 +70,9 @@ teardown() {
   echo "-- Kata logs:"
   sudo journalctl -xe -t kata --since "$start_date" -n 100000
 
+  echo "-- Describe pods:"
+  esudo kubectl describe pods
+
   # Remove any k8s test services
   echo "Deleting test services..."
   k8s_delete_all || true
