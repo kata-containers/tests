@@ -70,6 +70,9 @@ teardown() {
   echo "-- Kata logs:"
   sudo journalctl -xe -t kata --since "$start_date" -n 100000
 
+  echo "-- containerd logs:"
+  sudo journalctl -xe -t containerd --since "$start_date" -n 100000
+
   echo "-- Describe pods:"
   esudo kubectl describe pods
 
