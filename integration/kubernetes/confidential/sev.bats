@@ -124,6 +124,9 @@ teardown() {
   echo "-- Describe pods:"
   esudo kubectl describe pods
 
+  echo "-- More debug:"
+  esudo find /run/kata-containers || true
+
   # Remove any previous k8s test services
   echo "Deleting test services..."
   k8s_delete_all || true
