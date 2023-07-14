@@ -134,6 +134,7 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="qemu"
 	export KATA_BUILD_CC="yes"
 	export AA_KBC="offline_fs_kbc"
+	export MEASURED_ROOTFS="yes"
 	export TEST_INITRD="yes"
 	if [[ "${CI_JOB}" =~ K8S ]]; then
 		export KUBERNETES=yes
