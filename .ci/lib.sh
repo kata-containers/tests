@@ -6,6 +6,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# Ensure GOPATH set
+if command -v go > /dev/null; then
+	export GOPATH=${GOPATH:-$(go env GOPATH)}
+else
+	# if go isn't installed, set default location for GOPATH
+	export GOPATH="${GOPATH:-$HOME/go}"
+fi
+
 export KATA_KSM_THROTTLER=${KATA_KSM_THROTTLER:-no}
 export KATA_QEMU_DESTDIR=${KATA_QEMU_DESTDIR:-"/usr"}
 export KATA_ETC_CONFIG_PATH="/etc/kata-containers/configuration.toml"
@@ -32,14 +40,6 @@ export KATA_DOCKER_TIMEOUT=30
 export KATA_NET_TIMEOUT=30
 
 source /etc/os-release || source /usr/lib/os-release
-
-# Ensure GOPATH set
-if command -v go > /dev/null; then
-	export GOPATH=${GOPATH:-$(go env GOPATH)}
-else
-	# if go isn't installed, set default location for GOPATH
-	export GOPATH="${GOPATH:-$HOME/go}"
-fi
 
 # Support Golang 1.16.x.
 # By default in Golang >= 1.16 GO111MODULE is set to "on",
