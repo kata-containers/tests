@@ -107,3 +107,8 @@ WIP/AB	# Work In Progress
 WRT/AB	# With Respect To
 XIP/AB
 YAML/AB
+irq/AB
+mmio/AB
+APIC
+msg/AB
+UDS
