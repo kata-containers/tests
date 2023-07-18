@@ -4,6 +4,22 @@ This repository contains various types of tests and utilities (called
 "content" from now on) for testing the [Kata Containers](https://github.com/kata-containers)
 code repositories.
 
+**NOTE:** If you're working on adding new tests to Kata Containers, **please**,
+keep in mind that we're in the process of migrating the tests from this repo to
+the kata-containers one.
+
+The tests that already started being migrated are:
+* kubernetes
+* containerd
+* metrics
+
+If you plan on expanding those tests, please, do **not** do this as part of this
+repo, but upstream them directly to the `kata-containers` repo.
+
+If you plan on expanding other set of tests, please, approach the community and
+ask about the plans for migrating those to the `kata-containers` repo before
+starting the work here.
+
 ## Getting the code
 
 ```
