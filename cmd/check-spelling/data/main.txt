@@ -130,3 +130,6 @@ Xeon/A
 yaml
 upcall
 Upcall
+ioctl/A
+struct/A # struct in Rust
+Struct/A
