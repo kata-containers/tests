@@ -7,7 +7,7 @@ code repositories.
 ## Getting the code
 
 ```
-$ go get -d github.com/kata-containers/tests
+$ git clone https://github.com/kata-containers/tests
 ```
 
 ## Test Content
@@ -198,7 +198,7 @@ $ export PATH=${GOPATH}/bin:${PATH}
 
 Clone the `kata-container/tests` repository:
 ```
-$ go get -d github.com/kata-containers/tests
+$ git clone https://github.com/kata-containers/tests $GOPATH/src/github.com/kata-containers/tests
 ```
 
 Go to the tests repo directory:
