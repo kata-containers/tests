@@ -120,3 +120,4 @@ fdt
 gic
 msr
 cpuid
+pio
