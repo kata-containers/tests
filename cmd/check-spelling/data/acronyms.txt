@@ -112,3 +112,11 @@ mmio/AB
 APIC
 msg/AB
 UDS
+dbs # Dragonball Sandbox
+TDX
+tdx 
+mptable 
+fdt
+gic
+msr
+cpuid
