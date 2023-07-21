@@ -132,9 +132,9 @@ generate_firmware_measurement_with_append() {
   # Get vcpu sig, get ovmf, kernel and initrd paths
   local vcpu_sig=$(cpuid -1 --leaf 0x1 --raw | cut -s -f2 -d= | cut -f1 -d" ")
   local ovmf_path=$(grep "firmware = " ${config_file} | cut -d'"' -f2)
-  local kernel_path="$(esudo /opt/confidential-containers/bin/kata-runtime \
+  local kernel_path="$(esudo /opt/kata/bin/kata-runtime \
     --config ${config_file} kata-env --json | jq -r .Kernel.Path)"
-  local initrd_path="$(esudo /opt/confidential-containers/bin/kata-runtime \
+  local initrd_path="$(esudo /opt/kata/bin/kata-runtime \
     --config ${config_file} kata-env --json | jq -r .Initrd.Path)"
   
   # Return error if files don't exist

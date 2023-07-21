@@ -467,26 +467,26 @@ gen_clean_arch() {
 	sudo rm -rf ~/.cargo ~/.rustup
 
 	# make sure to clean up linked binaries
-	unlink /opt/confidential-containers/share/ovmf
+	unlink /opt/kata/share/ovmf
 	sudo rm -f /usr/share/ovmf
 
-	unlink /opt/confidential-containers/share/td-shim
+	unlink /opt/kata/share/td-shim
 	sudo rm -f /usr/share/td-shim
 
-	unlink /opt/confidential-containers/share/tdvf
+	unlink /opt/kata/share/tdvf
 	sudo rm -f /usr/share/tdvf
 
-	unlink /opt/confidential-containers/bin/qemu-system-x86_64
+	unlink /opt/kata/bin/qemu-system-x86_64
 	sudo rm -f /usr/bin/qemu-system-x86_64
 
-	unlink /opt/confidential-containers/bin/qemu-system-x86_64-tdx
+	unlink /opt/kata/bin/qemu-system-x86_64-tdx
 	sudo rm -f /usr/bin/qemu-system-x86_64-tdx
 
 	unlink /opt/kata/libexec/virtiofsd
 	sudo rm -rf /usr/libexec/virtiofsd
 
 	info "remove all coco artifacts"
-	sudo rm -rf /opt/confidential-containers
+	sudo rm -rf /opt/kata
 }
 
 check_git_version() {
