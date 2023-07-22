@@ -13,7 +13,7 @@ cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 
 main() {
-	build_static_artifact_and_install x86_64-ovmf
+	build_static_artifact_and_install ovmf
 }
 
 main "$@"
