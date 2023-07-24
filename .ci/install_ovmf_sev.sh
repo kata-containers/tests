@@ -19,8 +19,8 @@ main() {
 	clone_katacontainers_repo
 
 	pushd $katacontainers_repo_dir
-	sudo -E PATH=$PATH bash ${buildscript} --build=cc-sev-ovmf
-	sudo tar -xvJpf build/kata-static-cc-sev-ovmf.tar.xz -C /
+	sudo -E PATH=$PATH bash ${buildscript} --build=ovmf-sev
+	sudo tar -xvJpf build/kata-static-ovmf-sev.tar.xz -C /
 	popd
 }
 

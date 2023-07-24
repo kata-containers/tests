@@ -14,10 +14,10 @@ cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 
 main() {
-	build_static_artifact_and_install "tdx-tdvf"
+	build_static_artifact_and_install "tdvf"
 
 	if [ "${KATA_BUILD_CC:-no}" == "yes" ]; then
-		sudo ln -sf /opt/confidential-containers/share/tdvf /usr/share/tdvf
+		sudo ln -sf /opt/kata/share/tdvf /usr/share/tdvf
 	fi
 }
 

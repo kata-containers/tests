@@ -35,10 +35,10 @@ build_and_install_kernel_for_cc() {
 
 	case "$kernel_type" in
 		tdx)
-			artifact="${kernel_type}-${artifact}"
+			artifact="${artifact}-tdx-experimental"
 			;;
 		sev|snp)
-			artifact="sev-${artifact}"
+			artifact="${artifact}-sev"
 			;;
 		vanilla) ;;
 		*)

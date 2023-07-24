@@ -30,7 +30,7 @@ build_and_install_qemu_for_cc() {
 
 	case "${qemu_type}" in
 		tdx|snp)
-			artifact="${qemu_type}-${artifact}"
+			artifact="${artifact}-${qemu_type}-experimental"
 			;;
 		vanilla) ;;
 		*)

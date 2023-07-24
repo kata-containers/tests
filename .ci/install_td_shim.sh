@@ -17,7 +17,7 @@ main() {
 	build_static_artifact_and_install "tdx-td-shim"
 
 	if [ "${KATA_BUILD_CC:-no}" == "yes" ]; then
-		sudo ln -sf /opt/confidential-containers/share/td-shim \
+		sudo ln -sf /opt/kata/share/td-shim \
 			/usr/share/td-shim
 	fi
 }

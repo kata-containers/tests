@@ -9,7 +9,7 @@ TEST_TAG="[cc][kubernetes][containerd][sev]"
 TESTS_REPO_DIR=$(realpath "${BATS_TEST_DIRNAME}/../../..")
 SIMPLE_KBS_DIR="${SIMPLE_KBS_DIR:-/tmp/simple-kbs}"
 RUNTIMECLASS="${RUNTIMECLASS:-"kata"}"
-SEV_CONFIG_FILE="/opt/confidential-containers/share/defaults/kata-containers/configuration-qemu-sev.toml"
+SEV_CONFIG_FILE="/opt/kata/share/defaults/kata-containers/configuration-qemu-sev.toml"
 IMAGE_REPO="ghcr.io/confidential-containers/test-container"
 UNENCRYPTED_IMAGE_URL="${IMAGE_REPO}:unencrypted"
 
