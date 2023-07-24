@@ -41,6 +41,15 @@ spec:
             requests:
               cpu: "100m"
               memory: "250Mi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+                drop:
+                    - ALL
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+                type: RuntimeDefault
       volumes:
         - name: webhook-certs
           secret:

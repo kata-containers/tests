@@ -57,6 +57,15 @@ check_working() {
 	      image: quay.io/prometheus/busybox:latest
 	      command: ["echo", "Hello Webhook"]
 	      imagePullPolicy: IfNotPresent
+	      securityContext:
+	        allowPrivilegeEscalation: false
+	        capabilities:
+	          drop:
+	            - ALL
+	        runAsNonRoot: true
+	        runAsUser: 1000
+	        seccompProfile:
+	          type: RuntimeDefault
 	EOF
 	local class_name=$(kubectl get -n ${WEBHOOK_NS} \
 		-o jsonpath='{.spec.runtimeClassName}' pod/${hello_pod})
