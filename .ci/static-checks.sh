@@ -448,6 +448,7 @@ static_check_license_headers()
 			--exclude="*.drawio" \
 			--exclude="*.toml" \
 			--exclude="*.txt" \
+			--exclude="*.dtd" \ 
 			--exclude="vendor/*" \
 			--exclude="VERSION" \
 			--exclude="kata_config_version" \
