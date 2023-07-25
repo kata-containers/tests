@@ -6,7 +6,6 @@
 #
 
 [ -n "$DEBUG" ] && set -x
-set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
@@ -24,20 +23,58 @@ command_file="mdev_supported_types/vfio_ap-passthrough/create"
 test_image_name="localhost:${registry_port}/vfio-ap-test:latest"
 
 test_category="[kata][vfio-ap][containerd]"
-test_message="Test can assign a CEX device inside the guest via a VFIO-AP mediated device"
 
 trap cleanup EXIT
 
 # Check if the given function exists.
-function function_exists() {
+function_exists() {
     [[ "$(type -t $1)" == "function" ]]
 }
 
 if ! function_exists get_test_version; then
     source "${script_path}/../../.ci/lib.sh"
 fi
+
+# Prevent the program from exiting on error
+trap - ERR
 image_version=$(get_test_version "docker_images.registry_ibm.version")
 registry_image=$(get_test_version "docker_images.registry_ibm.registry_url"):"${image_version}"
+
+setup_config_file() {
+    local target_item=$1
+    local action=$2
+    local replacement=${3:-}
+    local kata_config_file=$(kata-runtime env --json | jq -r '.Runtime.Config.Path')
+
+    if [ "${action}" == "comment_out" ]; then
+        sudo sed -i -e 's/.*\('${target_item}'.*\)/#\1/g' ${kata_config_file}
+    else
+        sudo sed -i -e 's/.*\('${target_item}'\s*=\).*/\1 "'${replacement}'"/g' ${kata_config_file}
+    fi
+}
+
+show_config_file() {
+    local kata_config_file=$(kata-runtime env --json | jq -r '.Runtime.Config.Path')
+    echo "Show kata configuration"
+    # Print out the configuration by excluding comments and empty lines
+    cat "${kata_config_file}" | grep -v '^\s*$\|^\s*\#'
+}
+
+setup_hotplug() {
+    echo "Set up the configuration file for Hotplug"
+    setup_config_file "vfio_mode" "replace" "vfio"
+    setup_config_file "cold_plug_vfio" "comment_out"
+    setup_config_file "hot_plug_vfio" "replace" "bridge-port"
+    show_config_file
+}
+
+setup_coldplug() {
+    echo "Set up the configuration file for Coldplug"
+    setup_config_file "vfio_mode" "replace" "guest-kernel"
+    setup_config_file "hot_plug_vfio" "comment_out"
+    setup_config_file "cold_plug_vfio" "replace" "bridge-port"
+    show_config_file
+}
 
 cleanup() {
     # Clean up container images
@@ -135,14 +172,34 @@ create_mediated_device() {
     popd
 }
 
-verify_device_in_kata() {
+run_test() {
+    local run_index=$1
+    local test_message=$2
+    local start_time=$(date +"%Y-%m-%d %H:%M:%S")
+    # Set time granularity to a second for capturing the log
+    sleep 1
     # Check if the APQN is identified in a container
     sudo ctr image pull --plain-http ${test_image_name}
+
     [ -n "${dev_index}" ] && \
         sudo ctr run --runtime io.containerd.run.kata.v2 --rm \
         --device ${dev_base}/${dev_index} ${test_image_name} test \
         bash -c "lszcrypt ${_APID}.${_APQI} | grep ${APQN}"
-    [ $? -eq 0 ] && echo "ok 1 ${test_category} ${test_message}"
+    if [ $? -eq 0 ]; then
+        echo "ok ${run_index} ${test_category} ${test_message}"
+    else
+        echo "not ok ${run_index} ${test_category} ${test_message}"
+        echo "Logging the journal..."
+        sudo journalctl --no-pager --since "${start_time}"
+    fi
+}
+
+run_tests() {
+    setup_hotplug
+    run_test "1" "Test can assign a CEX device inside the guest via VFIO-AP Hotplug"
+
+    setup_coldplug
+    run_test "2" "Test can assign a CEX device inside the guest via VFIO-AP Coldplug"
 }
 
 main() {
@@ -150,8 +207,7 @@ main() {
     cleanup
     build_test_image
     create_mediated_device
-    verify_device_in_kata
+    run_tests
 }
 
 main $@
-
