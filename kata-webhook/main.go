@@ -54,6 +54,7 @@ func annotatePodMutator(_ context.Context, ar *kwhmodel.AdmissionReview, obj met
 
 	if pod.GetNamespace() == "sonobuoy" {
 		fmt.Println("sonobuoy pods will not be changed to kata", pod.GetNamespace(), pod.GetName())
+		return &kwhmutating.MutatorResult{}, nil
 	}
 
 	for i := range pod.Spec.Containers {

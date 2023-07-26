@@ -22,20 +22,27 @@ CMD="sleep 10; cat /proc/meminfo"
 # which makes later direct comparison easier.
 MEMSIZE=${MEMSIZE:-$((2048*1024))}
 
+# this variable determines the number of attempts when a test
+# result is considered not valid (a zero value or a negative value)
+MAX_FAILED_ATTEMPTS=3
 memtotalAvg=0
 units_memtotal=""
 memfreeAvg=0
 units_memfree=""
 memavailableAvg=0
 units_memavailable=""
-total_iters=0
-header=0
 
+# count_iters: is the index of the current iteration
+count_iters=0
+
+# valid_result: if value stored is '1' the result is valid, '0' otherwise
+valid_result=0
 
 parse_results() {
 	local raw_results="${1}"
 
-	# variables that receive cummulative memory values for json case, or init to zero for csv case
+	# Variables used for sum cummulative values in the case of two or more reps.
+	# and used to compute average results for 'json' output format.
 	local memtotal_acu="${2:-0}"
 	local memfree_acu="${3:-0}"
 	local memavailable_acu="${4:-0}"
@@ -49,21 +56,26 @@ parse_results() {
 	local memavailable=$(echo "$raw_results" | awk '/MemAvailable/ {print $2}')
 	units_memavailable=$(echo "$raw_results" | awk '/MemAvailable/ {print $3}')
 
+	# check results: if any result is zero or negative, it is considered as invalid, and the test will be repeated.
+	if ((  $(echo "$memtotal <= 0" | bc -l) )) || ((  $(echo "$memfree <= 0" | bc -l) )) || ((  $(echo "$memavailable <= 0" | bc -l) )); then
+		MAX_FAILED_ATTEMPTS=$((MAX_FAILED_ATTEMPTS-1))
+		valid_result=0
+		info "Skipping invalid result:  memtotal: $memtotal  memfree: $memfree  memavailable: $memavailable"
+		return 0
+	fi
+
 	memtotalAvg=$((memtotal+memtotal_acu))
 	memfreeAvg=$((memfree+memfree_acu))
 	memavailableAvg=$((memavailable+memavailable_acu))
-
-	let "total_iters=total_iters+1"
-
-	echo "Iteration# $total_iters  memtotal: $memtotal  memfree: $memfree  memavailable: $memavailable"
+	valid_result=1
+	info "Iteration# $count_iters  memtotal: $memtotal  memfree: $memfree  memavailable: $memavailable"
 }
-
 
 store_results_json() {
 	metrics_json_start_array
-	memtotalAvg=$(( memtotalAvg / total_iters ))
-	memfreeAvg=$(( memfreeAvg / total_iters ))
-	memavailableAvg=$(( memavailableAvg / total_iters ))
+	memtotalAvg=$(echo "scale=4; $memtotalAvg / $count_iters" | bc)
+	memfreeAvg=$(echo "scale=4; $memfreeAvg / $count_iters" | bc)
+	memavailableAvg=$(echo "scale=4; $memavailableAvg / $count_iters" | bc)
 
 	local json="$(cat << EOF
 	{
@@ -84,7 +96,7 @@ store_results_json() {
 			"Units"  : "${units_memavailable}"
 		},
 		"repetitions": {
-			"Result" : ${total_iters}
+			"Result" : ${count_iters}
 		}
 	}
 EOF
@@ -94,55 +106,30 @@ EOF
 	metrics_json_save
 }
 
-store_results_csv() {
-	local filename=${1}
-
-	if [ $header -eq 0 ]; then
-		echo "memtotal,units_memtotal,memfree,units_memfree,memavailable,units_memavailable" > $filename
-		header=1
-	fi
-	echo "$memtotalAvg,$units_memtotal,$memfreeAvg,$units_memfree,$memavailableAvg,$units_memavailable" >> $filename
-}
-
 function main() {
 	# switch to select output format
-	local output_format=${1:-json}
-	local iterations=${2:-1}
-	local -r csv_filename="mem-usage-inside-container-$iterations-iters-$(date +"%Y_%m_%d_%H-%M").csv"
-	echo "Output format: $output_format"
-	echo "Iterations: $iterations"
+	local num_iterations=${1:-1}
+	info "Iterations: $num_iterations"
 
 	# Check tools/commands dependencies
 	cmds=("awk" "ctr")
-
 	init_env
 	check_cmds "${cmds[@]}"
 	check_images "${IMAGE}"
-
 	metrics_json_init
 
-	for (( i=0; i<$iterations; i++ )) do
+	while [  $count_iters -lt $num_iterations ]; do
 		local output=$(sudo -E "${CTR_EXE}" run --memory-limit $((MEMSIZE*1024)) --rm --runtime=$CTR_RUNTIME $IMAGE busybox sh -c "$CMD" 2>&1)
+		parse_results "${output}" "${memtotalAvg}" "${memfreeAvg}" "${memavailableAvg}"
 
-		if [ ${output_format} = "json" ]; then
-			parse_results "${output}" "${memtotalAvg}" "${memfreeAvg}" "${memavailableAvg}"
-
-	        # Record results per iteration
-		elif [ ${output_format} = "csv" ]; then
-			parse_results "${output}"
-			store_results_csv ${csv_filename}
-		fi
-		sleep 0.5
+		# quit if number of attempts exceeds the allowed value.
+		[ ${MAX_FAILED_ATTEMPTS} -eq 0 ] && die "Max number of attempts exceeded."
+		[ ${valid_result} -eq 1 ] && count_iters=$((count_iters+1))
 	done
-
-	if [ $output_format = "json" ]; then
-		store_results_json
-	fi
-
+	store_results_json
 	clean_env_ctr
 }
 
 # Parameters
-# @1: output format [json/csv]
-# @2: iterations {integer}
+# @1: num_iterations {integer}
 main "$@"
