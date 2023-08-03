@@ -178,7 +178,7 @@ function build_static_artifact_and_install() {
 	# Use different target for Confidential Containers.
 	if [ "${KATA_BUILD_CC:-no}" == "yes" ]; then
 		case ${artifact} in
-			"tdx-td-shim"|"sev-rootfs-initrd"|"tdx-rootfs-image"|"rootfs-image"|"rootfs-initrd"|"se-image"|"shim-v2")
+			"tdx-td-shim"|"rootfs-image"|"rootfs-initrd"|"se-image"|"shim-v2")
 				info "${make_target} is being used with the component from the CCv0 branch"
 				make_target="cc-${make_target}"
 				tarball="kata-static-cc-${artifact}.tar.xz"
