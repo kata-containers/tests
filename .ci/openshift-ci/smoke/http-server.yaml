@@ -18,4 +18,13 @@ spec:
         - containerPort: 8080
       command: ["python3"]
       args: [ "-m", "http.server", "8080"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
   runtimeClassName: kata-qemu
