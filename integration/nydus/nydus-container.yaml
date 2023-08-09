@@ -1,7 +1,7 @@
 metadata:
   name: nydus-container
 image:
-  image: ghcr.io/dragonflyoss/image-service/alpine:nydus-latest
+  image: ghcr.io/dragonflyoss/image-service/alpine:nydus-nightly-v6
 command:
 - tail
 - -f

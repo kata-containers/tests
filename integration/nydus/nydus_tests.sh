@@ -28,7 +28,7 @@ containerd_config="/etc/containerd/config.toml"
 containerd_config_backup="/tmp/containerd.config.toml"
 
 # test image for container
-IMAGE="${IMAGE:-ghcr.io/dragonflyoss/image-service/alpine:nydus-latest}"
+IMAGE="${IMAGE:-ghcr.io/dragonflyoss/image-service/alpine:nydus-nightly-v6}"
 
 if [ "$KATA_HYPERVISOR" != "qemu" ] && [ "$KATA_HYPERVISOR" != "cloud-hypervisor" ] && [ "$KATA_HYPERVISOR" != "dragonball" ]; then
 	echo "Skip nydus test for $KATA_HYPERVISOR, it only works for QEMU/CLH/DB now."
@@ -36,8 +36,8 @@ if [ "$KATA_HYPERVISOR" != "qemu" ] && [ "$KATA_HYPERVISOR" != "cloud-hypervisor
 fi
 
 arch="$(uname -m)"
-if [ "$arch" != "x86_64" ]; then
-	echo "Skip nydus test for $arch, it only works for x86_64 now. See https://github.com/kata-containers/tests/issues/4445"
+if [ "$arch" != "x86_64" -a "$arch" != "aarch64" ]; then
+	echo "Skip nydus test for $arch, it only works for x86_64 and aarch64 now. See https://github.com/kata-containers/tests/issues/4445"
 	exit 0
 fi
 
@@ -58,17 +58,53 @@ function install_from_tarball() {
 	curl -Ls "$tarball_url" | sudo tar xfz - -C /usr/local/bin --strip-components=1
 }
 
-function setup_nydus() {
-	# install nydus
-	install_from_tarball "nydus" "nydus-static"
+function install_from_source() {
+	[ -z $(command -v cargo) ] && "${dir_path}/../../.ci/install_rust.sh" && source "$HOME/.cargo/env"
+	[ -z $(command -v cmake) ] && apt install cmake -y
+	local src_dir=$(mktemp -d)
 
+	pushd ${src_dir}
+	if false; then
+	git clone https://github.com/dragonflyoss/image-service.git
+
+	pushd image-service
+	# install nydusd nydus-image
+	make && make install
+	[ -f "/usr/bin/nydusd" -a ! -f /usr/local/bin/nydusd ] && ln -s /usr/bin/nydusd /usr/local/bin/nydusd
+	[ -f "/usr/bin/nydus-image" -a ! -f /usr/local/bin/nydus-image ] && ln -s /usr/bin/nydus-image /usr/local/bin/nydus-image
+	# install nydusify
+	make -C contrib/nydusify/ && install -m 755 contrib/nydusify/cmd/nydusify /usr/bin
+	popd
+	fi
 	# install nydus-snapshotter
-	install_from_tarball "nydus-snapshotter" "nydus-snapshotter"
+	git clone https://github.com/containerd/nydus-snapshotter.git
+	pushd nydus-snapshotter
+	make && install -m 755 bin/containerd-nydus-grpc /usr/local/bin
+	popd
+
+	popd
+
+	# clean up temp dir
+	rm -rf ${src_dir}
+}
+
+function setup_nydus() {
+
+		# install nydus
+		install_from_tarball "nydus" "nydus-static"
+
+	if [ "${arch}" == "x86_64" ]; then
+		# install nydus-snapshotter
+		install_from_tarball "nydus-snapshotter" "nydus-snapshotter"
+	else
+		install_from_source
+	fi
 
 	# Config nydus snapshotter
 	sudo -E cp "$dir_path/nydusd-config.json" /etc/
 
 	# start nydus-snapshotter
+	if [ "$arch" == "x86_64" ]; then
 	nohup /usr/local/bin/containerd-nydus-grpc \
 		--config-path /etc/nydusd-config.json \
 		--shared-daemon \
@@ -80,6 +116,18 @@ function setup_nydus() {
 		--disable-cache-manager true \
 		--enable-nydus-overlayfs true \
 		--log-to-stdout >/dev/null 2>&1 &
+	else
+	nohup	/usr/local/bin/containerd-nydus-grpc \
+		--config-path /etc/nydusd-config.json \
+                --log-level debug \
+                --root /var/lib/containerd/io.containerd.snapshotter.v1.nydus \
+                --log-to-stdout \
+                --daemon-mode shared \
+                --nydusd /usr/local/bin/nydusd \
+                --nydus-image /usr/local/bin/nydus-image \
+		--address /run/containerd-nydus/containerd-nydus-grpc.sock \
+                --fs-driver fusedev >/dev/null 2>&1 &
+	fi
 }
 
 function config_kata() {
@@ -152,6 +200,7 @@ function setup() {
 }
 
 function run_test() {
+	echo $RUNTIME_CONFIG_PATH
 	sudo -E crictl pull "${IMAGE}"
 	pod=$(sudo -E crictl runp -r kata $dir_path/nydus-sandbox.yaml)
 	echo "Pod $pod created"
