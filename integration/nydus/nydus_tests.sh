@@ -118,6 +118,7 @@ function config_containerd() {
 	fi
 
 	cat <<EOF | sudo tee $containerd_config
+version = 2
 [debug]
   level = "debug"
 [proxy_plugins]

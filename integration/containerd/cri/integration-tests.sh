@@ -119,6 +119,7 @@ create_containerd_config() {
 	runtime="${runtime//./-}"
 
 cat << EOF | sudo tee "${CONTAINERD_CONFIG_FILE}"
+version = 2
 [debug]
   level = "debug"
 [plugins]
