@@ -28,6 +28,7 @@ declare -A minimal_packages=( \
 	[spell-check]="hunspell hunspell-en-gb hunspell-en-us pandoc" \
 	[xml_validator]="libxml2-utils" \
 	[yaml_validator]="yamllint" \
+	[guest_component]="libdevmapper-dev clang" \
 )
 
 declare -A packages=( \
