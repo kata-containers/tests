@@ -24,6 +24,7 @@ KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 KUBERNETES="${KUBERNETES:-yes}"
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
 USE_DEVMAPPER="${USE_DEVMAPPER:-false}"
+REMOTE_SNAPSHOTTER="${REMOTE_SNAPSHOTTER:-none}"
 
 setup_distro_env() {
 	local setup_type="$1"
@@ -106,6 +107,12 @@ install_kata() {
 	fi
 }
 
+install_remote_snapshotter() {
+	if [ "${REMOTE_SNAPSHOTTER}" == "nydus" ]; then
+		info "Install Nydus Snapshotter"
+	fi
+}
+
 install_extra_tools() {
 	# Remove K8s + CRIO conf that may remain from a previous run
 	sudo rm -f /etc/systemd/system/kubelet.service.d/0-crio.conf
@@ -163,6 +170,9 @@ main() {
 	enable_nested_virtualization
 	install_kata
 	install_extra_tools
+	if [ "$REMOTE_SNAPSHOTTER" != "none" ]; then
+		install_remote_snapshotter
+	fi
 	echo "Disable systemd-journald rate limit"
 	sudo crudini --set /etc/systemd/journald.conf Journal RateLimitInterval 0s
 	sudo crudini --set /etc/systemd/journald.conf Journal RateLimitBurst 0
