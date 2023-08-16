@@ -110,6 +110,7 @@ install_kata() {
 install_remote_snapshotter() {
 	if [ "${REMOTE_SNAPSHOTTER}" == "nydus" ]; then
 		info "Install Nydus Snapshotter"
+		bash -f "${cidir}/install_cri_containerd.sh"
 	fi
 }
 
