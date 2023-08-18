@@ -180,6 +180,9 @@ fi
 # - We got get changes if versions.yaml changed.
 "${GOPATH}/src/${tests_repo}/.ci/install_go.sh" -p -f
 
+# Install the guest component dependencies.
+"${GOPATH}/src/${tests_repo}/.ci/install-guest-component-dependencies.sh"
+
 # Check if we can fastpath return/skip the CI
 # Work around the 'set -e' dying if the check fails by using a bash
 # '{ group command }' to encapsulate.
