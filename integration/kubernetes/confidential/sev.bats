@@ -28,10 +28,10 @@ load "${TESTS_REPO_DIR}/integration/kubernetes/confidential/lib.sh"
 
 # Delete all test services
 k8s_delete_all() {
-  for file in $(ls "${TEST_DIR}/*.yaml") ; do
-    # Removing extension to get the pod name
-    local pod_name="${file%.*}"
-    kubernetes_delete_by_yaml "${pod_name}" "${TEST_DIR}/${file}"
+  for file in $(find "${TEST_DIR}" -name "*.yaml"); do
+    # Removing prefix path and file extension to get the pod partial name
+    local pod_partial_name=$(basename "${file%.*}")
+    kubernetes_delete_by_yaml "${pod_partial_name}" "${file}"
   done
 }
 
