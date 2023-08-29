@@ -21,8 +21,8 @@ sudo -E apt -y remove --purge man-db
 echo "Try to preemptively fix broken dependencies, if any"
 sudo -E apt --fix-broken install -y
 
-echo "Install chronic"
-sudo -E apt install -y moreutils
+echo "Install chronic and bc"
+sudo -E apt install -y moreutils bc
 
 declare -A minimal_packages=( \
 	[spell-check]="hunspell hunspell-en-gb hunspell-en-us pandoc" \
