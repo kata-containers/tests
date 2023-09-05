@@ -1328,7 +1328,7 @@ setup_agent()
 run_trace_forwarder()
 {
 	command -v "$forwarder_binary_name" &>/dev/null || \
-		(cd "$forwarder_dir" && cargo install --path .)
+		(cd "$forwarder_dir" && cargo install --locked --path .)
 
 	local socket_path_tf=""
 
