@@ -387,7 +387,7 @@ check_spans()
 run_trace_forwarder()
 {
 	source "$HOME/.cargo/env"
-	command -v "$forwarder_binary_name" &>/dev/null || (cd "$forwarder_dir" && cargo install --path .)
+	command -v "$forwarder_binary_name" &>/dev/null || (cd "$forwarder_dir" && cargo install --locked --path .)
 
 	if [ $KATA_HYPERVISOR = "qemu" ]; then
 		tmux new-session -d -s "$KATA_TMUX_FORWARDER_SESSION" "$forwarder_binary_name -l trace"
