@@ -104,7 +104,7 @@ cc-containerd:
 # Run the Confidential Containers tests for kubernetes.
 cc-kubernetes:
 	bash -f .ci/install_bats.sh
-	K8S_TEST_UNION="confidential/agent_image.bats confidential/agent_image_encrypted.bats" \
+	K8S_TEST_UNION="confidential/agent_image.bats confidential/agent_image_encrypted.bats confidential/sealed_secret.bats" \
 	bash integration/kubernetes/run_kubernetes_tests.sh
 
 # Run the Confidential Containers AMD SEV specific tests.

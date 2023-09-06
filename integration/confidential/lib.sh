@@ -266,6 +266,11 @@ setup_offline_fs_kbc_signature_files_in_guest() {
 	cp_to_guest_img "etc" "${SHARED_FIXTURES_DIR}/offline-fs-kbc/$(uname -m)/aa-offline_fs_kbc-resources.json"
 }
 
+setup_offline_fs_kbc_secret_files_in_guest() {
+	add_kernel_params "agent.aa_kbc_params=offline_fs_kbc::null"
+	cp_to_guest_img "etc" "${SHARED_FIXTURES_DIR}/sealed-secret/offline-fs-kbc/aa-offline_fs_kbc-resources.json"
+}
+
 setup_cc_kbc_signature_files_in_guest() {
 	# Enable signature verification via kata-configuration by removing the param that disables it
 	remove_kernel_param "agent.enable_signature_verification"
