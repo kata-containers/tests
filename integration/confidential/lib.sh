@@ -12,6 +12,10 @@ source "${BATS_TEST_DIRNAME}/../../../lib/common.bash"
 source "${BATS_TEST_DIRNAME}/../../../.ci/lib.sh"
 FIXTURES_DIR="${BATS_TEST_DIRNAME}/fixtures"
 SHARED_FIXTURES_DIR="${BATS_TEST_DIRNAME}/../../confidential/fixtures"
+NYDUS_SNAPSHOTTER_BINARY="/opt/kata/bin/containerd-nydus-grpc"
+NYDUS_SNAPSHOTTER_TARFS_CONFIG="/opt/kata/share/nydus-snapshotter/config-coco-host-sharing.toml"
+NYDUS_SNAPSHOTTER_GUEST_CONFIG="/opt/kata/share/nydus-snapshotter/config-coco-guest-pulling.toml"
+NYDUS_SNAPSHOTTER_CONFIG="$NYDUS_SNAPSHOTTER_TARFS_CONFIG"
 
 # Toggle between true and false the service_offload configuration of
 # the Kata agent.
@@ -180,6 +184,13 @@ disable_full_debug() {
 	sudo sed -i -e 's/^# *\(enable_debug\).*=.*$/\1 = false/g' "$RUNTIME_CONFIG_PATH"
 }
 
+restart_containerd() {
+	sudo systemctl restart containerd
+	if ! waitForProcess 30 5 "sudo crictl info >/dev/null"; then
+		die "containerd seems not operational after restarted"
+	fi
+}
+
 # Configure containerd for confidential containers. Among other things, it ensures
 # the CRI handler is configured to deal with confidential container.
 #
@@ -198,6 +209,7 @@ configure_cc_containerd() {
 	# installed via operator it will assume containerd is in right state
 	# already.
 	[ "${TESTS_CONFIGURE_CC_CONTAINERD:-yes}" == "yes" ] || return 0
+	sudo iptables -w -P FORWARD ACCEPT
 
 	# Even if we are not saving the original file it is a good idea to
 	# restart containerd because it might be in an inconsistent state here.
@@ -205,8 +217,7 @@ configure_cc_containerd() {
 	sleep 5
 	[ -n "$saved_containerd_conf_file" ] && \
 		sudo cp -f "$containerd_conf_file" "$saved_containerd_conf_file"
-	sudo systemctl start containerd
-	waitForProcess 30 5 "sudo crictl info >/dev/null"
+	restart_containerd
 
 	# Ensure the cc CRI handler is set.
 	local cri_handler=$(sudo crictl info | \
@@ -223,11 +234,6 @@ configure_cc_containerd() {
 			  sudo tee -a "$containerd_conf_file"
 	fi
 
-	sudo systemctl restart containerd
-	if ! waitForProcess 30 5 "sudo crictl info >/dev/null"; then
-		die "containerd seems not operational after reconfigured"
-	fi
-	sudo iptables -w -P FORWARD ACCEPT
 }
 
 #
@@ -444,4 +450,92 @@ EOF
       INSERT INTO secrets VALUES (10, 'default/key/ssh-demo', '${encryption_key}', NULL);
 EOF
   fi
+}
+
+###############################################################################
+
+# remote-snapshotter
+
+EXPORT_MODE=${EXPORT_MODE:-"image_guest_pull"}
+
+configure_remote_snapshotter() {
+	case "${SNAPSHOTTER}" in
+	"nydus")
+		configure_nydus_snapshotter
+		;;
+	*) ;;
+
+	esac
+}
+
+is_containerd_support_per_runtime_snapshotter() {
+   containerd_version=$(containerd --version | awk '{print $3}')
+   required_version="v1.7.0"
+   printf '%s\n' ${required_version} ${containerd_version} | sort --check=quiet  -V
+}
+
+set_vanilla_containerd() {
+	sudo systemctl stop containerd
+	sleep 5
+	sudo mv /usr/local/bin/containerd /usr/local/bin/containerd-coco
+	sudo cp /usr/local/bin/containerd-vanilla /usr/local/bin/containerd
+	echo "vanilla containerd version: $(containerd --version | awk '{print $3}')"
+	restart_containerd
+}
+
+unset_vanilla_containerd() {
+	sudo systemctl stop containerd
+	sleep 5
+	sudo rm -f /usr/local/bin/containerd 
+	sudo mv /usr/local/bin/containerd-coco /usr/local/bin/containerd
+	echo "coco containerd version: $(containerd --version | awk '{print $3}')"
+	restart_containerd
+}
+
+configure_containerd_for_nydus_snapshotter() {
+	set_vanilla_containerd
+	local containerd_config="$1"
+	snapshotter_socket="/run/containerd-nydus/containerd-nydus-grpc.sock"
+	proxy_config="  [proxy_plugins.$SNAPSHOTTER]\n    type = \"snapshot\"\n    address = \"${snapshotter_socket}\""
+
+	if grep -q "\[proxy_plugins\]" "$containerd_config"; then
+		sudo sed -i '/\[proxy_plugins\]/a\'"$proxy_config" "$containerd_config"
+	else
+		sudo echo -e "[proxy_plugins]" >>"$containerd_config"
+		sudo echo -e "$proxy_config" >>"$containerd_config"
+	fi
+
+	sudo sed -i 's/disable_snapshot_annotations = .*/disable_snapshot_annotations = false/g' "$containerd_config"
+	sudo sed -i 's/snapshotter = .*/snapshotter = "nydus"/g' "$containerd_config"
+}
+
+kill_nydus_snapshotter_process() {
+	echo "Kill nydus snapshotter"
+	bin="containerd-nydus-grpc"
+	sudo kill -9 $(pidof $bin) || true
+	sudo rm -rf "/var/lib/containerd-nydus" || true
+}
+
+remove_test_image() {
+	local test_image="$1"
+	crictl rmi "$1"
+	pause_name=$(crictl images -o json | jq -r '.images[].repoTags[] | select(. | contains("pause"))')
+	crictl rmi "$pause_name"
+}
+
+restart_nydus_snapshotter() {
+	kill_nydus_snapshotter_process || true
+	echo "Restart nydus snapshotter"
+	sudo "$NYDUS_SNAPSHOTTER_BINARY" --config "$NYDUS_SNAPSHOTTER_CONFIG" >/dev/stdout 2>&1 &
+}
+
+configure_nydus_snapshotter() {
+	echo "Configure nydus snapshotter"
+	if [ "$EXPORT_MODE" == "image_guest_pull" ]; then
+		NYDUS_SNAPSHOTTER_CONFIG="$NYDUS_SNAPSHOTTER_GUEST_CONFIG"
+	else
+		NYDUS_SNAPSHOTTER_CONFIG="$NYDUS_SNAPSHOTTER_TARFS_CONFIG"
+		sudo sed -i "s/export_mode = .*/export_mode = \"$EXPORT_MODE\"/" "$NYDUS_SNAPSHOTTER_CONFIG"
+	fi
+	restart_nydus_snapshotter
 }

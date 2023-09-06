@@ -5,7 +5,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: busybox-cc
+  name: busybox-cc$INDEX
 spec:
   runtimeClassName: $RUNTIMECLASS
   containers:

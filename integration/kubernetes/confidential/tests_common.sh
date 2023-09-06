@@ -16,7 +16,6 @@ original_kernel_params=$(get_kernel_params)
 # Global variables exported:
 #	$test_start_date     - test start time.
 #	$pod_config          - path to default pod configuration file.
-#	$original_kernel_params - saved the original list of kernel parameters.
 #
 setup_common() {
 	test_start_date=$(date +"%Y-%m-%d %H:%M:%S")
@@ -25,16 +24,28 @@ setup_common() {
 	pod_id=""
 
 	kubernetes_delete_all_cc_pods_if_any_exists || true
+}
+
+#  Setup containerd for tests.
+#
+setup_containerd() {
+	setup_common
 
 	echo "Prepare containerd for Confidential Container"
 	SAVED_CONTAINERD_CONF_FILE="/etc/containerd/config.toml.$$"
 	configure_cc_containerd "$SAVED_CONTAINERD_CONF_FILE"
+}
 
+#  Reconfigure Kata for tests.
+#
+# Global variables exported:
+#	$original_kernel_params - saved the original list of kernel parameters.
+#
+reconfigure_kata() {
 	echo "Reconfigure Kata Containers"
 	switch_image_service_offload on
 	clear_kernel_params
 	add_kernel_params "${original_kernel_params}"
-	
 	setup_proxy
 	switch_measured_rootfs_verity_scheme none
 }
@@ -58,6 +69,13 @@ teardown_common() {
 	add_kernel_params "${original_kernel_params}"
 	switch_image_service_offload off
 	disable_full_debug
+	# Restore containerd to pre-test state.
+	if [ -f "$SAVED_CONTAINERD_CONF_FILE" ]; then
+		systemctl stop containerd || true
+		sleep 5
+		mv -f "$SAVED_CONTAINERD_CONF_FILE" "/etc/containerd/config.toml"
+		systemctl start containerd || true
+	fi
 }
 
 
@@ -76,7 +94,6 @@ create_test_pod() {
 		enable_full_debug
 		enable_agent_console
 	fi
-
 	echo "Create the test sandbox"
 	echo "Pod config is: $pod_config"
 	kubernetes_create_cc_pod $pod_config
@@ -97,8 +114,9 @@ create_test_pod() {
 new_pod_config() {
 	local base_config="${FIXTURES_DIR}/pod-config.yaml.in"
 	local image="$1"
+	local index="${2:-}"
 
 	local new_config=$(mktemp "${BATS_FILE_TMPDIR}/$(basename ${base_config}).XXX")
-	IMAGE="$image" RUNTIMECLASS="$RUNTIMECLASS" envsubst < "$base_config" > "$new_config"
+	IMAGE="$image" RUNTIMECLASS="$RUNTIMECLASS"  INDEX="$index" envsubst < "$base_config" > "$new_config"
 	echo "$new_config"
 }

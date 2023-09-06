@@ -46,7 +46,8 @@ kubernetes_create_cc_pod() {
 	fi
 
 	kubectl apply -f ${config_file}
-	if ! pod_name=$(kubectl get pods -o jsonpath='{.items..metadata.name}'); then
+	pod_name=$(${GOPATH}/bin/yq r ${config_file} 'metadata.name')
+	if ! kubectl get pod "$pod_name" &> /dev/null; then
 		echo "Failed to create the pod"
 		return 1
 	fi

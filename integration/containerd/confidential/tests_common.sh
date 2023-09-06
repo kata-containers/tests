@@ -26,7 +26,7 @@ setup_common() {
 	echo "Prepare containerd for Confidential Container"
 	SAVED_CONTAINERD_CONF_FILE="/etc/containerd/config.toml.$$"
 	configure_cc_containerd "$SAVED_CONTAINERD_CONF_FILE"
-
+	restart_containerd
 	# Note: ensure that intructions changing the kernel parameters are
 	# executed *after* saving the original list.
 	saved_kernel_params=$(get_kernel_params)

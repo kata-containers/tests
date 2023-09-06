@@ -31,7 +31,9 @@ RUNTIMECLASS="${RUNTIMECLASS:-kata}"
 test_tag="[cc][agent][kubernetes][containerd]"
 
 setup() {
-	setup_common
+	setup_containerd
+    restart_containerd
+    reconfigure_kata
 }
 
 @test "$test_tag Test can launch pod with measured boot enabled" {

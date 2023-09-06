@@ -21,6 +21,7 @@ export SSH_KEY_FILE
 load "${BATS_TEST_DIRNAME}/../../confidential/lib.sh"
 load "${TESTS_REPO_DIR}/lib/common.bash"
 load "${TESTS_REPO_DIR}/integration/kubernetes/lib.sh"
+load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 # Delete all test services
 k8s_delete_all() {
@@ -38,6 +39,7 @@ setup_file() {
   # Configure CoCo settings in containerd config
   local saved_containerd_conf_file="/etc/containerd/config.toml.$$"
   configure_cc_containerd "${saved_containerd_conf_file}"
+  restart_containerd
 
   # Pull unencrypted image and retrieve ssh keys
   echo "Pulling unencrypted image and retrieve ssh key..."

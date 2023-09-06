@@ -4,9 +4,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-load "${BATS_TEST_DIRNAME}/lib.sh"
-load "${BATS_TEST_DIRNAME}/../../confidential/lib.sh"
 load "${BATS_TEST_DIRNAME}/../../../lib/common.bash"
+load "${BATS_TEST_DIRNAME}/tests_common.sh"
 
 # Allow to configure the runtimeClassName on pod configuration.
 RUNTIMECLASS="${RUNTIMECLASS:-kata}"
@@ -25,13 +24,8 @@ setup() {
     SAVED_CONTAINERD_CONF_FILE="/etc/containerd/config.toml.$$"
     configure_cc_containerd "$SAVED_CONTAINERD_CONF_FILE"
 
-    echo "Reconfigure Kata Containers"
-    switch_image_service_offload on
-    clear_kernel_params
-    add_kernel_params "${original_kernel_params}"
-
-    setup_proxy
-    switch_measured_rootfs_verity_scheme none
+    restart_containerd
+    reconfigure_kata
 }
 
 @test "$test_tag Test can pull an encrypted image inside the guest with decryption key" {
