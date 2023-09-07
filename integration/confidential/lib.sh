@@ -227,7 +227,7 @@ configure_cc_containerd() {
 	if ! waitForProcess 30 5 "sudo crictl info >/dev/null"; then
 		die "containerd seems not operational after reconfigured"
 	fi
-	sudo iptables -P FORWARD ACCEPT
+	sudo iptables -w -P FORWARD ACCEPT
 }
 
 #
