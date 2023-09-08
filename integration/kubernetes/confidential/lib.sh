@@ -113,6 +113,19 @@ assert_pod_fail() {
 	! kubernetes_create_cc_pod "$container_config" || /bin/false
 }
 
+
+# Check the logged messages on host have a given message.
+# Parameters:
+#      $1 - the message
+#
+# Note: get the logs since the global $test_start_date.
+#
+assert_logs_contain() {
+	local message="$1"
+	# Note: with image-rs we get more that the default 1000 lines of logs
+	journalctl -x -t kata --since "$test_start_date" -n 100000 | grep "$message"
+}
+
 setup_decryption_files_in_guest() {
 	checkout_doc_repo_dir
 	add_kernel_params "agent.aa_kbc_params=offline_fs_kbc::null"
