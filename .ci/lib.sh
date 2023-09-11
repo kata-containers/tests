@@ -391,6 +391,15 @@ cleanup_network_interface() {
 	[ "$CNI" != "" ] && info "$CNI doesn't clean up"
 }
 
+cleanup_nydus_snapshotter_dependencies() {
+	if [ -f "/usr/local/bin/nydus-overlayfs" ]; then
+		rm -f "/usr/local/bin/nydus-overlayfs"
+	fi
+	if [ -f "/usr/local/bin/nydus-image" ]; then
+		rm -f "/usr/local/bin/nydus-image"
+	fi
+}
+
 gen_clean_arch() {
 	# For metrics CI we are removing unnecessary steps like
 	# removing packages, removing CRI-O, etc mainly because
@@ -411,6 +420,9 @@ gen_clean_arch() {
 			delete_stale_docker_resource
 		fi
 	fi
+
+	info "remove nydus snapshotter dependencies"
+	cleanup_nydus_snapshotter_dependencies
 
 	info "remove containers started by ctr"
 	clean_env_ctr

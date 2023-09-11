@@ -13,7 +13,7 @@ set -o errtrace
 cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 
-target_dir="/opt/confidential-containers"
+target_dir="/opt/kata"
 
 nydus_snapshotter_repo=${nydus_snapshotter_repo:-"github.com/containerd/nydus-snapshotter"}
 nydus_snapshotter_repo_git="https://${nydus_snapshotter_repo}.git"
@@ -32,9 +32,9 @@ clone_nydus_snapshotter_repo() {
 
     if [ ! -d "${nydus_snapshotter_repo_dir}" ]; then
         sudo mkdir -p "${nydus_snapshotter_repo_dir}"
-        git clone ${nydus_snapshotter_repo_git} "${nydus_snapshotter_repo_dir}" || true
+        sudo git clone ${nydus_snapshotter_repo_git} "${nydus_snapshotter_repo_dir}" || true
         pushd "${nydus_snapshotter_repo_dir}"
-        git checkout "${nydus_snapshotter_version}"
+        sudo git checkout "${nydus_snapshotter_version}"
         popd
     fi
 }
@@ -46,27 +46,22 @@ build_nydus_snapshotter() {
     fi
     sudo -E PATH=$PATH make
 
-    if [ ! -d "$nydus_snapshotter_binary_target_dir" ]; then
-        sudo mkdir -p $nydus_snapshotter_binary_target_dir
-    fi
     sudo install -D -m 755 "bin/containerd-nydus-grpc" "$nydus_snapshotter_binary_target_dir/containerd-nydus-grpc"
     sudo install -D -m 755 "bin/nydus-overlayfs" "$nydus_snapshotter_binary_target_dir/nydus-overlayfs"
     if [ ! -f "/usr/local/bin/nydus-overlayfs" ]; then
         echo " /usr/local/bin/nydus-overlayfs exists, now we will replace it."
-        sudo cp -f "$nydus_snapshotter_binary_target_dir/nydus-overlayfs" "/usr/local/bin/nydus-overlayfs"
+        sudo cp "$nydus_snapshotter_binary_target_dir/nydus-overlayfs" "/usr/local/bin/nydus-overlayfs"
     fi
     sudo rm -rf "$nydus_snapshotter_repo_dir/bin"
     popd >/dev/null
 }
 
 download_nydus_snapshotter_config() {
-    if [ ! -d "$nydus_snapshotter_config_target_dir" ]; then
-        mkdir -p "$nydus_snapshotter_config_target_dir"
-    fi
-    sudo curl -L https://raw.githubusercontent.com/containerd/nydus-snapshotter/main/misc/snapshotter/config-coco-guest-pulling.toml -o "$nydus_snapshotter_config_target_dir/config-coco-guest-pulling.toml"
-    sudo curl -L https://raw.githubusercontent.com/containerd/nydus-snapshotter/main/misc/snapshotter/config-coco-host-sharing.toml -o "$nydus_snapshotter_config_target_dir/config-coco-host-sharing.toml"
-    sudo chmod 644 "$nydus_snapshotter_config_target_dir/config-coco-guest-pulling.toml"
-    sudo chmod 644 "$nydus_snapshotter_config_target_dir/config-coco-host-sharing.toml"
+    tmp_dir=$(mktemp -d -t install-nydus-snapshotter-config-tmp.XXXXXXXXXX)
+    sudo curl -L https://raw.githubusercontent.com/containerd/nydus-snapshotter/main/misc/snapshotter/config-coco-guest-pulling.toml -o "$tmp_dir/config-coco-guest-pulling.toml"
+    sudo curl -L https://raw.githubusercontent.com/containerd/nydus-snapshotter/main/misc/snapshotter/config-coco-host-sharing.toml -o "$tmp_dir/config-coco-host-sharing.toml"
+    sudo install -D -m 644 "$tmp_dir/config-coco-guest-pulling.toml" "$nydus_snapshotter_config_target_dir/config-coco-guest-pulling.toml"
+    sudo install -D -m 644 "$tmp_dir/config-coco-host-sharing.toml" "$nydus_snapshotter_config_target_dir/config-coco-host-sharing.toml"
 
 }
 
@@ -79,7 +74,7 @@ download_nydus_from_tarball() {
     local tarball_url="${nydus_repo}/releases/download/${nydus_version}/nydus-static-${nydus_version}-linux-$goarch.tgz"
     echo "Download tarball from ${tarball_url}"
     tmp_dir=$(mktemp -d -t install-nydus-tmp.XXXXXXXXXX)
-    curl -Ls "$tarball_url" | sudo tar xfz - -C $tmp_dir --strip-components=1
+    sudo curl -Ls "$tarball_url" | sudo tar xfz - -C $tmp_dir --strip-components=1
     sudo install -D -m 755 "$tmp_dir/nydus-image" "/usr/local/bin/"
 }
 

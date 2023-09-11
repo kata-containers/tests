@@ -127,6 +127,7 @@ case "${CI_JOB}" in
 			export AA_KBC="offline_fs_kbc"
 			if [[ "${CI_JOB}" =~ K8S ]]; then
 				export KUBERNETES=yes
+				export SNAPSHOTTER="nydus"
 			fi
 			;;
 	esac
@@ -191,6 +192,7 @@ case "${CI_JOB}" in
 		if grep -q 'prot_virt=1' /proc/cmdline && grep -Eq '^facilities.* 158 .*' /proc/cpuinfo; then
 			export TEE_TYPE="se"
 		fi
+		export SNAPSHOTTER="nydus"
 	fi
 
 	if [[ "${CI_JOB}" =~ CLOUD_HYPERVISOR ]]; then

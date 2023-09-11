@@ -24,6 +24,7 @@ KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 KUBERNETES="${KUBERNETES:-yes}"
 TEST_CGROUPSV2="${TEST_CGROUPSV2:-false}"
 USE_DEVMAPPER="${USE_DEVMAPPER:-false}"
+SNAPSHOTTER="${SNAPSHOTTER:-}"
 
 setup_distro_env() {
 	local setup_type="$1"
@@ -133,6 +134,11 @@ install_extra_tools() {
 		if [ "${CRI_CONTAINERD}" == "yes" ]; then
 			bash -f "${cidir}/configure_containerd_for_kubernetes.sh"
 		fi
+	fi
+
+	if [ "${SNAPSHOTTER}" == "nydus" ]; then
+		info "Install nydus-snapshotter"
+		bash -f "${cidir}/install_nydus_snapshotter.sh"
 	fi
 
 	echo "Install CNI plugins"
