@@ -25,8 +25,10 @@ setup() {
 	# Create a pod that consumes the ConfigMap
 	kubectl create -f "${pod_config_dir}/pod-configmap.yaml"
 
+	date >&3
 	# Check pod creation
 	kubectl wait --for=condition=Ready --timeout=$timeout pod "$pod_name"
+	date >&3
 
 	# Check env
 	cmd="env"

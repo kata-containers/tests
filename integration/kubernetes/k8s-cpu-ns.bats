@@ -61,6 +61,7 @@ setup() {
 	total_cpu_period=$(kubectl exec $pod_name -c $container_name \
 		-- sh -c "cat $periodsyspath")
 
+	echo "==========total_cpu_quota=$total_cpu_quota    total_cpu_period=$total_cpu_period=======" >&3
 	division_quota_period=$(echo $((total_cpu_quota/total_cpu_period)))
 
 	[ "$division_quota_period" -eq "$total_cpu_container" ]
