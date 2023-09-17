@@ -67,18 +67,12 @@ function setup_nydus() {
 
 	# Config nydus snapshotter
 	sudo -E cp "$dir_path/nydusd-config.json" /etc/
+	sudo -E cp "$dir_path/snapshotter-config.toml" /etc/
 
 	# start nydus-snapshotter
 	nohup /usr/local/bin/containerd-nydus-grpc \
-		--config-path /etc/nydusd-config.json \
-		--shared-daemon \
-		--log-level debug \
-		--root /var/lib/containerd/io.containerd.snapshotter.v1.nydus \
-		--cache-dir /var/lib/nydus/cache \
-		--nydusd-path /usr/local/bin/nydusd \
-		--nydusimg-path /usr/local/bin/nydus-image \
-		--disable-cache-manager true \
-		--enable-nydus-overlayfs true \
+		--config /etc/snapshotter-config.toml \
+		--nydusd-config /etc/nydusd-config.json \
 		--log-to-stdout >/dev/null 2>&1 &
 }
 
@@ -142,12 +136,22 @@ function config_containerd() {
 EOF
 }
 
+function check_nydus_snapshotter_exist() {
+	bin="containerd-nydus-grpc"
+	if pgrep -f "$bin" >/dev/null; then
+		echo "nydus-snapshotter is running"
+	else
+		die "nydus-snapshotter is not running"
+	fi
+}
+
 function setup() {
 	setup_nydus
 	config_kata
 	config_containerd
 	restart_containerd_service
 	check_processes
+	check_nydus_snapshotter_exist
 	extract_kata_env
 }
 
