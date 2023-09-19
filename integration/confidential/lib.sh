@@ -214,7 +214,7 @@ configure_cc_containerd() {
 	# Even if we are not saving the original file it is a good idea to
 	# restart containerd because it might be in an inconsistent state here.
 	sudo systemctl stop containerd
-	sleep 5
+	sleep 10
 	[ -n "$saved_containerd_conf_file" ] && \
 		sudo cp -f "$containerd_conf_file" "$saved_containerd_conf_file"
 	restart_containerd
@@ -476,18 +476,18 @@ is_containerd_support_per_runtime_snapshotter() {
 
 set_vanilla_containerd() {
 	sudo systemctl stop containerd
-	sleep 5
-	sudo mv /usr/local/bin/containerd /usr/local/bin/containerd-coco
-	sudo cp /usr/local/bin/containerd-vanilla /usr/local/bin/containerd
+	sleep 10
+	sudo mv -f /usr/local/bin/containerd /usr/local/bin/containerd-coco
+	sudo cp -f /usr/local/bin/containerd-vanilla /usr/local/bin/containerd
 	echo "vanilla containerd version: $(containerd --version | awk '{print $3}')"
 	restart_containerd
 }
 
 unset_vanilla_containerd() {
 	sudo systemctl stop containerd
-	sleep 5
+	sleep 10
 	sudo rm -f /usr/local/bin/containerd 
-	sudo mv /usr/local/bin/containerd-coco /usr/local/bin/containerd
+	sudo mv -f /usr/local/bin/containerd-coco /usr/local/bin/containerd
 	echo "coco containerd version: $(containerd --version | awk '{print $3}')"
 	restart_containerd
 }

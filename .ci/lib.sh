@@ -398,6 +398,9 @@ cleanup_nydus_snapshotter_dependencies() {
 	if [ -f "/usr/local/bin/nydus-image" ]; then
 		rm -f "/usr/local/bin/nydus-image"
 	fi
+	if [ -f "/usr/local/bin/containerd-vanilla" ]; then
+		rm -f "/usr/local/bin/containerd-vanilla"
+	fi
 }
 
 gen_clean_arch() {

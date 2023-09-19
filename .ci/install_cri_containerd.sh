@@ -17,6 +17,8 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Flag to do tasks for CI
 CI=${CI:-""}
 
+SNAPSHOTTER=${SNAPSHOTTER:-""}
+
 # shellcheck source=./lib.sh
 source "${script_dir}/lib.sh"
 
@@ -81,16 +83,41 @@ install_from_static_tarball() {
 	sudo tar -xvf "${tarball_name}" -C /
 }
 
-install_cri-tools() {
-crictl_repo=$(get_version "externals.critools.url")
-crictl_version=$(get_version "externals.critools.version")
-crictl_tag_prefix="v"
+install_vanilla_from_static_tarball() {
+	echo "Trying to install containerd from static tarball"
+	local tarball_url="https://github.com/containerd/containerd/releases/download"
+	local containerd_tarball_version="v1.7.0"
+	local containerd_version=${containerd_tarball_version#v}
+	local tarball_name="containerd-${containerd_version}-${CONTAINERD_OS}-${CONTAINERD_ARCH}.tar.gz"
+	local url="${tarball_url}/${containerd_tarball_version}/${tarball_name}"
 
-crictl_url="${crictl_repo}/releases/download/v${crictl_version}/crictl-${crictl_tag_prefix}${crictl_version}-linux-$(${script_dir}/kata-arch.sh -g).tar.gz"
-curl -Ls "$crictl_url" | sudo tar xfz - -C /usr/local/bin
+	echo "Download tarball from ${url}"
+	if ! curl -OL -f "${url}"; then
+		echo "Failed to download tarball from ${url}"
+		return 1
+	fi
+
+	tmp_dir=$(mktemp -d -t install-vanilla-containerd-tmp.XXXXXXXXXX)
+	sudo tar -xvf "${tarball_name}" -C $tmp_dir/
+	sudo install -D -m 755 "$tmp_dir/bin/containerd" "/usr/local/bin/containerd-vanilla"
+
+	systemctl status containerd
+}
+
+install_cri-tools() {
+	crictl_repo=$(get_version "externals.critools.url")
+	crictl_version=$(get_version "externals.critools.version")
+	crictl_tag_prefix="v"
+
+	crictl_url="${crictl_repo}/releases/download/v${crictl_version}/crictl-${crictl_tag_prefix}${crictl_version}-linux-$(${script_dir}/kata-arch.sh -g).tar.gz"
+	curl -Ls "$crictl_url" | sudo tar xfz - -C /usr/local/bin
 }
 
 install_from_static_tarball || install_from_source
+
+if [ "${SNAPSHOTTER}" == "nydus" ]; then
+	install_vanilla_from_static_tarball
+fi
 
 install_cri-tools
 
