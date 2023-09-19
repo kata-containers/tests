@@ -40,6 +40,9 @@ init_ci_flags() {
 	# Use the forked version of containerd for Confidential Containers
 	# Valyes: "yes|no"
 	export FORKED_CONTAINERD="no"
+	# Do the pull on the guest using the upstream containerd for Confidential Containers
+	# Values: "yes|no"
+	export IMAGE_OFFLOAD_TO_GUEST="no"
 	# Hypervisor to use
 	export KATA_HYPERVISOR=""
 	# Install k8s
@@ -122,7 +125,8 @@ case "${CI_JOB}" in
 		"CC_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_K8S")
 			# Export any CC specific environment variables
 			export KATA_BUILD_CC="yes"
-			export FORKED_CONTAINERD="yes"
+			export FORKED_CONTAINERD="no"
+			export IMAGE_OFFLOAD_TO_GUEST="yes"
 			export MEASURED_ROOTFS="yes"
 			export AA_KBC="offline_fs_kbc"
 			if [[ "${CI_JOB}" =~ K8S ]]; then
@@ -137,7 +141,8 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
 	export KATA_BUILD_CC="yes"
-	export FORKED_CONTAINERD="yes"
+	export FORKED_CONTAINERD="no"
+	export IMAGE_OFFLOAD_TO_GUEST="yes"
 	export AA_KBC="offline_fs_kbc"
 	export TEST_INITRD="yes"
 	if [[ "${CI_JOB}" =~ K8S ]]; then
@@ -160,7 +165,8 @@ case "${CI_JOB}" in
 	export CRI_RUNTIME="containerd"
 	export KATA_HYPERVISOR="qemu"
 	export KATA_BUILD_CC="yes"
-	export FORKED_CONTAINERD="yes"
+	export FORKED_CONTAINERD="no"
+	export IMAGE_OFFLOAD_TO_GUEST="yes"
 	export MEASURED_ROOTFS="yes"
 	export AA_KBC="cc_kbc"
 	export TEE_TYPE="tdx"
@@ -180,7 +186,8 @@ case "${CI_JOB}" in
 	export KUBERNETES="yes"
 	export AA_KBC="offline_fs_kbc"
 	export KATA_BUILD_CC="yes"
-	export FORKED_CONTAINERD="yes"
+	export FORKED_CONTAINERD="no"
+	export IMAGE_OFFLOAD_TO_GUEST="yes"
 	export MEASURED_ROOTFS="yes"
 	if [[ "${CI_JOB}" =~ TDX ]]; then
 		export TEE_TYPE="tdx"
@@ -206,7 +213,8 @@ case "${CI_JOB}" in
 	export KATA_HYPERVISOR="cloud-hypervisor"
 	# Export any CC specific environment variables
 	export KATA_BUILD_CC="yes"
-	export FORKED_CONTAINERD="yes"
+	export FORKED_CONTAINERD="no"
+	export IMAGE_OFFLOAD_TO_GUEST="yes"
 	export MEASURED_ROOTFS="yes"
 	export AA_KBC="offline_fs_kbc"
 	;;
