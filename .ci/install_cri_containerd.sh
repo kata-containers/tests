@@ -25,7 +25,11 @@ source "${script_dir}/lib.sh"
 CONTAINERD_OS=$(go env GOOS)
 CONTAINERD_ARCH=$(go env GOARCH)
 
-containerd_tarball_version=$(get_version "externals.containerd.version")
+if [ "${FORKED_CONTAINERD}" = "yes" ]; then
+	containerd_tarball_version=$(get_version "externals.containerd.forked.version")
+else
+	containerd_tarball_version=$(get_version "externals.containerd.upstream.version")
+fi
 
 containerd_version=${containerd_tarball_version#v}
 
@@ -38,7 +42,11 @@ fi
 install_from_source() {
 	echo "Trying to install containerd from source"
 	(
-		containerd_repo=$(get_version "externals.containerd.url")
+		if [ "${FORKED_CONTAINERD}" = "yes" ]; then
+			containerd_repo=$(get_version "externals.containerd.forked.url")
+		else
+			containerd_repo=$(get_version "externals.containerd.upstream.url")
+		fi
 		cd ${GOPATH}/src/
 		git clone "https://${containerd_repo}.git" "${GOPATH}/src/${containerd_repo}"
 
@@ -55,7 +63,11 @@ install_from_source() {
 
 install_from_static_tarball() {
 	echo "Trying to install containerd from static tarball"
-	local tarball_url=$(get_version "externals.containerd.tarball_url")
+	if [ "${FORKED_CONTAINERD}" = "yes" ]; then
+		local tarball_url=$(get_version "externals.containerd.forked.tarball_url")
+	else
+		local tarball_url=$(get_version "externals.containerd.upstream.tarball_url")
+	fi
 
 	local tarball_name="cri-containerd-cni-${containerd_version}-${CONTAINERD_OS}-${CONTAINERD_ARCH}.tar.gz"
 	local url="${tarball_url}/${containerd_tarball_version}/${tarball_name}"
