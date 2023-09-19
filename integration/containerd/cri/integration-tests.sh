@@ -18,7 +18,11 @@ source "${SCRIPT_PATH}/../../../.ci/lib.sh"
 # runc is installed in /usr/local/sbin/ add that path
 export PATH="$PATH:/usr/local/sbin"
 
-containerd_tarball_version=$(get_version "externals.containerd.version")
+if [ "${FORKED_CONTAINERD}" = "yes" ]; then
+	containerd_tarball_version=$(get_version "externals.containerd.forked.version")
+else
+	containerd_tarball_version=$(get_version "externals.containerd.upstream.version")
+fi
 
 # Runtime to be used for testing
 RUNTIME=${RUNTIME:-containerd-shim-kata-v2}
@@ -48,7 +52,11 @@ SNAP_CI=${SNAP_CI:-""}
 CI=${CI:-""}
 
 containerd_shim_path="$(command -v containerd-shim)"
-readonly cri_containerd_repo=$(get_version "externals.containerd.url")
+if [ "${FORKED_CONTAINERD}" = "yes" ]; then
+	readonly cri_containerd_repo=$(get_version "externals.containerd.forked.url")
+else
+	readonly cri_containerd_repo=$(get_version "externals.containerd.upstream.url")
+fi
 readonly cri_containerd_repo_git="https://${cri_containerd_repo}.git"
 
 #containerd config file
@@ -464,7 +472,11 @@ main() {
 	git reset HEAD
 
 	# In CCv0 we are using a fork of containerd, so pull the matching branch of this
-	containerd_branch=$(get_version "externals.containerd.branch")
+	if [ "${FORKED_CONTAINERD}" = "yes" ]; then
+		containerd_branch=$(get_version "externals.containerd.forked.branch")
+	else
+		containerd_branch=$(get_version "externals.containerd.upstream.version")
+	fi
 	git checkout "${containerd_branch}"
 	
 	# switch to the default pause image set by containerd:1.6.x
