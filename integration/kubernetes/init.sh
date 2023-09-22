@@ -25,6 +25,7 @@ network_plugin_config="${network_plugin_config:-}"
 RUNTIME=${RUNTIME:-containerd-shim-kata-v2}
 RUNTIME_PATH=${RUNTIME_PATH:-$(command -v $RUNTIME)}
 IMAGE_OFFLOAD_TO_GUEST="${IMAGE_OFFLOAD_TO_GUEST:-no}"
+PULL_ON_HOST="${PULL_ON_HOST:-no}"
 CRI_RUNTIME="${CRI_RUNTIME:-crio}"
 
 untaint_node() {
@@ -362,7 +363,7 @@ main() {
 		return 0
 	fi
 
-	if [ "${IMAGE_OFFLOAD_TO_GUEST}" = "yes" ]; then
+	if [ "${IMAGE_OFFLOAD_TO_GUEST}" = "yes" ] || [ "${PULL_ON_HOST}" = "yes" ]; then
 		info "Install nydus-snapshotter"
 		bash -f "${SCRIPT_PATH}/../../.ci/install_nydus_snapshotter.sh"
 		bash -f "${SCRIPT_PATH}/../../.ci/containerd_nydus_setup.sh"

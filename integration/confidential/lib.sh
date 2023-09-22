@@ -210,7 +210,7 @@ configure_cc_containerd() {
 
 	# Ensure the cc CRI handler is set.
 
-	if [ "${IMAGE_OFFLOAD_TO_GUEST:-no}" == "no" ]; then
+	if [ "${FORKED_CONTAINERD:-no}" = "yes" ]; then
 		local cri_handler=$(sudo crictl info | \
 			jq '.config.containerd.runtimes.kata.cri_handler')
 		if [[ ! "$cri_handler" =~ cc ]]; then
