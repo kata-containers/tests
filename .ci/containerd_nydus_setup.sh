@@ -21,8 +21,10 @@ NYDUS_SNAPSHOTTER_TARFS_EXPORT_MODE="${PULL_ON_HOST_EXPORT_MODE:-image_block}"
 
 echo "Configure nydus snapshotter"
 if [ "${IMAGE_OFFLOAD_TO_GUEST:-"no"}" == "yes" ]; then
+	echo "Pulling image on the guest"
 	NYDUS_SNAPSHOTTER_CONFIG="${NYDUS_SNAPSHOTTER_GUEST_CONFIG}"
 else
+	echo "Pulling image on the host | export_mode = ${NYDUS_SNAPSHOTTER_TARFS_EXPORT_MODE}"
 	NYDUS_SNAPSHOTTER_CONFIG="${NYDUS_SNAPSHOTTER_TARFS_CONFIG}"
 	sudo sed -i "s/export_mode = .*/export_mode = \"${NYDUS_SNAPSHOTTER_TARFS_EXPORT_MODE}\"/" "$NYDUS_SNAPSHOTTER_CONFIG"
 fi
