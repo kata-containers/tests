@@ -73,19 +73,19 @@ case "${CI_JOB}" in
 		;;
 	"CC_CRI_CONTAINERD"|"CC_CRI_CONTAINERD_CLOUD_HYPERVISOR"|"CC_CRI_CONTAINERD_TDX_QEMU"|"CC_CRI_CONTAINERD_TDX_CLOUD_HYPERVISOR")
 		echo "INFO: Running Confidential Container tests"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-containerd"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" IMAGE_OFFLOAD_TO_GUEST="yes" bash -c "make cc-containerd"
 		;;
 	"CC_SEV_CRI_CONTAINERD_K8S")
 		info "Running Confidential Containers tests for AMD SEV"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-sev-kubernetes"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" IMAGE_OFFLOAD_TO_GUEST="yes" bash -c "make cc-sev-kubernetes"
 		;;
 	"CC_SNP_CRI_CONTAINERD_K8S")
 		info "Running Confidential Containers tests for AMD SEV-SNP"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-snp-kubernetes"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" IMAGE_OFFLOAD_TO_GUEST="yes" bash -c "make cc-snp-kubernetes"
 		;;
 	"CC_CRI_CONTAINERD_K8S"|"CC_CRI_CONTAINERD_K8S_TDX_QEMU"|"CC_CRI_CONTAINERD_K8S_SE_QEMU"|"CC_CRI_CONTAINERD_K8S_TDX_CLOUD_HYPERVISOR")
 		info "Running Confidential Container tests"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-kubernetes"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" IMAGE_OFFLOAD_TO_GUEST="yes" bash -c "make cc-kubernetes"
 		;;
 	"CRIO_K8S")
 		echo "INFO: Running kubernetes tests"

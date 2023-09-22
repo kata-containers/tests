@@ -24,6 +24,7 @@ CI_JOB=${CI_JOB:-}
 network_plugin_config="${network_plugin_config:-}"
 RUNTIME=${RUNTIME:-containerd-shim-kata-v2}
 RUNTIME_PATH=${RUNTIME_PATH:-$(command -v $RUNTIME)}
+IMAGE_OFFLOAD_TO_GUEST="${IMAGE_OFFLOAD_TO_GUEST:-no}"
 CRI_RUNTIME="${CRI_RUNTIME:-crio}"
 
 untaint_node() {
@@ -355,6 +356,17 @@ main() {
 	kubectl create -f "${runtimeclass_files_path}/kata-runtimeclass.yaml"
 
 	untaint_node
+
+	# Configure snapshotter, if needed.
+	if [ "${CRI_RUNTIME}" == crio ]; then
+		return 0
+	fi
+
+	if [ "${IMAGE_OFFLOAD_TO_GUEST}" = "yes" ]; then
+		info "Install nydus-snapshotter"
+		bash -f "${SCRIPT_PATH}/../../.ci/install_nydus_snapshotter.sh"
+		bash -f "${SCRIPT_PATH}/../../.ci/containerd_nydus_setup.sh"
+	fi
 }
 
 main $@

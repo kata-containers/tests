@@ -209,13 +209,6 @@ configure_cc_containerd() {
 	waitForProcess 30 5 "sudo crictl info >/dev/null"
 
 	# Ensure the cc CRI handler is set.
-	local cri_handler=$(sudo crictl info | \
-		jq '.config.containerd.runtimes.kata.cri_handler')
-	if [[ ! "$cri_handler" =~ cc ]]; then
-		sudo sed -i 's/\([[:blank:]]*\)\(runtime_type = "io.containerd.kata.v2"\)/\1\2\n\1cri_handler = "cc"/' \
-			"$containerd_conf_file"
-	fi
-
 	if [ "$(sudo crictl info | jq -r '.config.cni.confDir')" = "null" ]; then
 		echo "    [plugins.cri.cni]
 		  # conf_dir is the directory in which the admin places a CNI conf.
