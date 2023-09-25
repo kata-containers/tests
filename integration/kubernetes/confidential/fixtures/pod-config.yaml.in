@@ -12,3 +12,5 @@ spec:
   - name: nginx
     image: $IMAGE
     imagePullPolicy: Always
+  imagePullSecrets:
+  - name: cococred
