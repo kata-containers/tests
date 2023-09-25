@@ -110,7 +110,6 @@ setup() {
 	assert_logs_contain "kata" 'Validate image failed: \[PublicKeyVerifier { key: ECDSA_P256_SHA256_ASN1'
 }
 
-
 @test "$test_tag Test pull an unencrypted unsigned image from an authenticated registry with correct credentials" {
 	kubectl delete secret cococred --ignore-not-found
 	AUTH_USER_NAME=$(echo "$REGISTRY_CREDENTIAL_ENCODED" |base64 -d| cut -d':' -f1)
@@ -154,7 +153,9 @@ setup() {
 	kubectl delete secret cococred --ignore-not-found
 }
 
+
 @test "$test_tag Test cannot pull an image from an authenticated registry without credentials" {
+	# TODO - anyway to reset nydus credentials?
 	pod_config="$(new_pod_config "${image_authenticated}")"
 	echo "Pod config: ${pod_config}"
 
