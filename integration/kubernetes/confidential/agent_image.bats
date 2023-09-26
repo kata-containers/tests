@@ -162,7 +162,7 @@ setup() {
 	assert_pod_fail "${pod_config}"
 
 	# Print the logs 
-	echo "-- Kata logs:"
+	
 	sudo journalctl -xe -t kata --since "$test_start_date" -n 100000
 
 	echo "-- containerd logs:"
@@ -176,4 +176,7 @@ setup() {
 
 teardown() {
 	teardown_common
+
+	echo "-- Snapshotter logs:"
+	sudo journalctl -xe -t snapshotter --since "$test_start_date" -n 100000
 }

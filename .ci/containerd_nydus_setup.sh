@@ -30,7 +30,7 @@ else
 fi
 
 echo "Start nydus snapshotter"
-sudo "${NYDUS_SNAPSHOTTER_BINARY}" --config "${NYDUS_SNAPSHOTTER_CONFIG}" >/dev/stdout 2>&1 &
+systemd-cat -t snapshotter sudo "${NYDUS_SNAPSHOTTER_BINARY}" --config "${NYDUS_SNAPSHOTTER_CONFIG}" --log-to-stdout --log-level debug &
 
 echo "Configure containerd to use the nydus snapshotter"
 
