@@ -85,7 +85,19 @@ case "${CI_JOB}" in
 		;;
 	"CC_CRI_CONTAINERD_K8S"|"CC_CRI_CONTAINERD_K8S_TDX_QEMU"|"CC_CRI_CONTAINERD_K8S_SE_QEMU"|"CC_CRI_CONTAINERD_K8S_TDX_CLOUD_HYPERVISOR")
 		info "Running Confidential Container tests"
-		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-kubernetes"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" IMAGE_OFFLOAD_TO_GUEST="no" PULL_ON_HOST="no" FORKED_CONTAINERD="yes" bash -c "make cc-kubernetes"
+		;;
+	"CC_CRI_CONTAINERD_K8S_IMAGE_OFFLOAD_TO_GUEST")
+		info "Running Confidential Container tests using nydus to offload the image pulling to the guest"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" IMAGE_OFFLOAD_TO_GUEST="yes" PULL_ON_HOST="no" bash -c "make cc-kubernetes"
+		;;
+	"CC_CRI_CONTAINERD_K8S_PULL_ON_HOST_IMAGE_BLOCK")
+		info "Running Confidential Container tests using nydus to offload the image pulling to the guest"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" IMAGE_OFFLOAD_TO_GUEST="no" PULL_ON_HOST="yes" PULL_ON_HOST_EXPORT_MODE="image_block" FORKED_CONTAINERD="no" bash -c "make cc-kubernetes"
+		;;
+	"CC_CRI_CONTAINERD_K8S_PULL_ON_HOST_IMAGE_BLOCK_WITH_VERITY")
+		info "Running Confidential Container tests using nydus to offload the image pulling to the guest"
+		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" IMAGE_OFFLOAD_TO_GUEST="no" PULL_ON_HOST="yes" PULL_ON_HOST_EXPORT_MODE="image_block_with_verity" FORKED_CONTAINERD="no" bash -c "make cc-kubernetes"
 		;;
 	"CRIO_K8S")
 		echo "INFO: Running kubernetes tests"
