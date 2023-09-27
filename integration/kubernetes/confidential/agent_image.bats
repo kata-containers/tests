@@ -32,6 +32,7 @@ test_tag="[cc][agent][kubernetes][containerd]"
 
 setup() {
 	setup_common
+	switch_image_service_offload off
 }
 
 @test "$test_tag Test can launch pod with measured boot enabled" {
@@ -175,6 +176,8 @@ setup() {
 }
 
 teardown() {
+	echo "-- containerd logs:"
+	sudo journalctl -xe -t containerd --since "$test_start_date" -n 100000
 	teardown_common
 
 	echo "-- Snapshotter logs:"
