@@ -14,7 +14,6 @@ cidir=$(dirname "$0")
 source "${cidir}/lib.sh"
 
 target_dir="/usr/local/"
-
 nydus_snapshotter_repo=$(get_version "externals.nydus-snapshotter.url")
 nydus_snapshotter_version=$(get_version "externals.nydus-snapshotter.version")
 nydus_snapshotter_repo_dir="${GOPATH}/src/github.com/containerd/nydus-snapshotter"
@@ -22,7 +21,7 @@ nydus_snapshotter_binary_target_dir="${target_dir}/bin"
 nydus_snapshotter_config_target_dir="${target_dir}/share/nydus-snapshotter"
 
 nydus_repo=${nydus_repo:-"https://github.com/dragonflyoss/image-service"}
-nydus_version=${nydus_version:-"v2.2.3"}
+nydus_version=${nydus_version:-"v2.3.0-alpha.0"}
 
 arch="$(uname -m)"
 
@@ -65,6 +64,7 @@ download_nydus_from_tarball() {
         echo "Skip to download nydus for ${arch}, it doesn't work for ${arch} now."
         return
     fi
+    
     local goarch="$(${cidir}/kata-arch.sh --golang)"
     local tarball_url="${nydus_repo}/releases/download/${nydus_version}/nydus-static-${nydus_version}-linux-${goarch}.tgz"
     echo "Download tarball from ${tarball_url}"
