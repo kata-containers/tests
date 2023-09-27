@@ -40,6 +40,13 @@ init_ci_flags() {
 	# Use the forked version of containerd for Confidential Containers
 	# Valyes: "yes|no"
 	export FORKED_CONTAINERD="no"
+	# Do the pull on the guest using the upstream containerd for Confidential Containers
+	# Values: "yes|no"
+	export IMAGE_OFFLOAD_TO_GUEST="no"
+	# Do the pull on the host using the upstream containerd for Confidential Containers
+	# Values: "yes|no"
+	export PULL_ON_HOST="no"
+	export PULL_ON_HOST_EXPORT_MODE="image_block"
 	# Hypervisor to use
 	export KATA_HYPERVISOR=""
 	# Install k8s
@@ -130,6 +137,50 @@ case "${CI_JOB}" in
 			fi
 			;;
 	esac
+	;;
+"CC_CRI_CONTAINERD_K8S_IMAGE_OFFLOAD_TO_GUEST")
+	# This job only tests containerd + k8s
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="qemu"
+	export KUBERNETES="yes"
+	# Export any CC specific environment variables
+	export KATA_BUILD_CC="yes"
+	export FORKED_CONTAINERD="no"
+	export IMAGE_OFFLOAD_TO_GUEST="yes"
+	export MEASURED_ROOTFS="yes"
+	export AA_KBC="offline_fs_kbc"
+	;;
+"CC_CRI_CONTAINERD_K8S_PULL_ON_HOST_IMAGE_BLOCK")
+	# This job only tests containerd + k8s
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="qemu"
+	export KUBERNETES="yes"
+	# Export any CC specific environment variables
+	export KATA_BUILD_CC="yes"
+	export FORKED_CONTAINERD="no"
+	export PULL_ON_HOST="yes"
+	export PULL_ON_HOST_EXPORT_MODE="image_block"
+	export MEASURED_ROOTFS="yes"
+	export AA_KBC="offline_fs_kbc"
+	;;
+"CC_CRI_CONTAINERD_K8S_PULL_ON_HOST_IMAGE_BLOCK_WITH_VERITY")
+	# This job only tests containerd + k8s
+	init_ci_flags
+	export CRI_CONTAINERD="yes"
+	export CRI_RUNTIME="containerd"
+	export KATA_HYPERVISOR="qemu"
+	export KUBERNETES="yes"
+	# Export any CC specific environment variables
+	export KATA_BUILD_CC="yes"
+	export FORKED_CONTAINERD="no"
+	export PULL_ON_HOST="yes"
+	export PULL_ON_HOST_EXPORT_MODE="image_block_with_verity"
+	export MEASURED_ROOTFS="yes"
+	export AA_KBC="offline_fs_kbc"
 	;;
 "CC_SEV_CRI_CONTAINERD_K8S"|"CC_SNP_CRI_CONTAINERD_K8S")
 	init_ci_flags

@@ -40,6 +40,10 @@ main () {
 	info "Stop ${CRI_RUNTIME} service"
 	sudo systemctl stop "${CRI_RUNTIME}"
 
+	sudo kill -9 $(pidof "containerd-nydus-grpc") || true
+	sudo rm -f "/usr/local/bin/nydus-overlayfs"
+	sudo rm -f "/usr/local/bin/nydus-image"
+
 	info "Remove network devices"
 	for dev in cni0 flannel.1; do
 		info "remove device: $dev"

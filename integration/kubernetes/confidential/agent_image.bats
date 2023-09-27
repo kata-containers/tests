@@ -32,6 +32,7 @@ test_tag="[cc][agent][kubernetes][containerd]"
 
 setup() {
 	setup_common
+	switch_image_service_offload off
 }
 
 @test "$test_tag Test can launch pod with measured boot enabled" {
@@ -51,6 +52,15 @@ setup() {
 	assert_pod_fail "$pod_config"
 }
 
+@test "$test_tag Test cannot pull an unencrypted unsigned image from a protected registry" {
+	setup_signature_files
+	local container_config="$(new_pod_config "$image_unsigned_protected")"
+
+	echo $container_config
+	assert_pod_fail "$container_config"
+	assert_logs_contain "kata" 'Validate image failed: The signatures do not satisfied! Reject reason: \[Match reference failed.\]'
+}
+
 @test "$test_tag Test can pull an unencrypted image inside the guest" {
 	create_test_pod
 
@@ -67,15 +77,6 @@ setup() {
 	create_test_pod
 }
 
-@test "$test_tag Test cannot pull an unencrypted unsigned image from a protected registry" {
-	setup_signature_files
-	local container_config="$(new_pod_config "$image_unsigned_protected")"
-
-	echo $container_config
-	assert_pod_fail "$container_config"
-	assert_logs_contain 'Validate image failed: The signatures do not satisfied! Reject reason: \[Match reference failed.\]'
-}
-
 @test "$test_tag Test can pull an unencrypted unsigned image from an unprotected registry" {
 	setup_signature_files
 	pod_config="$(new_pod_config "$image_unsigned_unprotected")"
@@ -90,7 +91,7 @@ setup() {
 	echo $container_config
 
 	assert_pod_fail "$container_config"
-	assert_logs_contain 'Validate image failed: The signatures do not satisfied! Reject reason: \[signature verify failed! There is no pubkey can verify the signature!\]'
+	assert_logs_contain "kata" 'Validate image failed: The signatures do not satisfied! Reject reason: \[signature verify failed! There is no pubkey can verify the signature!\]'
 }
 
 @test "$test_tag Test unencrypted image signed with cosign" {
@@ -107,11 +108,16 @@ setup() {
 	echo $container_config
 
 	assert_pod_fail "$container_config"
-	assert_logs_contain 'Validate image failed: \[PublicKeyVerifier { key: ECDSA_P256_SHA256_ASN1'
+	assert_logs_contain "kata" 'Validate image failed: \[PublicKeyVerifier { key: ECDSA_P256_SHA256_ASN1'
 }
 
-
 @test "$test_tag Test pull an unencrypted unsigned image from an authenticated registry with correct credentials" {
+	kubectl delete secret cococred --ignore-not-found
+	AUTH_USER_NAME=$(echo "$REGISTRY_CREDENTIAL_ENCODED" |base64 -d| cut -d':' -f1)
+	AUTH_USER_PASSWD=$(echo "$REGISTRY_CREDENTIAL_ENCODED" |base64 -d| cut -d':' -f2)
+	kubectl create secret docker-registry cococred --docker-server="https://quay.io/kata-containers/confidential-containers-auth" \
+	--docker-username="$AUTH_USER_NAME" --docker-password="$AUTH_USER_PASSWD"
+
 	if [ "${AA_KBC}" = "offline_fs_kbc" ]; then
 		setup_credentials_files "quay.io/kata-containers/confidential-containers-auth"
 	elif [ "${AA_KBC}" = "cc_kbc" ]; then
@@ -126,6 +132,7 @@ setup() {
 	echo $pod_config
 
 	create_test_pod
+	kubectl delete secret cococred --ignore-not-found
 }
 
 @test "$test_tag Test cannot pull an image from an authenticated registry with incorrect credentials" {
@@ -133,23 +140,46 @@ setup() {
 		skip "As the test requires changing verdictd configuration and restarting its service"
 	fi
 
+	kubectl delete secret cococred --ignore-not-found
+	kubectl create secret docker-registry cococred --docker-server="https://quay.io/kata-containers/confidential-containers-auth" \
+	--docker-username="Arandomquaytestaccountthatdoesntexist" --docker-password="password"
+
 	REGISTRY_CREDENTIAL_ENCODED="QXJhbmRvbXF1YXl0ZXN0YWNjb3VudHRoYXRkb2VzbnRleGlzdDpwYXNzd29yZAo=" setup_credentials_files "quay.io/kata-containers/confidential-containers-auth"
 
 	pod_config="$(new_pod_config "${image_authenticated}")"
 	echo "Pod config: ${pod_config}"
 
 	assert_pod_fail "${pod_config}"
-	assert_logs_contain 'failed to pull manifest Authentication failure'
+	assert_logs_contain "containerd" 'failed to fetch oauth token'
+	kubectl delete secret cococred --ignore-not-found
 }
 
+
 @test "$test_tag Test cannot pull an image from an authenticated registry without credentials" {
+	# TODO - anyway to reset nydus credentials?
 	pod_config="$(new_pod_config "${image_authenticated}")"
 	echo "Pod config: ${pod_config}"
 
 	assert_pod_fail "${pod_config}"
-	assert_logs_contain 'failed to pull manifest Not authorized'
+
+	# Print the logs 
+	
+	sudo journalctl -xe -t kata --since "$test_start_date" -n 100000
+
+	echo "-- containerd logs:"
+	sudo journalctl -xe -t containerd --since "$test_start_date" -n 100000
+
+	echo "-- kubelet logs:"
+	sudo journalctl -xe -t kubelet --since "$test_start_date" -n 100000
+
+	assert_logs_contain "containerd" 'failed to resolve reference \\"quay.io/kata-containers/confidential-containers-auth:test\\": pulling from host quay.io failed with status code \[manifests test\]: 401 UNAUTHORIZED'
 }
 
 teardown() {
+	echo "-- containerd logs:"
+	sudo journalctl -xe -t containerd --since "$test_start_date" -n 100000
 	teardown_common
+
+	echo "-- Snapshotter logs:"
+	sudo journalctl -xe -t snapshotter --since "$test_start_date" -n 100000
 }
