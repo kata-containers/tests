@@ -172,11 +172,11 @@ setup() {
   local pod_info=$(esudo kubectl describe pod ${pod_name})
 
   # Check failure condition
-  if [[ ! ${pod_info} =~ "Failed to pull image" ]]; then
+  if [[ ! ${pod_info} =~ "missing private key needed for decryption" ]]; then
     >&2 echo -e "TEST - FAIL"
     return 1
   else
-    echo "Pod message contains: Failed to pull image"
+    echo "Pod message contains: missing private key needed for decryption"
     echo -e "TEST - PASS"
   fi
 }
