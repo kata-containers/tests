@@ -42,7 +42,8 @@ setup() {
 	local pod_id=$(crictl pods --name "$sandbox_name" -q)
 	rootfs=($(find /run/kata-containers/shared/sandboxes/${pod_id}/shared \
 		-name rootfs))
-	[ ${#rootfs[@]} -eq 1 ]
+
+	[ ${#rootfs[@]} -eq 0 ]
 }
 
 @test "$test_tag Test can pull a unencrypted signed image from a protected registry" {
@@ -114,7 +115,7 @@ setup() {
 	setup_credentials_files "quay.io/kata-containers/confidential-containers-auth" 
 
 	create_test_pod
-	
+
 	assert_container "${container_config}"
 }
 
