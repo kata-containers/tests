@@ -57,6 +57,9 @@ setup() {
 }
 
 @test "$test_tag Test cannot pull an unencrypted unsigned image from a protected registry" {
+	# Ensure that the signed image that currently has the same sha256 as unsigned is not used by the snapshotter
+	sudo crictl rmi quay.io/kata-containers/confidential-containers:signed
+
 	local container_config="${FIXTURES_DIR}/container-config_unsigned-protected.yaml"
 
 	setup_signature_files
