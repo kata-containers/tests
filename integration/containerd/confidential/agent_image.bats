@@ -159,7 +159,7 @@ setup() {
 	create_test_pod
 
 	assert_container_fail "$container_config"
-	assert_logs_contain 'failed to pull manifest Authentication failure'
+	assert_logs_contain 'failed to resolve reference \\"quay.io/kata-containers/confidential-containers-auth:test\\": failed to authorize: failed to fetch oauth token: unexpected status: 401 UNAUTHORIZED'
 	# rm ~/.docker/config.json
 }
 
@@ -171,7 +171,7 @@ setup() {
 	create_test_pod
 
 	assert_container_fail "$container_config"
-	assert_logs_contain 'failed to pull manifest Not authorized'
+    assert_logs_contain 'failed to resolve reference \\"quay.io/kata-containers/confidential-containers-auth:test\\": pulling from host quay.io failed with status code \[manifests test\]: 401 UNAUTHORIZED'
 }
 
 teardown() {
@@ -181,4 +181,9 @@ teardown() {
 	echo "-- Kata logs:"
 	# Note - with image-rs we hit more that the default 1000 lines of logs
 	sudo journalctl -xe -t kata --since "$test_start_time" -n 100000 
+
+		# Print the logs and cleanup resources.
+	echo "-- containerd logs:"
+	# Note - with image-rs we hit more that the default 1000 lines of logs
+	sudo journalctl -xe -t containerd --since "$test_start_time" -n 100000 
 }
