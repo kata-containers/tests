@@ -113,6 +113,17 @@ setup() {
 }
 
 @test "$test_tag Test pull an unencrypted unsigned image from an authenticated registry with correct credentials" {
+	# Docker config doesn't seem to be read by nydus0snapshotter despite documentation
+# 	mkdir -p ~/.docker
+# 	cat << EOF | tee ~/.docker/config.json
+# {
+# 	"quay.io/kata-containers/confidential-containers-auth": {
+# 		"quay.io": {
+# 			"auth": "$REGISTRY_CREDENTIAL_ENCODED"
+# 		}
+# 	}
+# }
+# EOF
 	local container_config="${FIXTURES_DIR}/container-config_authenticated.yaml"
 
 	setup_credentials_files "quay.io/kata-containers/confidential-containers-auth" 
@@ -120,22 +131,43 @@ setup() {
 	create_test_pod
 
 	assert_container "${container_config}"
+	# rm ~/.docker/config.json
 }
 
 @test "$test_tag Test cannot pull an image from an authenticated registry with incorrect credentials" {
+# Docker config doesn't seem to be read by nydus0snapshotter despite documentation
+# 	mkdir -p ~/.docker
+# 	cat << EOF | tee ~/.docker/config.json
+# {
+#   "auths": {
+#     "quay.io/kata-containers/confidential-containers-auth": {
+#       "auth": "incorrectCredentials",
+#       "email": ""
+#     }
+#   }
+# }
+# EOF
+
 	local container_config="${FIXTURES_DIR}/container-config_authenticated.yaml"
 
-	REGISTRY_CREDENTIAL_ENCODED="QXJhbmRvbXF1YXl0ZXN0YWNjb3VudHRoYXRkb2VzbnRleGlzdDpwYXNzd29yZAo=" setup_credentials_files "quay.io/kata-containers/confidential-containers-auth"
+	# Set up incorrect credentials
+	# Note - because we are currently exporting them here to be used in `crictl_create_cc_container` if this test runs before
+	# the correct credentials one it will override the secret we pass in and fail
+	export REGISTRY_CREDENTIAL_ENCODED="QXJhbmRvbXF1YXl0ZXN0YWNjb3VudHRoYXRkb2VzbnRleGlzdDpwYXNzd29yZAo="
+	setup_credentials_files "quay.io/kata-containers/confidential-containers-auth"
 
 	create_test_pod
 
 	assert_container_fail "$container_config"
 	assert_logs_contain 'failed to pull manifest Authentication failure'
+	# rm ~/.docker/config.json
 }
 
 @test "$test_tag Test cannot pull an image from an authenticated registry without credentials" {
 	local container_config="${FIXTURES_DIR}/container-config_authenticated.yaml"
 
+	# Set no credentials in the `crictl_create_cc_container`
+	export REGISTRY_CREDENTIAL_ENCODED=""
 	create_test_pod
 
 	assert_container_fail "$container_config"

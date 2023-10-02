@@ -141,8 +141,13 @@ crictl_create_cc_container() {
 		return 1
 	fi
 
+	local auth_string=""
+	if [ -n "$REGISTRY_CREDENTIAL_ENCODED" ]; then
+		auth_string="--auth $REGISTRY_CREDENTIAL_ENCODED"
+	fi
+
 	pod_id=$(sudo crictl pods --name ${pod_name} -q)
-	container_id=$(sudo crictl create -with-pull "${pod_id}" \
+	container_id=$(sudo crictl create ${auth_string} --with-pull "${pod_id}" \
 		"${container_config}" "${pod_config}")
 
 	if [ -z "$container_id" ]; then
