@@ -51,6 +51,15 @@ setup() {
 	assert_pod_fail "$pod_config"
 }
 
+@test "$test_tag Test cannot pull an unencrypted unsigned image from a protected registry" {
+	setup_signature_files
+	local container_config="$(new_pod_config "$image_unsigned_protected")"
+
+	echo $container_config
+	assert_pod_fail "$container_config"
+	assert_logs_contain "kata" 'Validate image failed: The signatures do not satisfied! Reject reason: \[Match reference failed.\]'
+}
+
 @test "$test_tag Test can pull an unencrypted image inside the guest" {
 	create_test_pod
 
@@ -65,15 +74,6 @@ setup() {
 @test "$test_tag Test can pull a unencrypted signed image from a protected registry" {
 	setup_signature_files
 	create_test_pod
-}
-
-@test "$test_tag Test cannot pull an unencrypted unsigned image from a protected registry" {
-	setup_signature_files
-	local container_config="$(new_pod_config "$image_unsigned_protected")"
-
-	echo $container_config
-	assert_pod_fail "$container_config"
-	assert_logs_contain "kata" 'Validate image failed: The signatures do not satisfied! Reject reason: \[Match reference failed.\]'
 }
 
 @test "$test_tag Test can pull an unencrypted unsigned image from an unprotected registry" {
