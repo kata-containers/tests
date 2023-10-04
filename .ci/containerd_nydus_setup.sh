@@ -45,3 +45,7 @@ echo -e "${proxy_config}" | sudo tee -a "${containerd_config_file}"
 
 sudo sed -i '/\[plugins.cri.containerd\]/a\'"${snapshotter_config}" "${containerd_config_file}"
 sudo systemctl restart containerd
+
+# SNP & SEV tests seem to need time for containerd and snapshotter to be running
+# In future fix this to make it check if it's running rather than sleep
+sleep 30
