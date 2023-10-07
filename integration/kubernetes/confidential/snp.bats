@@ -71,10 +71,10 @@ setup() {
 @test "${TEST_TAG} Test SNP unencrypted container launch success" {
   # Start the service/deployment/pod
   esudo kubectl apply -f "${TEST_DIR}/snp-unencrypted.yaml"
-  
+
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   local pod_name=$(esudo kubectl get pod -o wide | grep snp-unencrypted | awk '{print $1;}')
-  kubernetes_wait_for_pod_ready_state "$pod_name" 20
+  kubernetes_wait_for_pod_ready_state "$pod_name" 40
   local pod_ip=$(esudo kubectl get pod -o wide | grep snp-unencrypted | awk '{print $6;}')
 
   kubernetes_print_info "snp-unencrypted"

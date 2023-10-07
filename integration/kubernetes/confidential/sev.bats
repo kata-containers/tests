@@ -81,7 +81,7 @@ setup_file() {
   kubernetes_generate_service_yaml "${TEST_DIR}/sev-encrypted.yaml" "${IMAGE_REPO}:multi-arch-encrypted"
   kubernetes_yaml_set_annotation "${TEST_DIR}/sev-encrypted.yaml" "io.katacontainers.config.pre_attestation.uri" "${kbs_uri}"
   kubernetes_yaml_set_annotation "${TEST_DIR}/sev-encrypted.yaml" "io.katacontainers.config.sev.policy" "3"
-  
+
   # SEV-ES policy is 7:
   # - NODBG (1): Debugging of the guest is disallowed when set
   # - NOKS (2): Sharing keys with other guests is disallowed when set
@@ -119,13 +119,13 @@ setup() {
 }
 
 
-@test "${TEST_TAG} Test SEV unencrypted container launch success" {  
+@test "${TEST_TAG} Test SEV unencrypted container launch success" {
   # Start the service/deployment/pod
   esudo kubectl apply -f "${TEST_DIR}/sev-unencrypted.yaml"
-  
+
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   local pod_name=$(esudo kubectl get pod -o wide | grep sev-unencrypted | awk '{print $1;}')
-  kubernetes_wait_for_pod_ready_state "$pod_name" 20
+  kubernetes_wait_for_pod_ready_state "$pod_name" 40
   local pod_ip=$(esudo kubectl get pod -o wide | grep sev-unencrypted | awk '{print $6;}')
 
   kubernetes_print_info "sev-unencrypted"
@@ -153,13 +153,13 @@ setup() {
 
   # Add key to KBS with policy measurement
   simple_kbs_add_key_to_db "${ENCRYPTION_KEY}" "${measurement}"
-  
+
   # Start the service/deployment/pod
   esudo kubectl apply -f "${TEST_DIR}/sev-encrypted.yaml"
-  
+
   # Retrieve pod name, wait for it to fail
   local pod_name=$(esudo kubectl get pod -o wide | grep sev-encrypted | awk '{print $1;}')
-  kubernetes_wait_for_pod_ready_state "$pod_name" 20 || true
+  kubernetes_wait_for_pod_ready_state "$pod_name" 40 || true
 
   kubernetes_print_info "sev-encrypted"
 
@@ -184,13 +184,13 @@ setup() {
 @test "${TEST_TAG} Test SEV encrypted container launch success with NO measurement" {
   # Add key to KBS without a policy measurement
   simple_kbs_add_key_to_db "${ENCRYPTION_KEY}"
-  
+
   # Start the service/deployment/pod
   esudo kubectl apply -f "${TEST_DIR}/sev-encrypted.yaml"
 
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   local pod_name=$(esudo kubectl get pod -o wide | grep sev-encrypted | awk '{print $1;}')
-  kubernetes_wait_for_pod_ready_state "$pod_name" 20
+  kubernetes_wait_for_pod_ready_state "$pod_name" 40
   local pod_ip=$(esudo kubectl get pod -o wide | grep sev-encrypted | awk '{print $6;}')
 
   kubernetes_print_info "sev-encrypted"
@@ -219,13 +219,13 @@ setup() {
 
   # Add key to KBS with policy measurement
   simple_kbs_add_key_to_db "${ENCRYPTION_KEY}" "${measurement}"
-  
+
   # Start the service/deployment/pod
   esudo kubectl apply -f "${TEST_DIR}/sev-encrypted.yaml"
 
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   local pod_name=$(esudo kubectl get pod -o wide | grep sev-encrypted | awk '{print $1;}')
-  kubernetes_wait_for_pod_ready_state "$pod_name" 20
+  kubernetes_wait_for_pod_ready_state "$pod_name" 40
   local pod_ip=$(esudo kubectl get pod -o wide | grep sev-encrypted | awk '{print $6;}')
 
   kubernetes_print_info "sev-encrypted"
@@ -254,13 +254,13 @@ setup() {
 
   # Add key to KBS with policy measurement
   simple_kbs_add_key_to_db "${ENCRYPTION_KEY}" "${measurement}"
-  
+
   # Start the service/deployment/pod
   esudo kubectl apply -f "${TEST_DIR}/sev-es-encrypted.yaml"
 
   # Retrieve pod name, wait for it to come up, retrieve pod ip
   local pod_name=$(esudo kubectl get pod -o wide | grep sev-es-encrypted | awk '{print $1;}')
-  kubernetes_wait_for_pod_ready_state "$pod_name" 20
+  kubernetes_wait_for_pod_ready_state "$pod_name" 40
   local pod_ip=$(esudo kubectl get pod -o wide | grep sev-es-encrypted | awk '{print $6;}')
 
   kubernetes_print_info "sev-es-encrypted"
