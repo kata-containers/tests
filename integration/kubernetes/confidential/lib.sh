@@ -121,9 +121,10 @@ assert_pod_fail() {
 # Note: get the logs since the global $test_start_date.
 #
 assert_logs_contain() {
-	local message="$1"
+	local log_id="$1"
+	local message="$2"
 	# Note: with image-rs we get more that the default 1000 lines of logs
-	journalctl -x -t kata --since "$test_start_date" -n 100000 | grep "$message"
+	journalctl -x -t $log_id --since "$test_start_date" -n 100000 | grep "$message"
 }
 
 setup_decryption_files_in_guest() {

@@ -42,7 +42,8 @@ setup() {
 	local pod_id=$(crictl pods --name "$sandbox_name" -q)
 	rootfs=($(find /run/kata-containers/shared/sandboxes/${pod_id}/shared \
 		-name rootfs))
-	[ ${#rootfs[@]} -eq 1 ]
+
+	[ ${#rootfs[@]} -eq 0 ]
 }
 
 @test "$test_tag Test can pull a unencrypted signed image from a protected registry" {
@@ -56,6 +57,9 @@ setup() {
 }
 
 @test "$test_tag Test cannot pull an unencrypted unsigned image from a protected registry" {
+	# Ensure that the signed image that currently has the same sha256 as unsigned is not used by the snapshotter
+	sudo crictl rmi quay.io/kata-containers/confidential-containers:signed
+
 	local container_config="${FIXTURES_DIR}/container-config_unsigned-protected.yaml"
 
 	setup_signature_files
@@ -109,33 +113,65 @@ setup() {
 }
 
 @test "$test_tag Test pull an unencrypted unsigned image from an authenticated registry with correct credentials" {
+	# Docker config doesn't seem to be read by nydus0snapshotter despite documentation
+# 	mkdir -p ~/.docker
+# 	cat << EOF | tee ~/.docker/config.json
+# {
+# 	"quay.io/kata-containers/confidential-containers-auth": {
+# 		"quay.io": {
+# 			"auth": "$REGISTRY_CREDENTIAL_ENCODED"
+# 		}
+# 	}
+# }
+# EOF
 	local container_config="${FIXTURES_DIR}/container-config_authenticated.yaml"
 
 	setup_credentials_files "quay.io/kata-containers/confidential-containers-auth" 
 
 	create_test_pod
-	
+
 	assert_container "${container_config}"
+	# rm ~/.docker/config.json
 }
 
 @test "$test_tag Test cannot pull an image from an authenticated registry with incorrect credentials" {
+# Docker config doesn't seem to be read by nydus0snapshotter despite documentation
+# 	mkdir -p ~/.docker
+# 	cat << EOF | tee ~/.docker/config.json
+# {
+#   "auths": {
+#     "quay.io/kata-containers/confidential-containers-auth": {
+#       "auth": "incorrectCredentials",
+#       "email": ""
+#     }
+#   }
+# }
+# EOF
+
 	local container_config="${FIXTURES_DIR}/container-config_authenticated.yaml"
 
-	REGISTRY_CREDENTIAL_ENCODED="QXJhbmRvbXF1YXl0ZXN0YWNjb3VudHRoYXRkb2VzbnRleGlzdDpwYXNzd29yZAo=" setup_credentials_files "quay.io/kata-containers/confidential-containers-auth"
+	# Set up incorrect credentials
+	# Note - because we are currently exporting them here to be used in `crictl_create_cc_container` if this test runs before
+	# the correct credentials one it will override the secret we pass in and fail
+	export REGISTRY_CREDENTIAL_ENCODED="QXJhbmRvbXF1YXl0ZXN0YWNjb3VudHRoYXRkb2VzbnRleGlzdDpwYXNzd29yZAo="
+	setup_credentials_files "quay.io/kata-containers/confidential-containers-auth"
 
 	create_test_pod
 
 	assert_container_fail "$container_config"
-	assert_logs_contain 'failed to pull manifest Authentication failure'
+	assert_logs_contain 'failed to resolve reference \\"quay.io/kata-containers/confidential-containers-auth:test\\": failed to authorize: failed to fetch oauth token: unexpected status: 401 UNAUTHORIZED'
+	# rm ~/.docker/config.json
 }
 
 @test "$test_tag Test cannot pull an image from an authenticated registry without credentials" {
 	local container_config="${FIXTURES_DIR}/container-config_authenticated.yaml"
 
+	# Set no credentials in the `crictl_create_cc_container`
+	export REGISTRY_CREDENTIAL_ENCODED=""
 	create_test_pod
 
 	assert_container_fail "$container_config"
-	assert_logs_contain 'failed to pull manifest Not authorized'
+    assert_logs_contain 'failed to resolve reference \\"quay.io/kata-containers/confidential-containers-auth:test\\": pulling from host quay.io failed with status code \[manifests test\]: 401 UNAUTHORIZED'
 }
 
 teardown() {
@@ -145,4 +181,9 @@ teardown() {
 	echo "-- Kata logs:"
 	# Note - with image-rs we hit more that the default 1000 lines of logs
 	sudo journalctl -xe -t kata --since "$test_start_time" -n 100000 
+
+		# Print the logs and cleanup resources.
+	echo "-- containerd logs:"
+	# Note - with image-rs we hit more that the default 1000 lines of logs
+	sudo journalctl -xe -t containerd --since "$test_start_time" -n 100000 
 }

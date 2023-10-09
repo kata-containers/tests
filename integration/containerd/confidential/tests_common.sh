@@ -32,9 +32,6 @@ setup_common() {
 	saved_kernel_params=$(get_kernel_params)
 	export saved_kernel_params
 
-	echo "Enable image service offload"
-	switch_image_service_offload on
-
 	# On CI mode we only want to enable the agent debug for the case of
 	# the test failure to obtain logs.
 	if [ "${CI:-}" == "true" ]; then
@@ -84,7 +81,6 @@ teardown_common() {
 	[ -n "$saved_kernel_params" ] && \
 		add_kernel_params "$saved_kernel_params"
 
-	switch_image_service_offload off
 	disable_full_debug
 
 	# Restore containerd to pre-test state.

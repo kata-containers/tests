@@ -209,13 +209,6 @@ configure_cc_containerd() {
 	waitForProcess 30 5 "sudo crictl info >/dev/null"
 
 	# Ensure the cc CRI handler is set.
-	local cri_handler=$(sudo crictl info | \
-		jq '.config.containerd.runtimes.kata.cri_handler')
-	if [[ ! "$cri_handler" =~ cc ]]; then
-		sudo sed -i 's/\([[:blank:]]*\)\(runtime_type = "io.containerd.kata.v2"\)/\1\2\n\1cri_handler = "cc"/' \
-			"$containerd_conf_file"
-	fi
-
 	if [ "$(sudo crictl info | jq -r '.config.cni.confDir')" = "null" ]; then
 		echo "    [plugins.cri.cni]
 		  # conf_dir is the directory in which the admin places a CNI conf.
@@ -356,6 +349,11 @@ setup_credentials_files() {
 	dest_file=${dest_dir}/aa-offline_fs_kbc-resources.json
 	auth_json=$(REGISTRY=$1 CREDENTIALS="${REGISTRY_CREDENTIAL_ENCODED}" envsubst < "${SHARED_FIXTURES_DIR}/offline-fs-kbc/auth.json.in" | base64 -w 0)
 	CREDENTIAL="${auth_json}" envsubst < "${SHARED_FIXTURES_DIR}/offline-fs-kbc/aa-offline_fs_kbc-resources.json.in" > "${dest_file}"
+	cp_to_guest_img "etc" "${dest_file}"
+
+	# With the change in behaviour in CDH, the `/etc/aa-offline_fs_kbc-keys.json` file has to exist, so create a blank one
+	dest_file=${dest_dir}/aa-offline_fs_kbc-keys.json
+	echo "{}" >  "${dest_file}"
 	cp_to_guest_img "etc" "${dest_file}"
 }
 

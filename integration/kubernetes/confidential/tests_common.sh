@@ -31,7 +31,6 @@ setup_common() {
 	configure_cc_containerd "$SAVED_CONTAINERD_CONF_FILE"
 
 	echo "Reconfigure Kata Containers"
-	switch_image_service_offload on
 	clear_kernel_params
 	add_kernel_params "${original_kernel_params}"
 	
@@ -56,7 +55,6 @@ teardown_common() {
 	kubernetes_delete_all_cc_pods_if_any_exists || true
 	clear_kernel_params
 	add_kernel_params "${original_kernel_params}"
-	switch_image_service_offload off
 	disable_full_debug
 }
 
