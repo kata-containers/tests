@@ -165,5 +165,7 @@ setup() {
 }
 
 teardown() {
+	echo "kubectl describe: $(kubectl describe pods)"
+
 	teardown_common
 }
