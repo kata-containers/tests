@@ -257,6 +257,11 @@ setup_offline_fs_kbc_signature_files_in_guest() {
 	setup_common_signature_files_in_guest
 	add_kernel_params "agent.aa_kbc_params=offline_fs_kbc::null"
 	cp_to_guest_img "etc" "${SHARED_FIXTURES_DIR}/offline-fs-kbc/$(uname -m)/aa-offline_fs_kbc-resources.json"
+
+	# With the change in behaviour in CDH, the `/etc/aa-offline_fs_kbc-keys.json` file has to exist, so create a blank one
+	dest_file=${dest_dir}/aa-offline_fs_kbc-keys.json
+	echo "{}" >  "${dest_file}"
+	cp_to_guest_img "etc" "${dest_file}"
 }
 
 setup_offline_fs_kbc_secret_files_in_guest() {
@@ -349,6 +354,11 @@ setup_credentials_files() {
 	dest_file=${dest_dir}/aa-offline_fs_kbc-resources.json
 	auth_json=$(REGISTRY=$1 CREDENTIALS="${REGISTRY_CREDENTIAL_ENCODED}" envsubst < "${SHARED_FIXTURES_DIR}/offline-fs-kbc/auth.json.in" | base64 -w 0)
 	CREDENTIAL="${auth_json}" envsubst < "${SHARED_FIXTURES_DIR}/offline-fs-kbc/aa-offline_fs_kbc-resources.json.in" > "${dest_file}"
+	cp_to_guest_img "etc" "${dest_file}"
+
+	# With the change in behaviour in CDH, the `/etc/aa-offline_fs_kbc-keys.json` file has to exist, so create a blank one
+	dest_file=${dest_dir}/aa-offline_fs_kbc-keys.json
+	echo "{}" >  "${dest_file}"
 	cp_to_guest_img "etc" "${dest_file}"
 }
 
