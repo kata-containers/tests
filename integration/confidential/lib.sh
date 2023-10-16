@@ -315,7 +315,7 @@ setup_signature_files() {
 }
 
 # In case the tests run behind a firewall where images needed to be fetched
-# through a proxy. 
+# through a proxy.
 # Note: With measured rootfs enabled, we can not set proxy through
 # agent config file.
 setup_proxy() {
@@ -350,11 +350,6 @@ setup_credentials_files() {
 	auth_json=$(REGISTRY=$1 CREDENTIALS="${REGISTRY_CREDENTIAL_ENCODED}" envsubst < "${SHARED_FIXTURES_DIR}/offline-fs-kbc/auth.json.in" | base64 -w 0)
 	CREDENTIAL="${auth_json}" envsubst < "${SHARED_FIXTURES_DIR}/offline-fs-kbc/aa-offline_fs_kbc-resources.json.in" > "${dest_file}"
 	cp_to_guest_img "etc" "${dest_file}"
-
-	# With the change in behaviour in CDH, the `/etc/aa-offline_fs_kbc-keys.json` file has to exist, so create a blank one
-	dest_file=${dest_dir}/aa-offline_fs_kbc-keys.json
-	echo "{}" >  "${dest_file}"
-	cp_to_guest_img "etc" "${dest_file}"
 }
 
 ###############################################################################
@@ -374,7 +369,7 @@ simple_kbs_run() {
   local simple_kbs_tag=$(get_test_version "externals.simple-kbs.tag")
 
   # Cleanup and create installation directory
-  esudo rm -rf "${SIMPLE_KBS_DIR}" 
+  esudo rm -rf "${SIMPLE_KBS_DIR}"
   mkdir -p "${SIMPLE_KBS_DIR}"
   pushd "${SIMPLE_KBS_DIR}"
 
@@ -390,7 +385,7 @@ simple_kbs_run() {
   # Wait for simple-kbs to start
   waitForProcess 15 1 "esudo docker-compose top | grep -q simple-kbs"
   popd
-  
+
   # Get simple-kbs database container ip
   local kbs_db_host=$(simple_kbs_get_db_ip)
 
@@ -428,7 +423,7 @@ simple_kbs_get_db_ip() {
 simple_kbs_add_key_to_db() {
   local encryption_key="${1}"
   local measurement="${2}"
-  
+
   # Get simple-kbs database container ip
   local kbs_db_host=$(simple_kbs_get_db_ip)
 
