@@ -68,6 +68,7 @@ setup() {
 	retrieve_sandbox_id
 	rootfs=($(find /run/kata-containers/shared/sandboxes/${sandbox_id}/shared \
 		-name rootfs))
+	echo "Rootfs directories found: *${rootfs}*"
 	[ ${#rootfs[@]} -eq 1 ]
 }
 
