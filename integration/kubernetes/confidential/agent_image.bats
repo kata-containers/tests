@@ -61,6 +61,10 @@ setup() {
 }
 
 @test "$test_tag Test can pull an unencrypted image inside the guest" {
+	# See an issue at https://github.com/kata-containers/tests/issues/5781
+	if [ "${TEE_TYPE}" = "se" ]; then
+		skip "test until the containerd is updated to v1.7 for IBM Z Secure Execution"
+	fi
 	create_test_pod
 
 	echo "Check the image was not pulled in the host"
