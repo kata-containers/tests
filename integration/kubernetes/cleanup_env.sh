@@ -37,10 +37,17 @@ main () {
 	[ "${container_engine}" == "docker" ] && restart_docker_service
 	registry_server_teardown
 
+	# Remove created nydus snapshots
+	for i in `sudo ctr -n k8s.io snapshot --snapshotter nydus list | grep -v KEY | cut -d' ' -f1 || true`; do
+		sudo ctr -n k8s.io snapshot --snapshotter nydus rm $i
+	done
+
 	info "Stop ${CRI_RUNTIME} service"
 	sudo systemctl stop "${CRI_RUNTIME}"
 
+	# Cleanup nydus process, directories and binaries
 	sudo kill -9 $(pidof "containerd-nydus-grpc") || true
+	sudo rm -rf "/var/lib/containerd-nydus" || true
 	sudo rm -f "/usr/local/bin/nydus-overlayfs"
 	sudo rm -f "/usr/local/bin/nydus-image"
 
