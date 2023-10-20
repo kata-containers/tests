@@ -24,6 +24,8 @@ spec:
     metadata:
       labels:
         app: "$NAME"
+      annotations:
+        io.containerd.cri.runtime-handler: "$RUNTIMECLASS"
     spec:
       runtimeClassName: "$RUNTIMECLASS"
       containers:
