@@ -61,10 +61,6 @@ setup() {
 }
 
 @test "$test_tag Test can pull an unencrypted image inside the guest" {
-	# See an issue at https://github.com/kata-containers/tests/issues/5781
-	if [ "${TEE_TYPE}" = "se" ]; then
-		skip "test until the containerd is updated to v1.7 for IBM Z Secure Execution"
-	fi
 	create_test_pod
 
 	echo "Check the image was not pulled in the host"
@@ -72,7 +68,11 @@ setup() {
 	retrieve_sandbox_id
 	rootfs=($(find /run/kata-containers/shared/sandboxes/${sandbox_id}/shared \
 		-name rootfs))
-	[ ${#rootfs[@]} -eq 1 ]
+
+	# On most systems we find the pause image's rootfs, but in some systems (SE and TDX)
+	# it appears to be in a different location with nydus-snapshotter, so check for 1, or 0
+	# See an issue at https://github.com/kata-containers/tests/issues/5781
+	[ ${#rootfs[@]} -le 1 ]
 }
 
 @test "$test_tag Test can pull a unencrypted signed image from a protected registry" {
