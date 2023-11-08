@@ -173,8 +173,9 @@ function build_static_artifact_and_install() {
 
 	clone_katacontainers_repo
 
-	pushd "$katacontainers_repo_dir" >/dev/null
+	pushd "$katacontainers_repo_dir/tools/packaging/kata-deploy/local-build" >/dev/null
 	sudo -E PATH=$PATH make "$make_target"
+	pwd
 	sudo tar -xvJpf "build/${tarball}" -C "${destdir}"
 	sudo rm -rf "build/"
 	popd >/dev/null
