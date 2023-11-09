@@ -36,6 +36,7 @@ ethernet
 filename/AB
 filesystem/AB
 freeform
+gh
 goroutine/AB
 hostname/AB
 hotplug/ACD
