@@ -62,11 +62,30 @@ teardown_file() {
 }
 
 setup() {
-  # Remove any previous k8s test services
-  echo "Deleting previous test services..."
-  k8s_delete_all
+  start_date=$(date +"%Y-%m-%d %H:%M:%S")
 }
 
+teardown() {
+  # Print the logs and cleanup resources.
+  echo "-- Kata logs:"
+  sudo journalctl -xe -t kata --since "$start_date" -n 100000
+
+  echo "-- containerd logs:"
+  sudo journalctl -xe -t containerd --since "$start_date" -n 100000
+
+  echo "-- Describe pods:"
+  esudo kubectl describe pods
+
+  echo "-- More debug:"
+  esudo find /run/kata-containers || true
+
+  # Remove any k8s test services
+  echo "Deleting test services..."
+  k8s_delete_all || true
+
+  # Delete any data in the simple-kbs database
+  simple_kbs_delete_data || true
+}
 
 @test "${TEST_TAG} Test SNP unencrypted container launch success" {
   # Start the service/deployment/pod
