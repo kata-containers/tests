@@ -12,6 +12,8 @@ test:
   - cri-containerd
 
 kubernetes:
+  - k8s-seccomp
+  - k8s-empty-dirs
   - k8s-limit-range
   - k8s-expose-ip
   - k8s-oom
