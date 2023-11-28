@@ -443,7 +443,7 @@ static_check_license_headers()
 			--exclude="*.drawio" \
 			--exclude="*.toml" \
 			--exclude="*.txt" \
-			--exclude="*.dtd" \ 
+			--exclude="*.dtd" \
 			--exclude="vendor/*" \
 			--exclude="VERSION" \
 			--exclude="kata_config_version" \
@@ -465,6 +465,7 @@ static_check_license_headers()
 			--exclude="src/libs/protocols/protos/gogo/*.proto" \
 			--exclude="src/libs/protocols/protos/google/*.proto" \
 			--exclude="src/libs/*/test/texture/*" \
+			--exclude="*.dic" \
 			-EL $extra_args "\<${pattern}\>" \
 			$files || true)
 
@@ -667,6 +668,9 @@ static_check_docs()
 	# The top level README doesn't need to be referenced by any other
 	# since it displayed by default when visiting the repo.
 	exclude_doc_regexs+=(^README\.md$)
+
+	# Exclude READMEs for tools for static checks migration
+	exclude_doc_regexs+=(^\tests/cmd/.*/README\.md$)
 
 	local exclude_pattern
 
