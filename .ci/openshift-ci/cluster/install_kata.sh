@@ -147,7 +147,7 @@ debug_pod() {
         oc logs "$pod"
 }
 
-oc project default
+oc config set-context --current --namespace=default
 
 worker_nodes=$(oc get nodes |  awk '{if ($3 == "worker") { print $1 } }')
 num_nodes=$(echo $worker_nodes | wc -w)
