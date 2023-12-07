@@ -90,13 +90,16 @@ main() {
 		vanilla)
 			qemu_type="qemu"
 			;;
+		arm-experimental)
+			qemu_type="qemu-arm-experimental"
+			;;
 		*)
 			die_unsupported_qemu_type "$qemu_type"
 			;;
 	esac
 
 	case ${QEMU_ARCH} in
-		"aarch64"|"ppc64le")
+		"ppc64le")
 			# We're still no there for using the kata-deploy
 			# scripts with ppc64le and aarch64.
 			CURRENT_QEMU_VERSION=$(get_version "assets.hypervisor.qemu.version")
@@ -110,8 +113,13 @@ main() {
 
 			build_and_install_qemu
 			;;
-		"x86_64"|"s390x")
+		"aarch64"|"x86_64"|"s390x")
 			build_static_artifact_and_install "${qemu_type}"
+			# Install UEFI ROM for qemu
+		        ENABLE_ARM64_UEFI="${ENABLE_ARM64_UEFI:-true}"
+			[ "${ENABLE_ARM64_UEFI}" == "true" ] && ${cidir}/aarch64/install_rom_aarch64.sh
+			sudo rm -f /opt/kata/bin/qemu-system-aarch64
+			sudo ln -s /opt/kata/bin/qemu-system-aarch64-arm-experimental /opt/kata/bin/qemu-system-aarch64
 			;;
 		*)
 			die "Architecture ${QEMU_ARCH} not supported"

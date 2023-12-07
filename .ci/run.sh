@@ -66,6 +66,8 @@ case "${CI_JOB}" in
 			echo "INFO: Running Confidential Container tests"
 			sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make cc-containerd"
 		fi
+		echo "INFO: Running kubernetes tests"
+                sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make kubernetes"
 		echo "INFO: Running runk test"
 		sudo -E PATH="$PATH" CRI_RUNTIME="containerd" bash -c "make runk"
 		;;
