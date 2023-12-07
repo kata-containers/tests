@@ -481,6 +481,41 @@ EOF
 	done
 }
 
+
+run_url_check_cmd()
+{
+	local url="${1:-}"
+	[ -n "$url" ] || die "need URL"
+
+	local out_file="${2:-}"
+	[ -n "$out_file" ] || die "need output file"
+
+	# Can be blank
+	local extra_args="${3:-}"
+
+	local curl_extra_args=()
+
+	curl_extra_args+=("$extra_args")
+
+	# Authenticate for github to increase threshold for rate limiting
+	if [[ "$url" =~ github\.com && -n "$GITHUB_USER" && -n "$GITHUB_TOKEN" ]]; then
+		curl_extra_args+=("-u ${GITHUB_USER}:${GITHUB_TOKEN}")
+	fi
+
+	# Some endpoints return 403 to HEAD but 200 for GET,
+	# so perform a GET but only read headers.
+	curl \
+		${curl_extra_args[*]} \
+		-sIL \
+		-X GET \
+		-c - \
+		-H "Accept-Encoding: zstd, none, gzip, deflate" \
+		--max-time "$url_check_timeout_secs" \
+		--retry "$url_check_max_tries" \
+		"$url" \
+		&>"$out_file"
+}
+
 check_url()
 {
 	local url="$1"
@@ -495,56 +530,133 @@ check_url()
 	local invalid_file=$(printf "%s/%d" "$invalid_urls_dir" "$$")
 
 	local ret
-	local user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
 
-	# Authenticate for github to increase threshold for rate limiting
-	local curl_args=()
-	if [[ "$url" =~ github\.com && -n "$GITHUB_USER" && -n "$GITHUB_TOKEN" ]]; then
-		curl_args+=("-u ${GITHUB_USER}:${GITHUB_TOKEN}")
-	fi
+	local -a errors=()
 
-	# Some endpoints return 403 to HEAD but 200 for GET, so perform a GET but only read headers.
-	{ curl ${curl_args[*]} -sIL -X GET -c - -A "${user_agent}" -H "Accept-Encoding: zstd, none, gzip, deflate" --max-time "$url_check_timeout_secs" \
-		--retry "$url_check_max_tries" "$url" &>"$curl_out"; ret=$?; } || true
+	local -a user_agents=()
 
-	# A transitory error, or the URL is incorrect,
-	# but capture either way.
-	if [ "$ret" -ne 0 ]; then
-		echo "$url" >> "${invalid_file}"
+	# Test an unspecified UA (curl default)
+	user_agents+=('')
 
-		die "check failed for URL $url after $url_check_max_tries tries"
-	fi
+	# Test an explictly blank UA
+	user_agents+=('""')
 
-	local http_statuses
+	# Single space
+	user_agents+=(' ')
 
-	http_statuses=$(grep -E "^HTTP" "$curl_out" | awk '{print $2}' || true)
-	if [ -z "$http_statuses" ]; then
-		echo "$url" >> "${invalid_file}"
-		die "no HTTP status codes for URL $url"
-	fi
+	# CLI HTTP tools
+	user_agents+=('Wget')
+	user_agents+=('curl')
 
-	local status
+	# console based browsers
+	# Hopefully, these will always be supported for a11y.
+	user_agents+=('Lynx')
+	user_agents+=('Elinks')
 
-	for status in $http_statuses
+	# Emacs' w3m browser
+	user_agents+=('Emacs')
+
+	# The full craziness
+	user_agents+=('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36')
+
+	local user_agent
+
+	local success='false'
+
+	# Cycle through the user agents until we find one that works.
+	#
+	# Note that we also test an unspecified user agent
+	# (no '-A <value>').
+	for user_agent in "${user_agents[@]}"
 	do
-		# Ignore the following ranges of status codes:
-		#
-		# - 1xx: Informational codes.
-		# - 2xx: Success codes.
-		# - 3xx: Redirection codes.
-		# - 405: Specifically to handle some sites
-		#   which get upset by "curl -L" when the
-		#   redirection is not required.
-		#
-		# Anything else is considered an error.
-		#
-		# See https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+		local curl_ua_args
+		[ -n "$user_agent" ] && curl_ua_args="-A '$user_agent'"
 
-		if ! echo "$status" | grep -qE "^(1[0-9][0-9]|2[0-9][0-9]|3[0-9][0-9]|405)"; then
-			echo "$url" >> "$invalid_file"
-			die "found HTTP error status codes for URL $url ($status)"
+		{ run_url_check_cmd "$url" "$curl_out" "$curl_ua_args"; ret=$?; } || true
+
+		# A transitory error, or the URL is incorrect,
+		# but capture either way.
+		if [ "$ret" -ne 0 ]; then
+			echo "$url" >> "${invalid_file}"
+			errors+=("Failed to check URL '$url' (user agent: '$user_agent', return code $ret)")
+
+			# Give up
+			break
 		fi
+
+		local http_statuses
+
+		http_statuses=$(grep -E "^HTTP" "$curl_out" |\
+			awk '{print $2}' || true)
+
+		if [ -z "$http_statuses" ]; then
+			echo "$url" >> "${invalid_file}"
+			errors+=("no HTTP status codes for URL '$url' (user agent: '$user_agent')")
+
+			continue
+		fi
+
+		local status
+
+		local -i fail_count=0
+
+		# Check all HTTP status codes
+		for status in $http_statuses
+		do
+			# Ignore the following ranges of status codes:
+			#
+			# - 1xx: Informational codes.
+			# - 2xx: Success codes.
+			# - 3xx: Redirection codes.
+			# - 405: Specifically to handle some sites
+			#   which get upset by "curl -L" when the
+			#   redirection is not required.
+			#
+			# Anything else is considered an error.
+			#
+			# See https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+
+			{ grep -qE "^(1[0-9][0-9]|2[0-9][0-9]|3[0-9][0-9]|405)" <<< "$status"; ret=$?; } || true
+
+			[ "$ret" -eq 0 ] && continue
+
+			if grep -q '^4' <<< "$status"; then
+				case "$status" in
+					# Awkward: these codes signify that the URL is
+					# valid, but we can't check them:
+					#
+					# 401: Unauthorized (need to login to the site).
+					# 402: Payment Required.
+					# 403: Forbidden (possibley the same as 401).
+					#
+					# If they did not exist, we'd get a 404, so since
+					# they have been "semi validated" by the server by
+					# simply returning these codes, we'll assume they
+					# are valid.
+					401|402|403) success='true' ;;
+				esac
+				# Client error: most likely the document isn't valid
+				# or the server won't give us access, so there is no
+				# point trying other user agents [*].
+				# ---
+				# [*] - we make the assumption that the server is not
+				# returning this error code _based_ on the UA
+				# presented of course, which theoretically it _could_.
+				break 2
+			else
+				fail_count+=1
+
+				echo "$url" >> "$invalid_file"
+				errors+=("found HTTP error status codes for URL $url (status: '$status', user agent: '$user_agent')")
+			fi
+		done
+
+		[ "$fail_count" -eq 0 ] && success='true' && break
 	done
+
+	[ "$success" = 'true' ] && return 0
+
+	die "failed to check URL '$url': errors: '${errors[*]}'"
 }
 
 # Perform basic checks on documentation files
@@ -768,7 +880,7 @@ static_check_docs()
 	then
 		local files
 
-		cat "$invalid_urls" | while read url
+		sort -u "$invalid_urls" | while read -r url
 		do
 			files=$(grep "^${url}" "$url_map" | awk '{print $2}' | sort -u)
 			echo >&2 -e "ERROR: Invalid URL '$url' found in the following files:\n"
