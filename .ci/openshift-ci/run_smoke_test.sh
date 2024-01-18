@@ -21,7 +21,7 @@ oc apply -f ${script_dir}/smoke/${pod}.yaml || \
 # Check it eventually goes to 'running'
 #
 wait_time=600
-sleep_time=10
+sleep_time=5
 cmd="oc get pod/${pod} -o jsonpath='{.status.containerStatuses[0].state}' | \
 	grep running > /dev/null"
 info "Wait until the pod gets running"
