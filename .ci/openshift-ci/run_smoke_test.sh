@@ -43,7 +43,6 @@ info "Creating the service and route"
 if oc apply -f ${script_dir}/smoke/service.yaml; then
     # Likely on OCP, use service
     is_ocp=1
-    sleep 60
     host=$(oc get route/http-server-route -o jsonpath={.spec.host})
     port=80
 else
@@ -57,7 +56,7 @@ else
     port=$(oc get service/http-server-service -o jsonpath='{.spec.ports[0].nodePort}')
 fi
 
-curl "${host}:${port}${hello_file}" -s -o hello_msg.txt --retry 10 --retry-delay 1 --retry-all-errors
+curl "${host}:${port}${hello_file}" -s -o hello_msg.txt --retry 60 --retry-delay 1 --retry-all-errors
 
 grep "${hello_msg}" hello_msg.txt > /dev/null
 test_status=$?
