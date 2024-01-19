@@ -181,3 +181,11 @@ if [ ${SELINUX_PERMISSIVE} == "yes" ]; then
 	# The new SELinux configuration will trigger another reboot.
 	wait_for_reboot
 fi
+
+# FIXME: Remove when https://github.com/kata-containers/kata-containers/pull/8417 is resolved
+# Selinux context is currently not handled by kata-deploy
+oc apply -f ${deployments_dir}/relabel_selinux.yaml
+( for I in $(seq 30); do
+	sleep 10
+	oc logs -n kube-system ds/relabel-selinux-daemonset | grep "NSENTER_FINISHED_WITH:" && exit
+done ) || { echo "Selinux relabel failed, check the logs"; exit -1; }
