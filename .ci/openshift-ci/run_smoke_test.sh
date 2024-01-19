@@ -21,7 +21,7 @@ oc apply -f ${script_dir}/smoke/${pod}.yaml || \
 # Check it eventually goes to 'running'
 #
 wait_time=600
-sleep_time=10
+sleep_time=5
 cmd="oc get pod/${pod} -o jsonpath='{.status.containerStatuses[0].state}' | \
 	grep running > /dev/null"
 info "Wait until the pod gets running"
@@ -40,13 +40,24 @@ hello_msg='Hello World'
 oc exec ${pod} -- sh -c "echo $hello_msg > $hello_file"
 
 info "Creating the service and route"
-oc apply -f ${script_dir}/smoke/service.yaml
-sleep 60
+if oc apply -f ${script_dir}/smoke/service.yaml; then
+    # Likely on OCP, use service
+    is_ocp=1
+    host=$(oc get route/http-server-route -o jsonpath={.spec.host})
+    port=80
+else
+    # Likely on plain kubernetes, test using another container
+    is_ocp=0
+    info "Failed to create service, likely not on OCP, trying via NodePort"
+    oc apply -f "${script_dir}/smoke/service_kubernetes.yaml"
+    # For some reason kcli's cluster lists external IP as internal IP, try both
+    host=$(oc get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+    [ -z "$host"] && host=$(oc get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
+    port=$(oc get service/http-server-service -o jsonpath='{.spec.ports[0].nodePort}')
+fi
 
-host=$(oc get route/http-server-route -o jsonpath={.spec.host})
-# The route to port 80 should work and it should serve the pod's '/' filesystem
-#
-curl ${host}:80${hello_file} -s -o hello_msg.txt
+curl "${host}:${port}${hello_file}" -s -o hello_msg.txt --retry 60 --retry-delay 1 --retry-all-errors
+
 grep "${hello_msg}" hello_msg.txt > /dev/null
 test_status=$?
 if [ $test_status -eq 0 ]; then
@@ -55,11 +66,14 @@ else
 	info "HTTP server is unreachable"
 fi
 
-info "Deleting resources created"
-oc delete -f ${script_dir}/smoke/service.yaml
-
-# Delete the pod.
+# Delete the resources.
 #
+info "Deleting the service/route"
+if [ "$is_ocp" -eq 0 ]; then
+    oc delete -f ${script_dir}/smoke/service_kubernetes.yaml
+else
+    oc delete -f ${script_dir}/smoke/service.yaml
+fi
 info "Deleting the ${pod} pod"
 oc delete pod/${pod} || test_status=$?
 
