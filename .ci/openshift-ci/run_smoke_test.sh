@@ -56,7 +56,8 @@ else
     port=$(oc get service/http-server-service -o jsonpath='{.spec.ports[0].nodePort}')
 fi
 
-curl "${host}:${port}${hello_file}" -s -o hello_msg.txt --retry 60 --retry-delay 1 --retry-all-errors
+info "Wait for the HTTP server to respond"
+waitForProcess 60 1 "curl '${host}:${port}${hello_file}' -s -o hello_msg.txt"
 
 grep "${hello_msg}" hello_msg.txt > /dev/null
 test_status=$?
