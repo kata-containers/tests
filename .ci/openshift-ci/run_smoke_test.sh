@@ -57,6 +57,7 @@ else
 fi
 
 info "Wait for the HTTP server to respond"
+rm -f hello_msg.txt
 waitForProcess 60 1 "curl '${host}:${port}${hello_file}' -s -o hello_msg.txt"
 
 grep "${hello_msg}" hello_msg.txt > /dev/null
