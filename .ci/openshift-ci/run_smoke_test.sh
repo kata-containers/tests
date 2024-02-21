@@ -57,14 +57,26 @@ else
 fi
 
 info "Wait for the HTTP server to respond"
-check_cmd="curl -vvv '${host}:${port}${hello_file}' 2>&1 | grep -q '$hello_msg'"
+tempfile=$(mktemp)
+check_cmd="curl -vvv '${host}:${port}${hello_file}' 2>&1 | tee -a '$tempfile' | grep -q '$hello_msg'"
 if waitForProcess 60 1 "${check_cmd}"; then
 	test_status=0
 	info "HTTP server is working"
 else
 	test_status=1
+	echo "::error:: HTTP server not working"
+	echo "::group::Output of the \"curl -vvv '${host}:${port}${hello_file}'\""
+	cat "${tempfile}"
+	echo "::endgroup::"
+	echo "::group::Describe kube-system namespace"
+	oc describe -n kube-system all
+	echo "::endgroup::"
+	echo "::group::Descibe current namespace"
+	oc describe all
+	echo "::endgroup::"
 	info "HTTP server is unreachable"
 fi
+rm -f "$tempfile"
 
 # Delete the resources.
 #
