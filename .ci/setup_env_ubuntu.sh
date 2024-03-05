@@ -12,6 +12,9 @@ source "/etc/os-release" || source "/usr/lib/os-release"
 source "${cidir}/lib.sh"
 
 echo "Update apt repositories"
+# FIXME: workaround the case where the runner is pre-configured with a
+#        broken kubernetes repository.
+sudo -E rm -f /etc/apt/sources.list.d/kubernetes.list
 sudo -E apt update
 
 # Removing man-db, workflow's kept failing, fixes: #4480

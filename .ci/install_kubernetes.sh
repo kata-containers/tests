@@ -25,13 +25,13 @@ if [ "$ID" == "ubuntu" ]; then
 		sudo -E apt purge kubelet -y
 	fi
 	sudo bash -c "cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
-	deb http://packages.cloud.google.com/apt/ kubernetes-xenial-unstable main
+	deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /
 EOF"
-
 	chronic sudo -E sed -i 's/^[ \t]*//' /etc/apt/sources.list.d/kubernetes.list
-	curl -fsSL https://dl.k8s.io/apt/doc/apt-key.gpg | sudo apt-key add -
+	sudo mkdir -p /etc/apt/keyrings/ # For Ubuntu < 20.04
+	curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg -
 	chronic sudo -E apt update
-	chronic sudo -E apt install --allow-downgrades -y kubelet="$kubernetes_version" kubeadm="$kubernetes_version" kubectl="$kubernetes_version"
+	chronic sudo -E apt install --allow-downgrades -y kubelet kubeadm kubectl
 elif [[ "$ID" =~ ^(alinux|centos|fedora|rhel)$ ]]; then
 	if [ "$(command -v kubelet)" != "" ]; then
 		sudo -E yum autoremove kubelet -y
