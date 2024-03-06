@@ -17,6 +17,7 @@ fi
 export KATA_KSM_THROTTLER=${KATA_KSM_THROTTLER:-no}
 export KATA_QEMU_DESTDIR=${KATA_QEMU_DESTDIR:-"/usr"}
 export KATA_ETC_CONFIG_PATH="/etc/kata-containers/configuration.toml"
+export KATA_APPARMOR_IMAGE="/opt/kata/share/kata-containers/kata-containers-apparmor.img"
 
 export katacontainers_repo=${katacontainers_repo:="github.com/kata-containers/kata-containers"}
 export katacontainers_repo_git="https://${katacontainers_repo}.git"
@@ -178,6 +179,24 @@ function build_static_artifact_and_install() {
 	sudo tar -xvJpf "build/${tarball}" -C "${destdir}"
 	sudo rm -rf "build/"
 	popd >/dev/null
+}
+
+build_install_apparmor_image() {
+	USE_DOCKER=${USE_DOCKER:-"true"}
+
+	info "Build AppArmor guest image"
+	local rootfs_builder_dir="${katacontainers_repo_dir}/tools/osbuilder/rootfs-builder"
+	local rootfs_dir="${rootfs_builder_dir}/rootfs-apparmor"
+	pushd "$rootfs_builder_dir" >/dev/null
+	sudo -E AGENT_INIT=no APPARMOR=yes USE_DOCKER="${USE_DOCKER}" ./rootfs.sh -r "${rootfs_dir}" ubuntu
+	popd >/dev/null
+
+	info "Install AppArmor guest image"
+	local image_builder_dir="${katacontainers_repo_dir}/tools/osbuilder/image-builder"
+	pushd "${image_builder_dir}" >/dev/null
+	sudo -E AGENT_INIT=no USE_DOCKER="${USE_DOCKER}" ./image_builder.sh "${rootfs_dir}"
+	popd >/dev/null
+	sudo install -o root -g root -m 0640 -D "${image_builder_dir}/kata-containers.img" "${KATA_APPARMOR_IMAGE}"
 }
 
 function get_dep_from_yaml_db(){

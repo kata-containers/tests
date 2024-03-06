@@ -18,6 +18,8 @@ source "${SCRIPT_PATH}/../../../.ci/lib.sh"
 # runc is installed in /usr/local/sbin/ add that path
 export PATH="$PATH:/usr/local/sbin"
 
+TEST_INITRD="${TEST_INITRD:-no}"
+
 containerd_tarball_version=$(get_version "externals.containerd.version")
 
 # Runtime to be used for testing
@@ -97,7 +99,7 @@ ci_cleanup() {
 	fi
 
 	[ -f "$kata_config_backup" ] && sudo mv "$kata_config_backup" "$kata_config" || \
-		sudo rm "$kata_config"
+		sudo rm "$kata_config" || true
 }
 
 create_containerd_config() {
@@ -431,6 +433,75 @@ EOF
 	create_containerd_config "${containerd_runtime_test}"
 }
 
+TestContainerGuestApparmor() {
+    info "Test container guest AppArmor"
+
+    # The ppc64le job uses the initrd image, so the test will be skipped.
+    if [[ "${TEST_INITRD}" == "yes" ]]; then
+        info "Skip the test because the guest AppArmor doesn't work with the agent init"
+        return
+    fi
+    if [ ! -e "${KATA_APPARMOR_IMAGE}" ]; then
+        info "Skip the test becasue the guest AppArmor image doesn't exist"
+        return
+    fi
+
+    # Set the guest AppArmor rootfs image because the guest AppArmor doesn't work with the agent init.
+    sudo sed -i "/^image =/c image = "\"${KATA_APPARMOR_IMAGE}\""" "${kata_config}"
+    # Enable the guest AppArmor.
+    sudo sed -i '/^disable_guest_apparmor/ s/true/false/g' "${kata_config}"
+    sudo sed -i 's/^#\(debug_console_enabled\).*=.*$/\1 = true/g' "${kata_config}"
+
+    local container_yaml="${REPORT_DIR}/container.yaml"
+    local image="busybox:latest"
+    cat << EOF > "${container_yaml}"
+metadata:
+  name: busybox-apparmor
+image:
+  image: "$image"
+command:
+- top
+EOF
+
+    info "Check the AppArmor profile is applied to the container executed by crictl start"
+    testContainerStart 1
+    aa_status=$(expect -c "
+    spawn -noecho kata-runtime exec $podid
+    expect "root@localhost:/#"
+    send \"aa-status\n\"
+    expect "root@localhost:/#"
+    send \"exit\n\"
+    expect eof
+    ")
+    echo "aa-status results:"
+    echo "${aa_status}"
+    ret=$(echo "$aa_status" | grep "/bin/top.*kata-default" || true)
+    [ -n "$ret" ] || die "not found /bin/top kata-default profile"
+
+    info "Check the AppArmor profile is applied to the process executed by crictl exec"
+    sudo -E crictl exec $cid sleep 10 &
+    # sleep for 1s to make sure the exec process started.
+    sleep 1
+    aa_status=$(expect -c "
+    spawn -noecho kata-runtime exec $podid
+    expect "root@localhost:/#"
+    send \"aa-status\n\"
+    expect "root@localhost:/#"
+    send \"exit\n\"
+    expect eof
+    ")
+    echo "aa-status results:"
+    echo "${aa_status}"
+    ret=$(echo "$aa_status" | grep "/bin/sleep.*kata-default" || true)
+    [ -n "$ret" ] || die "not found /bin/sleep kata-default profile"
+
+    testContainerStop
+
+    # Reset the Kata configuration file.
+    sudo rm "${kata_config}"
+    ci_config
+}
+
 # k8s may restart docker which will impact on containerd stop
 stop_containerd() {
 	local tmp=$(pgrep kubelet || true)
@@ -508,6 +579,8 @@ main() {
 		TestContainerMemoryUpdate 1
 		TestContainerMemoryUpdate 0
 	fi
+
+	TestContainerGuestApparmor
 
 	TestKilledVmmCleanup
 
