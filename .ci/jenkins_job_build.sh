@@ -229,6 +229,8 @@ run_unit_test() {
 		pushd "${GOPATH}/src/${katacontainers_repo}"
 		echo "Installing yq"
 		sudo -E INSTALL_IN_GOPATH=false ./ci/install_yq.sh
+		echo "Install clang"
+		sudo -E apt-get install -y clang
 		echo "Installing libseccomp library from sources"
 		libseccomp_install_dir=$(mktemp -d -t libseccomp.XXXXXXXXXX)
 		gperf_install_dir=$(mktemp -d -t gperf.XXXXXXXXXX)
