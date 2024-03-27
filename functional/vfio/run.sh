@@ -25,20 +25,33 @@ HYPERVISOR=
 MACHINE_TYPE=
 IMAGE_TYPE=
 
+# Option to choose an alternative PCI device for the VFIO test
+VFIO_PCI_CLASS=${VFIO_PCI_CLASS:-"Ethernet controller"}
+VFIO_PCI_NAME=${VFIO_PCI_NAME:-"Virtio.*network device"}
+VFIO_CHECK_GUEST_KERNEL=${VFIO_CHECK_GUEST_KERNEL:-"ip a | grep \"eth\" || die \"Missing VFIO network interface\""}
+VFIO_PORT=${VFIO_PORT:-"bridge-port"}
+VFIO_CHECK_NUM_DEVICES=${VFIO_CHECK_NUM_DEVICES:-"2"}
+
 cleanup() {
 	clean_env_ctr
 	sudo rm -rf "${tmp_data_dir}"
-
-	[ -n "${host_pci}" ] && sudo driverctl unset-override "${host_pci}"
+	# some devices fail if no previous driver being bound
+	[ -n "${host_pci}" ] && sudo driverctl --noprobe unset-override "${host_pci}"
 }
 
 host_pci_addr() {
-	lspci -D | grep "Ethernet controller" | grep "Virtio.*network device" | tail -1 | cut -d' ' -f1
+	lspci -D | grep "${VFIO_PCI_CLASS}" | grep "${VFIO_PCI_NAME}" | tail -1 | cut -d' ' -f1
 }
 
 get_vfio_path() {
 	local addr="$1"
-	echo "/dev/vfio/$(basename $(realpath /sys/bus/pci/drivers/vfio-pci/${host_pci}/iommu_group))"
+	local iommu_group_path
+	local iommu_group
+	
+	iommu_group_path=$(realpath /sys/bus/pci/drivers/vfio-pci/"${addr}"/iommu_group)
+	iommu_group=$(basename "${iommu_group_path}")
+
+	echo "/dev/vfio/${iommu_group}"
 }
 
 pull_rootfs() {
@@ -55,12 +68,19 @@ create_bundle() {
 	mkdir -p "${bundle_dir}"
 
 	# extract busybox rootfs
-	local rootfs_dir="${bundle_dir}/rootfs"
+	local rootfs_dir
+	local layers_dir
+	
+	rootfs_dir="${bundle_dir}/rootfs"
 	mkdir -p "${rootfs_dir}"
-	local layers_dir="$(mktemp -d)"
+
+	layers_dir="$(mktemp -d)"
 	tar -C "${layers_dir}" -pxf "${rootfs_tar}"
+	
 	for ((i=0;i<$(cat ${layers_dir}/manifest.json | jq -r ".[].Layers | length");i++)); do
-		tar -C ${rootfs_dir} -xf ${layers_dir}/$(cat ${layers_dir}/manifest.json | jq -r ".[].Layers[${i}]")
+		local layer
+		layer=$(cat ${layers_dir}/manifest.json | jq -r ".[].Layers[${i}]")
+		tar -C "${rootfs_dir}" -xf "${layers_dir}/${layer}"
 	done
 	sync
 
@@ -87,7 +107,7 @@ check_guest_kernel() {
 	# For vfio_mode=guest-kernel, the device should be bound to
 	# the guest kernel's native driver.  To check this has worked,
 	# we look for an ethernet device named 'eth*'
-	get_ctr_cmd_output "${container_id}" ip a | grep "eth" || die "Missing VFIO network interface"
+	get_ctr_cmd_output "${container_id}" ash -c "${VFIO_CHECK_GUEST_KERNEL}"
 }
 
 check_vfio() {
@@ -113,8 +133,8 @@ check_vfio() {
 	# There should be two devices in the IOMMU group: the ethernet
 	# device we care about, plus the PCIe to PCI bridge device
 	devs="$(get_ctr_cmd_output "${cid}" ls /sys/kernel/iommu_groups/"${group}"/devices)"
-	if [ $(echo "${devs}" | wc -w) != "2" ] ; then
-	    die "Expected exactly two devices got: ${devs}"
+        if [ $(echo "${devs}" | wc -w) != ${VFIO_CHECK_NUM_DEVICES} ] ; then
+            die "Expected exactly ${VFIO_CHECK_NUM_DEVICES} device(s) got: ${devs}"
 	fi
 
 	# The bridge device will always sort first, because it is on
@@ -155,6 +175,8 @@ EOF
 }
 
 setup_configuration_file() {
+	local hot_or_cold_plug_vfio=${1:-"hot_plug_vfio"}
+	local vfio_port=${2:-"bridge-port"}
 	local qemu_config_file="configuration-qemu.toml"
 	local clh_config_file="configuration-clh.toml"
 	local image_file="/opt/kata/share/kata-containers/kata-containers.img"
@@ -188,12 +210,26 @@ setup_configuration_file() {
 	if [ -n "$MACHINE_TYPE" ]; then
 		if [ "$HYPERVISOR" = "qemu" ]; then
 			sed -i 's|^machine_type.*|machine_type = "'${MACHINE_TYPE}'"|g' "${kata_config_file}"
-			# Make sure we have set hot_plug_vfio to a reasonable value
-			sudo sed -i -e 's|^#hot_plug_vfio =.*$|hot_plug_vfio = "bridge-port"|' -e 's|^hot_plug_vfio = .*$|hot_plug_vfio = "bridge-port"|' "${kata_config_file}"
 		else
 			warn "Variable machine_type only applies to qemu. It will be ignored"
 		fi
 	fi
+
+	# Make sure the configuration file has the values available
+	# otherwise sed will fail to update it. sed will not throw an error. 
+	grep -q -e '^#*.*hot_plug_vfio'  "${kata_config_file}" || echo 'hot_plug_vfio="bridge-port"'  >> "${kata_config_file}"
+	grep -q -e '^#*.*cold_plug_vfio' "${kata_config_file}" || echo 'cold_plug_vfio="bridge-port"' >> "${kata_config_file}"
+
+	if [ $hot_or_cold_plug_vfio == "hot_plug_vfio" ]; then
+		sed -i -e "s|^#*.*hot_plug_vfio =.*|hot_plug_vfio = \"${VFIO_PORT}\"|" "${kata_config_file}"
+		sed -i -e "s|^#*.*cold_plug_vfio =.*|cold_plug_vfio = \"no-port\"|" "${kata_config_file}"
+	fi
+
+	if [ $hot_or_cold_plug_vfio == "cold_plug_vfio" ]; then
+		sed -i -e "s|^#*.*cold_plug_vfio =.*|cold_plug_vfio = \"${VFIO_PORT}\"|" "${kata_config_file}"
+		sed -i -e "s|^#*.*hot_plug_vfio =.*|hot_plug_vfio = \"no-port\"|" "${kata_config_file}"
+	fi
+
 
 	if [ -n "${SANDBOX_CGROUP_ONLY}" ]; then
 	   sed -i 's|^sandbox_cgroup_only.*|sandbox_cgroup_only='${SANDBOX_CGROUP_ONLY}'|g' "${kata_config_file}"
@@ -228,6 +264,8 @@ setup_configuration_file() {
 	# enable VFIO relevant hypervisor annotations
 	sed -i -e 's/^\(enable_annotations\).*=.*$/\1 = ["enable_iommu"]/' \
 		"${kata_config_file}"
+
+	cat ${kata_config_file} | grep -v '#' | grep -v '^$'
 }
 
 run_test_container() {
@@ -288,8 +326,6 @@ main() {
 	#
 	# Get the device ready on the host
 	#
-	setup_configuration_file
-
 	restart_containerd_service
 	sudo modprobe vfio
 	sudo modprobe vfio-pci
@@ -307,7 +343,11 @@ main() {
 	vfio_major="$(printf '%d' $(stat -c '0x%t' ${vfio_device}))"
 	vfio_minor="$(printf '%d' $(stat -c '0x%T' ${vfio_device}))"
 
-	[ -n "/dev/vfio/vfio" ] || die "vfio control device not found"
+	# check if /dev/vfio/vfio exists 
+	local vfio_control_device 
+	vfio_control_device=$(ls /dev/vfio/vfio)
+
+	[ -n "${vfio_control_device}" ] || die "vfio control device not found"
 	vfio_ctl_major="$(printf '%d' $(stat -c '0x%t' /dev/vfio/vfio))"
 	vfio_ctl_minor="$(printf '%d' $(stat -c '0x%T' /dev/vfio/vfio))"
 
@@ -317,6 +357,36 @@ main() {
 	#
 	# Run the tests
 	#
+
+	# First test hot_plug_vfio="bridge-port"
+	# the default is VFIO_PORT="bridge-port" if not overriden
+	setup_configuration_file "hot_plug_vfio" "${VFIO_PORT}"
+
+	# test for guest-kernel mode
+	guest_kernel_cid="vfio-guest-kernel-${RANDOM}"
+	run_test_container "${guest_kernel_cid}" \
+			   "${tmp_data_dir}/vfio-guest-kernel" \
+			   "${script_path}/guest-kernel.json.in" \
+			   "${host_pci}"
+	check_guest_kernel "${guest_kernel_cid}"
+
+	# Remove the container so we can re-use the device for the next test
+	clean_env_ctr
+
+	# test for vfio mode
+	vfio_cid="vfio-vfio-${RANDOM}"
+	run_test_container "${vfio_cid}" \
+			   "${tmp_data_dir}/vfio-vfio" \
+			   "${script_path}/vfio.json.in" \
+			   "${host_pci}"
+	check_vfio "${vfio_cid}"
+
+	# Remove the container so we can re-use the device for the next test
+	clean_env_ctr
+
+	# Mpw test cold_plug_vfio="bridge-port"
+	# the default is VFIO_PORT="bridge-port" if not overriden
+	setup_configuration_file "cold_plug_vfio" "${VFIO_PORT}"
 
 	# test for guest-kernel mode
 	guest_kernel_cid="vfio-guest-kernel-${RANDOM}"
@@ -338,4 +408,4 @@ main() {
 	check_vfio "${vfio_cid}"
 }
 
-main $@
+main "$@"
