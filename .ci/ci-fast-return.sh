@@ -63,7 +63,8 @@ filenames=""
 read_yaml() {
 	${cidir}/install_yq.sh 1>&5 2>&1
 
-	res=$(yq read "$1" "$2")
+	yq_shim="${cidir}/yq-shim.sh"
+	res=$(${yq_shim} "$2" "$1" r)
 	[ "$res" == "null" ] && res=""
 	echo $res
 	return 0

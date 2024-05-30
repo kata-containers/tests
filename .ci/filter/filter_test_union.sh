@@ -23,7 +23,7 @@ main()
 {
 	# install yq if not exist
 	${ci_dir}/install_yq.sh
-	local array_test=$("${GOPATH_LOCAL}/bin/yq" read "${test_config_file}" "${test_filter_flag}")
+	local array_test=$("${ci_dir}/yq-shim.sh" "${test_filter_flag}" "${test_config_file}" r)
 	[ "${array_test}" = "null" ] && return
 	mapfile -t _array_test <<< "${array_test}"
 	for entry in "${_array_test[@]}"

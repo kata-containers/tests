@@ -21,6 +21,6 @@ ${SCRIPT_PATH}/../../.ci/install_yq.sh
 # Default flannel config has limitation and request for memory, and it may cause OOM on ppc64le.
 # Though here, we delete memory limitation for all archs, this modified-configuration
 # file will only be applied on ppc64le.
-sudo -E ${GOPATH}/bin/yq d -i -d'*' $network_plugin_config_file $memory_resource  > /dev/null
+sudo -E ${SCRIPT_PATH}/../../.ci/yq-shim.sh $memory_resource $network_plugin_config_file d  > /dev/null
 
 network_plugin_config="$network_plugin_config_file"
