@@ -12,6 +12,7 @@ set -e
 
 [ -n "$DEBUG" ] && set -x
 
+# Just a test please ignore
 cidir=$(realpath $(dirname "$0"))
 source "${cidir}/lib.sh"
 
