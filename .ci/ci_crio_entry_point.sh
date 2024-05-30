@@ -121,21 +121,25 @@ cd "${katacontainers_repo_dir}"
 # Install yq
 ${GOPATH}/src/${tests_repo}/.ci/install_yq.sh
 
+# YQ_SHIM Usage:
+# ./yq-shim.sh <query> <path to yaml> <action> [value]
+YQ_SHIM=${GOPATH}/src/${tests_repo}/.ci/yq-shim.sh
+
 # CRI-O switched to using go 1.18+
 golang_version="1.18.1"
-yq w -i versions.yaml languages.golang.meta.newest-version "${golang_version}"
+${YQ_SHIM} languages.golang.meta.newest-version versions.yaml w "${golang_version}"
 
 critools_version="${branch_release_number}.0"
 [ ${critools_version} == "1.24.0" ] && critools_version="1.24.2"
 echo "Using critools ${critools_version}"
-yq w -i versions.yaml externals.critools.version "${critools_version}"
-yq r versions.yaml externals.critools.version
+${YQ_SHIM} externals.critools.version versions.yaml w "${critools_version}"
+${YQ_SHIM} externals.critools.version versions.yaml r
 
 latest_kubernetes_from_repo=`LC_ALL=C sudo dnf -y repository-packages kubernetes info --available kubelet-${branch_release_number}* | grep Version | cut -d':' -f 2 | xargs`
 kubernetes_version="${latest_kubernetes_from_repo}-00"
 echo "Using kubernetes ${kubernetes_version}"
-yq w -i versions.yaml externals.kubernetes.version "${kubernetes_version}"
-yq r versions.yaml externals.kubernetes.version
+${YQ_SHIM} externals.kubernetes.version versions.yaml w "${kubernetes_version}"
+${YQ_SHIM} externals.kubernetes.version versions.yaml r
 
 # Run kata-containers setup
 cd "${tests_repo_dir}"

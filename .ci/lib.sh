@@ -188,7 +188,8 @@ function get_dep_from_yaml_db(){
 
 	"${GOPATH}/src/${tests_repo}/.ci/install_yq.sh" >&2
 
-	result=$("${GOPATH}/bin/yq" r -X "$versions_file" "$dependency")
+	yq_shim="${GOPATH}/src/${tests_repo}/.ci/yq-shim.sh"
+	result=$("${yq_shim}" "$dependency" "$versions_file" r)
 	[ "$result" = "null" ] && result=""
 	echo "$result"
 }
