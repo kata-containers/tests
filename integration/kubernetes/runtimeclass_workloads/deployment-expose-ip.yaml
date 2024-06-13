@@ -23,6 +23,8 @@ spec:
       containers:
       - name: hello-world
         image: ${agnhost_image}
+        command:
+        - /agnhost
         args:
         - netexec
         ports:
