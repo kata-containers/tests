@@ -33,6 +33,7 @@ emptydir/A
 enablement/AB
 entrypoint/AB
 ethernet
+executables
 filename/AB
 filesystem/AB
 freeform
