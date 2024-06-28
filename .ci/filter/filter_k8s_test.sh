@@ -28,7 +28,7 @@ main()
 	# install yq if not exist
         ${CI_DIR}/install_yq.sh > /dev/null
 
-        local K8S_SKIP_UNION=$("${GOPATH_LOCAL}/bin/yq" read "${K8S_CONFIG_FILE}" "${K8S_FILTER_FLAG}")
+        local K8S_SKIP_UNION=$("${CI_DIR}/yq-shim.sh" "${K8S_FILTER_FLAG}" "${K8S_CONFIG_FILE}" r)
         [ "${K8S_SKIP_UNION}" == "null" ] && return
         mapfile -t _K8S_SKIP_UNION <<< "${K8S_SKIP_UNION}"
 
