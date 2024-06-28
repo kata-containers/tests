@@ -1,5 +1,7 @@
 # Kata Containers tests
 
+## Note: This repo has been archived and the tests can now be found in the [kata-containers repo](https://github.com/kata-containers/kata-containers/tree/main/tests).
+
 This repository contains various types of tests and utilities (called
 "content" from now on) for testing the [Kata Containers](https://github.com/kata-containers)
 code repositories.
