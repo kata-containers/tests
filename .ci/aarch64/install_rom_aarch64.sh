@@ -55,7 +55,7 @@ build_uefi()
 	git clone "${EDK2_PLAT_REPO}"
 	git clone -b "${ACPICA_TAG_ID}"  "${ACPICA}"
 
-	sudo apt install -y python python3 python3-distutils uuid-dev build-essential bison flex
+	sudo apt install -y python3 python3-distutils uuid-dev build-essential bison flex
 
 	mkdir toolchain
 	pushd toolchain/

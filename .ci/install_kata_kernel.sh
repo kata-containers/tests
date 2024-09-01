@@ -77,6 +77,9 @@ main() {
 		experimental)
 			build_and_install_kernel "kernel-experimental"
 			;;
+		arm-experimental)
+			build_and_install_kernel "kernel-arm-experimental"
+			;;
 		vanilla)
 			build_and_install_kernel "kernel"
 			;;
