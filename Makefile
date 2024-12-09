@@ -93,6 +93,7 @@ static-checks:
 shimv2:
 	bash integration/containerd/shimv2/shimv2-tests.sh
 	bash integration/containerd/shimv2/shimv2-factory-tests.sh
+	bash integration/containerd/shimv2/shimv2-vmcache-tests.sh
 
 cri-containerd:
 	bash integration/containerd/cri/integration-tests.sh

@@ -24,6 +24,7 @@ containerd_tarball_version=$(get_version "externals.containerd.version")
 RUNTIME=${RUNTIME:-containerd-shim-kata-v2}
 SHIMV2_TEST=${SHIMV2_TEST:-""}
 FACTORY_TEST=${FACTORY_TEST:-""}
+FACTORY_VMCACHE_TEST=${FACTORY_VMCACHE_TEST:-""}
 KILL_VMM_TEST=${KILL_VMM_TEST:-""}
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 USE_DEVMAPPER="${USE_DEVMAPPER:-false}"
@@ -61,6 +62,92 @@ readonly default_containerd_config_backup="$CONTAINERD_CONFIG_FILE.backup"
 readonly kata_config="/etc/kata-containers/configuration.toml"
 readonly kata_config_backup="$kata_config.backup"
 readonly default_kata_config="/opt/kata/share/defaults/kata-containers/configuration.toml"
+readonly hypervisor_qemu_shared_fs="virtio-9p"
+readonly factory_vm_cache_number=1
+readonly factory_vm_cache_endpoint="/var/run/kata-containers/cache.sock"
+
+qemu_vmcache_init() {
+	sudo mkdir -p $(dirname "${kata_config}")
+	[ -f "$kata_config" ] && sudo cp "$kata_config" "$kata_config_backup" || \
+		sudo cp "$default_kata_config" "$kata_config"
+ 	
+	if [ -n "${FACTORY_VMCACHE_TEST}" ]; then
+		sudo rm -f "${factory_vm_cache_endpoint}"
+		sudo sed -i '/^\[hypervisor\.qemu\]/,/^$/ s#^\(shared_fs\s*=\s*\).*#\1"'"$hypervisor_qemu_shared_fs"'"#' "${kata_config}"
+		sudo sed -i '/^\[factory\]/,/^$/ s#^\(vm_cache_number\s*=\s*\).*#\1"'"$factory_vm_cache_number"'"#' "${kata_config}"
+		sudo sed -i '/^\[factory\]/,/^$/ s#^\(vm_cache_endpoint\s*=\s*\).*#\1"'"$factory_vm_cache_endpoint"'"#' "${kata_config}"
+		sudo sed -i -e 's/^#enable_template.*$/enable_template = false/g' "${kata_config}"
+	
+		echo "enable debug for kata-runtime"
+		sudo sed -i 's/^#enable_debug =/enable_debug =/g' ${kata_config}
+		echo "init vm cache"
+
+		sudo -E PATH=$PATH kata-runtime  factory init &
+	fi
+
+}
+
+vmcache_start_container() {
+	local pod_yaml=${REPORT_DIR}/pod-vmcache.yaml
+	local container_yaml=${REPORT_DIR}/container-vmcache.yaml
+	local image="busybox:latest"
+
+	cat << EOF > "${pod_yaml}"
+metadata:
+  name: busybox-vmcache-1
+annotations:
+        io.kubernetes.cri.untrusted-workload: true
+EOF
+	cat << EOF > "${container_yaml}"
+metadata:
+  name: busybox-vmm-1
+image:
+  image: "$image"
+command:
+- top
+EOF
+	
+	restart_containerd_service
+	sudo crictl pull $image
+	podid=$(sudo crictl runp $pod_yaml)
+	cid=$(sudo crictl create $podid $container_yaml $pod_yaml)
+	sudo crictl start $cid
+	
+	container_status=$(crictl  ps  |grep  ${cid:0:10} |awk '{print $8}')
+	if [ "${container_status}" != "Running" ]; then
+		die "vmcache test failed: can not start container."
+	fi
+}
+
+vmcache_remove_container() {
+	info "stop pod $podid"
+	sudo crictl stopp $podid
+	info "remove pod $podid"
+	sudo crictl rmp $podid
+	rm -rf ${REPORT_DIR}/pod-vmcache.yaml
+	rm -rf ${REPORT_DIR}/container-vmcache.yaml
+}
+
+qemu_vmcache_destroy() {
+	if [ -n "${FACTORY_VMCACHE_TEST}" ]; then
+		echo "destroy vm vmcache"
+		local PID=$(pgrep -f 'kata-runtime factory init' | head -n 1)
+		if [ -n "$PID" ]; then
+			sudo  kill -SIGINT  "$PID"
+		fi
+	fi
+
+	if [ -e "$kata_config_backup" ]; then
+		cp -f  "$kata_config_backup" "$kata_config"
+	fi
+}
+
+TestQemuVmcache() {
+	qemu_vmcache_init
+	vmcache_start_container
+	vmcache_remove_container
+	qemu_vmcache_destroy
+}
 
 ci_config() {
 	sudo mkdir -p $(dirname "${kata_config}")
@@ -496,6 +583,10 @@ main() {
 		RUNTIME="" \
 		CONTAINERD_CONFIG_FILE="$CONTAINERD_CONFIG_FILE_TEMP" \
 		make GO_BUILDTAGS="no_btrfs" -e cri-integration
+
+	if [ "${KATA_HYPERVISOR}" == "qemu" ] && [ "${FACTORY_VMCACHE_TEST}" == true ]; then
+		TestQemuVmcache
+	fi
 
 	# trap error for print containerd log,
 	# containerd's `cri-integration` will print the log itself.
