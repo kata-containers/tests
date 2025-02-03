@@ -15,8 +15,11 @@ spec:
   containers:
   - name: liveness
     image: ${agnhost_image}
+    command:
+    - /agnhost
     args:
     - liveness
+
     livenessProbe:
       httpGet:
         path: /healthz
